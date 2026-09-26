@@ -4,105 +4,58 @@
 
 ---
 
-```
-                       ┌─────────────────────────────────────────────────────────┐
-                       │          THE PHYSICAL REALITY OF LLM INFERENCE          │
-                       │    Compute-Bound Prefill  ◄────────►  Memory-Bound Decode│
-                       └────────────────────────────┬────────────────────────────┘
-                                                    │
-             ┌──────────────────────────────────────┴──────────────────────────────────────┐
-             ▼                                                                             ▼
-┌─────────────────────────┐                                                   ┌─────────────────────────┐
-│     PREFILL PHASE       │                                                   │      DECODE PHASE       │
-│  • Parallel token input │                                                   │  • Serial token output  │
-│  • O(N²) Compute-Bound  │                                                   │  • O(1) step Compute    │
-│  • TTFT Bottleneck      │                                                   │  • Memory Bandwidth Bnd │
-│  • Builds KV Cache      │                                                   │  • Reads KV Cache HBM   │
-└────────────┬────────────┘                                                   └────────────┬────────────┘
-             │                                                                             │
-             └──────────────────────────────────────┬──────────────────────────────────────┘
-                                                    ▼
-                       ┌─────────────────────────────────────────────────────────┐
-                       │              VRAM ALLOCATION CONSTRAINTS                │
-                       │  Static Model Weights + Dynamic KV Cache (Batch × Context)│
-                       └─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Header["THE PHYSICAL REALITY OF LLM INFERENCE\nCompute-Bound Prefill <---> Memory-Bound Decode"]
+    
+    Header --> Prefill["PREFILL PHASE\n• Parallel token input\n• O(N²) Compute-Bound\n• TTFT Bottleneck\n• Builds KV Cache"]
+    Header --> Decode["DECODE PHASE\n• Serial token output\n• O(1) step Compute\n• Memory Bandwidth Bnd\n• Reads KV Cache HBM"]
+    
+    Prefill --> VRAM["VRAM ALLOCATION CONSTRAINTS\nStatic Model Weights + Dynamic KV Cache (Batch × Context)"]
+    Decode --> VRAM
 ```
 
 ---
 
-> ### 🏷️ Curriculum Taxonomy & Classification for Senior Engineers
-> - `[MUST-HAVE]` 🔴: Core production architecture, sizing formulas, and interview essentials.
-> - `[GOOD-TO-HAVE]` 🟡: Advanced scaling, hardware acceleration, and optimization techniques.
-> - `[KNOWLEDGE-BASE]` 🔵: Conceptual understanding only (skip coding from scratch).
+> **Taxonomy Note**: Refer to the [main README](../README.md#architectural-mastery-tiers) for curriculum classification symbols (🔴, 🟡, 🔵).
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Executive Summary & The Lead Mental Model](#1-executive-summary--the-lead-mental-model)
+1. [Executive Summary](#1-executive-summary)
 2. [Why This Matters for Senior Developers & Architects](#2-why-this-matters-for-senior-developers--architects)
 3. [Deep-Dive Architecture & Mechanical Internals](#3-deep-dive-architecture--mechanical-internals)
-   - [3.1. Scaled Dot-Product & Self-Attention Equations `[KNOWLEDGE-BASE]` 🔵](#31-scaled-dot-product--self-attention-equations-knowledge-base-)
-   - [3.2. Attention Architectures: MHA vs. MQA vs. GQA `[MUST-HAVE]` 🔴](#32-attention-architectures-mha-vs-mqa-vs-gqa-must-have-)
-   - [3.3. FlashAttention (1, 2 & 3): IO-Aware Tiling `[GOOD-TO-HAVE]` 🟡](#33-flashattention-1-2--3-io-aware-tiling-good-to-have-)
-   - [3.4. Rotary Position Embeddings (RoPE) & Context Scaling `[GOOD-TO-HAVE]` 🟡](#34-rotary-position-embeddings-rope--context-scaling-good-to-have-)
-   - [3.5. Mixture-of-Experts (MoE) Architecture `[GOOD-TO-HAVE]` 🟡](#35-mixture-of-experts-moe-architecture-good-to-have-)
 4. [Inference Execution & High-Throughput Serving](#4-inference-execution--high-throughput-serving)
-   - [4.1. The Prefill vs. Decode Dichotomy (TTFT vs. TPS) `[MUST-HAVE]` 🔴](#41-the-prefill-vs-decode-dichotomy-ttft-vs-tps-must-have-)
-   - [4.2. PagedAttention & vLLM Virtual Memory Management `[MUST-HAVE]` 🔴](#42-pagedattention--vllm-virtual-memory-management-must-have-)
-   - [4.3. Speculative Decoding `[GOOD-TO-HAVE]` 🟡](#43-speculative-decoding-good-to-have-)
-   - [4.4. Precision, Quantization & VRAM Formulas (FP16, BF16, FP8, INT4) `[MUST-HAVE]` 🔴](#44-precision-quantization--vram-formulas-fp16-bf16-fp8-int4-must-have-)
 5. [Tokens, Tokenization & Byte-Pair Encoding (BPE)](#5-tokens-tokenization--byte-pair-encoding-bpe)
-   - [5.1. BPE Mechanics & Vocabularies `[MUST-HAVE]` 🔴](#51-bpe-mechanics--vocabularies-must-have-)
-   - [5.2. Non-English & Code Token Penalties `[MUST-HAVE]` 🔴](#52-non-english--code-token-penalties-must-have-)
 6. [Sampling Mechanics & Probability Shaping](#6-sampling-mechanics--probability-shaping)
-   - [6.1. Logits, Softmax & Temperature `[MUST-HAVE]` 🔴](#61-logits-softmax--temperature-must-have-)
-   - [6.2. Top-P, Top-K, Min-P & Repetition Penalties `[MUST-HAVE]` 🔴](#62-top-p-top-k-min-p--repetition-penalties-must-have-)
 7. [Reasoning Models vs. Standard Instruction Models](#7-reasoning-models-vs-standard-instruction-models)
-   - [7.1. Test-Time Compute vs. Pretraining Compute `[MUST-HAVE]` 🔴](#71-test-time-compute-vs-pretraining-compute-must-have-)
-   - [7.2. Thinking Token Dynamics & Architectural Tradeoffs `[MUST-HAVE]` 🔴](#72-thinking-token-dynamics--architectural-tradeoffs-must-have-)
 8. [Comparative Tradeoff Matrices](#8-comparative-tradeoff-matrices)
 9. [Production Failure Modes & Anti-Patterns](#9-production-failure-modes--anti-patterns)
-10. [Production Code Implementations `[MUST-HAVE]` 🔴](#10-production-code-implementations-must-have-)
-    - [Python: Exact Tokenizer Profiler & Cost Modeling Engine](#python-exact-tokenizer-profiler--cost-modeling-engine)
-    - [C# / .NET 9: Token Budgeting & KV Cache Memory Estimation Service](#c--net-9-token-budgeting--kv-cache-memory-estimation-service)
+10. [Production Code Implementations](#10-production-code-implementations)
 11. [Curated Verified Resources](#11-curated-verified-resources)
-12. [Capstone Engineering Challenge: High-Throughput Token Budgeting Proxy `[MUST-HAVE]` 🔴](#12-capstone-engineering-challenge-high-throughput-token-budgeting-proxy-must-have-)
+12. [Capstone Engineering Challenge](#12-capstone-engineering-challenge)
 
 ---
 
-## 1. Executive Summary & The Lead Mental Model
+## 1. Executive Summary
 
-For senior engineers and systems architects, the most dangerous cognitive distortion is treating a Large Language Model as an anthropomorphic "reasoning mind" or a simple string-in/string-out REST microservice.
+Avoid treating LLMs as anthropomorphic minds or simple REST microservices. **An LLM is a stateless, auto-regressive tensor processor executing matrix operations over a vocabulary space:**
 
-**In software engineering reality, an LLM is a stateless, auto-regressive tensor processor executing discrete matrix operations over a high-dimensional vocabulary space:**
-- Every completion request consumes physical GPU High-Bandwidth Memory (HBM) throughput, static hardware memory for parameter weights, and dynamic VRAM for Key-Value (KV) activations.
-- Processing a prompt runs in two fundamentally distinct hardware regimes: the **Prefill Phase** (compute-bound, parallelized over all input tokens) and the **Decode Phase** (memory-bandwidth bound, executing one serial forward pass per emitted token).
-- System-level properties like Time-To-First-Token (TTFT), Tokens-Per-Second (TPS), concurrency ceilings, and cost curves are physical consequences of GPU architecture, KV cache retention, and tensor memory bandwidth.
+- Requests consume GPU High-Bandwidth Memory (HBM) throughput, static VRAM for weights, and dynamic VRAM for Key-Value (KV) activations.
+- Processing occurs in two hardware regimes: **Prefill Phase** (compute-bound, parallel over input tokens) and **Decode Phase** (memory-bandwidth bound, serial token emission).
+- Metrics like Time-To-First-Token (TTFT) and Tokens-Per-Second (TPS) derive directly from GPU architecture and memory bandwidth constraints.
 
-```
-                      THE TAXONOMY OF MODERN ARTIFICIAL INTELLIGENCE
-                      
-┌────────────────────────────────────────────────────────────────────────┐
-│ ARTIFICIAL INTELLIGENCE (Broad field: symbolic systems, heuristics)    │
-│  ┌──────────────────────────────────────────────────────────────────┐  │
-│  │ MACHINE LEARNING (Statistical pattern recognition from data)     │  │
-│  │  ┌────────────────────────────────────────────────────────────┐  │  │
-│  │  │ DEEP LEARNING (Multi-layer artificial neural networks)     │  │  │
-│  │  │  ┌──────────────────────────────────────────────────────┐  │  │  │
-│  │  │  │ GENERATIVE AI (Models generating novel tokens/media) │  │  │  │
-│  │  │  │  ┌────────────────────────────────────────────────┐  │  │  │  │
-│  │  │  │  │ FOUNDATION MODELS (Dense, broad pretraining)   │  │  │  │  │
-│  │  │  │  │  ┌──────────────────────────────────────────┐  │  │  │  │  │
-│  │  │  │  │  │ LARGE LANGUAGE MODELS (Autoregressive)   │  │  │  │  │  │
-│  │  │  │  │  │  • Dense Transformers (Claude, GPT-4o)   │  │  │  │  │  │
-│  │  │  │  │  │  • Mixture of Experts (MoE)              │  │  │  │  │  │
-│  │  │  │  │  │  • Reasoning Models (o1, Claude 3.7)     │  │  │  │  │  │
-│  │  │  │  │  └──────────────────────────────────────────┘  │  │  │  │  │
-│  │  │  │  └────────────────────────────────────────────────┘  │  │  │  │
-│  │  └────────────────────────────────────────────────────────────┘  │  │
-│  └──────────────────────────────────────────────────────────────────┘  │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    AI["ARTIFICIAL INTELLIGENCE\n(Broad field: symbolic systems, heuristics)"] --> ML["MACHINE LEARNING\n(Statistical pattern recognition from data)"]
+    ML --> DL["DEEP LEARNING\n(Multi-layer artificial neural networks)"]
+    DL --> GenAI["GENERATIVE AI\n(Models generating novel tokens/media)"]
+    GenAI --> FM["FOUNDATION MODELS\n(Dense, broad pretraining)"]
+    FM --> LLM["LARGE LANGUAGE MODELS\n(Autoregressive)"]
+    LLM --> Dense["• Dense Transformers (Claude, GPT-4o)"]
+    LLM --> MoE["• Mixture of Experts (MoE)"]
+    LLM --> Reasoning["• Reasoning Models (o1, Claude 3.7)"]
 ```
 
 ---
@@ -365,15 +318,13 @@ flowchart TD
 
 ### 4.4. Precision, Quantization & VRAM Formulas (FP16, BF16, FP8, INT4) `[MUST-HAVE]` 🔴
 
-Every parameter is stored in a specific floating-point or integer representation:
-
-```
-FP32 (32-bit): [Sign: 1b][Exponent: 8b][Mantissa: 23b] = 4 Bytes
-FP16 (16-bit): [Sign: 1b][Exponent: 5b][Mantissa: 10b] = 2 Bytes
-BF16 (16-bit): [Sign: 1b][Exponent: 8b][Mantissa: 7b]  = 2 Bytes (Standard Training/Serving)
-FP8  (8-bit):  [Sign: 1b][Exponent: 4b][Mantissa: 3b]  = 1 Byte  (H100 Native Engine)
-INT4 (4-bit):  [Quantized Integer: 4b]                 = 0.5 Byte (AWQ, GPTQ)
-```
+| Format | Total Bits | Bit Allocation | Bytes/Weight | Serving Engine Target |
+|---|---|---|---|---|
+| **FP32** | 32 | `[Sign: 1b] [Exponent: 8b] [Mantissa: 23b]` | 4.0 B | Legacy training & reference |
+| **FP16** | 16 | `[Sign: 1b] [Exponent: 5b] [Mantissa: 10b]` | 2.0 B | Legacy serving |
+| **BF16** | 16 | `[Sign: 1b] [Exponent: 8b] [Mantissa: 7b]` | 2.0 B | Standard modern serving / training |
+| **FP8 (E4M3)** | 8 | `[Sign: 1b] [Exponent: 4b] [Mantissa: 3b]` | 1.0 B | NVIDIA H100 native TensorRT-LLM / vLLM |
+| **INT4** | 4 | `[Quantized Integer: 4b]` | 0.5 B | AWQ / GPTQ high-density serving |
 
 #### The Master VRAM Estimation Formula:
 $$\text{Total VRAM (GB)} = \left(\frac{P \times Q}{10^9}\right) \times 1.2 + \text{KV Cache (GB)}$$
@@ -415,19 +366,13 @@ flowchart LR
 
 ### 5.2. Non-English & Code Token Penalties `[MUST-HAVE]` 🔴
 
-Because BPE merges byte sequences based on frequency in the training corpus (which is predominantly English web text), non-Latin scripts and whitespace-heavy code suffer severe token inflation.
+Because BPE merges byte sequences based on frequency in the training corpus (predominantly English web text), non-Latin scripts and whitespace-heavy code suffer severe token inflation:
 
-```
-Text: "Enterprise Architecture"
-- English (2 words): 3 tokens (Ratio: 1.5 tok/word)
-
-Text: "एंटरप्राइज आर्किटेक्चर" (Hindi for Enterprise Architecture)
-- Hindi (2 words): 11 tokens (Ratio: 5.5 tok/word -> 366% Cost Penalty!)
-
-Code (C#):
-  public async Task<IActionResult> ProcessOrderAsync(...)
-- Indentation and camelCase splitting convert 4 words into 14 distinct tokens.
-```
+| Input Category | Sample Snippet | Words | Tokens | Token Ratio & Production Impact |
+|---|---|---|---|---|
+| **English (Standard)** | `"Enterprise Architecture"` | 2 | 3 | **1.5 tok/word** (Optimized baseline) |
+| **Non-Latin Script** | `"एंटरप्राइज आर्किटेक्चर"` (Hindi) | 2 | 11 | **5.5 tok/word** (+366% cost & latency penalty) |
+| **Code (C# / Java)** | `public async Task<IActionResult> ProcessOrderAsync(...)` | 4 | 14 | **3.5 tok/word** (Whitespace & identifier fragmentation) |
 
 ---
 
@@ -539,207 +484,70 @@ flowchart LR
 
 ---
 
-## 10. Production Code Implementations `[MUST-HAVE]` 🔴
+## 10. Production Code Implementations
+
+Complete, runnable implementations are available in the [`examples/`](./examples/) directory.
 
 ### Python: Exact Tokenizer Profiler & Cost Modeling Engine
+> **Implementation**: [`examples/token_profiler.py`](./examples/token_profiler.py)
+
+Calculates exact BPE token counts across frontier model families (Claude 3.7 Sonnet, OpenAI o3-mini / GPT-4o, Gemini 2.0 Flash, DeepSeek R1), accounts for test-time compute reasoning tokens, forecasts Time To First Token (TTFT) and decode latency, and computes worst-case financial bounds before executing inference.
 
 ```python
-"""
-production_token_profiler.py
-Production-grade tokenization profiler, latency forecaster, and cost auditor.
-"""
-from typing import Dict, Any, List
-import tiktoken
-
-class ProductionTokenProfiler:
-    PROVIDER_RATES = {
-        "gpt-4o": {"input_per_m": 2.50, "output_per_m": 10.00, "encoding": "o200k_base"},
-        "claude-3-5-sonnet": {"input_per_m": 3.00, "output_per_m": 15.00, "encoding": "cl100k_base"},
-        "gemini-2-flash": {"input_per_m": 0.10, "output_per_m": 0.40, "encoding": "cl100k_base"},
-    }
-
-    def __init__(self, model_key: str = "gpt-4o"):
-        if model_key not in self.PROVIDER_RATES:
-            raise ValueError(f"Unsupported model: {model_key}")
-        self.model_key = model_key
-        self.config = self.PROVIDER_RATES[model_key]
-        self.encoder = tiktoken.get_encoding(self.config["encoding"])
-
-    def profile_payload(self, system_prompt: str, user_prompt: str, max_expected_output: int) -> Dict[str, Any]:
-        system_tokens = len(self.encoder.encode(system_prompt, disallowed_special=()))
-        user_tokens = len(self.encoder.encode(user_prompt, disallowed_special=()))
-        total_input_tokens = system_tokens + user_tokens
-
-        # Financial modeling
-        input_cost = (total_input_tokens / 1_000_000.0) * self.config["input_per_m"]
-        max_output_cost = (max_expected_output / 1_000_000.0) * self.config["output_per_m"]
-
-        # Latency forecasting (empirical hardware baseline)
-        estimated_ttft_ms = 250 + (total_input_tokens * 0.08)
-        estimated_decode_ms = max_expected_output * 15.0 # ~66 tokens/sec
-
-        return {
-            "model": self.model_key,
-            "encoding": self.config["encoding"],
-            "system_tokens": system_tokens,
-            "user_tokens": user_tokens,
-            "total_input_tokens": total_input_tokens,
-            "max_expected_output_tokens": max_expected_output,
-            "estimated_cost_usd": {
-                "input": round(input_cost, 6),
-                "max_output": round(max_output_cost, 6),
-                "total_worst_case": round(input_cost + max_output_cost, 6)
-            },
-            "latency_forecast_ms": {
-                "estimated_ttft": round(estimated_ttft_ms, 1),
-                "estimated_decode": round(estimated_decode_ms, 1),
-                "total_estimated_turn_time": round(estimated_ttft_ms + estimated_decode_ms, 1)
-            }
-        }
-
-if __name__ == "__main__":
-    profiler = ProductionTokenProfiler("claude-3-5-sonnet")
-    sys_prompt = "You are an enterprise financial auditor. Adhere to strict GAAP compliance." * 20
-    user_query = "Analyze the attached corporate filing for anomalies in Q3 EBITDA." * 5
-    report = profiler.profile_payload(sys_prompt, user_query, max_expected_output=1500)
+# Core profiling logic from examples/token_profiler.py
+def profile_payload(self, system_prompt: str, user_prompt: str, max_expected_output: int, reasoning_budget_tokens: int = 0) -> Dict[str, Any]:
+    system_tokens = self._count_tokens(system_prompt)
+    user_tokens = self._count_tokens(user_prompt)
+    total_input = system_tokens + user_tokens
     
-    import json
-    print(json.dumps(report, indent=2))
+    # Reasoning models (o3-mini, Claude 3.7) bill reasoning tokens as output tokens
+    total_output = max_expected_output + (reasoning_budget_tokens if self.config["is_reasoning"] else 0)
+    input_cost = (total_input / 1_000_000.0) * self.config["input_per_m"]
+    max_output_cost = (total_output / 1_000_000.0) * self.config["output_per_m"]
+    ...
 ```
 
 ---
 
 ### C# / .NET 9: Token Budgeting & KV Cache Memory Estimation Service
+> **Implementation**: [`examples/TokenGovernorService.cs`](./examples/TokenGovernorService.cs)
+
+ASP.NET Core minimal API middleware that calculates physical GPU VRAM requirements for Grouped-Query Attention (GQA) KV caches and enforces strict token spend quotas before dispatching requests to upstream LLM APIs.
 
 ```csharp
-// Program.cs - Enterprise Token Budgeting and VRAM Estimation Service in .NET 9
-using Microsoft.ML.Tokenizers;
-using System.Text.Json;
+// Core hardware KV Cache estimation from examples/TokenGovernorService.cs
+// Formula: 2 * 2 * L * H_kv * D_head * Batch * SeqLen (FP16 = 2 bytes)
+double totalSeqLen = totalInput + request.ExpectedOutputTokens;
+double kvCacheBytes = 2.0 * 2.0 * 80 * 8 * 128 * request.ConcurrentBatchSize * totalSeqLen;
+double kvCacheMb = kvCacheBytes / (1024 * 1024);
 
-var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddSingleton<ITokenGovernorService, TokenGovernorService>();
-
-var app = builder.Build();
-
-app.MapPost("/api/v1/governance/check-budget", async (HttpContext context, ITokenGovernorService governor) =>
-{
-    using var reader = new StreamReader(context.Request.Body);
-    var body = await reader.ReadToEndAsync();
-    var request = JsonSerializer.Deserialize<PromptBudgetRequest>(body);
-
-    if (request == null)
-        return Results.BadRequest(new { Error = "Malformed payload" });
-
-    var report = governor.EvaluateRequest(request);
-    if (!report.IsPermitted)
-    {
-        context.Response.StatusCode = StatusCodes.Status429TooManyRequests;
-        return Results.Json(report);
-    }
-
-    return Results.Ok(report);
-});
-
-app.Run();
-
-public record PromptBudgetRequest(string Model, string SystemPrompt, string UserPrompt, int ExpectedOutputTokens, int ConcurrentBatchSize);
-
-public record BudgetReport(
-    bool IsPermitted,
-    int TotalInputTokens,
-    double EstimatedCostUsd,
-    double KvCacheMemoryMb,
-    string RejectionReason
-);
-
-public interface ITokenGovernorService
-{
-    BudgetReport EvaluateRequest(PromptBudgetRequest request);
-}
-
-public class TokenGovernorService : ITokenGovernorService
-{
-    private readonly TiktokenTokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
-    private const int HARD_MAX_INPUT_TOKENS = 32_000;
-    private const double MAX_DOLLAR_LIMIT_PER_REQUEST = 0.50;
-
-    public BudgetReport EvaluateRequest(PromptBudgetRequest request)
-    {
-        var sysCount = _tokenizer.CountTokens(request.SystemPrompt);
-        var userCount = _tokenizer.CountTokens(request.UserPrompt);
-        var totalInput = sysCount + userCount;
-
-        // Cost estimation: $2.50 / 1M in, $10.00 / 1M out
-        var cost = ((totalInput / 1_000_000.0) * 2.50) + ((request.ExpectedOutputTokens / 1_000_000.0) * 10.00);
-
-        // Hardware KV Cache calculation for GQA (80 layers, 8 KV heads, head dim 128, FP16 = 2 bytes)
-        // Formula: 2 * 2 * L * H_kv * D_head * Batch * SeqLen
-        double totalSeqLen = totalInput + request.ExpectedOutputTokens;
-        double kvCacheBytes = 2.0 * 2.0 * 80 * 8 * 128 * request.ConcurrentBatchSize * totalSeqLen;
-        double kvCacheMb = kvCacheBytes / (1024 * 1024);
-
-        if (totalInput > HARD_MAX_INPUT_TOKENS)
-        {
-            return new BudgetReport(false, totalInput, cost, kvCacheMb, $"Input tokens ({totalInput}) exceeds hard ceiling of {HARD_MAX_INPUT_TOKENS}");
-        }
-
-        if (cost > MAX_DOLLAR_LIMIT_PER_REQUEST)
-        {
-            return new BudgetReport(false, totalInput, cost, kvCacheMb, $"Estimated cost (${cost:F4}) exceeds single request ceiling of ${MAX_DOLLAR_LIMIT_PER_REQUEST}");
-        }
-
-        return new BudgetReport(true, totalInput, cost, kvCacheMb, string.Empty);
-    }
-}
+if (totalInput > HARD_MAX_INPUT_TOKENS || cost > MAX_DOLLAR_LIMIT_PER_REQUEST)
+    return new BudgetReport(false, totalInput, cost, kvCacheMb, "Quota exceeded");
 ```
-
----
 
 ## 11. Curated Verified Resources
 
 ### Primary Documentation & Specifications
-- **[Google AI for Developers — Gemini Tokens Guide](https://ai.google.dev/gemini-api/docs/tokens)**: Comprehensive breakdown of token counts across text, images, audio, and video modalities.
-- **[Anthropic Claude Models Overview](https://docs.anthropic.com/en/docs/about-claude/models)**: Token limits, pricing, and thinking token specifications.
+- **[Google AI for Developers — Gemini Tokens Guide](https://ai.google.dev/gemini-api/docs/tokens)**: Token counting mechanics across text, audio, images, and video modalities.
+- **[Anthropic Claude Models Overview](https://docs.anthropic.com/en/docs/about-claude/models)**: Token boundaries, pricing tiers, and thinking token specifications.
+- **[Hugging Face LLM Course — Tokenization & Physics](https://huggingface.co/learn/llm-course/)**: In-depth treatment of BPE tokenizers, vocabularies, and inference runtime physics.
 - **[vLLM Official Documentation](https://docs.vllm.ai/)**: High-throughput serving engine leveraging PagedAttention and continuous batching.
 
 ### Foundational Masterclasses & Video Courses
-- **[Andrej Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html)**: The foundational video series building micrograd, makemore, WaveNet, and a full GPT from scratch.
+- **[Andrej Karpathy — Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html)**: Building micrograd, makemore, WaveNet, and a full GPT transformer from scratch.
 - **[Andrej Karpathy — Intro to Large Language Models (YouTube)](https://www.youtube.com/watch?v=zjkBMFhNj_g)**: The definitive 1-hour conceptual and architectural introduction to LLMs.
 - **[Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)**: Visualizing multi-head attention and transformer representations.
 
-### Seminal Research Papers
+### Seminal Research Papers & GitHub Repositories
 - **[Attention Is All You Need (Vaswani et al., 2017)](https://arxiv.org/abs/1706.03762)**: The seminal Google Brain paper introducing the Transformer.
 - **[FlashAttention: Fast and Memory-Efficient Exact Attention (Dao et al., 2022)](https://arxiv.org/abs/2205.14135)**: IO-aware tiled attention algorithm.
 - **[PagedAttention: Efficient Memory Management for LLM Serving (Kwon et al., 2023)](https://arxiv.org/abs/2309.06180)**: Virtual memory algorithms for high-throughput LLMs.
 - **[RoFormer: Enhanced Transformer with Rotary Position Embedding (Su et al., 2021)](https://arxiv.org/abs/2104.09864)**: Mathematical derivation of RoPE.
+- **[vLLM GitHub Repository](https://github.com/vllm-project/vllm)**: Production engine for high-throughput LLM inference with PagedAttention.
+- **[FlashAttention GitHub Repository](https://github.com/Dao-AILab/flash-attention)**: Fast, memory-efficient exact attention kernels.
 
 ---
 
-## 12. Capstone Engineering Challenge: High-Throughput Token Budgeting Proxy `[MUST-HAVE]` 🔴
+## 12. Capstone Engineering Challenge
 
-**Objective:** Construct an enterprise API proxy in Python (FastAPI), TypeScript (Fastify/Node), or C# (ASP.NET Core) that intercepts LLM calls before provider dispatch to eliminate runaway inference costs, prevent GPU out-of-memory crashes, and enforce tenant SLAs.
-
-### Core Architectural Components & Implementation Steps:
-
-1. **Exact Multi-Model Token Profiler:**
-   - Detect the target model family (`gpt-4o`, `claude-3-5-sonnet`, `gemini-2-flash`, `llama-3.3-70b`).
-   - Use the appropriate native tokenizer bindings (`tiktoken` / `tokenizers` / C# `Microsoft.ML.Tokenizers`).
-   - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
-
-2. **In-Flight GPU KV-Cache & VRAM Allocation Estimator:**
-   - Compute required KV-cache footprint using the formula: $2 \times 2 \times \text{Layers} \times H_{KV} \times d_k \times \text{Batch} \times \text{TotalSequenceLen}$.
-   - Maintain an in-memory concurrent allocation counter across running inferences.
-   - If an incoming request pushes total GPU KV-cache allocation past threshold (e.g., 85% of available VRAM), enqueue or reject before invoking downstream providers.
-
-3. **Sliding-Window Token-Per-Minute (TPM) Governor:**
-   - Implement a distributed Redis-backed or atomic local sliding-window rate limiter tracking tenant consumption over a 60-second rolling window.
-   - Return standard rate limiting headers: `X-RateLimit-Limit-Tokens`, `X-RateLimit-Remaining-Tokens`, `Retry-After`.
-
-4. **Telemetry & Failure Recovery (RFC 7807):**
-   - Emit OpenTelemetry spans with attributes: `llm.provider`, `llm.model`, `llm.tokens.prompt`, `llm.cost.estimated_usd`.
-   - On budget or rate limit breach, return HTTP 429 / 400 with an RFC 7807 compliant problem details JSON object.
-
-### Verification & Test Scenarios:
-- **Baseline Test:** Send 10 concurrent valid 500-token prompts and assert `HTTP 200` with correct token counts and estimated costs.
-- **TPM Ceiling Test:** Fire a burst of requests exceeding the 100,000 TPM limit; assert immediate `HTTP 429` with valid `Retry-After` header.
-- **KV-Cache Overflow Protection:** Simulate a 128k context request against a constrained budget; assert early rejection before dispatching to the upstream LLM API.
+> Build a production token economics analyzer. See the [full capstone specification](./labs/capstone-token-economics-analyzer.md) for detailed requirements.

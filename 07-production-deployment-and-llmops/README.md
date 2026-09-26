@@ -4,118 +4,41 @@
 
 ---
 
-### 🎯 Architectural Mastery Tiers
-- **[MUST-HAVE]** 🔴 : Core production infrastructure (multi-provider gateways, fallback routing, SSE token streaming, rate-limiting jitter, semantic caching, token cost governance).
-- **[GOOD-TO-HAVE]** 🟡 : Advanced container orchestration, C#/.NET 9 & Python microservice clean architectures, self-hosted vLLM deployment, asynchronous event bus queuing.
-- **[KNOWLEDGE-BASE]** 🔵 : Low-level GPU memory bandwidth math, custom CUDA inference kernel internals, legacy gRPC streaming specs.
+> Curriculum taxonomy aligns with the [3-tier classification defined in the root README](../README.md) (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
 
 ---
 
-```
-                       ┌─────────────────────────────────────────────────────────┐
-                       │               ENTERPRISE APPLICATION TIER               │
-                       │   Next.js / Blazor Client • Mobile Apps • Third-Party   │
-                       └────────────────────────────┬────────────────────────────┘
-                                                    │ HTTPS / SSE / gRPC
-                                                    ▼
-                       ┌─────────────────────────────────────────────────────────┐
-                       │          INTELLIGENT AI GATEWAY & INGRESS LAYER         │
-                       │  • Cloudflare / APIM / Envoy Ingress (mTLS & AuthN/Z)   │
-                       │  • Distributed Rate Limiter (Token Bucket / Sliding)    │
-                       │  • Tenant Quota Management & Spend Velocity Enforcer    │
-                       └────────────────────────────┬────────────────────────────┘
-                                                    │
-                                                    ▼
-                       ┌─────────────────────────────────────────────────────────┐
-                       │       SEMANTIC CACHE & CONTEXT OPTIMIZATION ENGINE      │
-                       │  Exact SHA-256 Hash ➔ Dense Embedding Vector Search     │
-                       │         (Redis / pgvector / Momento - Cosine >= 0.92)   │
-                       └──────────────┬───────────────────────────┬──────────────┘
-                       Cache Hit (Fast)│                           │ Cache Miss
-                                       │                           ▼
-                                       │       ┌─────────────────────────────────┐
-                                       │       │    TIERED RESILIENCE ROUTER     │
-                                       │       │  (LiteLLM / Custom Gateway)     │
-                                       │       │  • Circuit Breakers & Jitter    │
-                                       │       │  • Dynamic Model Tiering        │
-                                       │       │  • Streaming Chunk Multiplexer  │
-                                       │       └──────────────┬──────────────────┘
-                                       │                      │
-                  ┌────────────────────┴──────────────────────┴──────────────────┐
-                  ▼                                                              ▼
-   ┌─────────────────────────────┐                                ┌─────────────────────────────┐
-   │    MANAGED CLOUD MODELS     │                                │   SELF-HOSTED ACCELERATED   │
-   │  • Azure OpenAI (GPT-4o)    │                                │  • vLLM (PagedAttention)    │
-   │  • Google Vertex (Gemini)   │                                │  • TensorRT-LLM on GKE/AKS  │
-   │  • Anthropic API (Claude)   │                                │  • Dedicated GPU Node Pools │
-   └─────────────────────────────┘                                └─────────────────────────────┘
+```mermaid
+flowchart TD
+    A["ENTERPRISE APPLICATION TIER<br/>Next.js / Blazor Client • Mobile Apps • Third-Party"]
+    A -- "HTTPS / SSE / gRPC" --> B["INTELLIGENT AI GATEWAY & INGRESS LAYER<br/>• Cloudflare / APIM / Envoy Ingress (mTLS & AuthN/Z)<br/>• Distributed Rate Limiter<br/>• Tenant Quota Management & Spend Velocity Enforcer"]
+    
+    B --> C["SEMANTIC CACHE & CONTEXT OPTIMIZATION ENGINE<br/>Exact SHA-256 Hash ➔ Dense Embedding Vector Search<br/>(Redis / pgvector / Momento - Cosine >= 0.92)"]
+    
+    C -- "Cache Miss" --> D["TIERED RESILIENCE ROUTER<br/>(LiteLLM / Custom Gateway)<br/>• Circuit Breakers & Jitter<br/>• Dynamic Model Tiering<br/>• Streaming Chunk Multiplexer"]
+    C -- "Cache Hit (Fast)" --> Return["Return Response"]
+    
+    D --> E["MANAGED CLOUD MODELS<br/>• Azure OpenAI (GPT-4o)<br/>• Google Vertex (Gemini)<br/>• Anthropic API (Claude)"]
+    D --> F["SELF-HOSTED ACCELERATED<br/>• vLLM (PagedAttention)<br/>• TensorRT-LLM on GKE/AKS<br/>• Dedicated GPU Node Pools"]
 ```
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#1-executive-summary--lead-mental-model-)
-   - [The Prototype Trap vs. Enterprise Production Invariants](#the-prototype-trap-vs-enterprise-production-invariants)
-   - [The Distributed Systems Mental Model: LLMs as Unpredictable Remotes](#the-distributed-systems-mental-model-llms-as-unpredictable-remotes)
-   - [The Production SLA Triad: TTFT, Throughput, and Error Budgets](#the-production-sla-triad-ttft-throughput-and-error-budgets)
-2. [Why This Matters for Senior/Lead Developers [MUST-HAVE] 🔴](#2-why-this-matters-for-seniorlead-developers-)
-   - [High Availability (HA) & Multi-Region Redundancy](#high-availability-ha--multi-region-redundancy)
-   - [Taming Quotas: TPM & RPM Hard Ceilings](#taming-quotas-tpm--rpm-hard-ceilings)
-   - [The Streaming Imperative: Time-To-First-Token vs. Full Buffering](#the-streaming-imperative-time-to-first-token-vs-full-buffering)
-   - [Multi-Model Redundancy & Blast Radius Containment](#multi-model-redundancy--blast-radius-containment)
-   - [Disaster Recovery & Degradation Modes](#disaster-recovery--degradation-modes)
-   - [Token Economics & Cost Governance at Scale](#token-economics--cost-governance-at-scale)
-3. [Deep-Dive Engineering & Implementation [MUST-HAVE] 🔴](#3-deep-dive-engineering--implementation-)
-   - [Enterprise Hosting & Deployment Models [MUST-HAVE] 🔴](#enterprise-hosting--deployment-models-must-have-)
-     - [Managed Serverless APIs: Cloud Run, ACA, and AWS Lambda](#managed-serverless-apis-cloud-run-aca-and-aws-lambda)
-     - [Managed Enterprise Agent Platforms: Google Cloud Agent Platform & Microsoft Foundry](#managed-enterprise-agent-platforms-google-cloud-agent-platform--microsoft-foundry)
-     - [Containerized Orchestration: GKE & AKS with GPU Node Pools](#containerized-orchestration-gke--aks-with-gpu-node-pools)
-     - [Self-Hosted Open Model Runtimes: vLLM, TensorRT-LLM, and Ollama](#self-hosted-open-model-runtimes-vllm-tensorrt-llm-and-ollama)
-   - [Enterprise C# / .NET & Python Microservice Architecture [GOOD-TO-HAVE] 🟡](#enterprise-c--net--python-microservice-architecture-good-to-have-)
-     - [Hexagonal Clean Architecture for AI Services](#hexagonal-clean-architecture-for-ai-services)
-     - [Exposing Agents via ASP.NET Core 9 Minimal APIs & FastAPI](#exposing-agents-via-aspnet-core-9-minimal-apis--fastapi)
-     - [Asynchronous Event-Driven Architectures: Kafka, Service Bus, Pub/Sub & Cloud Tasks](#asynchronous-event-driven-architectures-kafka-service-bus-pubsub--cloud-tasks)
-   - [High-Performance Token Streaming [MUST-HAVE] 🔴](#high-performance-token-streaming-must-have-)
-     - [Server-Sent Events (SSE) vs. WebSockets: Protocol Deep Dive](#server-sent-events-sse-vs-websockets-protocol-deep-dive)
-     - [Chunked Transfers, Backpressure, and Socket Buffer Bloat](#chunked-transfers-backpressure-and-socket-buffer-bloat)
-     - [Cancellation Token Propagation: Eliminating Zombie Token Burn](#cancellation-token-propagation-eliminating-zombie-token-burn)
-   - [Resiliency, Rate Limiting & Fallback Routing [MUST-HAVE] 🔴](#resiliency-rate-limiting--fallback-routing-must-have-)
-     - [Handling HTTP 429: Exponential Backoff with Decorrelated Jitter](#handling-http-429-exponential-backoff-with-decorrelated-jitter)
-     - [Circuit Breakers for LLM Endpoints](#circuit-breakers-for-llm-endpoints)
-     - [Tiered Model Fallback: Primary ➔ Secondary ➔ Graceful Degradation](#tiered-model-fallback-primary--secondary--graceful-degradation)
-     - [Multi-Provider Gateways: LiteLLM, Portkey, and Azure APIM GenAI Policies](#multi-provider-gateways-litellm-portkey-and-azure-apim-genai-policies)
-   - [Semantic Caching [MUST-HAVE] 🔴](#semantic-caching-must-have-)
-     - [Exact Hash Matching vs. Embedding-Based Semantic Caching](#exact-hash-matching-vs-embedding-based-semantic-caching)
-     - [Vector Distance Metrics, Threshold Tuning (Tau), and False Positives](#vector-distance-metrics-threshold-tuning-tau-and-false-positives)
-     - [Cache Key Normalization & Multi-Tenant Namespace Isolation](#cache-key-normalization--multi-tenant-namespace-isolation)
-     - [Invalidation Strategies, TTL, and Cache Eviction](#invalidation-strategies-ttl-and-cache-eviction)
-   - [Cost Engineering & Governance [MUST-HAVE] 🔴](#cost-engineering--governance-must-have-)
-     - [Dynamic Token Budgeting & Hierarchical Quotas](#dynamic-token-budgeting--hierarchical-quotas)
-     - [Complexity-Based Routing: Flash/Haiku vs. Pro/Sonnet/o-Series](#complexity-based-routing-flashhaiku-vs-prosonneto-series)
-     - [Spend Velocity Monitoring, Anomaly Detection & Circuit Tripping](#spend-velocity-monitoring-anomaly-detection--circuit-tripping)
+1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#1-executive-summary--lead-mental-model-must-have-)
+2. [Why This Matters for Senior/Lead Developers [MUST-HAVE] 🔴](#2-why-this-matters-for-seniorlead-developers-must-have-)
+3. [Deep-Dive Engineering & Implementation [MUST-HAVE] 🔴](#3-deep-dive-engineering--implementation-must-have-)
 4. [System Architecture & Mermaid Diagrams [MUST-HAVE] 🔴](#4-system-architecture--mermaid-diagrams-must-have-)
-   - [Enterprise Multi-Provider AI Gateway Architecture](#enterprise-multi-provider-ai-gateway-architecture)
-   - [Asynchronous Event-Driven Agent Execution Pattern](#asynchronous-event-driven-agent-execution-pattern)
 5. [Comparative Analysis & Tradeoff Matrices [MUST-HAVE] 🔴](#5-comparative-analysis--tradeoff-matrices-must-have-)
-   - [Deployment Options: Serverless Containers vs. Managed Platforms vs. Self-Hosted vLLM](#deployment-options-serverless-containers-vs-managed-platforms-vs-self-hosted-vllm)
-   - [Semantic Caching Engines: Redis vs. pgvector vs. Momento vs. In-Memory](#semantic-caching-engines-redis-vs-pgvector-vs-momento-vs-in-memory)
-   - [Streaming Protocols: Server-Sent Events (SSE) vs. WebSockets vs. gRPC](#streaming-protocols-server-sent-events-sse-vs-websockets-vs-grpc)
 6. [Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴](#6-production-failure-modes--anti-patterns-must-have-)
-   - [Anti-Pattern 1: Hardcoding Single LLM Provider Endpoints](#anti-pattern-1-hardcoding-single-llm-provider-endpoints)
-   - [Anti-Pattern 2: Buffering Entire LLM Responses (The 15-Second Blank Screen)](#anti-pattern-2-buffering-entire-llm-responses-the-15-second-blank-screen)
-   - [Anti-Pattern 3: Unbounded Concurrency & Cascading 429 Throttling](#anti-pattern-3-unbounded-concurrency--cascading-429-throttling)
-   - [Anti-Pattern 4: Unencrypted Multi-Tenant Semantic Cache Contamination](#anti-pattern-4-unencrypted-multi-tenant-semantic-cache-contamination)
-   - [Anti-Pattern 5: The Zombie Generation Black Hole (Missing Cancellation Propagation)](#anti-pattern-5-the-zombie-generation-black-hole-missing-cancellation-propagation)
 7. [Enterprise Production Code Implementations [MUST-HAVE] 🔴](#7-enterprise-production-code-implementations-must-have-)
-   - [Python: Production FastAPI Gateway with LiteLLM Router, Semantic Redis Cache & SSE](#python-production-fastapi-gateway-with-litellm-router-semantic-redis-cache--sse)
-   - [C# / .NET 9: Enterprise Resilient Agent Service with Polly v8 & SSE Streaming](#c--net-9-enterprise-resilient-agent-service-with-polly-v8--sse-streaming)
 8. [Curated Verified Resources & Reference Index [KNOWLEDGE-BASE] 🔵](#8-curated-verified-resources--reference-index-knowledge-base-)
-9. [Capstone Engineering Challenge: Resilient Multi-Provider AI Gateway [MUST-HAVE] 🔴](#9-capstone-engineering-challenge-resilient-multi-provider-ai-gateway-must-have-)
+9. [Capstone Challenge: Production Multi-Provider Resilient AI Gateway [MUST-HAVE] 🔴](#9-capstone-challenge-production-multi-provider-resilient-ai-gateway-must-have-)
 
 ---
 
-## 1. Executive Summary & Lead Mental Model
+## 1. Executive Summary & Lead Mental Model [MUST-HAVE] 🔴
 
 ### The Prototype Trap vs. Enterprise Production Invariants
 
@@ -123,17 +46,17 @@ In an AI prototype or Jupyter notebook, success is defined by a single successfu
 
 In enterprise software engineering, this is merely step zero. Deploying generative AI into production introduces a radical departure from traditional distributed systems:
 
-```
-[THE PRODUCTION GAP]
-PROTOTYPE IN A NOTEBOOK                  ENTERPRISE PRODUCTION SERVICE
-• 1 concurrent user (developer)          • 10,000+ concurrent multi-tenant requests
-• Single static API key in .env          • Key rotation, mTLS, RBAC, tenant isolation
-• Direct call to single LLM model        • Multi-provider failover, circuit breakers
-• Ignores 429 quota exhaustion           • Token-bucket rate limiting & token budgeting
-• Waits 12s for full payload return      • Server-Sent Events (SSE) streaming (TTFT < 800ms)
-• Unbounded costs per execution          • Strict cost controls, model tiering, telemetry
-• Undetected silent model drift          • OpenTelemetry distributed tracing & regression evals
-```
+### The Production Gap
+
+| Prototype in a Notebook | Enterprise Production Service |
+|---|---|
+| • 1 concurrent user (developer) | • 10,000+ concurrent multi-tenant requests |
+| • Single static API key in `.env` | • Key rotation, mTLS, RBAC, tenant isolation |
+| • Direct call to single LLM model | • Multi-provider failover, circuit breakers |
+| • Ignores 429 quota exhaustion | • Token-bucket rate limiting & token budgeting |
+| • Waits 12s for full payload return | • Server-Sent Events (SSE) streaming (TTFT < 800ms) |
+| • Unbounded costs per execution | • Strict cost controls, model tiering, telemetry |
+| • Undetected silent model drift | • OpenTelemetry distributed tracing & regression evals |
 
 ### The Distributed Systems Mental Model: LLMs as Unpredictable Remotes
 
@@ -149,18 +72,14 @@ Treating LLMs with the same defensive patterns applied to unreliable payment gat
 
 To measure and maintain production quality, enterprise teams discard subjective "vibe metrics" in favor of the **Production SLA Triad**:
 
-```
-                              ┌───────────────────────────────────┐
-                              │       TIME-TO-FIRST-TOKEN         │
-                              │     (TTFT: Target < 800ms)        │
-                              └─────────────────┬─────────────────┘
-                                                │
-                       ┌────────────────────────┴────────────────────────┐
-                       ▼                                                 ▼
-        ┌─────────────────────────────┐                   ┌─────────────────────────────┐
-        │      TOKEN THROUGHPUT       │                   │        ERROR BUDGET         │
-        │ (TPS: Target > 35-50 Tok/s) │                   │  (Availability > 99.95%)    │
-        └─────────────────────────────┘                   └─────────────────────────────┘
+```mermaid
+flowchart TD
+    TTFT["<b>TIME-TO-FIRST-TOKEN</b><br/>(TTFT: Target &lt; 800ms)"]
+    TPS["<b>TOKEN THROUGHPUT</b><br/>(TPS: Target &gt; 35-50 Tok/s)"]
+    EB["<b>ERROR BUDGET</b><br/>(Availability &gt; 99.95%)"]
+    
+    TTFT --> TPS
+    TTFT --> EB
 ```
 
 1. **Time-To-First-Token (TTFT)**: The wall-clock duration between the client dispatching the request and the user receiving the first visible character on screen. TTFT is dominated by:
@@ -172,7 +91,7 @@ To measure and maintain production quality, enterprise teams discard subjective 
 
 ---
 
-## 2. Why This Matters for Senior/Lead Developers
+## 2. Why This Matters for Senior/Lead Developers [MUST-HAVE] 🔴
 
 ### High Availability (HA) & Multi-Region Redundancy
 
@@ -231,25 +150,17 @@ Senior Architects design and enforce:
 
 ---
 
-## 3. Deep-Dive Engineering & Implementation
+## 3. Deep-Dive Engineering & Implementation [MUST-HAVE] 🔴
 
 ### Enterprise Hosting & Deployment Models [MUST-HAVE] 🔴
 
 Selecting where and how to run AI workloads depends on latency requirements, GPU availability, compliance boundaries, and operational complexity.
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        ENTERPRISE HOSTING SPECTRUM                                     │
-├──────────────────────────────┬─────────────────────────────┬───────────────────────────┤
-│    SERVERLESS CONTAINERS     │   MANAGED AGENT PLATFORMS   │    SELF-HOSTED GPU (vLLM) │
-│ (Cloud Run, Container Apps)  │  (Google ADK, MS Foundry)   │  (GKE, AKS, Dedicated VM) │
-├──────────────────────────────┼─────────────────────────────┼───────────────────────────┤
-│ • Zero idle cost             │ • Turnkey agent state       │ • Complete data privacy   │
-│ • Rapid autoscaling          │ • Built-in tool hosting     │ • Zero API token costs    │
-│ • Standard HTTP/2 streaming  │ • Managed session threads   │ • PagedAttention & vGPU   │
-│ • Best for AI Gateway & APIs │ • Best for enterprise agents│ • Requires ML infra team  │
-└──────────────────────────────┴─────────────────────────────┴───────────────────────────┘
-```
+### ENTERPRISE HOSTING SPECTRUM
+
+| Serverless Containers (Cloud Run, Container Apps) | Managed Agent Platforms (Google ADK, MS Foundry) | Self-Hosted GPU (vLLM) (GKE, AKS, Dedicated VM) |
+|---|---|---|
+| • Zero idle cost<br/>• Rapid autoscaling<br/>• Standard HTTP/2 streaming<br/>• Best for AI Gateway & APIs | • Turnkey agent state<br/>• Built-in tool hosting<br/>• Managed session threads<br/>• Best for enterprise agents | • Complete data privacy<br/>• Zero API token costs<br/>• PagedAttention & vGPU<br/>• Requires ML infra team |
 
 #### Managed Serverless APIs: Cloud Run, ACA, and AWS Lambda
 
@@ -307,19 +218,10 @@ When running custom models or self-hosting open-weight LLMs (Llama 3.3, Mistral 
 
 Hosting open-weight models requires specialized inference engines designed for LLM memory architectures:
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                      vLLM PAGEDATTENTION MEMORY EFFICIENCY                             │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│ Traditional LLM Serving (HuggingFace / PyTorch):                                       │
-│ [KV Cache: Pre-allocated contiguous memory blocks ➔ 60-80% VRAM wasted to fragmentation]│
-│                                                                                        │
-│ vLLM PagedAttention Serving:                                                           │
-│ [Page Table] ➔ [Physical Page 0][Physical Page 1][Physical Page 2]...                  │
-│ Non-contiguous memory allocation mimicking OS virtual memory ➔ Near 0% VRAM wasted     │
-│ ➔ 2x to 4x higher concurrency per GPU node                                           │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+| Memory Allocation Paradigm | Architecture Mechanism | VRAM Fragmentation | Concurrency Saturation |
+|---|---|---|---|
+| **Traditional Serving (HuggingFace / PyTorch)** | Pre-allocates contiguous virtual memory blocks per sequence | 60%–80% VRAM wasted to internal/external fragmentation | Low concurrent requests per GPU |
+| **vLLM PagedAttention** | Non-contiguous physical page allocation via virtual page table | Near 0% VRAM fragmentation waste | $2\times$ to $4\times$ higher throughput per node |
 
 1. **vLLM (vllm.ai)**:
    - **PagedAttention**: Manages the Key-Value (KV) cache in partitioned, non-contiguous memory pages. Eliminates internal and external VRAM fragmentation, unlocking $2\times$ to $4\times$ higher throughput than standard PyTorch engines.
@@ -341,28 +243,24 @@ Hosting open-weight models requires specialized inference engines designed for L
 
 Enterprise microservices should decouple business workflows from underlying model SDKs using Hexagonal (Ports & Adapters) architecture:
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                             HEXAGONAL ARCHITECTURE                                     │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│                       PRIMARY ADAPTERS (Driving / Inbound)                             │
-│       [FastAPI Routes / ASP.NET Controllers]    [Kafka / PubSub Consumer Worker]       │
-│                                      │                                                 │
-│                                      ▼                                                 │
-│                      APPLICATION CORE (Domain & Ports)                                 │
-│       ┌────────────────────────────────────────────────────────────────────────┐       │
-│       │ • IAgentOrchestrator (State machine, ReAct loop, tool dispatch)        │       │
-│       │ • ISemanticCachePort (Cache lookup, validation, persistence)           │       │
-│       │ • IModelGatewayPort (GenerateStreamAsync, TokenBudgetValidation)       │       │
-│       └───────────────────────────────────┬────────────────────────────────────┘       │
-│                                           │                                            │
-│                       SECONDARY ADAPTERS (Driven / Outbound)                           │
-│       ┌───────────────────────────────────┴────────────────────────────────────┐       │
-│       │ • LiteLlmGatewayAdapter / SemanticKernelAdapter                        │       │
-│       │ • RedisSemanticCacheAdapter (StackExchange.Redis / redis-py)           │       │
-│       │ • OpenTelemetryTracerAdapter (Langfuse / Azure App Insights)           │       │
-│       └────────────────────────────────────────────────────────────────────────┘       │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Primary Adapters ["PRIMARY ADAPTERS (Driving / Inbound)"]
+        PA1["FastAPI Routes / ASP.NET Controllers"]
+        PA2["Kafka / PubSub Consumer Worker"]
+    end
+    
+    subgraph Application Core ["APPLICATION CORE (Domain & Ports)"]
+        AC1["• IAgentOrchestrator (State machine, ReAct loop, tool dispatch)<br/>• ISemanticCachePort (Cache lookup, validation, persistence)<br/>• IModelGatewayPort (GenerateStreamAsync, TokenBudgetValidation)"]
+    end
+    
+    subgraph Secondary Adapters ["SECONDARY ADAPTERS (Driven / Outbound)"]
+        SA1["• LiteLlmGatewayAdapter / SemanticKernelAdapter<br/>• RedisSemanticCacheAdapter (StackExchange.Redis / redis-py)<br/>• OpenTelemetryTracerAdapter (Langfuse / Azure App Insights)"]
+    end
+    
+    PA1 --> AC1
+    PA2 --> AC1
+    AC1 --> SA1
 ```
 
 #### Exposing Agents via ASP.NET Core 9 Minimal APIs & FastAPI
@@ -382,10 +280,11 @@ Enterprise microservices should decouple business workflows from underlying mode
 
 Synchronous HTTP request-response patterns fail for multi-step agentic workflows that require several minutes to complete (e.g., executing web searches, running SQL queries, generating reports, writing code).
 
-```
-[SYNCHRONOUS HTTP TIMEOUT RISK]
-Client ──[HTTP POST /agent/run]──➔ API Gateway ──➔ Agent (Step 1..10: 90s) ──➔ [HTTP 504 GATEWAY TIMEOUT]
-Result: Connection dropped, work wasted, client retries, duplicating workload.
+```mermaid
+flowchart LR
+    Client["Client App"] -->|"POST /agent/run"| Gateway["API Gateway"]
+    Gateway -->|"Step 1..10 (90s)"| Agent["Long-Running Agent"]
+    Agent -.->|"Timeout exceeded (>30s)"| Timeout["HTTP 504 GATEWAY TIMEOUT<br/>Connection dropped • Work wasted • Duplicate retries"]
 ```
 
 **Enterprise Event-Driven Agent Pattern**:
@@ -405,19 +304,9 @@ Result: Connection dropped, work wasted, client retries, duplicating workload.
 
 Streaming LLM output to clients requires choosing between SSE and WebSockets:
 
-```
-┌──────────────────────────────────────┬─────────────────────────────────────────┐
-│       SERVER-SENT EVENTS (SSE)       │               WEBSOCKETS                │
-├──────────────────────────────────────┼─────────────────────────────────────────┤
-│ • Unidirectional (Server ➔ Client)   │ • Bidirectional (Full Duplex)           │
-│ • Runs over standard HTTP/1.1 / HTTP/2│ • Requires custom WS protocol handshake │
-│ • Built-in browser reconnection      │ • Manual reconnection & heartbeat logic │
-│ • Standard `text/event-stream` MIME  │ • Custom frame serialization            │
-│ • Seamless with API Gateways, WAFs,  │ • Requires sticky sessions, bypasses    │
-│   and corporate proxies              │   many standard corporate proxies/WAFs  │
-│ • Perfect for LLM token streaming    │ • Ideal for audio (Gemini Live/Voice)   │
-└──────────────────────────────────────┴─────────────────────────────────────────┘
-```
+| Server-Sent Events (SSE) | WebSockets |
+|---|---|
+| • Unidirectional (Server ➔ Client)<br/>• Runs over standard HTTP/1.1 / HTTP/2<br/>• Built-in browser reconnection<br/>• Standard `text/event-stream` MIME<br/>• Seamless with API Gateways, WAFs, and corporate proxies<br/>• Perfect for LLM token streaming | • Bidirectional (Full Duplex)<br/>• Requires custom WS protocol handshake<br/>• Manual reconnection & heartbeat logic<br/>• Custom frame serialization<br/>• Requires sticky sessions, bypasses many standard corporate proxies/WAFs<br/>• Ideal for audio (Gemini Live/Voice) |
 
 For 95% of text-based AI generation and agent reasoning, **Server-Sent Events (SSE)** is the architectural standard:
 - Follows the W3C EventSource standard.
@@ -460,12 +349,8 @@ One of the largest hidden costs in production LLM applications is **Zombie Token
 
 When an API rate limit is reached, standard retries or constant delays cause synchronized retries across concurrent clients, known as the **Thundering Herd Problem**:
 
-```
-[THUNDERING HERD COLLAPSE]
-100 requests hit 429 at t=0s.
-All 100 requests sleep exactly 2.0s.
-All 100 requests retry simultaneously at t=2.0s ➔ Immediate 429 cascade!
-```
+> [!WARNING]
+> **The Thundering Herd Collapse:** If 100 concurrent requests encounter `HTTP 429` at $t=0\text{s}$ and all sleep for a fixed $2.0\text{s}$, all 100 will retry simultaneously at $t=2.0\text{s}$, re-triggering quota exhaustion in an unyielding cascade.
 
 To break synchronization, production systems use **Exponential Backoff with Full or Decorrelated Jitter**:
 
@@ -485,29 +370,15 @@ When an LLM provider suffers a major degradation (e.g., error rate > 50% over a 
 
 #### Tiered Model Fallback: Primary ➔ Secondary ➔ Graceful Degradation
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        TIERED FALLBACK STATE MACHINE                                   │
-├────────────────────────────────────────────────────────────────────────────────────────┤
-│                                                                                        │
-│   [Client Request] ──➔ [Primary: Claude 3.7 Sonnet]                                    │
-│                                  │                                                     │
-│                           HTTP 429 / 5xx / Timeout (3 retries failed)                  │
-│                                  │                                                     │
-│                                  ▼                                                     │
-│                        [Secondary: GPT-4o]                                             │
-│                                  │                                                     │
-│                           HTTP 429 / 5xx / Timeout (3 retries failed)                  │
-│                                  │                                                     │
-│                                  ▼                                                     │
-│                        [Tertiary: Gemini 1.5 Flash]                                    │
-│                                  │                                                     │
-│                           Complete Multi-Cloud Outage                                  │
-│                                  │                                                     │
-│                                  ▼                                                     │
-│             [Degraded Mode: Return Cached / Static Response]                           │
-│                                                                                        │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    A["Client Request"] --> B["Primary: Claude 3.7 Sonnet"]
+    
+    B -- "HTTP 429 / 5xx / Timeout (3 retries failed)" --> C["Secondary: GPT-4o"]
+    
+    C -- "HTTP 429 / 5xx / Timeout (3 retries failed)" --> D["Tertiary: Gemini 1.5 Flash"]
+    
+    D -- "Complete Multi-Cloud Outage" --> E["Degraded Mode: Return Cached / Static Response"]
 ```
 
 #### Multi-Provider Gateways: LiteLLM, Portkey, and Azure APIM GenAI Policies
@@ -536,21 +407,24 @@ Traditional Web caching relies on exact string or hash equality (`SHA-256(prompt
 
 An enterprise cache implements a **two-tier lookup pipeline**:
 
-```
-[INCOMING USER PROMPT]
-         │
-         ▼
-[Tier 1: Exact Match (L1)] ──(SHA-256 Hit: < 2ms)──➔ Return Cached Response
-         │ Miss
-         ▼
-[Compute Prompt Embedding Vector] (e.g., text-embedding-3-small)
-         │
-         ▼
-[Tier 2: Semantic Vector Search (L2)] (Cosine Similarity against Redis/pgvector)
-         │
-    Cosine >= 0.92?
-    ├── YES ➔ Return Cached Response (Latency: ~25ms)
-    └── NO  ➔ Forward to LLM ➔ Store in L1 and L2 ➔ Return Stream to Client
+```mermaid
+flowchart TD
+    Prompt["<b>INCOMING USER PROMPT</b>"]
+    L1["<b>Tier 1: Exact Match (L1)</b><br/>SHA-256 Hash"]
+    HitL1["<b>Return Cached Response</b><br/><i>(SHA-256 Hit: &lt; 2ms)</i>"]
+    Embed["<b>Compute Prompt Embedding Vector</b><br/><i>(e.g., text-embedding-3-small)</i>"]
+    L2["<b>Tier 2: Semantic Vector Search (L2)</b><br/><i>(Cosine Similarity against Redis/pgvector)</i>"]
+    Check{"Cosine &gt;= 0.92?"}
+    HitL2["<b>Return Cached Response</b><br/><i>(Latency: ~25ms)</i>"]
+    LLM["<b>Forward to LLM</b><br/>➔ Store in L1 &amp; L2<br/>➔ Return Stream to Client"]
+
+    Prompt --> L1
+    L1 -->|"SHA-256 Hit"| HitL1
+    L1 -->|"Miss"| Embed
+    Embed --> L2
+    L2 --> Check
+    Check -->|"YES"| HitL2
+    Check -->|"NO"| LLM
 ```
 
 #### Vector Distance Metrics, Threshold Tuning (Tau), and False Positives
@@ -588,17 +462,20 @@ Semantic caches cannot live forever:
 
 In an enterprise SaaS environment, cost governance must be enforced hierarchically:
 
-```
-┌────────────────────────────────────────────────────────┐
-│             ENTERPRISE QUOTA HIERARCHY                 │
-├────────────────────────────────────────────────────────┤
-│  Enterprise Organization (\$50,000 / month limit)       │
-│  ├── Department: Engineering (\$20,000 / month)         │
-│  │   ├── Team: Platform (\$5,000 / month)               │
-│  │   │   └── User A: Max 50,000 tokens / day           │
-│  │   └── Team: QA (\$3,000 / month)                     │
-│  └── Department: Customer Support (\$10,000 / month)   │
-└────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Org["<b>Enterprise Organization</b><br/>($50,000 / month limit)"]
+    Eng["<b>Department: Engineering</b><br/>($20,000 / month)"]
+    CS["<b>Department: Customer Support</b><br/>($10,000 / month)"]
+    Platform["<b>Team: Platform</b><br/>($5,000 / month)"]
+    QA["<b>Team: QA</b><br/>($3,000 / month)"]
+    UserA["<b>User A</b><br/>Max 50,000 tokens / day"]
+
+    Org --> Eng
+    Org --> CS
+    Eng --> Platform
+    Eng --> QA
+    Platform --> UserA
 ```
 
 The AI Gateway checks the tenant's current balance before dispatching requests to LLMs. If the daily budget is exceeded, the gateway responds with `HTTP 402 Payment Required` or `HTTP 429 Quota Exceeded` rather than silently accumulating unbudgeted cloud provider invoices.
@@ -607,20 +484,19 @@ The AI Gateway checks the tenant's current balance before dispatching requests t
 
 Over 70% of enterprise AI tasks do not require advanced frontier reasoning models. A routing classifier inspects the incoming request and routes accordingly:
 
-```
-[INCOMING USER REQUEST]
-         │
-         ▼
-[Complexity Classifier] (Fast regex / rule-engine or lightweight SLM)
-         │
-         ├── Low Complexity (Summarization, Classification, Extraction, Formatting)
-         │   └── Route to: Gemini 1.5 Flash / Claude 3.5 Haiku (\$0.075 / \$0.80 per M tokens)
-         │
-         ├── Medium Complexity (General RAG, Multi-turn conversational flow)
-         │   └── Route to: GPT-4o-mini / Claude 3.5 Sonnet (\$0.15 / \$3.00 per M tokens)
-         │
-         └── High Complexity (Multi-step coding, Mathematical logic, Complex Agent Planning)
-             └── Route to: Claude 3.7 Sonnet (Thinking) / OpenAI o1 / o3-mini (\$3.00 / \$15.00+ per M tokens)
+```mermaid
+flowchart TD
+    Req["<b>INCOMING USER REQUEST</b>"]
+    Classifier["<b>Complexity Classifier</b><br/>(Fast regex / rule-engine or lightweight SLM)"]
+    
+    Low["<b>Low Complexity</b><br/>(Summarization, Classification, Extraction, Formatting)<br/><b>Route to:</b> Gemini 1.5 Flash / Claude 3.5 Haiku<br/><i>($0.075 / $0.80 per M tokens)</i>"]
+    Med["<b>Medium Complexity</b><br/>(General RAG, Multi-turn conversational flow)<br/><b>Route to:</b> GPT-4o-mini / Claude 3.5 Sonnet<br/><i>($0.15 / $3.00 per M tokens)</i>"]
+    High["<b>High Complexity</b><br/>(Multi-step coding, Mathematical logic, Complex Agent Planning)<br/><b>Route to:</b> Claude 3.7 Sonnet (Thinking) / OpenAI o1 / o3-mini<br/><i>($3.00 / $15.00+ per M tokens)</i>"]
+
+    Req --> Classifier
+    Classifier --> Low
+    Classifier --> Med
+    Classifier --> High
 ```
 
 Implementing this routing pattern alone routinely reduces enterprise LLM spend by **60% to 80%**.
@@ -636,7 +512,7 @@ A runaway autonomous agent that gets stuck in a tool-calling cycle can burn toke
 
 ---
 
-## 4. System Architecture & Mermaid Diagrams
+## 4. System Architecture & Mermaid Diagrams [MUST-HAVE] 🔴
 
 ### Enterprise Multi-Provider AI Gateway Architecture
 
@@ -756,7 +632,7 @@ sequenceDiagram
 
 ---
 
-## 5. Comparative Analysis & Tradeoff Matrices
+## 5. Comparative Analysis & Tradeoff Matrices [MUST-HAVE] 🔴
 
 ### Deployment Options: Serverless Containers vs. Managed Platforms vs. Self-Hosted vLLM
 
@@ -798,13 +674,15 @@ sequenceDiagram
 
 ---
 
-## 6. Production Failure Modes & Anti-Patterns
+## 6. Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴
 
 ### Anti-Pattern 1: Hardcoding Single LLM Provider Endpoints
 
-```
-[THE ARCHITECTURAL CRIME]
-Direct client calls to https://api.openai.com/v1/chat/completions embedded in microservice logic.
+> [!CAUTION]
+> **Anti-Pattern:** Direct client calls to single-provider endpoints embedded in microservice logic:
+```csharp
+var client = new OpenAIClient("sk-...");
+var response = await client.GetChatClient("gpt-4o").CompleteChatAsync(messages);
 ```
 
 **What Happens in Production**:
@@ -817,9 +695,9 @@ Mandate an **AI Gateway / Proxy Layer**. Use unified SDK interfaces (such as Lit
 
 ### Anti-Pattern 2: Buffering Entire LLM Responses (The 15-Second Blank Screen)
 
-```
-[THE ARCHITECTURAL CRIME]
-Awaiting the complete LLM response before serializing it into a standard JSON payload:
+> [!CAUTION]
+> **Anti-Pattern:** Awaiting complete LLM responses before serialization into a standard JSON payload:
+```csharp
 var result = await model.GenerateAsync(prompt); // Awaits 15 seconds
 return Ok(new { text = result });
 ```
@@ -834,9 +712,9 @@ Stream tokens immediately using **Server-Sent Events (SSE)**. Transmit the initi
 
 ### Anti-Pattern 3: Unbounded Concurrency & Cascading 429 Throttling
 
-```
-[THE ARCHITECTURAL CRIME]
-Spawning parallel tasks with Task.WhenAll or asyncio.gather over thousands of batch items:
+> [!CAUTION]
+> **Anti-Pattern:** Spawning unbounded parallel tasks over thousands of batch items:
+```python
 await asyncio.gather(*[call_llm(doc) for doc in 5000_documents])
 ```
 
@@ -850,9 +728,9 @@ Decouple batch processing through a distributed queue (Kafka, Azure Service Bus,
 
 ### Anti-Pattern 4: Unencrypted Multi-Tenant Semantic Cache Contamination
 
-```
-[THE ARCHITECTURAL CRIME]
-Sharing a single vector cache index across all users and tenants without tenant ID scoping:
+> [!CAUTION]
+> **Anti-Pattern:** Sharing a single vector cache index across all users and tenants without tenant ID scoping:
+```python
 vector_db.search(query_embedding, top_k=1)
 ```
 
@@ -869,9 +747,9 @@ Strictly partition semantic cache namespaces by `TenantId`. Compound cache keys:
 
 ### Anti-Pattern 5: The Zombie Generation Black Hole (Missing Cancellation Propagation)
 
-```
-[THE ARCHITECTURAL CRIME]
-Ignoring CancellationToken in ASP.NET Core or Request.is_disconnected in FastAPI:
+> [!CAUTION]
+> **Anti-Pattern:** Ignoring cancellation tokens in streaming endpoint loops:
+```python
 async for chunk in client.chat.completions.create(stream=True):
     yield chunk # Client disconnected 20 seconds ago, loop keeps running!
 ```
@@ -886,602 +764,74 @@ Check for client disconnects on every streamed chunk. In .NET, pass `HttpContext
 
 ## 7. Enterprise Production Code Implementations [MUST-HAVE] 🔴
 
-### Python: Production FastAPI Gateway with LiteLLM Router, Semantic Redis Cache & SSE
+Complete, production-hardened implementations are available in the [`examples/`](./examples/) directory.
 
-The following enterprise service implements a production-grade AI Gateway featuring:
-- **LiteLLM Router**: Multi-provider load balancing and automatic fallback (Claude 3.7 ➔ GPT-4o ➔ Gemini 1.5 Flash).
-- **Exponential Backoff with Full Jitter**: Automated handling of transient errors and 429s.
-- **Semantic Caching**: Dual-tier exact hash (SHA-256) and vector similarity caching using Redis.
-- **Server-Sent Events (SSE)**: Asynchronous streaming with client disconnect detection and cancellation propagation.
+### Python: Production FastAPI Gateway with LiteLLM Router, Semantic Redis Cache & SSE
+> **Implementation**: [`examples/gateway_service.py`](./examples/gateway_service.py)
+
+Enterprise API gateway with automatic failover across Azure OpenAI, Anthropic, and Gemini, Redis semantic caching to bypass repeat inference, and Server-Sent Events (SSE) streaming.
 
 ```python
-"""
-Production Enterprise AI Gateway Microservice
-Stack: FastAPI, LiteLLM Router, Redis Semantic Cache, SSE Streaming
-"""
-
-import os
-import json
-import time
-import hashlib
-import logging
-import asyncio
-from typing import AsyncGenerator, Optional
-from contextlib import asynccontextmanager
-
-from fastapi import FastAPI, HTTPException, Request, Depends, status
-from fastapi.responses import StreamingResponse
-from pydantic import BaseModel, Field
-import redis.asyncio as aioredis
-from litellm import Router
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
-logger = logging.getLogger("EnterpriseAIGateway")
-
-# -----------------------------------------------------------------------------
-# Configuration & Lifespan
-# -----------------------------------------------------------------------------
-REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
-SEMANTIC_SIMILARITY_THRESHOLD = 0.92
-CACHE_TTL_SECONDS = 86400  # 24 Hours
-
-# Global Singletons
-redis_client: Optional[aioredis.Redis] = None
-llm_router: Optional[Router] = None
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    global redis_client, llm_router
-    logger.info("Initializing Enterprise AI Gateway infrastructure...")
-    
-    # 1. Initialize Redis Connection Pool
-    redis_client = aioredis.from_url(
-        REDIS_URL, 
-        encoding="utf-8", 
-        decode_responses=True,
-        max_connections=50
-    )
-    await redis_client.ping()
-    logger.info("Connected to Redis Cache.")
-
-    # 2. Initialize LiteLLM Router with Multi-Provider Fallbacks & Retries
-    model_list = [
-        {
-            "model_name": "enterprise-chat",
-            "litellm_params": {
-                "model": "anthropic/claude-3-7-sonnet-20250219",
-                "api_key": os.getenv("ANTHROPIC_API_KEY", "mock-key"),
-                "rpm": 1000,
-                "tpm": 80000,
-            },
-        },
-        {
-            "model_name": "enterprise-chat",
-            "litellm_params": {
-                "model": "azure/gpt-4o",
-                "api_key": os.getenv("AZURE_OPENAI_API_KEY", "mock-key"),
-                "api_base": os.getenv("AZURE_OPENAI_ENDPOINT", "https://mock.openai.azure.com/"),
-                "api_version": "2024-08-01-preview",
-                "rpm": 1500,
-                "tpm": 120000,
-            },
-        },
-        {
-            "model_name": "enterprise-chat-fallback",
-            "litellm_params": {
-                "model": "gemini/gemini-1.5-flash",
-                "api_key": os.getenv("GEMINI_API_KEY", "mock-key"),
-                "rpm": 3000,
-                "tpm": 200000,
-            },
-        },
-    ]
-
-    llm_router = Router(
-        model_list=model_list,
-        fallbacks=[{"enterprise-chat": ["enterprise-chat-fallback"]}],
-        num_retries=3,
-        timeout=30.0,
-        retry_after=2,
-        routing_strategy="latency-based-routing"
-    )
-    logger.info("LiteLLM Router initialized with 3 tiered provider models.")
-    
-    yield
-    
-    logger.info("Shutting down AI Gateway...")
-    if redis_client:
-        await redis_client.close()
-
-app = FastAPI(title="Enterprise AI Gateway", version="1.0.0", lifespan=lifespan)
-
-# -----------------------------------------------------------------------------
-# Domain Schemas
-# -----------------------------------------------------------------------------
-class ChatRequest(BaseModel):
-    prompt: str = Field(..., min_length=1, max_length=10000, description="User instruction or prompt")
-    tenant_id: str = Field(..., min_length=1, max_length=64, description="Tenant identifier for multi-tenant isolation")
-    user_id: str = Field(..., min_length=1, max_length=64, description="Unique user identifier")
-    max_tokens: int = Field(default=1024, ge=1, le=4096)
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
-
-# -----------------------------------------------------------------------------
-# Cache Subsystem (Deterministic L1 Hash + Metadata)
-# -----------------------------------------------------------------------------
-def compute_cache_key(tenant_id: str, prompt: str) -> str:
-    normalized = prompt.strip().lower()
-    digest = hashlib.sha256(f"{tenant_id}:{normalized}".encode("utf-8")).hexdigest()
-    return f"llm_cache:{tenant_id}:{digest}"
-
-async def get_exact_cache(tenant_id: str, prompt: str) -> Optional[str]:
-    if not redis_client:
-        return None
-    key = compute_cache_key(tenant_id, prompt)
-    return await redis_client.get(key)
-
-async def set_exact_cache(tenant_id: str, prompt: str, content: str):
-    if not redis_client:
-        return
-    key = compute_cache_key(tenant_id, prompt)
-    await redis_client.set(key, content, ex=CACHE_TTL_SECONDS)
-
-# -----------------------------------------------------------------------------
-# Streaming Token Generator with Cancellation Propagation
-# -----------------------------------------------------------------------------
-async def token_streamer(
-    request: Request,
-    chat_req: ChatRequest,
-    router: Router
-) -> AsyncGenerator[str, None]:
-    """
-    Streams tokens over SSE while monitoring client connection liveness.
-    Halts upstream LLM generation immediately if the client disconnects.
-    """
-    start_time = time.perf_counter()
-    full_response_accumulator = []
-    
-    # Check L1 Exact Cache
-    cached_content = await get_exact_cache(chat_req.tenant_id, chat_req.prompt)
-    if cached_content:
-        logger.info(f"L1 Exact Cache Hit for Tenant {chat_req.tenant_id}")
-        chunk_payload = {
-            "choices": [{"delta": {"content": cached_content}}],
-            "cached": True,
-            "latency_ms": round((time.perf_counter() - start_time) * 1000, 2)
-        }
-        yield f"data: {json.dumps(chunk_payload)}\n\n"
-        yield "data: [DONE]\n\n"
-        return
-
-    # Cache Miss: Call Router Stream
-    try:
-        messages = [{"role": "user", "content": chat_req.prompt}]
-        response = await router.acompletion(
-            model="enterprise-chat",
-            messages=messages,
-            max_tokens=chat_req.max_tokens,
-            temperature=chat_req.temperature,
-            stream=True
-        )
-
-        first_token = True
-        async for chunk in response:
-            # CRITICAL: Detect client disconnection to kill zombie generation
-            if await request.is_disconnected():
-                logger.warning(f"Client disconnected during streaming for Tenant {chat_req.tenant_id}. Halting generation.")
-                break
-
-            delta_content = chunk.choices[0].delta.content or ""
-            if delta_content:
-                full_response_accumulator.append(delta_content)
-                payload = {
-                    "choices": [{"delta": {"content": delta_content}}],
-                    "cached": False
-                }
-                if first_token:
-                    ttft = round((time.perf_counter() - start_time) * 1000, 2)
-                    payload["ttft_ms"] = ttft
-                    first_token = False
-                    logger.info(f"TTFT for Tenant {chat_req.tenant_id}: {ttft}ms")
-
-                yield f"data: {json.dumps(payload)}\n\n"
-
-        yield "data: [DONE]\n\n"
-
-        # Asynchronously store completed generation in cache
-        complete_text = "".join(full_response_accumulator)
-        if complete_text:
-            asyncio.create_task(set_exact_cache(chat_req.tenant_id, chat_req.prompt, complete_text))
-
-    except Exception as ex:
-        logger.error(f"Routing/Generation Exception: {str(ex)}", exc_info=True)
-        err_payload = {"error": "Upstream AI provider error. Resiliency policy engaged.", "details": str(ex)}
-        yield f"data: {json.dumps(err_payload)}\n\n"
-        yield "data: [DONE]\n\n"
-
-# -----------------------------------------------------------------------------
-# API Route Definitions
-# -----------------------------------------------------------------------------
-@app.post("/v1/chat/completions/stream", response_class=StreamingResponse)
-async def stream_chat_completion(
-    chat_req: ChatRequest,
-    request: Request
-):
-    if not llm_router:
-        raise HTTPException(status_code=status.HTTP_503_SERVICE_UNAVAILABLE, detail="AI Gateway not initialized.")
-
-    return StreamingResponse(
-        token_streamer(request, chat_req, llm_router),
-        media_type="text/event-stream",
-        headers={
-            "Cache-Control": "no-cache, no-transform",
-            "Connection": "keep-alive",
-            "X-Accel-Buffering": "no"  # Instructs NGINX/reverse proxies not to buffer
-        }
-    )
-
-@app.get("/healthz")
-async def health_check():
-    return {"status": "healthy", "service": "enterprise-ai-gateway"}
+# Multi-provider router with fallback from examples/gateway_service.py
+router = Router(
+    model_list=[
+        {"model_name": "primary", "litellm_params": {"model": "azure/gpt-4o", "api_key": AZURE_KEY}},
+        {"model_name": "primary", "litellm_params": {"model": "anthropic/claude-3-5-sonnet", "api_key": ANTHROPIC_KEY}},
+    ],
+    routing_strategy="latency-based-routing",
+    fallbacks=[{"primary": ["secondary-gemini"]}]
+)
 ```
 
 ---
 
 ### C# / .NET 9: Enterprise Resilient Agent Service with Polly v8 & SSE Streaming
+> **Implementation**: [`examples/ResilientAgentService.cs`](./examples/ResilientAgentService.cs)
 
-The following C# implementation demonstrates a production-grade ASP.NET Core 9 service utilizing:
-- **Polly v8 Resilience Pipelines**: Combining Rate Limiting, Retries with Exponential Decorrelated Jitter, and Circuit Breakers.
-- **Native `IAsyncEnumerable<string>` Streaming**: Zero-allocation token streaming over HTTP/2 and Server-Sent Events.
-- **Strict `CancellationToken` Handling**: Halting inference when `HttpContext.RequestAborted` fires.
+ASP.NET Core service configured with Polly v8 resilience pipelines (exponential backoff with full jitter, circuit breakers, and rate limiters) with strict `CancellationToken` propagation.
 
 ```csharp
-// ============================================================================
-// File: ResilientAgentService.cs
-// Framework: .NET 9 / ASP.NET Core 9
-// Dependencies: Polly.Core (v8.x), Microsoft.Extensions.AI, StackExchange.Redis
-// ============================================================================
-
-using System.Runtime.CompilerServices;
-using System.Security.Cryptography;
-using System.Text;
-using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
-using Polly;
-using Polly.CircuitBreaker;
-using Polly.Retry;
-using StackExchange.Redis;
-
-namespace Enterprise.Ai.Gateway;
-
-// -----------------------------------------------------------------------------
-// Request & Domain Models
-// -----------------------------------------------------------------------------
-public sealed record AgentChatRequest(
-    string Prompt,
-    string TenantId,
-    string UserId,
-    int MaxTokens = 1024,
-    double Temperature = 0.7);
-
-public sealed record StreamTokenPayload(string Token, bool IsCached, long ElapsedMs);
-
-// -----------------------------------------------------------------------------
-// Port Interface: AI Provider Client
-// -----------------------------------------------------------------------------
-public interface IModelProviderClient
-{
-    IAsyncEnumerable<string> GenerateStreamAsync(
-        string prompt, 
-        int maxTokens, 
-        double temperature, 
-        CancellationToken cancellationToken);
-}
-
-// -----------------------------------------------------------------------------
-// Primary Provider Implementation (Azure OpenAI / Anthropic Adapter)
-// -----------------------------------------------------------------------------
-public sealed class PrimaryModelProviderClient : IModelProviderClient
-{
-    private readonly HttpClient _httpClient;
-    private readonly ILogger<PrimaryModelProviderClient> _logger;
-
-    public PrimaryModelProviderClient(HttpClient httpClient, ILogger<PrimaryModelProviderClient> logger)
+// Polly v8 pipeline builder from examples/ResilientAgentService.cs
+var pipeline = new ResiliencePipelineBuilder<HttpResponseMessage>()
+    .AddRetry(new RetryStrategyOptions<HttpResponseMessage>
     {
-        _httpClient = httpClient;
-        _logger = logger;
-    }
-
-    public async IAsyncEnumerable<string> GenerateStreamAsync(
-        string prompt, 
-        int maxTokens, 
-        double temperature, 
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        _logger.LogInformation("Calling Primary LLM Provider (Claude 3.7 / GPT-4o)...");
-        
-        // Simulating streaming chunks from underlying provider SDK
-        string[] simulatedTokens = ["Enterprise ", "resilience ", "achieved ", "via ", ".NET 9 ", "and ", "Polly v8."];
-        
-        foreach (var token in simulatedTokens)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(40, cancellationToken); // Simulating 40ms token throughput (~25 tok/s)
-            yield return token;
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Secondary Fallback Provider Implementation (Google Cloud Vertex AI)
-// -----------------------------------------------------------------------------
-public sealed class SecondaryModelProviderClient : IModelProviderClient
-{
-    private readonly ILogger<SecondaryModelProviderClient> _logger;
-
-    public SecondaryModelProviderClient(ILogger<SecondaryModelProviderClient> logger)
-    {
-        _logger = logger;
-    }
-
-    public async IAsyncEnumerable<string> GenerateStreamAsync(
-        string prompt, 
-        int maxTokens, 
-        double temperature, 
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        _logger.LogWarning("PRIMARY DEGRADED: Executing Secondary Fallback Provider (Vertex Gemini 1.5)...");
-        
-        string[] simulatedTokens = ["Fallback ", "response ", "from ", "Secondary ", "Cloud ", "Provider."];
-        
-        foreach (var token in simulatedTokens)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            await Task.Delay(30, cancellationToken);
-            yield return token;
-        }
-    }
-}
-
-// -----------------------------------------------------------------------------
-// Resilient Gateway Orchestrator with Polly v8 & Redis Cache
-// -----------------------------------------------------------------------------
-public sealed class AgentOrchestrator
-{
-    private readonly IModelProviderClient _primaryClient;
-    private readonly IModelProviderClient _secondaryClient;
-    private readonly IConnectionMultiplexer _redis;
-    private readonly ResiliencePipeline _resiliencePipeline;
-    private readonly ILogger<AgentOrchestrator> _logger;
-
-    public AgentOrchestrator(
-        IModelProviderClient primaryClient,
-        IModelProviderClient secondaryClient,
-        IConnectionMultiplexer redis,
-        ILogger<AgentOrchestrator> logger)
-    {
-        _primaryClient = primaryClient;
-        _secondaryClient = secondaryClient;
-        _redis = redis;
-        _logger = logger;
-
-        // Build Polly v8 Composite Resilience Pipeline:
-        // Retry (with exponential backoff and jitter) + Circuit Breaker
-        _resiliencePipeline = new ResiliencePipelineBuilder()
-            .AddRetry(new RetryStrategyOptions
-            {
-                MaxRetryAttempts = 3,
-                Delay = TimeSpan.FromMilliseconds(500),
-                BackoffType = DelayBackoffType.Exponential,
-                UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<HttpRequestException>().Handle<TimeoutException>()
-            })
-            .AddCircuitBreaker(new CircuitBreakerStrategyOptions
-            {
-                FailureRatio = 0.5,
-                SamplingDuration = TimeSpan.FromSeconds(30),
-                MinimumThroughput = 10,
-                BreakDuration = TimeSpan.FromSeconds(15),
-                OnOpened = args =>
-                {
-                    _logger.LogError("CRITICAL: Primary LLM Circuit Breaker tripped OPEN! Diverting to Secondary.");
-                    return ValueTask.CompletedTask;
-                },
-                OnClosed = args =>
-                {
-                    _logger.LogInformation("Primary LLM Circuit Breaker RESET to CLOSED.");
-                    return ValueTask.CompletedTask;
-                }
-            })
-            .Build();
-    }
-
-    public async IAsyncEnumerable<StreamTokenPayload> ExecuteStreamAsync(
-        AgentChatRequest request, 
-        [EnumeratorCancellation] CancellationToken cancellationToken)
-    {
-        var db = _redis.GetDatabase();
-        var cacheKey = ComputeSha256CacheKey(request.TenantId, request.Prompt);
-        
-        // 1. Check L1 Exact Redis Cache
-        string? cachedValue = await db.StringGetAsync(cacheKey);
-        if (!string.IsNullOrEmpty(cachedValue))
-        {
-            _logger.LogInformation("Cache HIT for Tenant {TenantId}", request.TenantId);
-            yield return new StreamTokenPayload(cachedValue, IsCached: true, ElapsedMs: 5);
-            yield break;
-        }
-
-        // 2. Cache Miss: Execute Resilient Stream with Fallback
-        var responseBuffer = new StringBuilder();
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-        IAsyncEnumerable<string>? stream = null;
-
-        try
-        {
-            // Execute within Circuit Breaker & Retry Pipeline
-            stream = _resiliencePipeline.Execute(
-                state => _primaryClient.GenerateStreamAsync(state.Prompt, state.MaxTokens, state.Temperature, cancellationToken),
-                request);
-        }
-        catch (BrokenCircuitException)
-        {
-            _logger.LogWarning("Circuit open. Diverting immediately to secondary provider.");
-            stream = _secondaryClient.GenerateStreamAsync(request.Prompt, request.MaxTokens, request.Temperature, cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Primary provider failed after retries. Invoking secondary.");
-            stream = _secondaryClient.GenerateStreamAsync(request.Prompt, request.MaxTokens, request.Temperature, cancellationToken);
-        }
-
-        await foreach (var token in stream.WithCancellation(cancellationToken))
-        {
-            responseBuffer.Append(token);
-            yield return new StreamTokenPayload(token, IsCached: false, ElapsedMs: stopwatch.ElapsedMilliseconds);
-        }
-
-        // Asynchronously persist completed response to Redis (TTL 24 hours)
-        var fullText = responseBuffer.ToString();
-        if (!string.IsNullOrEmpty(fullText) && !cancellationToken.IsCancellationRequested)
-        {
-            _ = Task.Run(() => db.StringSetAsync(cacheKey, fullText, TimeSpan.FromHours(24)), CancellationToken.None);
-        }
-    }
-
-    private static string ComputeSha256CacheKey(string tenantId, string prompt)
-    {
-        var raw = $"{tenantId}:{prompt.Trim().ToLowerInvariant()}";
-        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(raw));
-        return $"cache:tenant:{tenantId}:{Convert.ToHexString(bytes)}";
-    }
-}
-
-// -----------------------------------------------------------------------------
-// ASP.NET Core 9 Minimal API Controller
-// -----------------------------------------------------------------------------
-[ApiController]
-[Route("api/v1/agent")]
-public sealed class AgentController : ControllerBase
-{
-    private readonly AgentOrchestrator _orchestrator;
-
-    public AgentController(AgentOrchestrator orchestrator)
-    {
-        _orchestrator = orchestrator;
-    }
-
-    [HttpPost("stream")]
-    public async Task StreamPrompt(
-        [FromBody] AgentChatRequest request, 
-        CancellationToken cancellationToken)
-    {
-        Response.ContentType = "text/event-stream";
-        Response.Headers.Append("Cache-Control", "no-cache");
-        Response.Headers.Append("X-Accel-Buffering", "no");
-
-        try
-        {
-            await foreach (var payload in _orchestrator.ExecuteStreamAsync(request, cancellationToken))
-            {
-                var sseMessage = $"data: {JsonSerializer.Serialize(payload)}\n\n";
-                await Response.WriteAsync(sseMessage, cancellationToken);
-                await Response.Body.FlushAsync(cancellationToken);
-            }
-
-            await Response.WriteAsync("data: [DONE]\n\n", cancellationToken);
-            await Response.Body.FlushAsync(cancellationToken);
-        }
-        catch (OperationCanceledException)
-        {
-            // Client closed browser or disconnected; gracefully end HTTP request
-        }
-    }
-}
+        BackoffType = DelayBackoffType.Exponential,
+        UseJitter = true,
+        MaxRetryAttempts = 3,
+        Delay = TimeSpan.FromMilliseconds(500)
+    })
+    .AddCircuitBreaker(new HttpCircuitBreakerStrategyOptions())
+    .Build();
 ```
 
----
-
-## 8. Curated Verified Resources & Reference Index
+## 8. Curated Verified Resources & Reference Index [KNOWLEDGE-BASE] 🔵
 
 ### Official Cloud & Enterprise Documentation
 - **Microsoft Azure AI Foundry**: [Azure AI Services & Agent Service Documentation](https://learn.microsoft.com/azure/ai-services/) — Enterprise catalog, model deployment, and hosted agents.
 - **Azure Architecture Center**: [Baseline Architecture for Azure OpenAI Endpoints](https://learn.microsoft.com/azure/architecture/ai-ml/architecture/azure-openai-baseline-architecture) — Multi-region active-active deployment and APIM policies.
 - **Google Cloud Run**: [Streaming HTTP Responses with Cloud Run](https://cloud.google.com/run/docs/configuring/streaming) — Configuring HTTP/2 and disabling response buffering for SSE.
 - **Google Vertex AI**: [Vertex AI Generative AI Architecture Guides](https://cloud.google.com/vertex-ai/generative-ai/docs) — Enterprise quotas, private endpoints, and model grounding.
+- **Google Agents CLI & ADK**: [Google Agents CLI Guide](https://google.github.io/agents-cli/) & [ADK Documentation](https://google.github.io/adk-docs/) — Scaffolding, testing, and production deployment of multi-agent services.
 
 ### High-Throughput Inference & Gateway Engines
-- **vLLM Official Documentation**: [High-Throughput and Memory-Efficient LLM Serving (vllm.ai)](https://docs.vllm.ai/) — PagedAttention, continuous batching, and tensor parallelism guide.
+- **LiteLLM**: [LiteLLM Proxy & Load Balancing](https://docs.litellm.ai/docs/proxy/load_balancing) & [GitHub Repository](https://github.com/BerriAI/litellm) — Multi-provider routing, virtual keys, spend tracking, and rate-limit fallbacks.
+- **vLLM Official Documentation**: [High-Throughput and Memory-Efficient LLM Serving (vllm.ai)](https://docs.vllm.ai/) & [GitHub Repository](https://github.com/vllm-project/vllm) — PagedAttention, continuous batching, and tensor parallelism guide.
 - **NVIDIA TensorRT-LLM**: [TensorRT-LLM GitHub & Documentation](https://github.com/NVIDIA/TensorRT-LLM) — In-flight batching and FP8 quantization for HGX clusters.
-- **LiteLLM**: [LiteLLM Proxy and Load Balancing Documentation](https://docs.litellm.ai/docs/proxy/load_balancing) — Multi-provider routing, virtual keys, and rate-limit fallbacks.
 - **Portkey AI Gateway**: [Production AI Gateway Documentation](https://portkey.ai/docs) — Universal caching, canary deployments, and prompt management.
 
 ### Resilience & Protocols
-- **Polly Documentation (App-vNext)**: [Polly v8 Resilience Strategies](https://www.pollydocs.org/) — Hedging, Circuit Breakers, and Decorrelated Jitter in .NET.
+- **Polly Documentation (App-vNext)**: [Polly v8 Resilience Strategies](https://www.pollydocs.org/) & [GitHub Repository](https://github.com/App-vNext/Polly) — Hedging, Circuit Breakers, and Decorrelated Jitter in .NET.
 - **OpenTelemetry Semantic Conventions**: [LLM Observability Standard](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — Standard spans, attributes, and metric naming for GenAI systems.
 - **W3C Server-Sent Events**: [HTML Living Standard - Server-Sent Events](https://html.spec.whatwg.org/multipage/server-sent-events.html) — SSE wire protocol specification.
 
 ---
 
-## 9. Capstone Engineering Challenge: Resilient Multi-Provider AI Gateway [MUST-HAVE] 🔴
+## 9. Capstone Challenge: Production Multi-Provider Resilient AI Gateway [MUST-HAVE] 🔴
 
-### 🎯 Challenge Objective
-Architect and implement an enterprise-grade **Resilient Multi-Provider AI Gateway Microservice** in either **Python (FastAPI)** or **C# (.NET 9)** capable of sustaining simulated provider outages and rate-limit surges without dropping active client connections.
+> Build and deploy a high-throughput, multi-provider AI Gateway with LiteLLM, circuit breakers, semantic caching, and SSE streaming.
+> 
+> 👉 **[View Capstone Challenge Specification](./labs/capstone-production-ai-gateway.md)**
 
-### 📐 Architectural & Functional Requirements
+---
 
-```
-                       ┌────────────────────────────────────────────────────────┐
-                       │             CAPSTONE ARCHITECTURAL SCOPE               │
-                       ├────────────────────────────────────────────────────────┤
-                       │ 1. Multi-Tenant Dual-Tier Cache (Exact + Semantic)      │
-                       │ 2. Token-Bucket Distributed Rate Limiter               │
-                       │ 3. Tiered Model Fallback: Primary ➔ Secondary ➔ Degrade│
-                       │ 4. Server-Sent Events (SSE) Token Streaming            │
-                       │ 5. Client Disconnect Cancellation Propagation          │
-                       │ 6. OpenTelemetry Distributed Tracing Spans             │
-                       └────────────────────────────────────────────────────────┘
-```
-
-1. **Dual-Tier Cache Engine**:
-   - Tier 1: Exact string hash matching (`SHA-256`) against Redis with TTL = 24 hours.
-   - Tier 2: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity >= 0.92, serve cached content immediately.
-2. **Dynamic Tiered Resilience Router**:
-   - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4o.
-   - **Secondary Model**: Google Cloud Vertex AI Gemini 1.5 Pro.
-   - **Tertiary Model (Degraded)**: Gemini 1.5 Flash or Claude 3.5 Haiku.
-   - Configure a circuit breaker: If the primary provider fails 5 times consecutively or returns HTTP 429, trip the circuit into `OPEN` state for 30 seconds and route traffic directly to the secondary provider.
-3. **Token Budget & Rate Limiting**:
-   - Enforce a tenant quota: 100,000 tokens per tenant per day.
-   - Maintain a sliding window rate limiter: Max 30 requests per minute per user.
-4. **Streaming Protocol**:
-   - Expose endpoint `POST /v1/gateway/chat/stream`.
-   - Stream tokens formatted as standard SSE (`data: {...}\n\n`).
-   - Propagate cancellation tokens: If the client terminates the HTTP connection, immediately abort inference on the active provider.
-5. **Observability**:
-   - Emit an OpenTelemetry span for every request containing attributes:
-     `gen_ai.system`, `gen_ai.request.model`, `gen_ai.response.model`, `gen_ai.usage.prompt_tokens`, `gen_ai.usage.completion_tokens`, and `gateway.cache_hit_type` (none, exact, semantic).
-
-### 🧪 Verification & Acceptance Test Suite
-
-Your capstone implementation must pass the following simulated production chaos tests:
-
-- [ ] **Test Case 1: The Exact Cache Hit**:
-  - Dispatch prompt: *"Explain CAP theorem in two sentences."* (Observe full generation, record TTFT).
-  - Dispatch identical prompt again.
-  - **Assertion**: Response returned with `"cached": true`, latency < 15ms, and zero upstream LLM API calls generated.
-- [ ] **Test Case 2: The Semantic Cache Hit**:
-  - Dispatch prompt: *"Explain the CAP theorem in 2 concise sentences."*
-  - **Assertion**: Cosine similarity exceeds 0.92; response returned from cache with `"cache_type": "semantic"`, latency < 50ms.
-- [ ] **Test Case 3: Primary Provider 429 Outage Simulation**:
-  - Inject a mock or proxy rule forcing the Primary Model to return `HTTP 429 Too Many Requests`.
-  - Dispatch 5 requests.
-  - **Assertion**: The Gateway automatically catches the 429, logs the incident, falls back to the Secondary Provider (Gemini 1.5 Pro), and the end user receives an unbroken SSE token stream without seeing an error.
-- [ ] **Test Case 4: Client Disconnect Cancellation**:
-  - Initiate a generation requiring 2,000 tokens.
-  - Terminate the client socket after receiving 50 tokens.
-  - **Assertion**: Microservice logs show `Client disconnected. Cancellation token triggered.` Upstream inference terminates immediately, preventing unread token generation.
-- [ ] **Test Case 5: Tenant Quota Enforcement**:
-  - Exhaust a test tenant's token budget.
-  - Dispatch an additional request.
-  - **Assertion**: Gateway immediately returns `HTTP 429 / 402 Quota Exceeded` before executing vector search or calling any cloud models.
+*(Proceed to [Phase 08: AI-Augmented SDLC & Leadership](../08-ai-augmented-sdlc-and-leadership/README.md))*

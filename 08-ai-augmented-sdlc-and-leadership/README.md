@@ -4,60 +4,35 @@
 
 ---
 
-### 🎯 Architectural Mastery Tiers
-- **[MUST-HAVE]** 🔴 : Core AI-native engineering competencies (`AGENT.md` specification, AI developer toolchain, TDD specification-driven workflows, AI-assisted code reviews, avoiding vibe coding traps).
-- **[GOOD-TO-HAVE]** 🟡 : Advanced agentic SDLC automation (automated ADR generators, AI incident triage bots, multi-agent repo maintenance, synthetic bug generation).
-- **[KNOWLEDGE-BASE]** 🔵 : Historical evolution of software abstractions (Karpathy continuum Software 1.0 → 2.0 → 3.0), academic developer productivity studies.
+> Curriculum taxonomy aligns with the [3-tier classification defined in the root README](../README.md) (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
 
 ---
 
-```
-                       ┌─────────────────────────────────────────────────────────┐
-                       │          THE AI-NATIVE ENGINEERING PARADIGM             │
-                       │   From Prompt Chat to Autonomous SDLC Orchestration     │
-                       └────────────────────────────┬────────────────────────────┘
-                                                    │
-             ┌──────────────────────────────────────┴──────────────────────────────────────┐
-             ▼                                                                             ▼
-┌─────────────────────────┐                                                   ┌─────────────────────────┐
-│  AI-ASSISTED (LEVEL 1)  │                                                   │   AI-NATIVE (LEVEL 3+)  │
-│  • Inline autocomplete  │                                                   │  • Agentic loop CLI/IDEs│
-│  • Copied chat snippets │        ────────── PARADIGM SHIFT ──────────►      │  • Specification-driven │
-│  • Ad-hoc vibe coding   │                                                   │  • Invariant & TDD gates│
-│  • Manual error fixing  │                                                   │  • Automated CI reviews │
-└─────────────────────────┘                                                   └─────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Paradigm["THE AI-NATIVE ENGINEERING PARADIGM"]
+        P["From Prompt Chat to Autonomous SDLC Orchestration"]
+    end
+    
+    Paradigm --> L1["AI-ASSISTED (LEVEL 1)<br/>• Inline autocomplete<br/>• Copied chat snippets<br/>• Ad-hoc vibe coding<br/>• Manual error fixing"]
+    Paradigm --> L3["AI-NATIVE (LEVEL 3+)<br/>• Agentic loop CLI/IDEs<br/>• Specification-driven<br/>• Invariant & TDD gates<br/>• Automated CI reviews"]
+    
+    L1 ==>|"PARADIGM SHIFT"| L3
 ```
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#1-executive-summary--lead-mental-model-)
-   - [The AI-Native Engineering Paradigm](#the-ai-native-engineering-paradigm)
-   - [The Shift from Synthesizer to Editor & Verification Arbiter](#the-shift-from-synthesizer-to-editor--verification-arbiter)
-2. [Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴](#2-why-this-matters-for-senior--lead-developers-)
-   - [1. Architecting Systems that Autonomous Agents Can Reason About](#1-architecting-systems-that-autonomous-agents-can-reason-about)
-   - [2. Eliminating the "Vibe Coding" Epidemic in Enterprise Codebases](#2-eliminating-the-vibe-coding-epidemic-in-enterprise-codebases)
-   - [3. Scaling Developer Velocity Without Knowledge Atrophy](#3-scaling-developer-velocity-without-knowledge-atrophy)
-   - [4. Navigating the Karpathy Continuum: Software 1.0 → 2.0 → 3.0](#4-navigating-the-karpathy-continuum-software-10-to-20-to-30)
-3. [Visual System Architecture & Flow Diagrams [MUST-HAVE] 🔴](#3-visual-system-architecture--flow-diagrams-)
-   - [The AI-Native SDLC Pipeline](#the-ai-native-sdlc-pipeline)
-   - [Repository Context Hierarchy for Coding Agents](#repository-context-hierarchy-for-coding-agents)
-4. [Comprehensive Comparison Tables [MUST-HAVE] 🔴](#4-comprehensive-comparison-tables-)
-   - [Modern AI Coding Agents: Deep Architecture & Capability Matrix](#modern-ai-coding-agents-deep-architecture--capability-matrix)
-   - [Traditional SDLC vs. AI-Assisted vs. AI-Native SDLC](#traditional-sdlc-vs-ai-assisted-vs-ai-native-sdlc)
-5. [Deep-Dive Topics & Subtopics [MUST-HAVE] 🔴](#5-deep-dive-topics--subtopics-)
-   - [5.1 The AI Developer Toolchain [MUST-HAVE] 🔴](#51-the-ai-developer-toolchain-must-have-)
-   - [5.2 The AI-Native SDLC End-to-End [MUST-HAVE] 🔴](#52-the-ai-native-sdlc-end-to-end-must-have-)
-   - [5.3 Designing Codebases for AI Agents ("AI-Friendliness") [MUST-HAVE] 🔴](#53-designing-codebases-for-ai-agents-ai-friendliness-must-have-)
-   - [5.4 Engineering Leadership in the AI Era [MUST-HAVE] 🔴](#54-engineering-leadership-in-the-ai-era-must-have-)
-6. [Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴](#6-production-failure-modes--anti-patterns-)
-7. [Practical Templates & Production Implementations [MUST-HAVE] 🔴](#7-practical-templates--production-implementations-)
-   - [7.1 Production-Ready Master `AGENT.md` Specification [MUST-HAVE] 🔴](#71-production-ready-master-agentmd-specification)
-   - [7.2 Automated AI Pull Request Reviewer Bot [MUST-HAVE] 🔴](#72-automated-ai-pull-request-reviewer-bot)
-   - [7.3 End-to-End Architectural Decision Record (ADR) Generator [GOOD-TO-HAVE] 🟡](#73-end-to-end-architectural-decision-record-adr-generator)
-8. [Curated Verified Resources [KNOWLEDGE-BASE] 🔵](#8-curated-verified-resources-)
-9. [Capstone Challenge: Establish an Enterprise AI-Native Repository Framework [MUST-HAVE] 🔴](#9-capstone-challenge-establish-an-enterprise-ai-native-repository-framework-)
+1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#1-executive-summary--lead-mental-model-must-have-)
+2. [Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴](#2-why-this-matters-for-senior--lead-developers-must-have-)
+3. [Visual System Architecture & Flow Diagrams [MUST-HAVE] 🔴](#3-visual-system-architecture--flow-diagrams-must-have-)
+4. [Comprehensive Comparison Tables [MUST-HAVE] 🔴](#4-comprehensive-comparison-tables-must-have-)
+5. [Deep-Dive Topics & Subtopics [MUST-HAVE] 🔴](#5-deep-dive-topics--subtopics-must-have-)
+6. [Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴](#6-production-failure-modes--anti-patterns-must-have-)
+7. [Practical Templates & Production Implementations [MUST-HAVE] 🔴](#7-practical-templates--production-implementations-must-have-)
+8. [Curated Verified Resources [KNOWLEDGE-BASE] 🔵](#8-curated-verified-resources-knowledge-base-)
+9. [Capstone Challenge: Establish an Enterprise AI-Native Repository Framework [MUST-HAVE] 🔴](#9-capstone-challenge-establish-an-enterprise-ai-native-repository-framework-must-have-)
 
 ---
 
@@ -65,36 +40,32 @@
 
 ### The AI-Native Engineering Paradigm
 
-Software engineering is undergoing its most profound platform shift since the transition from assembly language to high-level compiled languages. For the past two decades, software development has been defined by human developers translating business intent into syntactical code line-by-line, navigating files manually, writing tests retroactively, and reviewing pull requests line-by-line in web interfaces.
+Software engineering is undergoing a platform shift comparable to the move from assembly to high-level compiled languages. Historically, development meant human engineers manually translating intent into syntax line-by-line, navigating files, writing tests retroactively, and reviewing diffs in web interfaces.
 
-The first generation of developer AI (2021–2023) introduced **AI-assisted programming**: inline autocomplete (GitHub Copilot tab-completion) and conversational chat sidebars (ChatGPT, Claude web interfaces). In this model, the developer remains the primary typist and search engine, occasionally prompting an LLM to generate isolated functions or regex patterns, then copy-pasting the output into their editor.
+The first generation of developer AI (2021–2023) introduced **AI-assisted programming**: inline autocomplete (GitHub Copilot) and chat sidebars (ChatGPT, Claude). Developers remained primary typists, prompting LLMs for isolated functions and pasting snippets into editors.
 
-The emerging standard is the **AI-Native Software Engineering Lifecycle (SDLC)**. In this paradigm:
-1. **The Developer Transitions from Typist to System Architect and Verification Arbiter**: The human lead focuses on defining unambiguous domain models, system invariants, interface contracts, and automated verification suites. The AI agent acts as a high-velocity junior-to-mid engineer implementing changes against those strict specifications.
-2. **Context-Engineered Repositories Replace Ad-Hoc Prompts**: Repositories are designed with machine-readable metadata (`AGENT.md`, OpenAPI specs, Protobuf definitions, type annotations) that guide autonomous agents through discovery, execution, and validation loops without human hand-holding.
-3. **Continuous Verification Replaces "Vibe Coding"**: Probabilistic code generation is tethered by deterministic test harnesses, static analysis, linter gates, and architectural boundary tests. Code is never accepted because it "looks right"; it is accepted because it passes formal, executable constraints.
-4. **Autonomous Agent Workflows Span the Full SDLC**: Agents do not merely write snippets inside an open editor buffer; they analyze issue requirements, draft architectural decision records (ADRs), generate test matrices, perform atomic multi-file refactors, scan pull requests for security flaws, and triage production incidents from OpenTelemetry traces.
+The modern standard is the **AI-Native Software Engineering Lifecycle (SDLC)**:
+1. **Developer as System Architect and Verification Arbiter**: Leads define domain models, system invariants, interface contracts, and automated verification suites. Autonomous agents implement changes against these specifications.
+2. **Context-Engineered Repositories Over Ad-Hoc Prompts**: Repositories provide machine-readable metadata (`AGENT.md`, OpenAPI specs, Protobuf definitions, type annotations) guiding autonomous agent execution and validation loops.
+3. **Continuous Verification Replaces Vibe Coding**: Probabilistic generation is bounded by deterministic test harnesses, static analysis, linter gates, and architectural boundary tests. Code is accepted only when satisfying executable constraints.
+4. **Autonomous Agent Workflows Span the Full SDLC**: Agents analyze issues, draft ADRs, generate test matrices, perform atomic multi-file refactors, audit pull requests, and triage production incidents from OpenTelemetry traces.
 
-```
-┌─────────────────────────────────────────────────────────────────────────────────────────────────┐
-│                                    THE SDLC EVOLUTION SPECTRUM                                  │
-├────────────────────┬────────────────────┬───────────────────────┬───────────────────────────────┤
-│ Dimension          │ Traditional SDLC   │ AI-Assisted SDLC      │ AI-Native SDLC                │
-├────────────────────┼────────────────────┼───────────────────────┼───────────────────────────────┤
-│ Primary Interface  │ Text Editor / IDE  │ Chat Sidebar + Tab    │ Autonomous CLI & Agentic IDE  │
-│ Unit of Work       │ Line / Function    │ Method / File Snippet │ Feature Branch / Pull Request │
-│ Context Source     │ Developer Memory   │ Active File Buffer    │ Full Repo Graph + MCP Servers │
-│ Execution Loop     │ Manual Read-Write  │ Manual Copy-Paste     │ Agentic ReAct (Tool-use loop) │
-│ Quality Gate       │ Manual Review + CI │ Manual Review + CI    │ TDD Invariants + AI Review Bot│
-│ Primary Constraint │ Typing & Search    │ Context Limits & Halluc.│ System Design & Verification  │
-└────────────────────┴────────────────────┴───────────────────────┴───────────────────────────────┘
-```
+### The SDLC Evolution Spectrum
+
+| Dimension | Traditional SDLC | AI-Assisted SDLC | AI-Native SDLC |
+|---|---|---|---|
+| **Primary Interface** | Text Editor / IDE | Chat Sidebar + Tab | Autonomous CLI & Agentic IDE |
+| **Unit of Work** | Line / Function | Method / File Snippet | Feature Branch / Pull Request |
+| **Context Source** | Developer Memory | Active File Buffer | Full Repo Graph + MCP Servers |
+| **Execution Loop** | Manual Read-Write | Manual Copy-Paste | Agentic ReAct (Tool-use loop) |
+| **Quality Gate** | Manual Review + CI | Manual Review + CI | TDD Invariants + AI Review Bot |
+| **Primary Constraint** | Typing & Search | Context Limits & Hallucinations | System Design & Verification |
 
 ### The Shift from Synthesizer to Editor & Verification Arbiter
 
-In the AI-native lifecycle, writing code becomes cheap, fast, and abundant. Consequently, **the bottleneck moves from code generation to code comprehension, verification, and system design**. 
+In the AI-native lifecycle, code generation is abundant and low-cost. **The engineering bottleneck shifts to comprehension, verification, and system design**. 
 
-A senior engineer who can write 200 lines of pristine code a day is eclipsed by a senior engineer who can orchestrate three concurrent coding agents to produce 2,000 lines of verified, architecturally aligned code per day. However, without rigorous architectural guardrails, this amplified velocity creates **instant technical debt at scale**. The lead engineer’s primary responsibility is ensuring that velocity does not compromise architectural coherence, security boundaries, and domain invariants.
+A senior engineer orchestrating concurrent coding agents can produce thousands of lines of verified, architecturally aligned code daily. However, without rigorous guardrails, this velocity creates technical debt at scale. The architect's primary duty is ensuring velocity does not compromise architectural coherence, security boundaries, and domain invariants.
 
 ---
 
@@ -103,23 +74,23 @@ A senior engineer who can write 200 lines of pristine code a day is eclipsed by 
 Leading engineering organizations through this transition requires confronting hard technical and organizational challenges:
 
 ### 1. Architecting Systems that Autonomous Agents Can Reason About
-Traditional codebases frequently contain implicit assumptions, hidden side effects, dynamic typing shortcuts, and tribal knowledge documented only in Slack threads. Humans navigate these through intuition and hallway conversations; autonomous AI agents fail on them catastrophically. Senior architects must build **semantically predictable architectures**:
+Traditional codebases often harbor implicit assumptions, hidden side effects, dynamic typing shortcuts, and tribal knowledge. Humans navigate these through intuition; autonomous agents fail catastrophically. Senior architects must construct **semantically predictable architectures**:
 - Strongly typed domain models with zero tolerance for untyped dictionaries or `dynamic` primitives.
-- Explicit interface boundaries (ports and adapters / hexagonal architectures) that isolate third-party dependencies.
-- Machine-readable contracts (OpenAPI 3.1, Protobuf 3, JSON Schema) acting as immutable single sources of truth.
-- Hermetic test suites that run locally in sub-minute execution windows, enabling agents to execute tight feedback loops.
+- Explicit interface boundaries (ports and adapters / hexagonal architectures) that isolate dependencies.
+- Machine-readable contracts (OpenAPI 3.1, Protobuf 3, JSON Schema) as immutable single sources of truth.
+- Hermetic test suites running locally in sub-minute windows for fast agent feedback loops.
 
 ### 2. Eliminating the "Vibe Coding" Epidemic in Enterprise Codebases
-"Vibe coding"—the practice of prompting an agent until code compiles and visually runs once, then committing it without deep comprehension—is an existential threat to enterprise stability. Senior leads must institute policies and automated CI gates that reject code lacking test provenance, invariant validation, and architectural alignment.
+"Vibe coding"—iteratively prompting an agent until code compiles without understanding edge cases, transactions, or concurrency—threatens enterprise stability. Engineering leads must institute automated CI gates rejecting code that lacks test provenance, invariant validation, and architectural alignment.
 
 ### 3. Scaling Developer Velocity Without Knowledge Atrophy
-If junior and senior engineers blindly delegate implementation to agents, teams risk losing deep domain knowledge and systemic understanding of their software. Engineering leads must cultivate a culture of **discernment and verification**, where reading, analyzing, and stress-testing agent outputs is treated as a higher-status skill than raw typing speed.
+Delegating implementation entirely to agents risks degrading domain comprehension. Engineering leads must cultivate a culture of **discernment and verification**, prioritizing critical evaluation and stress-testing of agent outputs over typing speed.
 
 ### 4. Navigating the Karpathy Continuum: Software 1.0 → 2.0 → 3.0
-As articulated by Andrej Karpathy, computing has evolved through three distinct paradigms:
-- **Software 1.0 (Classical Code)**: Explicit instructions written by humans in languages like C++, C#, Python, or Go. Deterministic, interpretable, but fragile when handling perceptual or open-ended tasks.
-- **Software 2.0 (Neural Networks)**: Code written by optimization algorithms (gradient descent) searching a parameter space defined by weights and datasets. Highly capable at perception and pattern recognition, but opaque and non-deterministic.
-- **Software 3.0 (Agentic Prompting & Orchestration)**: Software systems where foundation models (LLMs) act as reasoning engines that orchestrate Software 1.0 tools, write Software 1.0 code, call Software 2.0 models, and execute complex workflows guided by natural language specifications, system prompts, and tool protocols.
+Computing has evolved through three distinct paradigms:
+- **Software 1.0 (Classical Code)**: Human-authored explicit logic (C++, C#, Python, Go). Deterministic and interpretable, but fragile with ambiguous tasks.
+- **Software 2.0 (Neural Networks)**: Optimization algorithms (gradient descent) searching parameter spaces defined by weights and data. High perceptual ability, but opaque and non-deterministic.
+- **Software 3.0 (Agentic Systems)**: Foundation models acting as reasoning engines that orchestrate Software 1.0 tools, write Software 1.0 code, call Software 2.0 models, and execute complex workflows steered by specifications and protocols.
 
 ```mermaid
 flowchart LR
@@ -291,28 +262,25 @@ flowchart LR
 
 #### 2. Protocol Integration: LSP vs. Model Context Protocol (MCP)
 Modern AI-native engineering environments bridge two essential protocol layers:
-- **Language Server Protocol (LSP)**: Provides deterministic, abstract syntax tree (AST)-based intelligence (type checking, symbol navigation, go-to-definition, reference counting). Agents query LSP endpoints to avoid hallucinating method names or property signatures.
-- **Model Context Protocol (MCP)**: An open standard created by Anthropic that allows agents to securely discover and invoke external tools and resources (database schemas, GitHub issues, Jira tickets, Sentry error logs, cloud CLI tools) via structured JSON-RPC 2.0 messages.
+- **Language Server Protocol (LSP)**: Provides deterministic, AST-based code intelligence (type checking, symbol navigation, go-to-definition, reference counting). Agents query LSP endpoints to eliminate symbol and signature hallucinations.
+- **Model Context Protocol (MCP)**: An open standard created by Anthropic allowing agents to discover and invoke external tools and context (database schemas, GitHub/Jira issues, Sentry error logs, cloud CLI tools) via structured JSON-RPC 2.0.
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                        AGENT RUNTIME ENVIRONMENT                       │
-│                                                                        │
-│  ┌────────────────────────┐            ┌────────────────────────────┐  │
-│  │   DETERMINISTIC LSP    │            │   MODEL CONTEXT PROTOCOL   │  │
-│  │ • Type Checking (Pyright/│          │ • Database Introspection   │  │
-│  │   Roslyn / tsserver)   │            │ • Issue Tracker (Jira/GH)  │  │
-│  │ • Symbol Resolution    │            │ • Observability (Sentry)   │  │
-│  │ • AST-based Find Refs  │            │ • Git & Cloud Deployments  │  │
-│  └───────────┬────────────┘            └─────────────┬──────────────┘  │
-│              │                                       │                 │
-│              └───────────────────┬───────────────────┘                 │
-│                                  ▼                                     │
-│                     ┌────────────────────────┐                         │
-│                     │  AUTONOMOUS LLM AGENT  │                         │
-│                     │ (Claude Code / Cursor) │                         │
-│                     └────────────────────────┘                         │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph ARE["AGENT RUNTIME ENVIRONMENT"]
+        subgraph LSP_Box["DETERMINISTIC LSP"]
+            LSP["• Type Checking (Pyright / Roslyn / tsserver)<br/>• Symbol Resolution<br/>• AST-based Find References"]
+        end
+
+        subgraph MCP_Box["MODEL CONTEXT PROTOCOL"]
+            MCP["• Database Introspection<br/>• Issue Tracker (Jira / GH)<br/>• Observability (Sentry)<br/>• Git & Cloud Deployments"]
+        end
+
+        Agent["AUTONOMOUS LLM AGENT<br/>(Claude Code / Cursor)"]
+        
+        LSP --> Agent
+        MCP --> Agent
+    end
 ```
 
 ---
@@ -594,17 +562,19 @@ flowchart TD
 
 When production failures occur, minutes matter. An AI-augmented incident response pipeline ingests real-time telemetry, correlates traces, and provides actionable remediation PRs.
 
-```
-┌─────────────────────────────────────────────────────────────────────────┐
-│                    AI-AUGMENTED INCIDENT RESPONSE FLOW                  │
-├─────────────────────────────────────────────────────────────────────────┤
-│ 1. Telemetry Ingestion: OpenTelemetry spans, Datadog/Sentry alerts      │
-│ 2. Trace Correlation: AI correlates HTTP 500 spike with DB lock wait    │
-│ 3. Git Blame & Commit Diff: Isolates commit 3a4f89 merged 20 mins ago   │
-│ 4. Hypothesis Generation: Unindexed query in hot-path `GET /orders`     │
-│ 5. Automated Remediation: Agent drafts migration script + rollback PR   │
-│ 6. Post-Mortem Synthesis: Produces 5-Whys markdown report for retro     │
-└─────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Flow["AI-AUGMENTED INCIDENT RESPONSE FLOW"]
+        direction TB
+        S1["<b>1. Telemetry Ingestion</b><br/>OpenTelemetry spans, Datadog/Sentry alerts"]
+        S2["<b>2. Trace Correlation</b><br/>AI correlates HTTP 500 spike with DB lock wait"]
+        S3["<b>3. Git Blame & Commit Diff</b><br/>Isolates commit 3a4f89 merged 20 mins ago"]
+        S4["<b>4. Hypothesis Generation</b><br/>Unindexed query in hot-path GET /orders"]
+        S5["<b>5. Automated Remediation</b><br/>Agent drafts migration script + rollback PR"]
+        S6["<b>6. Post-Mortem Synthesis</b><br/>Produces 5-Whys markdown report for retro"]
+        
+        S1 --> S2 --> S3 --> S4 --> S5 --> S6
+    end
 ```
 
 ##### Automated Post-Mortem Incident Template Generated by AI
@@ -634,40 +604,25 @@ A database deadlocking cascade occurred in the `Orders` table following the depl
 
 ### 5.3 Designing Codebases for AI Agents ("AI-Friendliness") [MUST-HAVE] 🔴
 
-To maximize the productivity of coding agents while preventing hallucinations, software architectures must be optimized for **machine comprehension**.
+To maximize coding agent accuracy and prevent hallucinations, system architectures must be optimized for **machine comprehension**.
 
 #### Principles of AI-Friendly Codebases
 
-```
-                     ┌───────────────────────────────────────────────┐
-                     │          THE AI-FRIENDLY CODEBASE             │
-                     └───────────────────────┬───────────────────────┘
-                                             │
-      ┌──────────────────┬───────────────────┴───────────────────┬──────────────────┐
-      ▼                  ▼                                       ▼                  ▼
-┌──────────────┐  ┌──────────────┐                        ┌──────────────┐  ┌──────────────┐
-│  EXPLICIT    │  │  MODULAR     │                        │  MACHINE     │  │ REPOSITORY   │
-│  TYPING      │  │  BOUNDARIES  │                        │  CONTRACTS   │  │ CONTEXT SPEC │
-│ • No `any`   │  │ • Hexagonal  │                        │ • OpenAPI    │  │ • AGENT.md   │
-│ • Pydantic   │  │ • Single     │                        │ • Protobuf   │  │ • Strict run │
-│ • Nullable C#│  │   Resp.      │                        │ • Schemas    │  │   commands   │
-└──────────────┘  └──────────────┘                        └──────────────┘  └──────────────┘
+```mermaid
+flowchart TD
+    Root["THE AI-FRIENDLY CODEBASE"]
+    
+    Root --> C1["<b>EXPLICIT TYPING</b><br/>• No any<br/>• Pydantic models<br/>• Nullable C#"]
+    Root --> C2["<b>MODULAR BOUNDARIES</b><br/>• Hexagonal architecture<br/>• Single responsibility<br/>• Isolated domains"]
+    Root --> C3["<b>MACHINE CONTRACTS</b><br/>• OpenAPI / Swagger<br/>• Protobuf definitions<br/>• JSON Schemas"]
+    Root --> C4["<b>REPOSITORY CONTEXT SPEC</b><br/>• AGENT.md<br/>• Strict run commands<br/>• Architectural invariants"]
 ```
 
-1. **Strict Static Typing**: 
-   - Dynamically typed, unannotated code forces agents to guess property names and structures, leading to rampant hallucinations.
-   - Use strict TypeScript (`strict: true`, no `any`), Python with Pydantic v2 and complete type hints (checked via `mypy --strict`), C# with nullable reference types (`<Nullable>enable</Nullable>`), or Go/Rust.
-2. **Clear Interface Boundaries (Ports & Adapters)**:
-   - Business logic must not directly instantiate database clients, HTTP clients, or cloud SDKs.
-   - Using dependency injection and interface abstractions allows agents to write isolated, deterministic unit tests without having to understand or mock an entire infrastructure graph.
-3. **Modular File Sizing (< 300 Lines per File)**:
-   - Giant 3,000-line "God classes" degrade an agent's attention mechanism and risk context exhaustion.
-   - Break classes into small, cohesive modules where each file has a single responsibility.
-4. **Machine-Readable API Contracts as Truth**:
-   - Maintain OpenAPI 3.1 or Protobuf specifications directly in the repository.
-   - Instruct agents to validate their code changes against these contracts via automated linting (`spectral lint` or `buf lint`).
-5. **Context Anchors (`AGENT.md`, `CLAUDE.md`, `.cursorrules`)**:
-   - Provide a concise, highly structured markdown file at the repository root that acts as the agent’s operational manual.
+1. **Strict Static Typing**: Dynamically typed or unannotated code forces agents to infer property structures, driving hallucinations. Mandate strict TypeScript (`strict: true`, no `any`), Python with Pydantic v2 and `mypy --strict`, C# with `<Nullable>enable</Nullable>`, or Go/Rust.
+2. **Clear Interface Boundaries (Ports & Adapters)**: Domain logic must not directly couple to databases or external APIs. Dependency injection allows agents to construct hermetic unit tests without mocking infrastructure trees.
+3. **Modular File Sizing (< 300 Lines per File)**: Monolithic files degrade attention mechanisms and cause context truncation. Enforce single-responsibility modules.
+4. **Machine-Readable API Contracts as Truth**: Maintain OpenAPI 3.1 or Protobuf specifications directly in the repository; validate code changes using contract linters (`spectral lint`, `buf lint`).
+5. **Context Anchors (`AGENT.md`, `CLAUDE.md`, `.cursorrules`)**: Provide concise, structured operational manuals at the repository root defining build, test, and style invariants.
 
 ---
 
@@ -707,270 +662,79 @@ One of the most pressing organizational challenges in software leadership is the
 
 ## 6. Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│                      FIVE FATAL AI-SDLC ANTI-PATTERNS                  │
-├────────────────────────────────────────────────────────────────────────┤
-│ 1. Vibe Coding in Production  ──────► Unchecked technical bankruptcy   │
-│ 2. Context File Bloat         ──────► Instruction neglect & confusion  │
-│ 3. The Rubber-Stamp Review    ──────► Silent security & logic leaks    │
-│ 4. Domain Knowledge Atrophy   ──────► Inability to debug outages       │
-│ 5. Ghost Architecture Sprawl  ──────► Divergent, fragmented codebases  │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    subgraph AP["FIVE FATAL AI-SDLC ANTI-PATTERNS"]
+        direction TB
+        A1["1. Vibe Coding in Production"] -->|"Risk"| R1["Unchecked technical bankruptcy"]
+        A2["2. Context File Bloat"] -->|"Risk"| R2["Instruction neglect & confusion"]
+        A3["3. The Rubber-Stamp Review"] -->|"Risk"| R3["Silent security & logic leaks"]
+        A4["4. Domain Knowledge Atrophy"] -->|"Risk"| R4["Inability to debug outages"]
+        A5["5. Ghost Architecture Sprawl"] -->|"Risk"| R5["Divergent, fragmented codebases"]
+    end
 ```
 
 ### Anti-Pattern 1: "Vibe Coding" in Enterprise Systems
-* **The Failure Mode**: A developer uses Cursor or Claude Code to build a feature by iteratively reprompting ("it failed with error X, fix it") until the application appears to work on their local machine. No comprehensive automated tests are written, and the developer cannot explain how the generated code handles edge cases, transaction rollbacks, or concurrency.
-* **The Consequence**: Subtle race conditions, unindexed database queries, memory leaks, and architectural degradation in production.
-* **Remediation**: Enforce a mandatory CI gate: every PR must contain executable integration/unit tests with minimum coverage thresholds, and the author must pass a peer architecture review explaining the state machine.
+* **Failure Mode**: Prompts an agent iteratively until code runs locally, without verifying edge cases, transactions, or concurrency.
+* **Consequence**: Subtle race conditions, unindexed queries, memory leaks, and technical bankruptcy in production.
+* **Remediation**: Enforce mandatory CI coverage gates and require authors to pass architecture reviews explaining state transitions.
 
 ### Anti-Pattern 2: Context Bloat in Repository Instruction Files
-* **The Failure Mode**: Teams create a single, massive 1,500-line `.cursorrules` or `CLAUDE.md` file containing every style preference, historical meeting note, outdated API snippet, and generic advice ("write clean code").
-* **The Consequence**: **Instruction Neglect & Attention Degradation**. Large language models suffer from degraded attention over bloated system prompts. When overwhelmed with irrelevant guidelines, agents ignore critical architectural invariants.
-* **Remediation**: Keep root context files under **150–200 lines**. Focus exclusively on non-negotiable build commands, testing instructions, core invariants, and links to specialized documents.
+* **Failure Mode**: Packing 1,000+ lines of style notes, outdated APIs, and generic advice into `.cursorrules` or `CLAUDE.md`.
+* **Consequence**: **Instruction Neglect & Attention Degradation**. LLMs lose focus across bloated system prompts, missing critical invariants.
+* **Remediation**: Keep root context files under **150–200 lines**. Limit to non-negotiable build/test commands, core invariants, and document links.
 
 ### Anti-Pattern 3: Bypassing Human Code Review for Agent PRs ("The Rubber Stamp")
-* **The Failure Mode**: Because an agent generated the code and CI tests passed, human reviewers glance at the PR for 15 seconds and click "Approve".
-* **The Consequence**: Tests written by an agent to test its own code often mirror the agent's blind spots. If the agent misunderstood the business requirement, both the code and the tests will be consistently incorrect.
-* **Remediation**: Require that test assertions be reviewed against the independent product specification, and mandate that human reviewers explicitly verify boundary invariant conditions.
+* **Failure Mode**: Reviewers glance at agent-generated PRs for seconds and approve because CI passed.
+* **Consequence**: Tests written by an agent to test its own code replicate its blind spots, silently merging flawed business logic.
+* **Remediation**: Audit test assertions against independent product specifications; mandate explicit human verification of boundary invariants.
 
 ### Anti-Pattern 4: Codebase Domain Knowledge Atrophy
-* **The Failure Mode**: Senior developers rely completely on agents to navigate and edit unfamiliar areas of the codebase. Over time, nobody on the engineering team possesses a comprehensive mental model of the system’s data flow or failure modes.
-* **The Consequence**: During a critical production outage when AI tooling is unavailable, degraded, or hallucinating, the team is paralyzed and unable to diagnose the root cause manually.
-* **Remediation**: Conduct regular "Architecture Walkthroughs" and manual incident post-mortems. Rotate engineers through codebase maintenance tasks without AI assistance to preserve core diagnostic capabilities.
+* **Failure Mode**: Engineers rely exclusively on agents to navigate unfamiliar code, losing mental models of system data flows.
+* **Consequence**: During major outages where AI tools degrade or hallucinate, teams cannot diagnose root causes manually.
+* **Remediation**: Conduct regular architecture walkthroughs and manual post-mortems; rotate engineers through maintenance tasks without AI assistance.
 
 ### Anti-Pattern 5: Ghost Architecture & Dependency Sprawl
-* **The Failure Mode**: When tasked with solving minor problems across different microservices, agents introduce duplicate libraries (e.g., Service A uses `Newtonsoft.Json`, Service B uses `System.Text.Json`; Service C uses `axios`, Service D uses native `fetch`).
-* **The Consequence**: Massive dependency trees, conflicting vulnerability alerts, bloated container images, and fractured internal standards.
-* **Remediation**: Define an explicit package allowlist in `AGENT.md` and configure automated linter rules that fail builds when unapproved dependencies are introduced into `package.json` or `.csproj`.
+* **Failure Mode**: Agents introduce competing duplicate packages across microservices (e.g., `Newtonsoft.Json` alongside `System.Text.Json`, or `axios` alongside `fetch`).
+* **Consequence**: Bloated containers, dependency conflicts, expanded attack surfaces, and fragmented standards.
+* **Remediation**: Specify package allowlists in `AGENT.md`; enforce CI linter checks blocking unauthorized dependencies.
 
 ---
 
 ## 7. Practical Templates & Production Implementations [MUST-HAVE] 🔴
 
-### 7.1 Production-Ready Master `AGENT.md` Specification [MUST-HAVE] 🔴
+Complete, ready-to-adopt specifications, workflows, and automation scripts are available in the [`examples/`](./examples/) directory.
 
-Place this file at the root of an enterprise repository (`/AGENT.md`) to guide autonomous agents like Claude Code, Cursor, Windsurf, or Antigravity:
+### 7.1 Production-Ready Master `AGENT.md` Specification
+> **Specification**: [`examples/AGENT.md`](./examples/AGENT.md)
 
-```markdown
-# Repository Agent Guidelines: Order & Payment Microservice
-
-> This document defines operational instructions, architectural invariants, and verification gates for autonomous coding agents operating within this repository.
+A standardized contract placed in the root of the enterprise repository that instructs AI coding assistants (Copilot, Cursor, Claude Code, Antigravity) on architectural invariants, prohibited dependencies, and build verification commands.
 
 ---
 
-## 1. Environment & Build Commands
-- **Runtime**: .NET 9 SDK (v9.0.100+) / C# 13 / PostgreSQL 16
-- **Build Solution**: `dotnet build OrderService.sln --configuration Release /warnaserror`
-- **Run Unit Tests**: `dotnet test tests/OrderService.UnitTests/OrderService.UnitTests.csproj --logger "console;verbosity=normal"`
-- **Run Integration Tests**: `dotnet test tests/OrderService.IntegrationTests/OrderService.IntegrationTests.csproj` (requires local Docker daemon for Testcontainers)
-- **Format & Lint**: `dotnet format --verify-no-changes`
+### 7.2 Automated Multi-Agent PR Reviewer GitHub Action
+> **Workflow**: [`examples/pr_review_workflow.yml`](./examples/pr_review_workflow.yml)
+
+A GitHub Actions CI/CD workflow that triggers on every pull request, fans out diff analysis across parallel security, performance, and architecture review agents, and posts a consolidated review comment.
 
 ---
 
-## 2. Non-Negotiable Architectural Invariants
-1. **Hexagonal Layer Separation**:
-   - `OrderService.Domain`: ZERO external dependencies. Contains pure domain entities, value objects, and domain events. Never reference EF Core or ASP.NET packages here.
-   - `OrderService.Application`: Contains MediatR commands, queries, and business use cases. References Domain only.
-   - `OrderService.Infrastructure`: Implements persistence, external APIs, and message brokers. References Application and Domain.
-   - `OrderService.Api`: Presentation minimal APIs and middleware. References Application and Infrastructure.
-2. **Deterministic Typing**:
-   - `<Nullable>enable</Nullable>` is enforced across all projects. No warnings tolerated.
-   - Never use `dynamic`, untyped objects, or reflection for data mapping.
-3. **Immutability & Value Objects**:
-   - Use C# `record` for all DTOs, Commands, Queries, and Value Objects.
-   - State mutations on Domain Entities must occur through explicit methods returning `Result<T>` or raising domain events.
-4. **Data Access & Idempotency**:
-   - All state-altering HTTP endpoints (`POST`, `PUT`, `PATCH`) must enforce the `Idempotency-Key` HTTP header.
-   - Never write raw unparameterized SQL strings. All queries must utilize EF Core with compiled queries or strongly typed Dapper queries with explicit parameter mapping.
+### 7.3 Automated Semantic Git Commit & ADR Generator Script
+> **Script**: [`examples/generate_adr.py`](./examples/generate_adr.py)
 
----
+A developer CLI utility that parses staged git diffs, extracts architectural decisions, formats conventional commits, and writes formal Architecture Decision Records (ADRs) conforming to standard templates.
 
-## 3. Allowed Dependencies & Tooling
-- **Validation**: `FluentValidation` (v11.x)
-- **Object Mapping**: Explicit extension methods or `Mapperly` (Source-generated). Do NOT introduce AutoMapper.
-- **Testing**: `xUnit`, `FluentAssertions`, `Moq`, `Testcontainers.PostgreSql`.
-- **JSON Serialization**: `System.Text.Json` (Source generated where applicable). Do NOT add `Newtonsoft.Json`.
-
----
-
-## 4. Execution Workflow for Agents
-When assigned an issue or feature implementation:
-1. **Explore**: Read the relevant domain entities and existing test suites before modifying code.
-2. **Test First (TDD)**: Add failing unit tests in `OrderService.UnitTests` covering both happy-path and boundary edge cases.
-3. **Implement**: Write minimal, clean code to satisfy the tests while strictly honoring the hexagonal layer boundaries.
-4. **Verify**: Execute `dotnet test` locally and verify that ALL tests pass.
-5. **Lint Check**: Run `dotnet format --verify-no-changes` to ensure zero style deviations.
-6. **Report**: Summarize changes, citing modified files and test execution output.
+```python
+# Semantic commit and ADR generation excerpt from examples/generate_adr.py
+def generate_adr_from_diff(diff_text: str) -> str:
+    prompt = f"Analyze the following git diff and produce an ADR conforming to MADR template:\n\n{diff_text}"
+    response = client.chat.completions.create(
+        model="gpt-4o",
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.1
+    )
+    return response.choices[0].message.content
 ```
-
----
-
-### 7.2 Automated AI Pull Request Reviewer Bot [MUST-HAVE] 🔴
-
-#### GitHub Actions Workflow Configuration
-```yaml
-# .github/workflows/ai-pr-review.yml
-name: AI Pull Request Architectural Review
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened]
-
-permissions:
-  contents: read
-  pull-requests: write
-
-jobs:
-  review:
-    runs-on: ubuntu-latest
-    if: github.actor != 'dependabot[bot]'
-    steps:
-      - name: Checkout Codebase
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Extract PR Diff
-        id: pr_diff
-        run: |
-          git diff origin/${{ github.base_ref }}...HEAD > diff.patch
-          echo "diff_size=$(wc -c < diff.patch)" >> $GITHUB_OUTPUT
-
-      - name: Run AI Architectural Review
-        if: steps.pr_diff.outputs.diff_size > 0
-        uses: actions/github-script@v7
-        env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        with:
-          script: |
-            const fs = require('fs');
-            const diff = fs.readFileSync('diff.patch', 'utf8');
-            
-            // Limit diff size to protect token context window
-            const truncatedDiff = diff.slice(0, 50000);
-            
-            const systemPrompt = `You are a Principal Software Architect and Lead Security Reviewer.
-            Review the attached pull request git diff against strict production standards:
-            1. Architectural Layer Violations (e.g., Domain referencing DB or Web infrastructure)
-            2. Security Vulnerabilities (SQL injection, unvalidated inputs, missing auth, sensitive data logging)
-            3. Performance Invariants (N+1 database queries, thread blocking async-over-sync, unindexed searches)
-            4. Breaking Contract Changes (Removed/renamed public API fields without deprecation)
-            
-            Format your response strictly as valid Markdown using the following structure:
-            ## 🔍 AI Architectural & Security PR Review
-            ### 🚦 Verdict: [APPROVED | CHANGES REQUESTED | BLOCKER]
-            ### ⚠️ Critical Findings & Invariant Violations
-            - (List files, line numbers, and concrete remediation suggestions)
-            ### 🛡️ Security & Performance Assessment
-            - (Detail any SQL, concurrency, or performance risks)
-            ### 💡 Commendations & Best Practices Observed
-            - (Highlight well-designed patterns)`;
-            
-            // Invoke the AI model and post review comment
-            // (Integration implementation calls Claude / Gemini API and posts via github.rest.pulls.createReview)
-            console.log("Executing automated architectural evaluation...");
-```
-
-#### Production PR Reviewer System Prompt & Evaluation Rubric
-```markdown
-You are a Principal Software Architect conducting a rigorous code review on an enterprise pull request.
-
-Evaluate the provided git diff using this four-tier severity rubric:
-
-[BLOCKER]:
-- Any architectural layer violation (e.g., Domain entity importing infrastructure packages).
-- Critical security vulnerabilities: SQL injection, SSRF, broken object-level authorization (BOLA), hardcoded secrets.
-- Breaking API contract modifications without backward-compatibility versioning.
-- Thread-blocking calls in asynchronous paths (e.g., `.Result`, `.Wait()`, `Thread.Sleep()`).
-
-[WARNING]:
-- Missing test coverage for new public methods or newly added branch conditions.
-- Missing database indexes on new foreign key relations or query filter properties.
-- Unbounded collection queries (missing pagination / `Take()` clauses).
-- Inconsistent error handling or swallowing exceptions silently.
-
-[NIT]:
-- Minor naming deviations or docstring omissions.
-
-Output your review with exact file names, line references, code diff suggestions, and an unambiguous verdict: APPROVED, CHANGES REQUESTED, or BLOCKED.
-```
-
----
-
-### 7.3 End-to-End Architectural Decision Record (ADR) Generator [GOOD-TO-HAVE] 🟡
-
-To institutionalize architectural knowledge, teams should automate the drafting of Architectural Decision Records using the **Michael Nygard format**:
-
-```markdown
-<!-- Prompt Pattern: Automated Architectural Decision Record Generator -->
-You are a Lead Software Architect. Draft a formal Architectural Decision Record (ADR) in the Michael Nygard format based on the following technical context:
-
-CONTEXT:
-We are designing the event ingestion pipeline for our Telemetry Analytics Service. Expected volume is 50,000 events/second with peaks at 150,000 events/second. Events must be processed in strict per-device chronological order. The current solution uses synchronous REST calls to a single relational database, which is experiencing connection pool exhaustion and deadlocks under load.
-
-OPTIONS EVALUATED:
-1. Apache Kafka / AWS MSK
-2. AWS SQS FIFO Queues
-3. RabbitMQ with Consistent Hash Exchange
-
-Draft the ADR including:
-- Title, Status, Context, Decision, Consequences (Positive, Negative, and Neutral), and Compliance Verification.
-```
-
-*Generated Production ADR Output*:
-```markdown
-# ADR-0028: Adoption of Apache Kafka for Scalable Partitioned Telemetry Ingestion
-
-- **Status**: Accepted
-- **Deciders**: Lead Architect, Principal Data Engineer, SecOps Lead
-- **Date**: 2026-09-26
-- **Technical Story**: TECH-4192 (Telemetry Scalability Bottleneck)
-
-## Context & Problem Statement
-Our current telemetry ingestion pipeline relies on synchronous HTTP POST endpoints persisting directly to PostgreSQL. Under peak loads of 150,000 events/sec, database connection pools exhaust, causing HTTP 504 timeouts and unrecoverable telemetry data loss. Events from each individual IoT device must be processed in strict chronological order to maintain valid state tracking.
-
-## Decision Drivers
-- Support for sustained 50,000 events/sec and 150,000 events/sec burst capacity.
-- Strict per-device ordering guarantees.
-- Retention capability allowing up to 7 days of replayability during downstream service outages.
-- Operational overhead and infrastructure cost.
-
-## Considered Options
-1. **Option A**: Apache Kafka (Managed AWS MSK / Confluent)
-2. **Option B**: AWS SQS FIFO Queues
-3. **Option C**: RabbitMQ with Consistent Hash Exchange
-
-## Decision Outcome
-Chosen Option: **Option A (Apache Kafka)**.
-
-### Rationale:
-- **Partition-Keyed Ordering**: By utilizing `DeviceId` as the Kafka message partition key, events for any single device are guaranteed to be processed in strict chronological sequence by a single partition consumer.
-- **High Throughput & Low Latency**: Kafka's append-only sequential log architecture effortlessly handles 150k events/sec at single-digit millisecond write latencies.
-- **Replayability**: Configurable multi-day log retention allows consumer services to be taken down for maintenance and replay state without data loss.
-
-### Discarded Alternatives:
-- *AWS SQS FIFO*: Enforces a hard limit of 300 messages/sec (or 3,000/sec with batching), requiring complex multi-queue sharding that introduces excessive operational complexity and cost at 150,000 events/sec.
-- *RabbitMQ*: While capable of high throughput, RabbitMQ's performance degrades when queues accumulate millions of unacknowledged messages during downstream outages, lacking native multi-day replay logs.
-
-## Consequences & Trade-offs
-### Positive:
-- Decouples ingestion ingestion HTTP edge proxies from downstream analytics processors.
-- Provides durable, fault-tolerant event streaming with zero message loss.
-- Enables new analytical consumer microservices to subscribe to the same stream independently.
-
-### Negative / Operational Costs:
-- Increases operational complexity: requires monitoring consumer lag, partition skew, and rebalance storms.
-- Requires team training on distributed log semantics and offset management.
-- Infrastructure cost of managed Kafka cluster (\$1,800/month baseline).
-
-## Compliance & Verification
-- CI/CD pipelines must verify that all Kafka event payloads validate against registered Protobuf schemas.
-- OpenTelemetry distributed trace contexts must be injected into Kafka message headers for end-to-end tracing.
-```
-
----
 
 ## 8. Curated Verified Resources [KNOWLEDGE-BASE] 🔵
 
@@ -980,50 +744,27 @@ To deepen your mastery of the AI-native software engineering lifecycle and leade
 - **[Anthropic Claude Code Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code)**: Official reference for Claude Code CLI, tool execution, and architecture.
 - **[Building Effective Agents (Anthropic Engineering)](https://www.anthropic.com/engineering/building-effective-agents)**: The foundational guide on agentic loops, prompt chaining, and evaluation harness design.
 - **[Cursor Documentation & Rules](https://docs.cursor.com/)**: Comprehensive reference for `@codebase` indexing, `.cursorrules`, and multi-file composer mechanics.
-- **[Model Context Protocol Specification](https://spec.modelcontextprotocol.io/)**: Complete RFC-level standard for connecting coding agents to tools and databases.
+- **[Google Agents CLI](https://google.github.io/agents-cli/)**: Command-line developer tool for scaffolding, testing, and deploying autonomous coding agents.
+- **[Model Context Protocol Specification](https://spec.modelcontextprotocol.io/)** & [GitHub Repository](https://github.com/modelcontextprotocol): Complete RFC-level standard for connecting coding agents to tools and databases.
 
-### 2. Engineering Leadership, Productivity & Vision
+### 2. Engineering Leadership, Productivity & Frameworks
 - **[Andrej Karpathy: Software 2.0 (Medium)](https://karpathy.medium.com/software-2-0-2e88b8a3a459)**: The seminal essay defining the shift from explicit syntax to learned neural weights, leading to Software 3.0 agent orchestration.
+- **[Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/)** & [GitHub Repository](https://github.com/google/adk-python): Code-first multi-agent orchestration framework for production systems.
+- **[Inspect AI (UK AI Safety Institute)](https://inspect.aisi.org.uk/)** & [GitHub Repository](https://github.com/UKGovernmentBEIS/inspect_ai): Open-source testing and evaluation framework for agentic workflows in CI/CD.
 - **[Microsoft Research: The SPACE Framework for Developer Productivity](https://queue.acm.org/detail.cfm?id=3454124)**: Overcoming simplistic metrics (LOC) with Satisfaction, Performance, Activity, Communication, and Efficiency.
 - **[GitHub Copilot Impact Studies](https://github.blog/news-insights/research/research-quantifying-github-copilots-impact-on-developer-productivity-and-happiness/)**: Quantitative empirical research on developer flow, task completion rates, and cognitive strain.
-- **[Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/)**: Multi-agent orchestration framework for code-first software systems.
 
 ---
 
 ## 9. Capstone Challenge: Establish an Enterprise AI-Native Repository Framework [MUST-HAVE] 🔴
 
-### Objective
-Your challenge is to transform a standard enterprise repository into a fully configured, AI-native software engineering environment capable of guiding autonomous coding agents, verifying invariants, and preventing architectural degradation.
-
-### Requirements & Deliverables
-
-#### Task 1: Complete `AGENT.md` Specification
-Create a comprehensive `AGENT.md` configuration file for a multi-tier microservice (.NET 9 Web API + React 19 Frontend + PostgreSQL database). The file must specify:
-1. Exact CLI commands for building, running unit tests, executing database migrations, and running linters.
-2. Explicit hexagonal / clean architecture layer dependency rules.
-3. Code styling, typing, and immutability invariants.
-4. An approved third-party library allowlist and a list of strictly banned libraries.
-5. The step-by-step TDD workflow the agent must execute before opening a pull request.
-
-#### Task 2: Automated GitHub Actions PR Review Bot
-Implement a complete GitHub Actions workflow (`.github/workflows/ai-pr-review.yml`) and an associated review prompt that:
-1. Extracts the pull request git diff against the target branch.
-2. Evaluates the diff against architectural layer rules, OWASP Top 10 vulnerabilities, and database indexing rules.
-3. Automatically posts inline review comments on the pull request with line numbers and suggested remediation diffs.
-4. Fails the CI status check if any `[BLOCKER]` severity findings are discovered.
-
-#### Task 3: AI-Assisted Architectural Decision Record (ADR) Workflow
-Design an automated CLI script or agent workflow that:
-1. Ingests a high-level system design problem statement and a set of competing technical options.
-2. Evaluates latency, operational complexity, financial cost, and failure modes across options.
-3. Produces a finalized Markdown ADR conforming to the Michael Nygard template in `/docs/adr/`.
-4. Updates the repository's master ADR index table automatically.
+> Structure an enterprise repository with machine-readable directives (`AGENT.md`), automated CI PR review bots, and TDD verification.
+> 
+> 👉 **[View Capstone Challenge Specification](./labs/capstone-ai-native-repository.md)**
 
 ---
 
-```
-                       ┌─────────────────────────────────────────────────────────┐
-                       │          ROADMAP PHASE COMPLETE: PHASE 08               │
-                       │    Mastered AI-Augmented SDLC & Engineering Leadership   │
-                       └─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart LR
+    Done["🏆 ROADMAP PHASE COMPLETE: PHASE 08<br/>Mastered AI-Augmented SDLC & Engineering Leadership"]
 ```

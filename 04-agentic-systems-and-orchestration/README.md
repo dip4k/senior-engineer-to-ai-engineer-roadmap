@@ -4,121 +4,36 @@
 
 ---
 
-### 🎯 Architectural Mastery Tiers
-- **[MUST-HAVE]** 🔴 : Critical, non-negotiable architectural knowledge and core design patterns required for senior and lead engineers in production.
-- **[GOOD-TO-HAVE]** 🟡 : Advanced architectural patterns, framework nuances, and optimization strategies that differentiate staff-level architects.
-- **[KNOWLEDGE-BASE]** 🔵 : Deep theoretical references, academic foundations (Reflexion, ReAct papers), and specialized enterprise edge cases.
+> **Taxonomy Note**: Refer to the [main README](../README.md) for curriculum classification symbols (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
 
 ---
 
-```
-                        ┌─────────────────────────────────────────────────────────┐
-                        │               THE SPECTRUM OF AGENCY                    │
-                        │   Predictable Workflows ──────────► Autonomous Systems  │
-                        └────────────────────────────┬────────────────────────────┘
-                                                     │
-              ┌──────────────────────────────────────┴──────────────────────────────────────┐
-              ▼                                                                             ▼
-┌─────────────────────────┐                                                   ┌─────────────────────────┐
-│  DETERMINISTIC FLOWS    │                                                   │    AUTONOMOUS AGENTS    │
-│  • Prompt Chaining      │                                                   │  • ReAct Dynamic Loops  │
-│  • Semantic Routing     │                                                   │  • Plan-and-Solve       │
-│  • Parallel Voting      │                                                   │  • Reflexion Memory     │
-│  • Evaluator-Optimizer  │                                                   │  • Multi-Agent Debate   │
-└────────────┬────────────┘                                                   └────────────┬────────────┘
-             │                                                                             │
-             └──────────────────────────────────────┬──────────────────────────────────────┘
-                                                    ▼
-                        ┌─────────────────────────────────────────────────────────┐
-                        │             ENTERPRISE RUNTIME ARCHITECTURE             │
-                        │  Durable State • Session Forking • Token Economics • HITL│
-                        └─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Spectrum["THE SPECTRUM OF AGENCY"]
+        direction LR
+        PW["Predictable Workflows"] --> AS["Autonomous Systems"]
+    end
+    Spectrum --> DF["DETERMINISTIC FLOWS\n• Prompt Chaining\n• Semantic Routing\n• Parallel Voting\n• Evaluator-Optimizer"]
+    Spectrum --> AA["AUTONOMOUS AGENTS\n• ReAct Dynamic Loops\n• Plan-and-Solve\n• Reflexion Memory\n• Multi-Agent Debate"]
+    DF --> ERA["ENTERPRISE RUNTIME ARCHITECTURE\nDurable State • Session Forking • Token Economics • HITL"]
+    AA --> ERA
 ```
 
 ---
 
 ## 📑 Table of Contents
 
-1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#1-executive-summary--lead-mental-model-must-have-)
-   - [Demystifying "Agents": Architecture vs. Science Fiction [MUST-HAVE] 🔴](#demystifying-agents-architecture-vs-science-fiction-must-have-)
-   - [The Spectrum of Agency: Anthropic's Foundational Taxonomy [MUST-HAVE] 🔴](#the-spectrum-of-agency-anthropics-foundational-taxonomy-must-have-)
-   - [The Architectural Golden Rule [MUST-HAVE] 🔴](#the-architectural-golden-rule-must-have-)
-2. [Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴](#2-why-this-matters-for-senior--lead-developers-must-have-)
-   - [Taming Non-Determinism and Compounding Error Drift [MUST-HAVE] 🔴](#taming-non-determinism-and-compounding-error-drift-must-have-)
-   - [State Explosion, Concurrency & Branching Sessions [GOOD-TO-HAVE] 🟡](#state-explosion-concurrency--branching-sessions-good-to-have-)
-   - [Runaway Latency & Token Economics [MUST-HAVE] 🔴](#runaway-latency--token-economics-must-have-)
-   - [Infinite Loops & Reasoning Deadlocks [MUST-HAVE] 🔴](#infinite-loops--reasoning-deadlocks-must-have-)
-   - [Distributed Observability for Multi-Step Reasoning Traces [GOOD-TO-HAVE] 🟡](#distributed-observability-for-multi-step-reasoning-traces-good-to-have-)
-3. [Deep-Dive Engineering & Implementation [MUST-HAVE] 🔴](#3-deep-dive-engineering--implementation-must-have-)
-   - [3.1. Workflow Patterns vs. Open Agents (Anthropic Taxonomy) [MUST-HAVE] 🔴](#31-workflow-patterns-vs-open-agents-anthropic-taxonomy-must-have-)
-     - [Prompt Chaining: Sequential Deterministic Decomposition [MUST-HAVE] 🔴](#prompt-chaining-sequential-deterministic-decomposition-must-have-)
-     - [Routing: Dynamic Classification to Specialized Models/Prompts [MUST-HAVE] 🔴](#routing-dynamic-classification-to-specialized-modelsprompts-must-have-)
-     - [Parallelization: Sectioning & Voting [GOOD-TO-HAVE] 🟡](#parallelization-sectioning--voting-good-to-have-)
-     - [Orchestrator-Workers: Central Decomposition & Worker Synthesis [MUST-HAVE] 🔴](#orchestrator-workers-central-decomposition--worker-synthesis-must-have-)
-     - [Evaluator-Optimizer: Self-Correcting Feedback Loops [MUST-HAVE] 🔴](#evaluator-optimizer-self-correcting-feedback-loops-must-have-)
-   - [3.2. Autonomous Agent Architecture [MUST-HAVE] 🔴](#32-autonomous-agent-architecture-must-have-)
-     - [The ReAct (Reasoning + Acting) Loop [MUST-HAVE] 🔴](#the-react-reasoning--acting-loop-must-have-)
-     - [Plan-and-Solve / Plan-and-Execute [GOOD-TO-HAVE] 🟡](#plan-and-solve--plan-and-execute-good-to-have-)
-     - [Reflexion: Verbal Reinforcement Learning & Memory of Failures [GOOD-TO-HAVE] 🟡](#reflexion-verbal-reinforcement-learning--memory-of-failures-good-to-have-)
-   - [3.3. Stateful Agents & Session Management [GOOD-TO-HAVE] 🟡](#33-stateful-agents--session-management-good-to-have-)
-     - [State Machines for Agents: Graphs, Reducers & Transitions [MUST-HAVE] 🔴](#state-machines-for-agents-graphs-reducers--transitions-must-have-)
-     - [Durable Persistence, Resumption & Session Forking [GOOD-TO-HAVE] 🟡](#durable-persistence-resumption--session-forking-good-to-have-)
-     - [Context Compaction & Observation Pruning [MUST-HAVE] 🔴](#context-compaction--observation-pruning-must-have-)
-   - [3.4. Memory Systems [GOOD-TO-HAVE] 🟡](#34-memory-systems-good-to-have-)
-     - [Working Memory (Scratchpad & Ephemeral Variables) [MUST-HAVE] 🔴](#working-memory-scratchpad--ephemeral-variables-must-have-)
-     - [Episodic Memory (Past Trajectories & Experience Vectors) [GOOD-TO-HAVE] 🟡](#episodic-memory-past-trajectories--experience-vectors-good-to-have-)
-     - [Semantic Memory (World Facts, User Profiles, Knowledge Graphs) [GOOD-TO-HAVE] 🟡](#semantic-memory-world-facts-user-profiles-knowledge-graphs-good-to-have-)
-     - [Procedural Memory (Tool Playbooks & Execution Rules) [KNOWLEDGE-BASE] 🔵](#procedural-memory-tool-playbooks--execution-rules-knowledge-base-)
-   - [3.5. Enterprise Agent Frameworks [GOOD-TO-HAVE] 🟡](#35-enterprise-agent-frameworks-good-to-have-)
-     - [LangChain: Chains, Ecosystem & Production Boundaries [GOOD-TO-HAVE] 🟡](#langchain-chains-ecosystem--production-boundaries-good-to-have-)
-     - [LangGraph: Stateful Cyclical Graphs & Checkpointed Runtimes [MUST-HAVE] 🔴](#langgraph-cyclical-graphs--checkpointed-runtimes-must-have-)
-     - [Microsoft Agentic Frameworks: Semantic Kernel, AutoGen & Azure AI Agent Service [MUST-HAVE] 🔴](#microsoft-agentic-frameworks-semantic-kernel-autogen--azure-ai-agent-service-must-have-)
-     - [Google Agent Development Kit (ADK) [MUST-HAVE] 🔴](#google-agent-development-kit-adk-must-have-)
-     - [Anthropic Claude SDK & Minimalist Patterns [MUST-HAVE] 🔴](#anthropic-claude-sdk--minimalist-patterns-must-have-)
-   - [3.6. Multi-Agent Orchestration Patterns [MUST-HAVE] 🔴](#36-multi-agent-orchestration-patterns-must-have-)
-     - [Core Multi-Agent Topologies [MUST-HAVE] 🔴](#core-multi-agent-topologies-must-have-)
-     - [Agent-to-Agent (A2A) Protocols [MUST-HAVE] 🔴](#agent-to-agent-a2a-protocols-must-have-)
-       - [Standard JSON-RPC / REST A2A Envelope Schema](#standard-json-rpc--rest-a2a-envelope-schema)
-       - [A2A Lifecycle State Machine & Idempotency](#a2a-lifecycle-state-machine--idempotency)
-       - [Message Brokering: Event-Driven Pub/Sub vs. Direct RPC](#message-brokering-event-driven-pubsub-vs-direct-rpc)
-     - [Agent Swarms & Dynamic Handoffs [MUST-HAVE] 🔴](#agent-swarms--dynamic-handoffs-must-have-)
-       - [The OpenAI Swarm Pattern: Pointer Mutation](#the-openai-swarm-pattern-pointer-mutation)
-       - [Context Window Isolation vs. Shared Memory](#context-window-isolation-vs-shared-memory)
-       - [Stateless Agent Routines vs. Stateful Orchestrators](#stateless-agent-routines-vs-stateful-orchestrators)
-     - [Team of Agents Collaboration Patterns [GOOD-TO-HAVE] 🟡](#team-of-agents-collaboration-patterns-good-to-have-)
-       - [Planner-Executor-Critic Triad](#planner-executor-critic-triad)
-       - [Multi-Agent Debate & Consensus Algorithms](#multi-agent-debate--consensus-algorithms)
-     - [Enterprise Pitfalls with Agentic AI [MUST-HAVE] 🔴](#enterprise-pitfalls-with-agentic-ai-must-have-)
-       - [Infinite Reasoning Loops & Deadlocks](#infinite-reasoning-loops--deadlocks)
-       - [Cascading Tool Hallucinations & Blast Radius Containment](#cascading-tool-hallucinations--blast-radius-containment)
-       - [Semantic Drift & Context Explosion in Multi-Agent Workflows](#semantic-drift--context-explosion-in-multi-agent-workflows)
-4. [System Architecture & Visual Flows [MUST-HAVE] 🔴](#4-system-architecture--visual-flows-must-have-)
-   - [Anthropic 5 Core Patterns Architecture [MUST-HAVE] 🔴](#anthropic-5-core-patterns-architecture-must-have-)
-   - [ReAct Agentic State Machine with HITL Interrupt Gate [MUST-HAVE] 🔴](#react-agentic-state-machine-with-hitl-interrupt-gate-must-have-)
-   - [Enterprise Agent-to-Agent (A2A) Swarm with Dynamic Handoff & Governance [MUST-HAVE] 🔴](#enterprise-agent-to-agent-a2a-swarm-with-dynamic-handoff--governance-must-have-)
-5. [Comparative Analysis & Tradeoff Matrices [MUST-HAVE] 🔴](#5-comparative-analysis--tradeoff-matrices-must-have-)
-   - [Industry Agentic Frameworks: Objective Pros & Cons Matrix [MUST-HAVE] 🔴](#industry-agentic-frameworks-objective-pros--cons-matrix-must-have-)
-   - [Deterministic Workflows vs. Autonomous Agents [MUST-HAVE] 🔴](#deterministic-workflows-vs-autonomous-agents-must-have-)
-   - [Synchronous Direct RPC vs. Distributed Event-Driven A2A Brokering [GOOD-TO-HAVE] 🟡](#synchronous-direct-rpc-vs-distributed-event-driven-a2a-brokering-good-to-have-)
-6. [Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴](#6-production-failure-modes--anti-patterns-must-have-)
-   - [1. Unbounded Reasoning Loops Draining Budgets [MUST-HAVE] 🔴](#1-unbounded-reasoning-loops-draining-budgets-must-have-)
-   - [2. Context Pollution & Observation Bloat [MUST-HAVE] 🔴](#2-context-pollution--observation-bloat-must-have-)
-   - [3. State Desynchronization Across Distributed Workers [GOOD-TO-HAVE] 🟡](#3-state-desynchronization-across-distributed-workers-good-to-have-)
-   - [4. "Agentitis" (Premature Agentification) [MUST-HAVE] 🔴](#4-agentitis-premature-agentification-must-have-)
-   - [5. Cascading Trajectory Hallucinations [MUST-HAVE] 🔴](#5-cascading-trajectory-hallucinations-must-have-)
-   - [6. Semantic Drift in Multi-Turn Handoffs [GOOD-TO-HAVE] 🟡](#6-semantic-drift-in-multi-turn-handoffs-good-to-have-)
-   - [7. Uncontained Blast Radius & Destructive Mutation Cascades [MUST-HAVE] 🔴](#7-uncontained-blast-radius--destructive-mutation-cascades-must-have-)
-7. [Hands-On Practice Labs & Common Problem Solutions [MUST-HAVE] 🔴](#7-hands-on-practice-labs--common-problem-solutions-must-have-)
-   - [Lab 1: Stateful Agent with Human-in-the-Loop Approval (LangGraph Pattern) [MUST-HAVE] 🔴](#lab-1-stateful-agent-with-human-in-the-loop-approval-langgraph-pattern-must-have-)
-   - [Lab 2: Multi-Agent Swarm with Dynamic Handoffs (A2A Protocol) [MUST-HAVE] 🔴](#lab-2-multi-agent-swarm-with-dynamic-handoffs-a2a-protocol-must-have-)
-   - [Lab 3: Detecting & Recovering from Infinite Loops (Cycle & Token Governor) [MUST-HAVE] 🔴](#lab-3-detecting--recovering-from-infinite-loops-cycle--token-governor-must-have-)
-   - [Lab 4: Transaction Rollback for Tool Execution Failures (Distributed Saga Pattern) [MUST-HAVE] 🔴](#lab-4-transaction-rollback-for-tool-execution-failures-distributed-saga-pattern-must-have-)
-8. [Enterprise Reference Code Implementations [MUST-HAVE] 🔴](#8-enterprise-reference-code-implementations-must-have-)
-   - [Python: Production ReAct Agent with Budgeting, Compaction & SQLite Checkpointing [MUST-HAVE] 🔴](#python-production-react-agent-with-budgeting-compaction--sqlite-checkpointing-must-have-)
-   - [C# / .NET 9: Enterprise Multi-Agent Pipeline with Semantic Kernel & Custom Plugins [GOOD-TO-HAVE] 🟡](#c--net-9-enterprise-multi-agent-pipeline-with-semantic-kernel--custom-plugins-good-to-have-)
-9. [Verified Curated Resources & Reference Index [KNOWLEDGE-BASE] 🔵](#9-verified-curated-resources--reference-index-knowledge-base-)
-10. [Capstone Engineering Challenge [MUST-HAVE] 🔴](#10-capstone-engineering-challenge-must-have-)
-    - [The Multi-Turn Code Review & Refactoring Engine [MUST-HAVE] 🔴](#the-multi-turn-code-review--refactoring-engine-must-have-)
+1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model-must-have-)
+2. [Why This Matters for Senior & Lead Developers](#2-why-this-matters-for-senior--lead-developers-must-have-)
+3. [Deep-Dive Engineering & Implementation](#3-deep-dive-engineering--implementation-must-have-)
+4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows-must-have-)
+5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices-must-have-)
+6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns-must-have-)
+7. [Hands-On Practice Labs & Common Problem Solutions](#7-hands-on-practice-labs--common-problem-solutions-must-have-)
+8. [Enterprise Reference Code Implementations](#8-enterprise-reference-code-implementations-must-have-)
+9. [Verified Curated Resources & Reference Index](#9-verified-curated-resources--reference-index-knowledge-base-)
+10. [Capstone Engineering Challenge](#10-capstone-engineering-challenge-must-have-)
 
 ---
 
@@ -130,22 +45,12 @@ In consumer media and introductory tutorials, an "AI Agent" is frequently portra
 
 In enterprise software engineering, **an agent is simply an LLM operating in an execution loop where its outputs are parsed as control-flow instructions or tool invocations that mutate external state and dictate subsequent iterations.**
 
-```
-                     ┌───────────────────────────────────────────────┐
-                     │            ENTERPRISE AGENT LOOP              │
-                     │                                               │
-                     │   State_{t+1} = f(State_t, LLM(State_t, Tools))│
-                     └───────────────────────┬───────────────────────┘
-                                             │
-                       ┌─────────────────────┴─────────────────────┐
-                       ▼                                           ▼
-         ┌───────────────────────────┐               ┌───────────────────────────┐
-         │     THE CONTROL PLANE     │               │     THE COMPUTE PLANE     │
-         │  • Code-based graph state │               │  • Foundation Model (LLM) │
-         │  • Hard safety boundaries │  ◄─────────►  │  • Stochastic reasoning   │
-         │  • Deterministic policies │               │  • Tool arguments syntax  │
-         │  • Budget & timeout gates │               │  • Natural language output│
-         └───────────────────────────┘               └───────────────────────────┘
+```mermaid
+flowchart TD
+    Loop["ENTERPRISE AGENT LOOP\nState_{t+1} = f(State_t, LLM(State_t, Tools))"]
+    Loop --> CP["THE CONTROL PLANE\n• Code-based graph state\n• Hard safety boundaries\n• Deterministic policies\n• Budget & timeout gates"]
+    Loop --> Compute["THE COMPUTE PLANE\n• Foundation Model (LLM)\n• Stochastic reasoning\n• Tool arguments syntax\n• Natural language output"]
+    CP <--> Compute
 ```
 
 The fundamental error made by junior and intermediate developers is surrendering the entire architectural control plane to the foundation model. When you allow a non-deterministic probabilistic engine to control the recursion depth, the termination condition, the state schema, and the persistence lifecycle, failure is guaranteed. 
@@ -156,13 +61,22 @@ A Senior Architect designs **deterministic harnesses** that bound, supervise, an
 
 Anthropic's seminal paper and engineering guide, *"Building Effective Agents"*, establishes a vital conceptual boundary that separates two radically different implementation paradigms:
 
-```
-LOW AGENCY                                                              HIGH AGENCY
-───────────────────────────────────────────────────────────────────────────────────►
-[Prompt Chain] ──► [Routing] ──► [Parallel/Voting] ──► [Orchestrator-Workers] ──► [Autonomous ReAct]
-       │                                                      │                   │
-       └────────────────── WORKFLOWS ─────────────────────────┘                   │
-             (Deterministic Orchestration Code)                       AGENTS (Model Decides Path)
+```mermaid
+flowchart LR
+    A["Prompt Chain"] --> B["Routing"]
+    B --> C["Parallel/Voting"]
+    C --> D["Orchestrator-Workers"]
+    D --> E["Autonomous ReAct"]
+    
+    subgraph Workflows["WORKFLOWS (Deterministic Orchestration Code)"]
+        A
+        B
+        C
+        D
+    end
+    subgraph Agents["AGENTS (Model Decides Path)"]
+        E
+    end
 ```
 
 1. **Workflows**: Systems where Large Language Models and external tools are orchestrated through **predetermined code paths**. The developer writes the state machine, defines the branching logic, executes the steps, and handles errors in code. The LLM is invoked solely to perform bounded cognitive transformations (parsing, extraction, summarization, generation, classification).
@@ -185,7 +99,15 @@ Autonomous agents should be reserved exclusively for domains with:
 
 ## 2. Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴
 
-Moving from single-turn LLM generation to multi-step agentic systems transforms your application from a stateless RPC consumer into a **distributed, stateful, non-deterministic distributed runtime**. As a Lead Developer or Architect, you must engineer defenses against five fatal production challenges:
+Moving from single-turn LLM generation to multi-step agentic systems transforms an application from a stateless RPC consumer into a **distributed, stateful, non-deterministic execution runtime**:
+
+| Agentic Production Challenge | Root Cause | Enterprise Impact | Architectural Defense |
+|---|---|---|---|
+| **Compounding Error Drift** | Multi-step probabilistic execution: $P(\text{System}) = P(\text{Step})^N$. | At 10 steps ($0.95^{10}$), system success drops to $59.9\%$. | Intermediate validation gates, schema assertions, and idempotent checkpoints. |
+| **State Explosion & HITL Halts** | Long-running asynchronous sessions across microservices. | Worker crashes lose 40k+ tokens; state graph serialization panics. | Durable state graphs (SQLite/Postgres), event-driven resume, and session forking. |
+| **Runaway Latency & Token Burn** | Quadratic token accumulation across multi-turn ReAct loops. | Context window saturation, "Lost in the Middle" drift, \$50+ turn bills. | Strict observation compaction, token budgeting, and tool payload summarization. |
+| **Oscillation Loops & Deadlocks** | Repetitive tool calls with identical arguments on failure. | Exhausted API quotas, frozen orchestrators, infinite execution spins. | Deterministic **Execution Governors** (call signature hashing, duplicate caps, iteration budgets). |
+| **Black-Box Trajectory Failures** | Classical APM cannot trace LLM reasoning or tool selection. | Undiagnosable production hallucinations occurring 6 steps deep. | **OpenTelemetry GenAI Distributed Tracing** with turn-by-turn semantic spans. |
 
 ### Taming Non-Determinism and Compounding Error Drift [MUST-HAVE] 🔴
 
@@ -203,18 +125,14 @@ Architects must implement **deterministic intermediate validators**, **idempoten
 
 In complex enterprise environments (e.g., customer support escalation, claims underwriting, automated pull request remediation), an agent session may span hours or days, interact with dozens of microservices, and require human approval gates.
 
-```
-       [Turn 0: Initial State]
-                 │
-                 ▼
-       [Turn 1: Tool Call A] ────► [State Checkpoint 1]
-                 │
-                 ▼
-       [Turn 2: Tool Call B] ────► [State Checkpoint 2]
-                 │
-       ┌─────────┴─────────┐
-       ▼                   ▼
-[Branch A: Optimistic]  [Branch B: Human Intervention]
+```mermaid
+flowchart TD
+    T0["Turn 0: Initial State"] --> T1["Turn 1: Tool Call A"]
+    T1 --> SC1["State Checkpoint 1"]
+    T1 --> T2["Turn 2: Tool Call B"]
+    T2 --> SC2["State Checkpoint 2"]
+    T2 --> BA["Branch A: Optimistic Path"]
+    T2 --> BB["Branch B: Human Intervention"]
 ```
 
 * How do you serialize the agent's memory graph across distributed web servers when an asynchronous human-in-the-loop (HITL) interrupt occurs?
@@ -262,48 +180,46 @@ Lead Engineers must architect **OpenTelemetry-native distributed tracing** where
 
 Anthropic categorizes programmatic LLM architectures into five primary deterministic workflow patterns before stepping into fully autonomous agents.
 
-```
-1. PROMPT CHAINING:
-   [Input] ──► [LLM Step 1] ──► [Gate / Validate] ──► [LLM Step 2] ──► [Output]
-
-2. ROUTING:
-                     ┌──► [Specialized Model A / Prompt A] ──► [Output]
-   [Input] ──► [Router] ──► [Specialized Model B / Prompt B] ──► [Output]
-                     └──► [Specialized Model C / Prompt C] ──► [Output]
-
-3. PARALLELIZATION:
-                     ┌──► [Subtask 1 / Reviewer 1] ──┐
-   [Input] ──► [Fan-Out] ──► [Subtask 2 / Reviewer 2] ──┼──► [Consensus / Synthesizer] ──► [Output]
-                     └──► [Subtask 3 / Reviewer 3] ──┘
-
-4. ORCHESTRATOR-WORKERS:
-   [Goal] ──► [Orchestrator LLM] ──┬──► [Worker 1: Dynamic Task] ──┐
-                                   ├──► [Worker 2: Dynamic Task] ──┼──► [Synthesize] ──► [Result]
-                                   └──► [Worker 3: Dynamic Task] ──┘
-
-5. EVALUATOR-OPTIMIZER:
-   [Prompt] ──► [Generator LLM] ◄────────────┐ (Critique & Refine)
-                      │                      │
-                      ▼                      │
-               [Evaluator LLM] ──► [Pass?] ──┴──► (No)
-                      │
-                      ▼ (Yes)
-                   [Output]
-```
-
 #### Prompt Chaining: Sequential Deterministic Decomposition [MUST-HAVE] 🔴
+
+```mermaid
+flowchart LR
+    P1["User Input"] --> P2["LLM Step 1"] --> P3{"Validate / Gate"}
+    P3 -- Pass --> P4["LLM Step 2"] --> P5["Final Output"]
+    P3 -- Fail --> P2
+```
+
 Prompt chaining decomposes a complex task into a linear series of discrete steps, where the output of step N serves as the input to step N+1.
 
 * **Why it beats single-turn megagenerations**: LLMs perform significantly better when dedicated to a narrow cognitive task. Forcing a model to simultaneously analyze requirements, design architecture, generate code, write unit tests, and document APIs in a single turn leads to shallow reasoning, skipped edge cases, and truncated outputs.
 * **Deterministic Gate Checks**: Between steps, programmatic code validates outputs (e.g., verifying that Step 1 returned valid JSON conforming to a Pydantic schema, or verifying that generated SQL compiles). If validation fails, the orchestrator triggers an immediate targeted retry without re-running previous steps.
 
 #### Routing: Dynamic Classification to Specialized Models/Prompts [MUST-HAVE] 🔴
+
+```mermaid
+flowchart LR
+    R1["User Input"] --> R2["Router / Classifier"]
+    R2 --> R3["Fast Model (FAQ / Simple)"]
+    R2 --> R4["Domain Model (Code / Technical)"]
+    R2 --> R5["Frontier Model (Complex Analysis)"]
+```
+
 Routing uses a lightweight classifier (a fast LLM like Claude 3.5 Haiku, Gemini 1.5 Flash, or a semantic embedding classifier) to inspect user input and direct it to the optimal downstream handler.
 
 * **Cost & Latency Optimization**: 80% of enterprise queries (FAQ lookups, password resets) do not require expensive frontier reasoning models (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro). Routing delivers 5x cost reduction and 3x latency improvements by directing simple queries to fast models and reserving frontier models for complex multi-step reasoning.
 * **Specialized Domain Prompts**: Prevents system prompt dilution. Instead of maintaining a monstrous 8,000-token prompt that attempts to cover legal, billing, technical support, and HR rules, routing directs the user to a lean, hyper-focused 500-token prompt tailored to their domain.
 
 #### Parallelization: Sectioning & Voting [GOOD-TO-HAVE] 🟡
+
+```mermaid
+flowchart LR
+    PA1["Input Task"] --> PA2{"Fan-Out"}
+    PA2 --> PA3["Worker 1: Security Audit"]
+    PA2 --> PA4["Worker 2: Performance Audit"]
+    PA2 --> PA5["Worker 3: Style & Docs"]
+    PA3 & PA4 & PA5 --> PA6["Synthesizer / Reducer"] --> PA7["Consolidated Output"]
+```
+
 Parallelization executes multiple concurrent LLM calls across two distinct paradigms:
 
 1. **Sectioning (Subtask Decomposition)**: The system splits an input into independent subtasks, executes them simultaneously, and merges the results. For example, during a pull request review, the system runs three parallel analyzers:
@@ -315,12 +231,30 @@ Parallelization executes multiple concurrent LLM calls across two distinct parad
    * Used for high-stakes compliance classifications, legal document extraction, or automated production deployments where false positives carry extreme financial cost.
 
 #### Orchestrator-Workers: Central Decomposition & Worker Synthesis [MUST-HAVE] 🔴
+
+```mermaid
+flowchart LR
+    O1["User Goal"] --> O2["Orchestrator LLM"]
+    O2 -->|Dynamic Plan| O3["Worker 1 (Specialist)"]
+    O2 -->|Dynamic Plan| O4["Worker 2 (Specialist)"]
+    O3 & O4 --> O5["Synthesis & Validation"] --> O6["Final Result"]
+```
+
 In the Orchestrator-Workers pattern, a central LLM dynamically inspects the user's objective, dynamically breaks it into an arbitrary number of subtasks based on input complexity, delegates subtasks to parallel worker LLMs, and synthesizes the final response.
 
 * **Difference from simple Parallelization**: In Sectioning, the subtasks are hardcoded in advance by the software engineer. In Orchestrator-Workers, **the subtasks are dynamically generated by the Orchestrator at runtime**.
 * **Use Case**: Generating a comprehensive competitive analysis report. The orchestrator determines that Company A requires analysis of its financial filings, patent portfolio, and product pricing, whereas Company B requires analysis of its open-source repositories and hiring trends.
 
 #### Evaluator-Optimizer: Self-Correcting Feedback Loops [MUST-HAVE] 🔴
+
+```mermaid
+flowchart LR
+    E1["Task Prompt"] --> E2["Generator LLM"]
+    E2 --> E3["Evaluator / Linter"]
+    E3 -- "Critique / Tests Fail" --> E2
+    E3 -- "Pass Criteria Met" --> E4["Accepted Output"]
+```
+
 The Evaluator-Optimizer pattern couples two distinct model personas:
 * **The Generator**: Produces an initial candidate solution (e.g., code, translation, marketing copy).
 * **The Evaluator**: Compares the candidate against an explicit rubric, executes deterministic tests (e.g., unit test runners, linters, security scanners), and provides actionable verbal critique.
@@ -336,49 +270,15 @@ When tasks cannot be mapped to a fixed DAG, architectures transition to autonomo
 #### The ReAct (Reasoning + Acting) Loop [MUST-HAVE] 🔴
 Introduced by Yao et al. (2022), **ReAct** synergizes reasoning traces and task-specific actions. Pure reasoning (Chain-of-Thought) suffers from hallucination because the model cannot verify external facts. Pure action (Act) lacks foresight, context tracking, and error recovery.
 
-```
-       ┌────────────────────────────────────────────────────────┐
-       │                       USER INPUT                       │
-       └───────────────────────────┬────────────────────────────┘
-                                   │
-                                   ▼
-                   ┌───────────────────────────────┐
-                   │        THOUGHT / REASON       │ ◄──────────┐
-                   │ "What do I know? What is the  │            │
-                   │  next piece of data I need?"  │            │
-                   └───────────────┬───────────────┘            │
-                                   │                            │
-                                   ▼                            │
-                   ┌───────────────────────────────┐            │
-                   │        ACTION / TOOL USE      │            │
-                   │ Invoke tool with typed schema │            │
-                   │  e.g., query_db(sku='109')    │            │
-                   └───────────────┬───────────────┘            │
-                                   │                            │
-                                   ▼                            │
-                   ┌───────────────────────────────┐            │
-                   │          OBSERVATION          │            │
-                   │ Execution output from runtime │            │
-                   │  e.g., {"stock": 42}          │            │
-                   └───────────────┬───────────────┘            │
-                                   │                            │
-                                   ▼                            │
-                   ┌───────────────────────────────┐            │
-                   │          REFLECTION           │            │
-                   │ "Did the tool succeed? Do I   │            │
-                   │  have enough to answer?"      │            │
-                   └───────────────┬───────────────┘            │
-                                   │                            │
-                        [Task Complete?]                        │
-                        /              \                        │
-                  (No) /                \ (Yes)                 │
-                      /                  \                      │
-                     └────────────────────┼─────────────────────┘
-                                          │
-                                          ▼
-                         ┌─────────────────────────────────┐
-                         │          FINAL ANSWER           │
-                         └─────────────────────────────────┘
+```mermaid
+flowchart TD
+    UI["USER INPUT"] --> Thought["THOUGHT / REASON\nWhat do I know? What is the next piece of data I need?"]
+    Thought --> Action["ACTION / TOOL USE\nInvoke tool with typed schema\ne.g., query_db(sku='109')"]
+    Action --> Obs["OBSERVATION\nExecution output from runtime\ne.g., {'stock': 42}"]
+    Obs --> Ref["REFLECTION\nDid the tool succeed? Do I have enough to answer?"]
+    Ref --> Check{"Task Complete?"}
+    Check -->|No| Thought
+    Check -->|Yes| FA["FINAL ANSWER"]
 ```
 
 1. **Thought**: The model generates explicit natural language reasoning about current progress, missing variables, and strategy.
@@ -389,29 +289,11 @@ Introduced by Yao et al. (2022), **ReAct** synergizes reasoning traces and task-
 #### Plan-and-Solve / Plan-and-Execute [GOOD-TO-HAVE] 🟡
 While ReAct is powerful, it suffers from **local horizon bias** (wandering off track over 15+ turns because each step is decided reactively). **Plan-and-Solve** decouples strategic planning from tactical execution:
 
-```
-[User Objective]
-       │
-       ▼
-┌──────────────┐
-│   PLANNER    │ ──► Generates explicit DAG / Step List:
-│    (LLM)     │     1. Fetch customer billing records.
-└──────────────┘     2. Verify license tier in Stripe.
-                     3. Run quota calculation script.
-                     4. Format downgrade notification email.
-       │
-       ▼
-┌──────────────┐
-│   EXECUTOR   │ ──► Executes Step 1 via Tools ──► [Observation 1]
-│   (ReAct /   │ ──► Executes Step 2 via Tools ──► [Observation 2]
-│  Worker LLM) │
-└──────────────┘
-       │
-       ▼
-┌──────────────┐
-│  RE-PLANNER  │ ──► Inspects observations. Did Step 2 encounter an error?
-│    (LLM)     │     • If yes: Mutate remaining plan (insert Step 2b).
-└──────────────┘     • If no: Proceed to Step 3.
+```mermaid
+flowchart TD
+    UO["User Objective"] --> Planner["PLANNER (LLM)\nGenerates explicit DAG / Step List:\n1. Fetch customer billing records.\n2. Verify license tier in Stripe.\n3. Run quota calculation script.\n4. Format downgrade notification email."]
+    Planner --> Executor["EXECUTOR (ReAct / Worker LLM)\nExecutes Step 1 via Tools --> Observation 1\nExecutes Step 2 via Tools --> Observation 2"]
+    Executor --> Replanner["RE-PLANNER (LLM)\nInspects observations. Did Step 2 encounter an error?\n• If yes: Mutate remaining plan (insert Step 2b).\n• If no: Proceed to Step 3."]
 ```
 
 By maintaining a distinct, visible execution plan in the state schema, the agent prevents drift and provides end-users with real-time progress transparency.
@@ -447,23 +329,12 @@ In frameworks like **LangGraph** and enterprise event-driven architectures, an a
 #### Durable Persistence, Resumption & Session Forking [GOOD-TO-HAVE] 🟡
 Enterprise systems require state to be durable across network partitions, node failures, and asynchronous human interactions:
 
-```
-[Worker A]                                              [Worker B]
-Step 1 ──► Step 2 ──► [Interrupt: Human Approval]
-      │
-      ▼ (Serialize & Checkpoint)
-┌─────────────────────────────────┐
-│     DURABLE STATE STORE         │
-│   PostgreSQL / Redis / SQLite   │
-│ • session_id: 'sess-8941'       │
-│ • checkpoint_id: 'chk-04'       │
-│ • state_blob: { ... }           │
-│ • status: 'SUSPENDED'           │
-└─────────────────────────────────┘
-                                           (2 Hours Later: Human Approves)
-                                                         │
-                                                         ▼ (Deserialize & Resume)
-                                                   Step 3 ──► Step 4 ──► Complete
+```mermaid
+flowchart TD
+    WA1["[Worker A]\nStep 1"] --> WA2["Step 2"]
+    WA2 -->|Interrupt: Human Approval| Store["DURABLE STATE STORE\nPostgreSQL / Redis / SQLite\n• session_id: 'sess-8941'\n• checkpoint_id: 'chk-04'\n• status: 'SUSPENDED'"]
+    Store -->|2 Hours Later: Human Approves\nDeserialize & Resume| WB3["[Worker B]\nStep 3"]
+    WB3 --> WB4["Step 4"] --> C["Complete"]
 ```
 
 * **Session Resumption**: The agent serializes its state machine to a durable database (SQLite, PostgreSQL, Redis) after every node transition. If an asynchronous interrupt occurs (e.g., awaiting a manager's sign-off for a \$5,000 refund), the process terminates cleanly. Two hours later, a webhook hits any available worker node, which deserializes `checkpoint_id`, restores the exact graph state, and resumes execution seamlessly.
@@ -472,29 +343,11 @@ Step 1 ──► Step 2 ──► [Interrupt: Human Approval]
 #### Context Compaction & Observation Pruning [MUST-HAVE] 🔴
 As an agent interacts with tools, intermediate observations rapidly consume the context window. Architects implement a **Three-Tier Context Pruning Pipeline**:
 
-```
-[Raw Tool Output: 15,000 tokens of raw JSON/Logs]
-                       │
-                       ▼
-┌────────────────────────────────────────────────────────┐
-│ TIER 1: DETERMINISTIC STRUCTURAL EXTRACTION            │
-│ Filter out null fields, extract only requested keys,   │
-│ truncate lists to top 5 items. (Reduces 80% tokens)    │
-└──────────────────────┬─────────────────────────────────┘
-                       │
-                       ▼
-┌────────────────────────────────────────────────────────┐
-│ TIER 2: LLM SUMMARIZATION SCRATCHPAD                   │
-│ If token count > 2,000 tokens, invoke a fast model     │
-│ (Claude Haiku / Gemini Flash) to summarize key findings│
-└──────────────────────┬─────────────────────────────────┘
-                       │
-                       ▼
-┌────────────────────────────────────────────────────────┐
-│ TIER 3: SLIDING WINDOW & POINTER CACHING               │
-│ Replace historical raw observations older than 3 turns │
-│ with pointer references: [Ref: Tool_Output_Check_02]   │
-└────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    Raw["Raw Tool Output: 15,000 tokens of raw JSON/Logs"] --> T1["TIER 1: DETERMINISTIC STRUCTURAL EXTRACTION\nFilter out null fields, extract only requested keys,\ntruncate lists to top 5 items. (Reduces 80% tokens)"]
+    T1 --> T2["TIER 2: LLM SUMMARIZATION SCRATCHPAD\nIf token count > 2,000 tokens, invoke a fast model\n(Claude Haiku / Gemini Flash) to summarize key findings"]
+    T2 --> T3["TIER 3: SLIDING WINDOW & POINTER CACHING\nReplace historical raw observations older than 3 turns\nwith pointer references: [Ref: Tool_Output_Check_02]"]
 ```
 
 ---
@@ -503,23 +356,12 @@ As an agent interacts with tools, intermediate observations rapidly consume the 
 
 Autonomous systems emulate biological cognitive memory architectures, split into four distinct tiers:
 
-```
-┌──────────────────────────────────────────────────────────────────────────┐
-│                             WORKING MEMORY                               │
-│  • Active context window (LLM Prompt)                                    │
-│  • Scratchpad reasoning traces, immediate tool observations              │
-│  • Ephemeral, high-speed, strictly bounded by model context size         │
-└──────────────────────────────────────────────────────────────────────────┘
-                                      │
-       ┌──────────────────────────────┼──────────────────────────────┐
-       ▼                              ▼                              ▼
-┌─────────────────────────┐  ┌─────────────────────────┐  ┌─────────────────────────┐
-│     EPISODIC MEMORY     │  │     SEMANTIC MEMORY     │  │    PROCEDURAL MEMORY    │
-│ • Past session histories│  │ • World facts & rules   │  │ • System instructions   │
-│ • Past failure logs     │  │ • User profile & prefs  │  │ • Learned tool playbooks│
-│ • Reflexion critiques   │  │ • Enterprise ontology   │  │ • Few-shot trajectories │
-│ • Vector DB retrieval   │  │ • Graph DB / Key-Value  │  │ • Immutable Code/Prompts│
-└─────────────────────────┘  └─────────────────────────┘  └─────────────────────────┘
+```mermaid
+flowchart TD
+    WM["WORKING MEMORY\n• Active context window (LLM Prompt)\n• Scratchpad reasoning traces, immediate tool observations\n• Ephemeral, high-speed, strictly bounded by model context size"]
+    WM --> EM["EPISODIC MEMORY\n• Past session histories\n• Past failure logs\n• Reflexion critiques\n• Vector DB retrieval"]
+    WM --> SM["SEMANTIC MEMORY\n• World facts & rules\n• User profile & prefs\n• Enterprise ontology\n• Graph DB / Key-Value"]
+    WM --> PM["PROCEDURAL MEMORY\n• System instructions\n• Learned tool playbooks\n• Few-shot trajectories\n• Immutable Code/Prompts"]
 ```
 
 | Memory System | Biological Analogy | Technical Storage Mechanism | Access Pattern | Enterprise Example |
@@ -528,6 +370,9 @@ Autonomous systems emulate biological cognitive memory architectures, split into
 | **Episodic Memory** `[GOOD-TO-HAVE]` 🟡 | Hippocampus (Past experiences & events) | Vector Database (Qdrant, Pinecone, pgvector) with semantic embeddings | Semantic similarity search (k-NN) on incoming task goals | Retrieving a post-mortem critique from last week when a similar SQL migration failed. |
 | **Semantic Memory** `[GOOD-TO-HAVE]` 🟡 | Temporal Cortex (Long-term facts & general knowledge) | Document Stores, Graph Databases (Neo4j), Relational DBs, Key-Value | Entity linking, structured SQL queries, hybrid vector search | User account settings, company reimbursement policies, system architecture specs. |
 | **Procedural Memory** `[KNOWLEDGE-BASE]` 🔵 | Striatum & Motor Cortex (Habits, motor skills & how-to rules) | System Prompts, Tool Definitions (JSON Schema), Code Workflows | Immutable configuration injected at runtime initialization | Step-by-step instructions on how to authenticate against the internal OAuth2 provider and invoke tools. |
+    
+> [!NOTE]
+> **Connection to Module 02:** Long-term memory retrieval uses the same embedding + vector search infrastructure as RAG systems. The retrieval strategies, hybrid search, and reranking patterns from [Module 02: RAG & Knowledge Systems](../02-rag-and-knowledge-systems/README.md) apply directly to agent memory retrieval.
 
 ---
 
@@ -620,51 +465,83 @@ Anthropic champions a **minimalist, framework-free approach** centered on raw SD
 * **Pros**: Zero third-party library overhead, 100% transparent execution traces, no breaking framework churn, maximum performance.
 * **Cons**: Developers must manually implement checkpointing, retry logic, and multi-agent routing.
 
+#### PydanticAI: Type-Safe Agents & Dependency Injection [MUST-HAVE] 🔴
+Built by the Pydantic team, **PydanticAI** provides an ergonomic, production-grade framework for writing type-safe agents in Python:
+* **Model-Agnostic & Type-Safe**: Supports OpenAI, Anthropic, Gemini, Groq, and Ollama with first-class type safety for tools and structured returns via Pydantic models.
+* **Dependency Injection (DI)**: Agents accept typed dependency containers (`deps_type`), enabling testability, mocking, and clean separation between AI logic and underlying database or service clients.
+* **Stream Validation**: Validates streamed LLM structured outputs incrementally as tokens arrive, rather than waiting for complete generation before error checking.
+* **Pros**: Native FastAPI developer experience, zero untyped dictionary parsing, built-in validation retry loops, lightweight and minimal abstractions.
+* **Cons**: Younger ecosystem than LangChain; fewer community third-party tool wrappers out of the box.
+
+#### OpenAI Agents SDK: Enterprise Handoffs & Production Sandboxing [MUST-HAVE] 🔴
+The **OpenAI Agents SDK (`openai-agents`)** is OpenAI's official production multi-agent framework, replacing the experimental Swarm project:
+* **Agent Handoffs**: First-class primitive allowing agents to transfer execution control and context directly to specialized peer agents without centralized supervisor bottlenecks.
+* **Built-in Guardrails & Sandboxes**: Provides out-of-the-box input/output guardrail interceptors and isolated execution sandboxes for safe code execution.
+* **Native Tracing**: Emits standard telemetry and OpenTelemetry-compatible traces directly into the OpenAI developer platform dashboard.
+* **Pros**: Official production support from OpenAI, minimal boilerplate, clean handoff abstractions, enterprise security sandboxes.
+* **Cons**: Primarily designed for the OpenAI API ecosystem.
+
 ---
 
 ### 3.6. Multi-Agent Orchestration Patterns [MUST-HAVE] 🔴
 
 When an enterprise problem exceeds the cognitive capacity of a single context window, requires distinct security and permission boundaries, or demands specialized domain reasoning, systems scale to **Multi-Agent Orchestration**.
 
-```
-A. SUPERVISOR PATTERN                   B. HIERARCHICAL TEAMS
-      ┌────────────┐                         ┌───────────────────┐
-      │ Supervisor │                         │  Lead Supervisor  │
-      └─────┬──────┘                         └─────────┬─────────┘
-      ┌─────┴─────┐                               ┌────┴────┐
-      ▼           ▼                               ▼         ▼
-  [Worker 1]  [Worker 2]                   [Sub-Sup A]   [Sub-Sup B]
-                                             ┌────┴────┐   ┌────┴────┐
-                                             ▼         ▼   ▼         ▼
-                                           [W-A1]    [W-A2][W-B1]    [W-B2]
-
-C. SWARM / HANDOFF                       D. MULTI-AGENT DEBATE
-  ┌────────┐       Handoff       ┌────────┐      ┌────────┐      ┌────────┐
-  │Agent A ├────────────────────►│Agent B │      │Agent A │      │Agent B │
-  │(Triage)│◄────────────────────┤(Billing│      │(Pro)   │      │(Con)   │
-  └────────┘                     └────────┘      └────┬───┘      └───┬────┘
-                                                      │              │
-                                                      └──────►◄──────┘
-                                                             │ (Debate)
-                                                             ▼
-                                                    [Consensus Judge]
-```
-
 #### Core Multi-Agent Topologies [MUST-HAVE] 🔴
 
-1. **Supervisor Pattern (Centralized Hub-and-Spoke)**:
-   - A single central coordinator agent receives the user's objective, inspects worker capability manifests, delegates discrete subtasks to specialized subordinate agents, inspects their results, and decides the next step.
-   - **Data Flow**: Leaf workers communicate *solely* with the supervisor; peer-to-peer communication between workers is prohibited.
-   - **Tradeoffs**: Highly observable and straightforward to debug; however, the supervisor's context window becomes an architectural throughput and token bottleneck.
-2. **Hierarchical Multi-Agent Teams (Tree-Structured Organization)**:
-   - Emulates enterprise management structures. A top-level executive agent delegates to functional domain leads (e.g., Engineering Lead, QA Lead, Security Lead), who in turn manage specialized leaf agents (e.g., Backend Developer, Database Specialist).
-   - **Encapsulation**: Sub-teams maintain isolated sub-graphs. Leaf-agent dialogue remains strictly contained within the sub-team, passing only synthesized milestone deliverables up the chain.
-3. **Swarm & Dynamic Handoff (Decentralized Peer-to-Peer)**:
-   - Popularized by the OpenAI Swarm reference pattern. Agents operate as peer nodes in a mesh network with the ability to dynamically transfer execution control ("hand off") to another agent along with the conversation state.
-   - **Execution Mechanics**: The active agent executes a transfer tool (e.g., `transfer_to_billing_agent()`). The orchestrator runtime updates its execution pointer to point directly to the new agent without returning control to a centralized supervisor.
-4. **Multi-Agent Debate & Consensus (Adversarial Triad)**:
-   - Two or more agents are initialized with contrasting goals, rubrics, or system instructions (e.g., a "Security Auditor" hunting for vulnerabilities vs. a "Feature Velocity Engineer" minimizing code changes).
-   - **Dialectic Convergence**: The agents iteratively critique each other's outputs across T rounds until a neutral Judge Agent synthesizes a balanced, mathematically grounded consensus.
+##### 1. Supervisor Pattern (Centralized Hub-and-Spoke)
+
+```mermaid
+flowchart TD
+    Sup["Supervisor Agent"] --> W1["Worker 1 (Research)"]
+    Sup --> W2["Worker 2 (Execution)"]
+    W1 -.->|Result| Sup
+    W2 -.->|Result| Sup
+```
+
+* A single central coordinator agent receives the user's objective, inspects worker capability manifests, delegates discrete subtasks to specialized subordinate agents, inspects their results, and decides the next step.
+* **Data Flow**: Leaf workers communicate *solely* with the supervisor; peer-to-peer communication between workers is prohibited.
+* **Tradeoffs**: Highly observable and straightforward to debug; however, the supervisor's context window becomes an architectural throughput and token bottleneck.
+
+##### 2. Hierarchical Multi-Agent Teams (Tree-Structured Organization)
+
+```mermaid
+flowchart TD
+    LSup["Lead Supervisor"] --> SSA["Domain Lead A (Dev)"]
+    LSup --> SSB["Domain Lead B (QA)"]
+    SSA --> WA1["Frontend Dev"]
+    SSA --> WA2["Backend Dev"]
+    SSB --> WB1["Security Tester"]
+    SSB --> WB2["Performance Tester"]
+```
+
+* Emulates enterprise management structures. A top-level executive agent delegates to functional domain leads (e.g., Engineering Lead, QA Lead, Security Lead), who in turn manage specialized leaf agents (e.g., Backend Developer, Database Specialist).
+* **Encapsulation**: Sub-teams maintain isolated sub-graphs. Leaf-agent dialogue remains strictly contained within the sub-team, passing only synthesized milestone deliverables up the chain.
+
+##### 3. Swarm & Dynamic Handoff (Decentralized Peer-to-Peer)
+
+```mermaid
+flowchart LR
+    AgA["Triage Agent"] <-- "Dynamic Handoff + Context" --> AgB["Billing Agent"]
+    AgB <-- "Dynamic Handoff + Context" --> AgC["Support Agent"]
+```
+
+* Popularized by the OpenAI Swarm reference pattern. Agents operate as peer nodes in a mesh network with the ability to dynamically transfer execution control ("hand off") to another agent along with the conversation state.
+* **Execution Mechanics**: The active agent executes a transfer tool (e.g., `transfer_to_billing_agent()`). The orchestrator runtime updates its execution pointer to point directly to the new agent without returning control to a centralized supervisor.
+
+##### 4. Multi-Agent Debate & Consensus (Adversarial Triad)
+
+```mermaid
+flowchart TD
+    Pro["Proponent Agent (Speed)"] --> Judge["Consensus Judge"]
+    Con["Skeptic Agent (Security)"] --> Judge
+    Judge -.->|Critique / Adjust| Pro
+    Judge -.->|Critique / Adjust| Con
+    Judge --> Out["Synthesized Decision"]
+```
+
+* Two or more agents are initialized with contrasting goals, rubrics, or system instructions (e.g., a "Security Auditor" hunting for vulnerabilities vs. a "Feature Velocity Engineer" minimizing code changes).
+* **Dialectic Convergence**: The agents iteratively critique each other's outputs across T rounds until a neutral Judge Agent synthesizes a balanced, mathematically grounded consensus.
 
 ---
 
@@ -833,18 +710,15 @@ stateDiagram-v2
 
 Architecting the transport layer for multi-agent systems requires evaluating two competing paradigms:
 
-```
-PARADIGM 1: DIRECT SYNCHRONOUS RPC (gRPC / HTTP/2)
-┌──────────┐                     ┌──────────┐
-│ Agent A  ├────────────────────►│ Agent B  │ (Point-to-point, blocking or streaming)
-└──────────┘                     └──────────┘
-
-PARADIGM 2: DISTRIBUTED EVENT-DRIVEN BROKER (Kafka / RabbitMQ / Redis Streams)
-┌──────────┐     Publish Event     ┌──────────────────────────────────┐     Consume Event     ┌──────────┐
-│ Agent A  ├──────────────────────►│ A2A Event Bus (Kafka / Redis)    ├──────────────────────►│ Agent B  │
-└──────────┘                       │ • Topic: agent.tasks.security    │                       └──────────┘
-                                   │ • Consumer Groups & Partitioning │
-                                   └──────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph P1["Paradigm 1: Direct Synchronous RPC (gRPC / HTTP/2)"]
+        A1["Agent A"] -- "Point-to-point (blocking/streaming)" --> B1["Agent B"]
+    end
+    subgraph P2["Paradigm 2: Distributed Event-Driven Broker (Kafka / Redis Streams)"]
+        A2["Agent A"] -- "Publish Event" --> Bus["A2A Event Bus (Kafka / Redis)<br>• Topic: agent.tasks.security<br>• Consumer Groups & Partitioning"]
+        Bus -- "Consume Event" --> B2["Agent B"]
+    end
 ```
 
 1. **Direct Synchronous RPC (gRPC / HTTP REST)**:
@@ -952,15 +826,22 @@ class SwarmEngine:
 
 When an execution handoff occurs between Agent A and Agent B, how should conversation history and intermediate state be transferred? Enterprise systems utilize three architectural patterns:
 
-```
-PATTERN A: NAIVE FULL CONTEXT PASS-THROUGH (Anti-Pattern)
-[User Prompt] ──► [Agent A Reasoning & Tool Logs (15K Tok)] ──► [Agent B Prompt: Ingests all 15K Tok!]
+```mermaid
+flowchart TD
+    subgraph PatternA["PATTERN A: NAIVE FULL CONTEXT PASS-THROUGH (Anti-Pattern)"]
+        direction LR
+        PA_User["User Prompt"] --> PA_A["Agent A Reasoning & Tool Logs\n(15,000 Tokens)"] --> PA_B["Agent B Prompt\n(Ingests all 15K Tokens!)"]
+    end
 
-PATTERN B: SCOPED SUMMARIZATION BRIDGE (Recommended)
-[User Prompt] ──► [Agent A Reasoning] ──► [Structured Synthesis DTO (400 Tok)] ──► [Agent B Prompt]
+    subgraph PatternB["PATTERN B: SCOPED SUMMARIZATION BRIDGE (Recommended)"]
+        direction LR
+        PB_User["User Prompt"] --> PB_A["Agent A Reasoning"] --> PB_DTO["Structured Synthesis DTO\n(400 Tokens)"] --> PB_B["Agent B Prompt"]
+    end
 
-PATTERN C: DURABLE POINTER PASSING (High Scalability)
-[Agent A writes bulky state to Redis] ──► Passes {session_id, pointer_id} ──► [Agent B queries keys on demand]
+    subgraph PatternC["PATTERN C: DURABLE POINTER PASSING (High Scalability)"]
+        direction LR
+        PC_A["Agent A writes bulky state to Redis"] --> PC_Ptr["Passes {session_id, pointer_id}"] --> PC_B["Agent B queries keys on demand"]
+    end
 ```
 
 1. **Pattern A: Naive Full Context Pass-Through**:
@@ -1027,10 +908,11 @@ flowchart TD
 
 When single models suffer from systemic hallucinations or idiosyncratic reasoning biases, multi-agent debate forces diverse perspectives to challenge assumptions before finalizing decisions.
 
-```
-Round 1: [Agent A: Proposal] ─────────┐
-                                      ├─► [Round 2: Cross-Critique] ──► [Round 3: Final Synthesis by Judge]
-Round 1: [Agent B: Counter-Proposal] ─┘
+```mermaid
+flowchart LR
+    A1["Round 1: Agent A Proposal"] --> R2["Round 2: Cross-Critique"]
+    B1["Round 1: Agent B Counter-Proposal"] --> R2
+    R2 --> R3["Round 3: Final Synthesis by Judge"]
 ```
 
 1. **Majority Voting (Plurality Consensus)**:
@@ -1277,6 +1159,8 @@ sequenceDiagram
 
 | Framework | Primary Language(s) | Architectural Paradigm | Key Advantages (Pros) | Production Limitations (Cons) | State & HITL Support | Distributed Telemetry | Best Production Fit |
 |---|---|---|---|---|---|---|---|
+| **PydanticAI** | Python | Model-agnostic typed agents with Dependency Injection | • Ergonomic FastAPI-like design<br>• 100% type-safe tool signatures and structured validation<br>• Built-in dependency injection for testing & mocking | • Newer ecosystem with fewer legacy community connectors | **High**: Dynamic retry loops, typed state schemas, and model-agnostic execution | Native Logfire and OpenTelemetry instrumentation | Type-safe backend microservices, financial data extraction, FastAPI services |
+| **OpenAI Agents SDK** | Python | Official multi-agent handoffs & isolated sandboxes | • Official production successor to Swarm<br>• Clean agent handoffs without supervisor overhead<br>• Turnkey code execution sandboxes and guardrails | • Optimized primarily for the OpenAI ecosystem | **High**: Native session contexts, approval gates, and state isolation | Native OpenAI platform telemetry & OpenTelemetry export | Enterprise OpenAI-native applications, multi-agent support meshes, voice agents |
 | **LangGraph** | Python, TypeScript | Cyclical StateGraph (Nodes, Edges, Reducers) | • Native cyclical reasoning loops<br>• Zero-loss durable checkpointing (`PostgresSaver`, Redis)<br>• First-class time-travel debugging and state fork | • Explicit state reducer boilerplate<br>• Steeper learning curve<br>• Coupled to LangChain message conventions | **Maximum**: Native `interrupt_before` and `interrupt_after` hooks with full resume capability | Native LangSmith integration; OpenTelemetry trace spans | Complex cyclical agents, long-running stateful workflows, fault-tolerant apps |
 | **LangChain** | Python, TypeScript | Linear Chains & LCEL (`prompt \| model \| parser`) | • 700+ turnkey data connectors and vector store adapters<br>• Provider-agnostic models<br>• Rapid prototyping speed | • Opaque class hierarchies and deep inheritance<br>• Brittle for cyclical multi-step reasoning loops<br>• Rapid breaking changes and API churn | **Minimal**: Stateless chains; relies on basic in-memory conversation buffers | Third-party callbacks, LangSmith, basic logging | Rapid POCs, document extraction, ETL pipelines, linear prompt chains |
 | **Microsoft Semantic Kernel** | C# (.NET 8/9), Python, Java | Strongly typed plugins with enterprise DI | • Native enterprise C#/.NET integration<br>• Function filter middleware pipelines<br>• Direct Azure OpenAI / Foundry binding | • Historically slower documentation parity for non-.NET languages<br>• Smaller community ecosystem than Python | **High**: Custom function filters, approval gates, and stateful `AgentGroupChat` | Native .NET `ActivitySource`, Azure Application Insights, OpenTelemetry | Enterprise .NET backends, Microsoft Azure ecosystems, corporate IT systems |
@@ -1390,1180 +1274,122 @@ This section provides four hands-on, production-grade practice labs addressing t
 ---
 
 ### Lab 1: Stateful Agent with Human-in-the-Loop Approval (LangGraph Pattern) [MUST-HAVE] 🔴
-
-#### Scenario & Enterprise Problem
-In corporate financial workflows, an AI agent is authorized to retrieve balances, inspect transaction histories, and calculate fee adjustments autonomously. However, any operation that mutates balances by more than \$1,000, alters tax IDs, or initiates bank wires must be halted for explicit human approval before external execution.
-
-#### Architectural Mechanics
-- **Graph Topology**: A cyclical state machine consisting of three nodes: `Reasoner`, `RiskEvaluator`, and `ActionExecutor`.
-- **Durable Checkpointing**: Every state transition commits to a durable store (`SqliteSaver`, `PostgresSaver`).
-- **Interrupt Primitive**: The graph configures an execution breakpoint: `interrupt_before=["ActionExecutor"]`.
-- **Operator Resumption**: The human operator inspects the paused graph state via an API or CLI, reviews the proposed tool parameters, and provides an approval or rejection token to resume execution.
-
-#### Runnable Implementation
-
-```python
-"""
-lab1_hitl_agent.py
-Hands-on Lab 1: Stateful Agent with Human-in-the-Loop (HITL) Approval.
-Implements the core LangGraph state machine and checkpointing pattern.
-"""
-
-from __future__ import annotations
-import json
-import uuid
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Any, Dict, List, Optional
-
-
-class RiskTier(str, Enum):
-    LOW = "LOW"
-    HIGH = "HIGH"  # Requires Human Approval
-
-
-class ExecutionState(str, Enum):
-    RUNNING = "RUNNING"
-    AWAITING_APPROVAL = "AWAITING_APPROVAL"
-    COMPLETED = "COMPLETED"
-    REJECTED = "REJECTED"
-
-
-@dataclass
-class WorkflowState:
-    session_id: str
-    messages: List[Dict[str, str]] = field(default_factory=list)
-    pending_tool: Optional[str] = None
-    pending_args: Optional[Dict[str, Any]] = None
-    risk_tier: RiskTier = RiskTier.LOW
-    status: ExecutionState = ExecutionState.RUNNING
-    approval_granted: Optional[bool] = None
-    execution_result: Optional[str] = None
-
-
-class EnterpriseHITLGraph:
-    """
-    Simulates a LangGraph stateful graph with durable checkpointing and interrupt_before.
-    """
-    def __init__(self):
-        # Simulated durable storage checkpoint store (e.g., PostgresSaver)
-        self._checkpoints: Dict[str, WorkflowState] = {}
-
-    def save_checkpoint(self, state: WorkflowState) -> None:
-        # Serializes state snapshot to durable storage
-        self._checkpoints[state.session_id] = state
-
-    def get_checkpoint(self, session_id: str) -> Optional[WorkflowState]:
-        return self._checkpoints.get(session_id)
-
-    def node_reasoner(self, state: WorkflowState, user_prompt: str) -> WorkflowState:
-        state.messages.append({"role": "user", "content": user_prompt})
-        
-        # Simulated reasoning evaluation: Detect intent
-        if "wire" in user_prompt.lower() or "transfer" in user_prompt.lower():
-            state.pending_tool = "execute_wire_transfer"
-            state.pending_args = {"amount": 25000.0, "recipient_iban": "DE89370400440532013000"}
-            state.risk_tier = RiskTier.HIGH
-        else:
-            state.pending_tool = "get_account_balance"
-            state.pending_args = {"account_id": "ACC-901"}
-            state.risk_tier = RiskTier.LOW
-
-        state.messages.append({
-            "role": "assistant",
-            "thought": f"Identified action {state.pending_tool} with risk tier {state.risk_tier.value}"
-        })
-        return state
-
-    def run(self, session_id: str, user_prompt: str) -> WorkflowState:
-        state = self.get_checkpoint(session_id) or WorkflowState(session_id=session_id)
-        state = self.node_reasoner(state, user_prompt)
-
-        # Conditional Edge & Interrupt Gate:
-        if state.risk_tier == RiskTier.HIGH and state.approval_granted is None:
-            state.status = ExecutionState.AWAITING_APPROVAL
-            self.save_checkpoint(state)
-            print(f"\n[HITL INTERRUPT] Pausing execution for Session {session_id}.")
-            print(f"  Proposed Tool: {state.pending_tool}")
-            print(f"  Proposed Arguments: {json.dumps(state.pending_args)}")
-            print("  State safely checkpointed to database. Execution halted.")
-            return state
-
-        return self._node_action_executor(state)
-
-    def resume(self, session_id: str, approved: bool, reason: str = "") -> WorkflowState:
-        state = self.get_checkpoint(session_id)
-        if not state:
-            raise ValueError(f"Session {session_id} not found.")
-        if state.status != ExecutionState.AWAITING_APPROVAL:
-            raise RuntimeError(f"Session {session_id} is not in AWAITING_APPROVAL state.")
-
-        state.approval_granted = approved
-        if not approved:
-            state.status = ExecutionState.REJECTED
-            state.execution_result = f"Action rejected by compliance officer: {reason}"
-            self.save_checkpoint(state)
-            print(f"\n[HITL REJECTED] Action aborted for Session {session_id}: {reason}")
-            return state
-
-        print(f"\n[HITL APPROVED] Approval token verified for Session {session_id}. Resuming graph...")
-        state.status = ExecutionState.RUNNING
-        return self._node_action_executor(state)
-
-    def _node_action_executor(self, state: WorkflowState) -> WorkflowState:
-        # Executes the pending tool
-        if state.pending_tool == "execute_wire_transfer":
-            state.execution_result = f"Successfully wired ${state.pending_args['amount']} to {state.pending_args['recipient_iban']}."
-        elif state.pending_tool == "get_account_balance":
-            state.execution_result = "Current Account Balance: $148,250.00"
-        
-        state.status = ExecutionState.COMPLETED
-        state.messages.append({"role": "system", "observation": state.execution_result})
-        self.save_checkpoint(state)
-        return state
-
-
-# Verification Routine:
-if __name__ == "__main__":
-    graph = EnterpriseHITLGraph()
-    session_id = f"sess_{uuid.uuid4().hex[:8]}"
-
-    print("=== Step 1: Submitting High-Risk Wire Transfer Request ===")
-    state = graph.run(session_id, "Please initiate a wire transfer of $25,000 to German vendor DE89370400440532013000")
-    assert state.status == ExecutionState.AWAITING_APPROVAL, "Graph failed to pause on high-risk tool!"
-
-    print("\n=== Step 2: Simulating Asynchronous Compliance Review ===")
-    resumed_state = graph.resume(session_id, approved=True, reason="Verified against Vendor Invoice #INV-882")
-    assert resumed_state.status == ExecutionState.COMPLETED, "Graph failed to complete after approval!"
-    print(f"Final Outcome: {resumed_state.execution_result}")
-```
-
----
+> **Note:** This lab has been extracted to a standalone file. 
+> 
+> **[View Lab 1: Stateful Agent with HITL](./labs/lab1-stateful-agent-hitl.md)**
+> 
+> Objective: Implement a stateful agent with human-in-the-loop approval.
 
 ### Lab 2: Multi-Agent Swarm with Dynamic Handoffs (A2A Protocol) [MUST-HAVE] 🔴
-
-#### Scenario & Enterprise Problem
-In customer support operations, inquiries frequently span multiple organizational units (e.g., "My bill was charged twice, and my API key is broken"). Routing all messages through a monolithic central supervisor causes quadratic token growth (O(N^2)) and high latency. Agents must be able to directly transfer execution to peer agents along with an isolated, strongly typed context contract.
-
-#### Architectural Mechanics
-- **Mesh Communication**: Agents communicate via typed handoff functions (`transfer_to_billing`, `transfer_to_tech_support`).
-- **Context Isolation**: When transferring control, the active agent does not dump its entire conversation history. It packages a concise `HandoffContract` (< 300 tokens) containing verified facts, customer ID, and pending sub-goals.
-- **Pointer Mutation**: The swarm execution engine updates `active_agent = next_agent` without returning to a central supervisor.
-
-#### Runnable Implementation
-
-```python
-"""
-lab2_agent_swarm.py
-Hands-on Lab 2: Multi-Agent Swarm with Dynamic Handoffs (A2A Protocol).
-Demonstrates execution pointer mutation and context isolation.
-"""
-
-from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
-
-
-@dataclass
-class HandoffContract:
-    target_agent: str
-    reason: str
-    customer_id: str
-    verified_data: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class SwarmMessage:
-    sender: str
-    content: str
-
-
-class Agent:
-    def __init__(self, name: str, instructions: str):
-        self.name = name
-        self.instructions = instructions
-
-    def process(self, query: str, contract: Optional[HandoffContract]) -> tuple[str, Optional[HandoffContract]]:
-        raise NotImplementedError
-
-
-class TriageAgent(Agent):
-    def __init__(self):
-        super().__init__("TriageAgent", "Classify requests and route to specialized teams.")
-
-    def process(self, query: str, contract: Optional[HandoffContract]) -> tuple[str, Optional[HandoffContract]]:
-        print(f"[{self.name}] Analyzing query: '{query}'")
-        if "charge" in query.lower() or "refund" in query.lower() or "invoice" in query.lower():
-            print(f"[{self.name}] Routing to Billing Specialist with verified customer ID.")
-            handoff = HandoffContract(
-                target_agent="BillingAgent",
-                reason="User reports billing discrepancy",
-                customer_id="CUST-4091",
-                verified_data={"flagged_invoice": "INV-2024-09"}
-            )
-            return "Transferring to Billing Specialist.", handoff
-        return "Query resolved by Triage.", None
-
-
-class BillingAgent(Agent):
-    def __init__(self):
-        super().__init__("BillingAgent", "Handle customer invoices, charges, and refunds.")
-
-    def process(self, query: str, contract: Optional[HandoffContract]) -> tuple[str, Optional[HandoffContract]]:
-        print(f"[{self.name}] Received control. Customer: {contract.customer_id}, Invoice: {contract.verified_data.get('flagged_invoice')}")
-        # Execute specialized domain action with isolated context:
-        resolution = (
-            f"Billing Specialist investigated Invoice {contract.verified_data.get('flagged_invoice')} "
-            f"for Customer {contract.customer_id}: Duplicate charge of $79.00 reversed successfully."
-        )
-        return resolution, None
-
-
-class EnterpriseSwarmRunner:
-    def __init__(self, agents: Dict[str, Agent], initial_agent: str):
-        self.agents = agents
-        self.active_agent_name = initial_agent
-
-    def execute(self, user_query: str) -> str:
-        current_contract: Optional[HandoffContract] = None
-        max_hops = 5
-        hops = 0
-
-        while hops < max_hops:
-            hops += 1
-            agent = self.agents[self.active_agent_name]
-            print(f"\n--- Turn {hops}: Active Execution Pointer -> {agent.name} ---")
-            
-            response, handoff = agent.process(user_query, current_contract)
-            
-            if handoff is None:
-                print(f"[{agent.name}] Task completed with zero further handoffs.")
-                return response
-            
-            # Pointer Mutation:
-            self.active_agent_name = handoff.target_agent
-            current_contract = handoff
-
-        raise RuntimeError("Swarm exceeded maximum permitted handoff hops (Cycle Prevention).")
-
-
-# Verification Routine:
-if __name__ == "__main__":
-    agents = {
-        "TriageAgent": TriageAgent(),
-        "BillingAgent": BillingAgent()
-    }
-    swarm = EnterpriseSwarmRunner(agents, initial_agent="TriageAgent")
-    result = swarm.execute("I noticed a double charge of $79 on invoice INV-2024-09, please help.")
-    print(f"\nFinal Swarm Deliverable:\n  {result}")
-```
-
----
+> **Note:** This lab has been extracted to a standalone file. 
+> 
+> **[View Lab 2: Multi-Agent Swarm](./labs/lab2-multi-agent-swarm.md)**
+> 
+> Objective: Implement a multi-agent swarm with dynamic handoffs.
 
 ### Lab 3: Detecting & Recovering from Infinite Loops (Cycle & Token Governor) [MUST-HAVE] 🔴
-
-#### Scenario & Enterprise Problem
-In production, autonomous agents frequently encounter ambiguous API error traces, missing records, or edge-case inputs. The LLM hallucinates slightly modified hypotheses and calls the same tool repeatedly with identical or near-identical parameters. Without deterministic circuit breakers, an agent can spin for hundreds of iterations, burning thousands of dollars in API tokens.
-
-#### Architectural Mechanics
-- **Tool Signature Hashing**: Generate a cryptographic signature: `SHA256(tool_name + canonical_json(tool_args))`.
-- **Sliding-Window Frequency Monitor**: Maintain a ring buffer of the last N calls (e.g., depth = 6).
-- **Multi-Tiered Circuit Breakers**:
-  1. *Duplicate Signature Breaker*: If the exact same signature appears 3 times in the window, trip breaker.
-  2. *Hard Turn Limit*: Max 8 iterations per session.
-  3. *Cumulative Token Budget*: Max 40,000 tokens.
-- **Defensive Environmental Feedback**: When tripped, do not crash silently. Inject a synthetic observation into context forcing the model to reformulate its plan or yield gracefully.
-
-#### Runnable Implementation
-
-```python
-"""
-lab3_loop_governor.py
-Hands-on Lab 3: Detecting and Recovering from Infinite Reasoning Loops.
-Demonstrates cryptographic tool hashing, sliding windows, and circuit breaking.
-"""
-
-from __future__ import annotations
-import hashlib
-import json
-from collections import deque
-from typing import Any, Dict, List, Optional
-
-
-class CircuitBreakerTripped(Exception):
-    pass
-
-
-class AgentExecutionGovernor:
-    def __init__(self, max_turns: int = 8, max_identical_calls: int = 3, window_size: int = 6):
-        self.max_turns = max_turns
-        self.max_identical_calls = max_identical_calls
-        self.turn_count = 0
-        self.history_window: deque[str] = deque(maxlen=window_size)
-
-    def compute_signature(self, tool_name: str, tool_args: Dict[str, Any]) -> str:
-        canonical_args = json.dumps(tool_args, sort_keys=True)
-        raw_key = f"{tool_name}:{canonical_args}"
-        return hashlib.sha256(raw_key.encode("utf-8")).hexdigest()
-
-    def record_step(self, tool_name: str, tool_args: Dict[str, Any]) -> None:
-        self.turn_count += 1
-        if self.turn_count > self.max_turns:
-            raise CircuitBreakerTripped(f"Hard iteration limit exceeded ({self.max_turns} turns).")
-
-        sig = self.compute_signature(tool_name, tool_args)
-        self.history_window.append(sig)
-
-        identical_count = self.history_window.count(sig)
-        if identical_count >= self.max_identical_calls:
-            raise CircuitBreakerTripped(
-                f"Loop detected! Tool '{tool_name}' invoked {identical_count} times with identical arguments in sliding window."
-            )
-
-
-def simulate_malfunctioning_agent():
-    """
-    Simulates an agent stuck in a repetitive loop attempting to query a missing record.
-    """
-    governor = AgentExecutionGovernor(max_turns=8, max_identical_calls=3, window_size=6)
-    tool_name = "fetch_customer_record"
-    args = {"customer_id": "CUST-MISSING-404"}
-
-    print("=== Simulating Autonomous Agent Reasoning Loop ===")
-    for turn in range(1, 10):
-        try:
-            print(f"Turn {turn}: Agent invoking '{tool_name}' with {args}...")
-            # Governor intercepts before tool execution:
-            governor.record_step(tool_name, args)
-            # Simulated tool response (failure):
-            print("  Observation: Error 404 - Record Not Found. Retrying...")
-        except CircuitBreakerTripped as cb:
-            print(f"\n[GOVERNOR INTERVENTION] {cb}")
-            print("[RECOVERY ACTION] Injecting synthetic feedback to force graceful degradation:")
-            synthetic_feedback = (
-                "[SYSTEM NOTICE]: You have repeated tool 'fetch_customer_record' 3 times with identical parameters "
-                "with zero state change. Cease calling this tool. State that the customer record does not exist."
-            )
-            print(f"  Injected to LLM Context: '{synthetic_feedback}'")
-            return "Customer record CUST-MISSING-404 could not be located after exhaustive verification."
-
-
-if __name__ == "__main__":
-    result = simulate_malfunctioning_agent()
-    print(f"\nFinal Controlled Deliverable: {result}")
-```
-
----
+> **Note:** This lab has been extracted to a standalone file. 
+> 
+> **[View Lab 3: Infinite Loops](./labs/lab3-infinite-loops.md)**
+> 
+> Objective: Detect and recover from infinite reasoning loops.
 
 ### Lab 4: Transaction Rollback for Tool Execution Failures (Distributed Saga Pattern) [MUST-HAVE] 🔴
-
-#### Scenario & Enterprise Problem
-In autonomous e-commerce fulfillment, an agent must execute three mutating actions:
-1. `reserve_inventory(sku, qty)`
-2. `charge_payment_method(customer_id, amount)`
-3. `create_shipping_manifest(order_id)`
-
-If Step 3 fails due to a carrier API outage, the agent cannot simply throw an unhandled exception. Doing so leaves money deducted from the customer's account and physical inventory locked in warehouse buffers. The agent architecture must implement the **Distributed Saga Pattern** with compensating actions.
-
-#### Architectural Mechanics
-- **Forward Action Registry**: Every forward mutating tool `T_k` has an explicitly declared compensating inverse tool `C_k`.
-- **Execution Journal**: The orchestrator appends every successfully executed forward action to a durable execution journal.
-- **Topological Reversal**: On failure at step N, the Saga Coordinator halts forward execution and invokes compensating tools in reverse order (`C_{N-1} -> C_1`) with idempotency keys.
-
-#### Runnable Implementation
-
-```python
-"""
-lab4_saga_rollback.py
-Hands-on Lab 4: Transaction Rollback for Tool Failures (Distributed Saga Pattern).
-Demonstrates forward execution journaling and reverse compensating actions.
-"""
-
-from __future__ import annotations
-import time
-from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List
-
-
-@dataclass
-class JournalEntry:
-    action_name: str
-    compensating_action_name: str
-    forward_args: Dict[str, Any]
-    compensating_args: Dict[str, Any]
-    result: Any
-    timestamp: float = field(default_factory=time.time)
-
-
-class SagaCoordinator:
-    def __init__(self):
-        self.journal: List[JournalEntry] = []
-        self.compensating_registry: Dict[str, Callable[[Dict[str, Any]], bool]] = {}
-
-    def register_compensator(self, name: str, func: Callable[[Dict[str, Any]], bool]) -> None:
-        self.compensating_registry[name] = func
-
-    def record_forward_success(
-        self,
-        action: str,
-        compensator: str,
-        forward_args: Dict[str, Any],
-        compensating_args: Dict[str, Any],
-        result: Any
-    ) -> None:
-        self.journal.append(JournalEntry(
-            action_name=action,
-            compensating_action_name=compensator,
-            forward_args=forward_args,
-            compensating_args=compensating_args,
-            result=result
-        ))
-        print(f"  [SAGA JOURNAL] Logged '{action}' -> Compensator '{compensator}'")
-
-    def rollback(self) -> bool:
-        print("\n" + "=" * 50)
-        print("[SAGA ROLLBACK INITIATED] Rolling back in reverse order...")
-        print("=" * 50)
-        
-        all_succeeded = True
-        for entry in reversed(self.journal):
-            comp_func = self.compensating_registry.get(entry.compensating_action_name)
-            if not comp_func:
-                print(f"CRITICAL ERROR: No compensator registered for {entry.compensating_action_name}")
-                all_succeeded = False
-                continue
-            
-            print(f"Executing Compensator: {entry.compensating_action_name} with args {entry.compensating_args}")
-            try:
-                success = comp_func(entry.compensating_args)
-                if not success:
-                    all_succeeded = False
-            except Exception as e:
-                print(f"FAILED to execute compensating action {entry.compensating_action_name}: {e}")
-                all_succeeded = False
-
-        self.journal.clear()
-        return all_succeeded
-
-
-# Simulated Microservice APIs:
-def release_inventory_api(args: Dict[str, Any]) -> bool:
-    print(f"  -> SUCCESS: Released {args['qty']} units of SKU {args['sku']} back to available stock.")
-    return True
-
-def refund_payment_api(args: Dict[str, Any]) -> bool:
-    print(f"  -> SUCCESS: Refunded ${args['amount']} for Transaction {args['txn_id']}.")
-    return True
-
-
-def execute_fulfillment_saga(simulate_carrier_failure: bool = True):
-    saga = SagaCoordinator()
-    saga.register_compensator("release_inventory", release_inventory_api)
-    saga.register_compensator("refund_payment", refund_payment_api)
-
-    order_id = "ORD-99120"
-    sku = "SERVER-RACK-42U"
-    qty = 2
-    total_price = 4500.0
-
-    print("=== Step 1: Forward Action 1 - Reserve Inventory ===")
-    reservation_id = "RES-8819"
-    saga.record_forward_success(
-        action="reserve_inventory",
-        compensator="release_inventory",
-        forward_args={"sku": sku, "qty": qty},
-        compensating_args={"reservation_id": reservation_id, "sku": sku, "qty": qty},
-        result={"reservation_id": reservation_id, "status": "RESERVED"}
-    )
-
-    print("\n=== Step 2: Forward Action 2 - Charge Credit Card ===")
-    txn_id = "TXN-CC-77123"
-    saga.record_forward_success(
-        action="charge_payment",
-        compensator="refund_payment",
-        forward_args={"order_id": order_id, "amount": total_price},
-        compensating_args={"txn_id": txn_id, "amount": total_price},
-        result={"txn_id": txn_id, "status": "SETTLED"}
-    )
-
-    print("\n=== Step 3: Forward Action 3 - Schedule Freight Shipping ===")
-    if simulate_carrier_failure:
-        print("  -> ERROR: Freight Carrier API Timeout (504 Gateway Timeout). Action FAILED!")
-        # Trigger Saga Rollback:
-        rollback_ok = saga.rollback()
-        assert rollback_ok, "Saga rollback encountered errors!"
-        print("\n[RESULT] System safely returned to consistent baseline. No orphaned charges or inventory locks.")
-        return False
-
-    print("  -> SUCCESS: Shipment Scheduled.")
-    return True
-
-
-if __name__ == "__main__":
-    execute_fulfillment_saga(simulate_carrier_failure=True)
-```
+> **Note:** This lab has been extracted to a standalone file. 
+> 
+> **[View Lab 4: Saga Pattern](./labs/lab4-saga-pattern.md)**
+> 
+> Objective: Implement transaction rollback for tool failures.
 
 ---
 
 ## 8. Enterprise Reference Code Implementations [MUST-HAVE] 🔴
 
-### Python: Production ReAct Agent with Budgeting, Compaction & SQLite Checkpointing [MUST-HAVE] 🔴
+Complete, runnable implementations are available in the [`examples/`](./examples/) directory.
 
-This production implementation provides a robust, zero-dependency (using standard library SQLite and typed schemas) ReAct Agent runtime featuring:
-1. **Strict Execution Budgets**: Hard limits on maximum iterations and token consumption.
-2. **Context Compaction & Sanitization**: Truncation and summarization of verbose tool observations.
-3. **Cycle Detection**: Hashing tool calls to prevent infinite loops.
-4. **Durable SQLite State Checkpointing**: Checkpointing every state transition to SQLite for full auditability and fault-tolerant resumption.
-5. **Human-in-the-Loop (HITL) Gate**: Interrupting execution on high-risk tools until explicit programmatic approval is provided.
+### Python: Production ReAct Agent with Budgeting, Compaction & SQLite Checkpointing [MUST-HAVE] 🔴
+> **Implementation**: [`examples/react_agent.py`](./examples/react_agent.py)
+
+Production ReAct orchestrator implementing hard token and turn limits, automatic observation compaction (preventing context window explosion), deterministic cycle detection, and durable SQLite state persistence.
 
 ```python
-"""
-production_react_agent.py
-Enterprise-grade, durable ReAct Agent runtime with SQLite state checkpointing,
-execution budgets, cycle detection, and Human-in-the-Loop (HITL) gates.
-"""
+# Defensive ReAct loop with budget checks and compaction from examples/react_agent.py
+class DefensiveReActAgent:
+    def execute_turn(self, observation: str) -> AgentTurnResult:
+        self.turn_count += 1
+        if self.turn_count > self.max_turns or self.token_spend > self.budget_limit:
+            return AgentTurnResult.aborted("Execution budget ceiling reached")
+            
+        compacted_obs = self.compact_observation(observation, max_chars=1200)
+        self.state_store.checkpoint(turn=self.turn_count, observation=compacted_obs)
+        ...
+```
 
-from __future__ import annotations
+---
 
-import hashlib
-import json
-import logging
-import sqlite3
-import time
-from dataclasses import asdict, dataclass, field
-from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+### Python: Type-Safe Agent with Dependency Injection via PydanticAI [MUST-HAVE] 🔴
+> **Implementation**: [`examples/pydantic_ai_agent.py`](./examples/pydantic_ai_agent.py)
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger("EnterpriseAgent")
+Ergonomic, model-agnostic agent leveraging PydanticAI for dependency injection, validated structured outputs, and strictly typed tool parameter validation.
 
+```python
+# Type-safe agent with dependency container from examples/pydantic_ai_agent.py
+finance_agent = Agent[DatabaseService, FinancialAnalysis](
+    model="claude-3-7-sonnet-latest",
+    deps_type=DatabaseService,
+    result_type=FinancialAnalysis,
+    system_prompt="You are an enterprise financial governance agent."
+)
 
-class ToolRiskLevel(str, Enum):
-    LOW = "LOW"        # Read-only operations (safe to auto-execute)
-    HIGH = "HIGH"      # Write, delete, financial, or state-mutating operations (requires HITL)
-
-
-@dataclass
-class ToolDefinition:
-    name: str
-    description: str
-    parameters_schema: Dict[str, Any]
-    risk_level: ToolRiskLevel
-    func: Callable[..., Any]
-
-
-@dataclass
-class AgentStep:
-    turn_index: int
-    thought: str
-    tool_name: Optional[str]
-    tool_args: Optional[Dict[str, Any]]
-    observation: Optional[str]
-    is_terminal: bool
-    timestamp: float = field(default_factory=time.time)
-
-
-class ExecutionBudgetExceeded(Exception):
-    """Raised when the agent exceeds maximum allowed iterations or tokens."""
-    pass
-
-
-class InfiniteLoopDetected(Exception):
-    """Raised when an identical tool call signature is repeated cyclically."""
-    pass
-
-
-class AgentCheckpointStore:
-    """Durable SQLite storage engine for persisting agent trajectories."""
-
-    def __init__(self, db_path: str = "agent_state.db"):
-        self.db_path = db_path
-        self.conn = sqlite3.connect(self.db_path, check_same_thread=False)
-        self._init_db()
-
-    def _init_db(self) -> None:
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            CREATE TABLE IF NOT EXISTS session_checkpoints (
-                session_id TEXT NOT NULL,
-                turn_index INTEGER NOT NULL,
-                state_json TEXT NOT NULL,
-                created_at REAL NOT NULL,
-                PRIMARY KEY (session_id, turn_index)
-            )
-            """
-        )
-        self.conn.commit()
-
-    def save_checkpoint(self, session_id: str, turn_index: int, state_data: Dict[str, Any]) -> None:
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            INSERT OR REPLACE INTO session_checkpoints (session_id, turn_index, state_json, created_at)
-            VALUES (?, ?, ?, ?)
-            """,
-            (session_id, turn_index, json.dumps(state_data), time.time()),
-        )
-        self.conn.commit()
-
-    def load_latest_checkpoint(self, session_id: str) -> Optional[Dict[str, Any]]:
-        cursor = self.conn.cursor()
-        cursor.execute(
-            """
-            SELECT state_json FROM session_checkpoints
-            WHERE session_id = ?
-            ORDER BY turn_index DESC LIMIT 1
-            """,
-            (session_id,),
-        )
-        row = cursor.fetchone()
-        if row:
-            return json.loads(row[0])
-        return None
-
-    def close(self) -> None:
-        self.conn.close()
-
-
-class EnterpriseReActEngine:
-    """Production ReAct Orchestrator with defensive engineering guarantees."""
-
-    def __init__(
-        self,
-        session_id: str,
-        system_prompt: str,
-        checkpoint_store: AgentCheckpointStore,
-        max_iterations: int = 6,
-        max_observation_tokens: int = 500,
-    ):
-        self.session_id = session_id
-        self.system_prompt = system_prompt
-        self.checkpoint_store = checkpoint_store
-        self.max_iterations = max_iterations
-        self.max_observation_tokens = max_observation_tokens
-        
-        self.tools: Dict[str, ToolDefinition] = {}
-        self.history: List[AgentStep] = []
-        self.call_signature_hashes: List[str] = []
-
-    def register_tool(self, tool: ToolDefinition) -> None:
-        self.tools[tool.name] = tool
-        logger.info(f"Registered tool: {tool.name} [Risk: {tool.risk_level.value}]")
-
-    def _hash_tool_call(self, tool_name: str, tool_args: Dict[str, Any]) -> str:
-        serialized = json.dumps({"tool": tool_name, "args": tool_args}, sort_keys=True)
-        return hashlib.sha256(serialized.encode("utf-8")).hexdigest()
-
-    def _compact_observation(self, raw_output: str) -> str:
-        """Truncates and sanitizes verbose tool observations to protect context."""
-        approx_tokens = len(raw_output) // 4
-        if approx_tokens > self.max_observation_tokens:
-            char_limit = self.max_observation_tokens * 4
-            logger.warning(f"Observation exceeded budget ({approx_tokens} tokens). Truncating.")
-            return raw_output[:char_limit] + "\n... [TRUNCATED FOR CONTEXT BUDGET] ..."
-        return raw_output
-
-    def _mock_llm_inference(self, prompt: str) -> Dict[str, Any]:
-        """
-        Simulated LLM call emitting structured ReAct thoughts and actions.
-        In production, replace this with Claude 3.5 Sonnet / Gemini 1.5 Pro API calls.
-        """
-        turn = len(self.history)
-        if turn == 0:
-            return {
-                "thought": "I need to inspect the customer's payment history to diagnose the invoice discrepancy.",
-                "tool_name": "fetch_invoices",
-                "tool_args": {"customer_id": "CUST-9921", "limit": 5},
-                "is_terminal": False,
-                "final_answer": None,
-            }
-        elif turn == 1:
-            return {
-                "thought": "Invoice #401 shows an unresolved balance of $450.00. I need to issue a credit adjustment.",
-                "tool_name": "apply_credit_adjustment",
-                "tool_args": {"customer_id": "CUST-9921", "amount": 450.00, "reason": "Overcharge fix"},
-                "is_terminal": False,
-                "final_answer": None,
-            }
-        else:
-            return {
-                "thought": "Credit adjustment applied successfully. I have all facts needed to answer the user.",
-                "tool_name": None,
-                "tool_args": None,
-                "is_terminal": True,
-                "final_answer": "Customer CUST-9921 had an overcharge of $450 on Invoice #401. A credit adjustment of $450 has been applied.",
-            }
-
-    def run_turn(self, user_objective: str, hitl_approval_callback: Optional[Callable[[str, Dict[str, Any]], bool]] = None) -> str:
-        """Executes the autonomous loop until a terminal state or budget exhaustion."""
-        logger.info(f"Starting agent session: {self.session_id} for objective: '{user_objective}'")
-
-        while len(self.history) < self.max_iterations:
-            turn_idx = len(self.history)
-            logger.info(f"--- Iteration {turn_idx + 1} / {self.max_iterations} ---")
-
-            # 1. Prepare Prompt & Invoke LLM
-            llm_decision = self._mock_llm_inference(user_objective)
-            thought = llm_decision["thought"]
-            is_terminal = llm_decision["is_terminal"]
-
-            if is_terminal:
-                final_answer = llm_decision["final_answer"]
-                step = AgentStep(
-                    turn_index=turn_idx,
-                    thought=thought,
-                    tool_name=None,
-                    tool_args=None,
-                    observation=None,
-                    is_terminal=True,
-                )
-                self.history.append(step)
-                self._save_checkpoint()
-                logger.info(f"Task completed successfully: {final_answer}")
-                return final_answer
-
-            tool_name = llm_decision["tool_name"]
-            tool_args = llm_decision["tool_args"] or {}
-
-            # 2. Cycle Detection Guard
-            call_hash = self._hash_tool_call(tool_name, tool_args)
-            if call_hash in self.call_signature_hashes[-2:]:
-                raise InfiniteLoopDetected(f"Cycle detected: {tool_name} invoked repeatedly with identical arguments.")
-            self.call_signature_hashes.append(call_hash)
-
-            # 3. Security Policy & Human-In-The-Loop (HITL) Gate
-            tool_def = self.tools.get(tool_name)
-            if not tool_def:
-                observation = f"ERROR: Tool '{tool_name}' is not registered in system schema."
-            else:
-                if tool_def.risk_level == ToolRiskLevel.HIGH:
-                    logger.warning(f"HIGH RISK ACTION DETECTED: {tool_name}({tool_args})")
-                    approved = False
-                    if hitl_approval_callback:
-                        approved = hitl_approval_callback(tool_name, tool_args)
-                    
-                    if not approved:
-                        observation = f"EXECUTION REJECTED: Human supervisor rejected tool execution for {tool_name}."
-                        logger.error(f"HITL rejected execution of {tool_name}.")
-                    else:
-                        try:
-                            raw_result = tool_def.func(**tool_args)
-                            observation = self._compact_observation(json.dumps(raw_result))
-                        except Exception as ex:
-                            observation = f"TOOL EXECUTION ERROR: {str(ex)}"
-                else:
-                    # Low risk: Auto-execute
-                    try:
-                        raw_result = tool_def.func(**tool_args)
-                        observation = self._compact_observation(json.dumps(raw_result))
-                    except Exception as ex:
-                        observation = f"TOOL EXECUTION ERROR: {str(ex)}"
-
-            # 4. Commit Step & Persist Checkpoint
-            step = AgentStep(
-                turn_index=turn_idx,
-                thought=thought,
-                tool_name=tool_name,
-                tool_args=tool_args,
-                observation=observation,
-                is_terminal=False,
-            )
-            self.history.append(step)
-            self._save_checkpoint()
-
-        raise ExecutionBudgetExceeded(f"Agent failed to reach terminal state within {self.max_iterations} iterations.")
-
-    def _save_checkpoint(self) -> None:
-        state_data = {
-            "session_id": self.session_id,
-            "system_prompt": self.system_prompt,
-            "turns": [asdict(step) for step in self.history],
-        }
-        self.checkpoint_store.save_checkpoint(self.session_id, len(self.history), state_data)
-        logger.info(f"Checkpointed turn {len(self.history)} to persistent storage.")
-
-
-# ============================================================================
-# Demo Tool Callables & Execution Verification
-# ============================================================================
-
-def fetch_invoices_tool(customer_id: str, limit: int = 5) -> List[Dict[str, Any]]:
-    return [
-        {"invoice_id": "INV-400", "amount": 120.00, "status": "PAID"},
-        {"invoice_id": "INV-401", "amount": 450.00, "status": "DISPUTED"},
-    ]
-
-def apply_credit_adjustment_tool(customer_id: str, amount: float, reason: str) -> Dict[str, Any]:
-    return {"status": "SUCCESS", "tx_id": "TX-99882", "adjusted_amount": amount, "customer_id": customer_id}
-
-
-if __name__ == "__main__":
-    store = AgentCheckpointStore(db_path=":memory:")
-    agent = EnterpriseReActEngine(
-        session_id="session-enterprise-001",
-        system_prompt="You are an autonomous enterprise billing remediation agent.",
-        checkpoint_store=store,
-        max_iterations=5,
-    )
-
-    # Register low-risk read tool
-    agent.register_tool(
-        ToolDefinition(
-            name="fetch_invoices",
-            description="Fetches recent invoices for a customer.",
-            parameters_schema={"customer_id": "str", "limit": "int"},
-            risk_level=ToolRiskLevel.LOW,
-            func=fetch_invoices_tool,
-        )
-    )
-
-    # Register high-risk write tool
-    agent.register_tool(
-        ToolDefinition(
-            name="apply_credit_adjustment",
-            description="Applies a balance credit adjustment to a customer account.",
-            parameters_schema={"customer_id": "str", "amount": "float", "reason": "str"},
-            risk_level=ToolRiskLevel.HIGH,
-            func=apply_credit_adjustment_tool,
-        )
-    )
-
-    # Human-in-the-Loop Approval Callback
-    def human_approver(tool_name: str, tool_args: Dict[str, Any]) -> bool:
-        print(f"\n[HITL INTERRUPT] Operator review requested for {tool_name} with args: {tool_args}")
-        # In automated demo, we return True; in production, this halts for a webhook/UI button click
-        return True
-
-    final_result = agent.run_turn(
-        user_objective="Resolve billing discrepancy for customer CUST-9921",
-        hitl_approval_callback=human_approver,
-    )
-    print(f"\n[Execution Complete] Result: {final_result}")
+@finance_agent.tool
+def get_account_balance(ctx: RunContext[DatabaseService], user_id: str) -> str:
+    balance = ctx.deps.query_user_balance(user_id)
+    return f"User {user_id} current verified ledger balance: ${balance:,.2f}"
 ```
 
 ---
 
 ### C# / .NET 9: Enterprise Multi-Agent Pipeline with Semantic Kernel & Custom Plugins [GOOD-TO-HAVE] 🟡
+> **Implementation**: [`examples/MultiAgentPipeline.cs`](./examples/MultiAgentPipeline.cs)
 
-This production-grade C# implementation uses **Microsoft Semantic Kernel (.NET 9)** to build an Orchestrator-Worker multi-agent team with typed plugins, dependency injection, and state history management:
+Enterprise multi-agent group chat system using Microsoft Semantic Kernel, with role-based personas, custom termination strategies, and native C# dependency injection.
 
 ```csharp
-// EnterpriseAgentPipeline.cs
-// Microsoft Semantic Kernel (.NET 9) Multi-Agent Architecture
-// Demonstrating Typed Plugins, Orchestrator-Worker Collaboration, and State Logging.
-
-using System.ComponentModel;
-using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.SemanticKernel;
-using Microsoft.SemanticKernel.Agents;
-using Microsoft.SemanticKernel.ChatCompletion;
-
-namespace EnterpriseAgentSystems;
-
-// 1. Strongly Typed Domain DTOs
-public record SecurityVulnerability(string RuleId, string Severity, string Description, int LineNumber);
-public record PerformanceBottleneck(string Component, string Issue, string OptimizationAdvice);
-public record ConsolidatedAuditReport(
-    string FilePath,
-    List<SecurityVulnerability> SecurityIssues,
-    List<PerformanceBottleneck> PerformanceIssues,
-    string ExecutiveSummary);
-
-// 2. Enterprise C# Plugins with KernelFunction attributes
-public sealed class StaticAnalysisPlugin
+// AgentGroupChat setup with termination strategy from examples/MultiAgentPipeline.cs
+var chat = new AgentGroupChat(plannerAgent, reviewerAgent)
 {
-    private readonly ILogger<StaticAnalysisPlugin> _logger;
-
-    public StaticAnalysisPlugin(ILogger<StaticAnalysisPlugin> logger)
+    ExecutionSettings = new()
     {
-        _logger = logger;
+        TerminationStrategy = new ApprovalTerminationStrategy { MaximumIterations = 5 }
     }
-
-    [KernelFunction, Description("Performs static security analysis on C# source code to detect OWASP vulnerabilities.")]
-    public string ScanSecurityVulnerabilities(
-        [Description("The raw C# source code content to scan")] string sourceCode)
-    {
-        _logger.LogInformation("Executing static security scan on provided source code...");
-
-        var issues = new List<SecurityVulnerability>();
-
-        if (sourceCode.Contains("SqlCommand") && sourceCode.Contains("+"))
-        {
-            issues.Add(new SecurityVulnerability(
-                "SQL-INJ-001",
-                "CRITICAL",
-                "Potential SQL Injection detected. Unparameterized dynamic string concatenation in SqlCommand.",
-                42));
-        }
-
-        if (sourceCode.Contains("MD5.Create()"))
-        {
-            issues.Add(new SecurityVulnerability(
-                "CRYPTO-002",
-                "HIGH",
-                "Weak cryptographic hashing algorithm detected (MD5). Migrate to SHA256 or SHA512.",
-                18));
-        }
-
-        return JsonSerializer.Serialize(issues, new JsonSerializerOptions { WriteIndented = true });
-    }
-
-    [KernelFunction, Description("Audits source code for memory allocation hotspots and async anti-patterns.")]
-    public string AuditPerformance(
-        [Description("The raw C# source code content to audit")] string sourceCode)
-    {
-        _logger.LogInformation("Executing performance and allocation audit...");
-
-        var issues = new List<PerformanceBottleneck>();
-
-        if (sourceCode.Contains(".Result") || sourceCode.Contains(".Wait()"))
-        {
-            issues.Add(new PerformanceBottleneck(
-                "Threading/Async",
-                "Synchronous blocking on async task detected (.Result / .Wait()). High risk of thread-pool starvation.",
-                "Replace with await operator throughout the call stack."));
-        }
-
-        return JsonSerializer.Serialize(issues, new JsonSerializerOptions { WriteIndented = true });
-    }
-}
-
-// 3. Enterprise Pipeline Orchestration Host
-public sealed class CodeReviewOrchestrationService
+};
+await foreach (var content in chat.InvokeAsync())
 {
-    private readonly Kernel _kernel;
-    private readonly ILogger<CodeReviewOrchestrationService> _logger;
-
-    public CodeReviewOrchestrationService(Kernel kernel, ILogger<CodeReviewOrchestrationService> logger)
-    {
-        _kernel = kernel;
-        _logger = logger;
-    }
-
-    public async Task<ConsolidatedAuditReport> ExecuteAuditPipelineAsync(string fileName, string sourceCode)
-    {
-        _logger.LogInformation("Starting Multi-Agent Code Review Pipeline for {FileName}", fileName);
-
-        // A. Worker 1: Security Agent
-        var securityAgent = new ChatCompletionAgent
-        {
-            Name = "SecuritySpecialist",
-            Instructions = "You are a Lead Security Architect. Inspect code strictly for security flaws using tools.",
-            Kernel = _kernel
-        };
-
-        // B. Worker 2: Performance Agent
-        var performanceAgent = new ChatCompletionAgent
-        {
-            Name = "PerformanceSpecialist",
-            Instructions = "You are a High-Performance .NET Systems Engineer. Audit code for GC allocations and concurrency bugs.",
-            Kernel = _kernel
-        };
-
-        // C. Orchestrator / Lead Reviewer
-        var leadReviewer = new ChatCompletionAgent
-        {
-            Name = "LeadArchitect",
-            Instructions = "You are the Lead Solutions Architect. Synthesize the findings of Security and Performance specialists into a final JSON report.",
-            Kernel = _kernel
-        };
-
-        // Shared Chat History State
-        var chatHistory = new ChatHistory();
-        chatHistory.AddUserMessage($"""
-            Perform a complete code review of {fileName}:
-            ```csharp
-            {sourceCode}
-            ```
-            """);
-
-        // Execution Step 1: Security Scan
-        _logger.LogInformation("Triggering Security Worker...");
-        await foreach (var message in securityAgent.InvokeAsync(chatHistory))
-        {
-            chatHistory.Add(message);
-        }
-
-        // Execution Step 2: Performance Audit
-        _logger.LogInformation("Triggering Performance Worker...");
-        await foreach (var message in performanceAgent.InvokeAsync(chatHistory))
-        {
-            chatHistory.Add(message);
-        }
-
-        // Execution Step 3: Synthesis by Lead Architect
-        _logger.LogInformation("Lead Architect synthesizing findings...");
-        ChatMessageContent? finalOutput = null;
-        await foreach (var message in leadReviewer.InvokeAsync(chatHistory))
-        {
-            finalOutput = message;
-        }
-
-        _logger.LogInformation("Pipeline completed. Generating structured response.");
-
-        return new ConsolidatedAuditReport(
-            FilePath: fileName,
-            SecurityIssues: new List<SecurityVulnerability>
-            {
-                new("SQL-INJ-001", "CRITICAL", "Dynamic SQL concatenation in SqlCommand.", 42)
-            },
-            PerformanceIssues: new List<PerformanceBottleneck>
-            {
-                new("Threading/Async", "Sync-over-async blocking via .Result.", "Use await.")
-            },
-            ExecutiveSummary: finalOutput?.Content ?? "Audit successfully generated."
-        );
-    }
-}
-
-// 4. Program Entrypoint & Dependency Injection Wireup
-public static class Program
-{
-    public static async Task Main(string[] args)
-    {
-        var services = new ServiceCollection();
-
-        services.AddLogging(builder =>
-        {
-            builder.AddConsole();
-            builder.SetMinimumLevel(LogLevel.Information);
-        });
-
-        // Register Semantic Kernel
-        services.AddTransient<Kernel>(sp =>
-        {
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            
-            // Build kernel with OpenAI / Azure OpenAI connector
-            var builder = Kernel.CreateBuilder();
-            builder.Services.AddSingleton(loggerFactory);
-
-            // In production, configure with Azure OpenAI or local inference engine:
-            // builder.AddAzureOpenAIChatCompletion("deployment-name", "https://endpoint.openai.azure.com", "api-key");
-            
-            // Register Typed Plugins
-            builder.Plugins.AddFromType<StaticAnalysisPlugin>("StaticAnalysis", sp);
-
-            return builder.Build();
-        });
-
-        services.AddTransient<CodeReviewOrchestrationService>();
-
-        var provider = services.BuildServiceProvider();
-        var orchestrator = provider.GetRequiredService<CodeReviewOrchestrationService>();
-
-        const string sampleVulnerableCode = """
-            public class UserRepository
-            {
-                public User GetUser(string username)
-                {
-                    using var conn = new SqlConnection("Server=myServer;Database=myDB;");
-                    conn.Open();
-                    var cmd = new SqlCommand("SELECT * FROM Users WHERE Username = '" + username + "'", conn);
-                    var task = Task.Run(() => cmd.ExecuteReader());
-                    return ParseUser(task.Result); // Sync over async anti-pattern
-                }
-            }
-            """;
-
-        Console.WriteLine("=== Executing Enterprise Semantic Kernel Pipeline ===");
-        var report = await orchestrator.ExecuteAuditPipelineAsync("UserRepository.cs", sampleVulnerableCode);
-        
-        Console.WriteLine("\n[FINAL CONSOLIDATED REPORT]");
-        Console.WriteLine(JsonSerializer.Serialize(report, new JsonSerializerOptions { WriteIndented = true }));
-    }
+    Console.WriteLine($"[{content.AuthorName}]: {content.Content}");
 }
 ```
-
----
 
 ## 9. Verified Curated Resources & Reference Index [KNOWLEDGE-BASE] 🔵
 
 | Category | Resource & Citation | Link / Target | Architectural Value & Key Takeaway |
 |---|---|---|---|
-| **Authoritative Guide** | Anthropic: *"Building Effective Agents"* (Engineering Blog, 2024) | [Anthropic Engineering](https://www.anthropic.com/research/building-effective-agents) | The definitive industry taxonomy establishing the boundary between deterministic workflows and autonomous agents. Recommends starting with simple prompts and minimal code rather than heavy frameworks. |
-| **Enterprise SDK** | Google: *Agent Development Kit (ADK) Documentation & Codelabs* | [Google Cloud ADK](https://cloud.google.com/products/agent-development-kit) | Production-ready guidelines for code-first agents, standard MCP integration, and the `agents-cli` scaffolding, evaluation, and deployment workflow. |
-| **Enterprise .NET** | Microsoft: *Semantic Kernel Agent Framework Documentation* | [Microsoft Learn Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/) | Comprehensive architectural patterns for enterprise C#/.NET 8/9 developers building typed plugins, agent group chats, and Azure AI Foundry integrations. |
-| **Foundational Paper** | Yao et al. (2022): *"ReAct: Synergizing Reasoning and Acting in Language Models"* | [arXiv:2210.03629](https://arxiv.org/abs/2210.03629) | The foundational paper introducing the interleaved Thought -> Action -> Observation reasoning loop for grounded problem solving. |
-| **Foundational Paper** | Shinn et al. (2023): *"Reflexion: Language Agents with Verbal Reinforcement Learning"* | [arXiv:2303.11366](https://arxiv.org/abs/2303.11366) | Demonstrates how episodic memory of past failures and verbal self-reflections dramatically improve agent task completion rates without weight fine-tuning. |
-| **Architectural Review** | Lilian Weng (Head of Safety Systems, OpenAI): *"LLM Powered Autonomous Agents"* | [Lilian Weng Technical Blog](https://lilianweng.github.io/posts/2023-06-23-agent/) | The definitive academic survey breaking down agent components: Planning (Subgoal decomposition), Memory (Short-term vs Long-term), and Tool Use. |
-| **Stateful Orchestration** | LangChain: *LangGraph Architecture & Design Specification* | [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) | Best-in-class documentation on modeling agentic systems as cyclical state machines with durable checkpointing, reducers, and time-travel debugging. |
+| **Authoritative Guide** | Anthropic: *"Building Effective Agents"* (Engineering Blog) | [Anthropic Engineering](https://www.anthropic.com/research/building-effective-agents) | Foundational taxonomy separating deterministic workflows from autonomous agents. Advocates code-first, minimal abstractions. |
+| **Enterprise Multi-Agent** | Google: *Agent Development Kit (ADK)* | [Google Cloud ADK](https://google.github.io/adk-docs/) | Production framework for code-first agents, standard MCP integration, `agents-cli` scaffolding, and Cloud Run deployments. |
+| **Enterprise .NET** | Microsoft: *Semantic Kernel Documentation* | [Microsoft Learn Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/) | Patterns for C#/.NET 8/9 developers building typed plugins, agent group chats, filters, and Azure AI Foundry integrations. |
+| **Cyclical State Graphs** | LangChain: *LangGraph Specifications* | [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) | Architectural patterns for cyclical graphs, durable state persistence, checkpointing, and time-travel debugging. |
+| **Curated Architecture** | Audi0417: *AI Agent Engineering Roadmap* | [Agent Roadmap GitHub](https://github.com/audi0417/agent-engineering-roadmap) | Comprehensive community roadmap covering memory systems, multi-agent topologies, and reliability patterns. |
+| **Free Developer Course** | DeepLearning.AI: *Multi AI Agent Systems & Architecture* | [DeepLearning.AI Courses](https://www.deeplearning.ai/courses/) | Hands-on engineering courses on agent design patterns, supervisor routing, and tool coordination. |
+| **Practical Guide** | Hamel Husain: *Mastering LLMs & Agent Trajectories* | [Hamel Husain Guide](https://hamel.dev/blog/posts/course/) | Engineering-first evaluation, trace monitoring, and failure mode diagnosis for multi-step agent systems. |
+| **Security Standard** | OWASP GenAI Security Project | [OWASP GenAI](https://genai.owasp.org/) | Authoritative threat index covering excessive agency, indirect injection, and confused deputy mitigation in agent swarms. |
+| **Foundational Paper** | Yao et al. (2022): *"ReAct: Synergizing Reasoning and Acting in Language Models"* | [arXiv:2210.03629](https://arxiv.org/abs/2210.03629) | The foundational paper introducing the interleaved Thought -> Action -> Observation reasoning loop. |
+| **Foundational Paper** | Shinn et al. (2023): *"Reflexion: Language Agents with Verbal Reinforcement Learning"* | [arXiv:2303.11366](https://arxiv.org/abs/2303.11366) | Demonstrates episodic memory of past failures and verbal self-reflections improving task success without weight tuning. |
+| **Academic Survey** | Lilian Weng: *"LLM Powered Autonomous Agents"* | [Lilian Weng Blog](https://lilianweng.github.io/posts/2023-06-23-agent/) | Academic survey analyzing agent components: Planning (subgoal decomposition), Memory, and Tool use. |
 
 ---
 
 ## 10. Capstone Engineering Challenge [MUST-HAVE] 🔴
-
-### The Multi-Turn Code Review & Refactoring Engine [MUST-HAVE] 🔴
-
-```
-                               ┌────────────────────────────────────────────────────────┐
-                               │           REVIEW & REFACTORING ORCHESTRATOR            │
-                               │        State Machine • SQLite Checkpoint Manager       │
-                               └───────────────────────────┬────────────────────────────┘
-                                                           │
-              ┌────────────────────────────────────────────┼────────────────────────────────────────────┐
-              ▼                                            ▼                                            ▼
-  ┌───────────────────────┐                    ┌───────────────────────┐                    ┌───────────────────────┐
-  │   SECURITY WORKER     │                    │  PERFORMANCE WORKER   │                    │  STYLE & DOCS WORKER  │
-  │ • OWASP Top 10 Audit  │                    │ • Complexity Analysis │                    │ • Linting Compliance  │
-  │ • Privilege Isolation │                    │ • Allocation Hotspots │                    │ • Docstring Validation│
-  └───────────┬───────────┘                    └───────────┬───────────┘                    └───────────┬───────────┘
-              │                                            │                                            │
-              └────────────────────────────────────────────┼────────────────────────────────────────────┘
-                                                           │
-                                                           ▼
-                               ┌────────────────────────────────────────────────────────┐
-                               │              REFACTORING GENERATOR AGENT               │
-                               │       Proposes Code Patch & Writes Unit Test Suite     │
-                               └───────────────────────────┬────────────────────────────┘
-                                                           │
-                                                           ▼
-                               ┌────────────────────────────────────────────────────────┐
-                               │             EVALUATOR-OPTIMIZER TEST LOOP              │
-                               │   Executes Tests in Isolated Sandbox Environment       │
-                               └───────────────────────────┬────────────────────────────┘
-                                                           │
-                                               [All Unit Tests Pass?]
-                                               /                    \
-                                         (No) /                      \ (Yes)
-                                             /                        \
-                    ┌───────────────────────────────┐                  ▼
-                    │  Self-Reflection & Critique   │        ┌───────────────────┐
-                    │  Feed error trace back to     │        │ Checkpoint Final  │
-                    │  Refactoring Generator Agent  │        │ Code to Git Diff  │
-                    └───────────────────────────────┘        └───────────────────┘
-```
-
-#### Objective
-Architect and implement an end-to-end, production-grade **Autonomous Code Review and Self-Healing Refactoring System** that reviews a target codebase, identifies vulnerabilities and architectural anti-patterns, generates a proposed code fix, generates automated unit tests, and verifies that the patch passes in an isolated runtime sandbox before finalizing changes.
-
-#### Architectural Specification
-1. **Orchestrator-Worker Architecture**:
-   * The system must feature a central **Review Orchestrator** coordinating three specialized worker agents in parallel:
-     * **Security Specialist**: Audits input code against OWASP Top 10 vulnerabilities (SQLi, SSRF, Hardcoded Secrets).
-     * **Performance Specialist**: Flags algorithmic bottlenecks (O(N^2) loops, memory leaks, unclosed connections).
-     * **Style & Documentation Specialist**: Flags PEP 8 / Clean Code naming violations and missing type hints.
-2. **Persistent SQLite State Checkpointing**:
-   * Every super-step of the orchestration pipeline must serialize and checkpoint its complete graph state to an SQLite database.
-   * If the process is forcefully killed mid-execution, re-running the command with `--session-id <id>` must resume execution from the exact last successful node transition.
-3. **Evaluator-Optimizer Self-Healing Loop**:
-   * The **Refactoring Generator** ingests the consolidated worker review findings and generates:
-     1. A unified patch file (`diff.patch`).
-     2. A corresponding unit test suite (`test_patch.py`).
-   * The **Evaluator Agent** executes the generated unit tests in a sandboxed subprocess.
-   * If tests fail or raise compilation errors, the Evaluator intercepts the stderr output, generates a structured verbal critique, and returns control to the Refactoring Generator.
-   * The generator refines the patch iteratively until all tests pass or a maximum iteration ceiling (K = 3) is reached.
-4. **Human-in-the-Loop Interrupt Gate**:
-   * Before committing the final patch to the codebase or disk, the agent must suspend execution, output a complete summary diff, and await explicit operator approval (`APPROVE` / `REJECT`).
-
-#### Verification Rubric & Acceptance Criteria
-
-| Milestone | Deliverable | Verification Standard |
-|---|---|---|
-| **M1: Orchestration & Parallel Workers** | Orchestrator and 3 parallel analyzer workers implemented. | Concurrently analyzes a 200-line sample script; executes in < 4s using asyncio or Task parallelism; emits typed JSON schemas. |
-| **M2: SQLite Checkpointing & Resumption** | Durable State Checkpoint engine. | Killing the process mid-turn and restarting with the same session ID restores state without re-running completed worker passes. |
-| **M3: Evaluator-Optimizer Test Loop** | Sandboxed test execution and iterative self-repair. | Intentionally injects a broken patch on turn 1; agent successfully captures the test failure trace, reflects on the error, and emits a passing patch on turn 2. |
-| **M4: Human-in-the-Loop Safety Gate** | Interactive approval CLI or webhook. | System halts cleanly before disk write; rejecting the patch safely aborts without leaving dirty git states or corrupted files. |
+> **Note:** This capstone has been extracted to a standalone file. 
+> 
+> **[View Capstone Challenge](./labs/capstone-code-review-engine.md)**
+> 
+> Objective: Build a multi-turn code review & refactoring engine.

@@ -1,0 +1,37 @@
+name: "AI Multi-Agent Pull Request Reviewer"
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  ai-review:
+    name: "Architectural & Security Audit"
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Extract PR Diff
+        id: pr-diff
+        run: |
+          git diff origin/${{ github.base_ref }}...HEAD > pr_diff.patch
+          # Cap patch size to avoid token overflow
+          head -n 2500 pr_diff.patch > pr_diff_bounded.patch
+
+      - name: Run Multi-Agent Reviewer
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          python -m pip install openai PyGithub
+          python .github/scripts/ai_pr_reviewer.py --diff pr_diff_bounded.patch

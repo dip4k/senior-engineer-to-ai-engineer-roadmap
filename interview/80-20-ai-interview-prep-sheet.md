@@ -4,6 +4,9 @@
 > 
 > [Home / Master Curriculum](../README.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [Phase 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [Phase 02: Enterprise RAG](../02-rag-and-knowledge-systems/README.md)
 
+> [!TIP]
+> This interview prep sheet is a **derivative** of the main curriculum. Master the core modules first — the interview answers follow naturally from deep understanding of the underlying engineering concepts.
+
 ---
 
 ### 🎯 Architectural Mastery Tiers
@@ -13,28 +16,18 @@
 
 ---
 
-```
-                       ┌─────────────────────────────────────────────────────────┐
-                       │          THE 80/20 AI ARCHITECT INTERVIEW TRIAD         │
-                       │   System Design • Hardware Reality • Defensive Controls │
-                       └────────────────────────────┬────────────────────────────┘
-                                                    │
-             ┌──────────────────────────────────────┴──────────────────────────────────────┐
-             ▼                                                                             ▼
-┌─────────────────────────┐                                                   ┌─────────────────────────┐
-│  PHYSICAL CONSTRAINTS   │                                                   │  SYSTEM DESIGN PATTERNS │
-│  • KV-Cache VRAM Math   │                                                   │  • Hybrid RAG & RRF     │
-│  • TTFT vs. TPS Latency │                                                   │  • ReAct vs. Workflows  │
-│  • Token Asymmetry Cost │                                                   │  • Model Context Proto  │
-│  • FlashAttention / RoPE│                                                   │  • Dual-LLM Quarantine │
-└────────────┬────────────┘                                                   └────────────┬────────────┘
-             │                                                                             │
-             └──────────────────────────────────────┬──────────────────────────────────────┘
-                                                    ▼
-                       ┌─────────────────────────────────────────────────────────┐
-                       │            DETERMINISTIC PRODUCTION HARNESS             │
-                       │  Binary Evals • OpenTelemetry Traces • Strict FSM Grammars│
-                       └─────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Triad["THE 80/20 AI ARCHITECT INTERVIEW TRIAD"]
+        direction TB
+        Title["System Design • Hardware Reality • Defensive Controls"]
+    end
+    
+    Triad --> PC["PHYSICAL CONSTRAINTS<br/>• KV-Cache VRAM Math<br/>• TTFT vs. TPS Latency<br/>• Token Asymmetry Cost<br/>• FlashAttention / RoPE"]
+    Triad --> SDP["SYSTEM DESIGN PATTERNS<br/>• Hybrid RAG & RRF<br/>• ReAct vs. Workflows<br/>• Model Context Protocol<br/>• Dual-LLM Quarantine"]
+    
+    PC --> DPH["DETERMINISTIC PRODUCTION HARNESS<br/>Binary Evals • OpenTelemetry Traces • Strict FSM Grammars"]
+    SDP --> DPH
 ```
 
 ---
