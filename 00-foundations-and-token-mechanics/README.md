@@ -31,7 +31,7 @@ flowchart TD
 4. [Inference Execution: Coffee Sips & Token Pours](#4-inference-execution-coffee-sips--token-pours)
 5. [Tokens, Tokenization & BPE: Why Spaces Cost Money](#5-tokens-tokenization--bpe-why-spaces-cost-money)
 6. [Sampling Mechanics & Probability Shaping](#6-sampling-mechanics--probability-shaping)
-7. [Reasoning Models vs. Standard Models](#7-reasoning-models-vs-standard-models)
+7. [Reasoning Models & Test-Time Compute Scaling](#7-reasoning-models--test-time-compute-scaling-must-have-)
 8. [Comparative Tradeoff Matrices](#8-comparative-tradeoff-matrices)
 9. [Production Failure Modes (War Stories)](#9-production-failure-modes-war-stories)
 10. [Production Code Implementations](#10-production-code-implementations)
@@ -340,26 +340,373 @@ flowchart TD
 
 ---
 
-## 7. Reasoning Models vs. Standard Models
+## 7. Reasoning Models & Test-Time Compute Scaling [MUST-HAVE] 🔴
 
-Frontier AI is shifting to **Test-Time Compute**. Instead of answering instantly, models write hidden "thinking tokens" in an internal scratchpad before committing to an answer. 
+### 7.2. Thinking Token Dynamics & Architectural Tradeoffs `[MUST-HAVE]` 🔴
+
+- **Visible vs. Hidden Tokens:** Reasoning models emit thousands of "thinking tokens" into an internal scratchpad before producing user-visible text.
+- **Billing Mechanics:** Providers bill thinking tokens at the standard **Output Token Rate**, even when thinking tokens are hidden from the final user response.
+- **Latency Impact:** TTFT increases from < 1 second to 5 - 45 seconds as the model conducts multi-step tree-of-thought exploration.
+
+---
+
+### Reasoning Models & Test-Time Compute Scaling [MUST-HAVE] 🔴
+
+The AI industry spent six years optimizing pre-training: feeding tens of trillions of tokens into increasingly colossal clusters of GPUs to build dense foundation models. But by late 2024, pre-training began hitting the physical limits of human web text and power availability. 
+
+The frontier shifted overnight from **pre-training compute** to **test-time compute** (also known as inference-time compute scaling). Instead of just predicting the very next word based on frozen weights, models now "think," search, backtrack, and verify hypotheses before emitting a single customer-visible token.
+
+---
+
+#### 1. Explain Like I'm 10 (ELI10): The Math Student's Scratchpad
+
+> **"Reasoning models show their work like a math student. Takes more paper but gets harder problems right."**
+
+Imagine you are in 4th grade and your teacher asks: *"What is 387 × 492?"*
+
+* **The Standard LLM Approach (Anxious Impulsive Student):** The teacher gives you zero paper and demands you shout the answer in 0.1 seconds. Your brain does a quick gut check, recognizes it ends in a 4, and blurts out `"189,424"`. It sounds plausible, but it's completely wrong. Why? Because a standard transformer has a fixed compute budget per token—a fixed number of matrix multiplications. It cannot pause to loop or calculate multi-step math; it must emit a token immediately.
+* **The Reasoning Model Approach (Diligent Math Student):** The teacher gives you a pad of scratch paper. You don't say a word out loud for 30 seconds. On your scratchpad, you write:
+  1. `387 × 400 = 154,800`
+  2. `387 × 90 = 34,830`
+  3. `387 × 2 = 774`
+  4. `Sum: 154,800 + 34,830 = 189,630`
+  5. `189,630 + 774 = 190,404`
+  6. *Self-check:* `387 ≈ 400, 492 ≈ 500, 400 × 500 = 200,000. 190,404 is reasonable. Calculation verified.*
+
+Finally, you look up and say one single word: `"190,404"`. 
+
+You used 120 words of scratchpad reasoning to produce a 1-word final answer. It took more paper (tokens) and more time (latency), but you got an impossibly hard problem 100% right.
+
+---
+
+#### 2. Test-Time Compute vs. Pre-Training Compute: The Second Scaling Law
+
+> **The Analogy: "Studying harder before exam vs scratch paper during exam."**
+
+For the first era of Deep Learning (2017–2024), scaling was governed by Kaplan's and Chinchilla's Laws: **pre-training compute**. To make an AI smarter, you had to make it study harder before the exam:
+* You scraped 15 trillion tokens of the public internet.
+* You rented 50,000 NVIDIA H100 GPUs for four months.
+* You burned tens of millions of dollars compressing human knowledge into static neural weights.
 
 ```mermaid
-flowchart LR
-    subgraph StandardModel["Standard Instruction LLM"]
-        In1["Input Prompt"] --> SingleForward["Single Forward Pass"]
-        SingleForward --> Out1["Immediate Direct Tokens"]
+flowchart TD
+    subgraph PreTrainEra["Pre-Training Compute: Studying Harder Before the Exam"]
+        Data["Trillions of Web Tokens"] --> Cluster["50,000 GPU Cluster ($50M+)"]
+        Cluster --> FrozenWeights["Static Frozen Model Weights (W)"]
+        FrozenWeights --> Exam["Exam Time: Single Forward Pass\nO(1) compute per emitted token"]
+        Exam --> Guess["Immediate Guess (High Hallucination on Novel Logic)"]
     end
 
-    subgraph ReasoningModel["Reasoning Model with Test-Time Compute"]
-        In2["Input Prompt"] --> ThinkLoop["Internal Reasoning Loop (Hidden Thinking Tokens)"]
-        ThinkLoop --> Think1["Chain-of-Thought Formulation"]
-        Think1 --> Think2["Self-Correction & Hypothesis Backtracking"]
-        Think3["Sanity Checking Output Constraints"]
-        Think2 --> Think3
-        Think3 --> Out2["Synthesized Final Response"]
+    subgraph TestTimeEra["Test-Time Compute: Scratch Paper During the Exam"]
+        Prompt["Complex Prompt / Exam Problem"] --> ModelBase["Base / Reasoning Model"]
+        ModelBase --> SearchLoop["Test-Time Search & Verification Loop\n• Monte Carlo Tree Search / Beam Search\n• Process Reward Models (PRMs)\n• Hypothesis Generation & Backtracking"]
+        SearchLoop --> SelfCheck["Internal Verification & Critique"]
+        SelfCheck --> VerifiedAnswer["Flawless Synthesized Solution (Near-Zero Hallucination)"]
     end
 ```
+
+##### The Shift to Test-Time Compute Scaling
+When you give an LLM test-time compute, you decouple reasoning capability from model size:
+1. **Dynamic Search Spaces:** Instead of auto-regressively sampling along the path of highest initial probability, the model explores a tree of thoughts.
+2. **Process-Supervised Reward Models (PRMs):** During the thinking loop, auxiliary scoring networks grade each intermediate reasoning step (step-level feedback) rather than just the final answer (outcome-level feedback).
+3. **Backtracking & Error Recovery:** If a branch leads to an invariant violation or compile error, the model recognizes it mid-stream, pivots, and backtracks: *"Wait, that mutex lock order creates an AB-BA deadlock. Let me rethink the synchronization strategy."*
+4. **The Economic Tradeoff:** You can achieve frontier mathematical and coding performance from a smaller 14B or 32B model given 4,000 thinking tokens, outperforming a 400B dense model forced to answer instantaneously.
+
+---
+
+#### 3. Frontier Reasoning Model Landscape
+
+The landscape has stratified into dedicated pure-reasoning engines and hybrid dual-mode architectures:
+
+| Model | Provider | Core Mechanism & Architecture | Thinking Budget Control | Max Context / Output Window | Pricing Profile (per 1M Tokens) | Benchmark / Superpower Specialty | Best Enterprise Production Use Case |
+|---|---|---|---|---|---|---|---|
+| **OpenAI o3** | OpenAI | Large-scale Reinforcement Learning (RL) over hidden CoT; deep tree search | `reasoning_effort: low / medium / high` | 200k Context / 100k Max Output | In: ~$10.00 / Out: ~$40.00 *(Thinking billed as output)* | 2724 Codeforces rating; gold medal IMO 2024 level math | Mission-critical algorithmic verification, complex multi-file code refactoring |
+| **OpenAI o4-mini** | OpenAI | Distilled compact RL reasoning architecture optimized for fast inference | `reasoning_effort: low / medium / high` | 200k Context / 100k Max Output | In: ~$1.10 / Out: ~$4.40 *(Thinking billed as output)* | High-speed STEM reasoning, competitive coding at 5x lower latency | Real-time automated code triage, agentic planning loops with sub-second step needs |
+| **Claude 3.7 Thinking** | Anthropic | Hybrid architecture: seamlessly toggles between fast instruction and extended thinking | Granular token budget (`budget_tokens: 1024..64000`) or disabled (`0`) | 200k Context / 64k Output | In: $3.00 / Out: $15.00 *(Thinking billed at $15.00/1M)* | Superior full-stack code synthesis, nuanced instruction following under complex constraints | Production full-stack feature engineering, multi-repo codebase updates, complex regulatory compliance |
+| **Claude 4 Opus Thinking** | Anthropic | Frontier deep cognitive reasoning engine; maximum tree search depth and self-critique | Granular token budget control up to 128k output | 200k Context / 128k Output | In: ~$15.00 / Out: ~$75.00 *(Thinking billed at $75.00/1M)* | Deep autonomous research, theorem proving, exhaustive legal/financial discovery | High-stakes architectural audits, automated security vulnerability discovery, executive strategic analysis |
+| **Gemini 2.5 Pro Thinking** | Google | Native multimodal test-time compute integrated with real-time web search and Python sandbox | Configurable thinking budget (`thinkingConfig: { thinkingBudget: N }`) | 1M - 2M Context / 64k Output | In: ~$2.50 / Out: ~$10.00 *(Thinking billed at $10.00/1M)* | Long-context multimodal reasoning (hours of video, million-line repositories) | Multi-document forensic audit, repository-scale migration analysis, multimodal hardware schematics |
+| **DeepSeek-R1** | DeepSeek | 671B MoE (37B active parameters); pure RL (R1-Zero) refined with cold-start data + multi-stage RL | Open-weights / `<think>` tag token boundaries | 64k Context / 8k - 32k Output | In: $0.55 / Out: $2.19 *(Cache Hit: $0.14/1M)* | Open-weights AIME 79.8%, MATH 500 97.3%; competitive with o1/o3 | Self-hosted air-gapped enterprise reasoning, low-cost bulk batch code audit, on-prem finance |
+
+---
+
+#### 4. When to Use Reasoning vs. Standard Models: Architectural Decision Framework
+
+Senior architects must treat reasoning models not as an automatic upgrade, but as a specialized high-latency, high-cost computing tier.
+
+```mermaid
+flowchart TD
+    Start(["Incoming Engineering Task"]) --> LatencyCheck{"Strict Latency SLA?\n(e.g., TTFT < 1.5s or Interactive UI)"}
+    
+    LatencyCheck -- "Yes (< 1.5s)" --> FastPath["Standard Instruction LLM or SLM\n(Claude 3.5 Sonnet, GPT-4o, Phi-4)"]
+    LatencyCheck -- "No (Async / Worker / Tool)" --> TaskType{"Problem Nature & Complexity?"}
+    
+    TaskType -- "Direct Lookup / Summarization / Text Rewrite" --> FastPath
+    TaskType -- "Standard CRUD API / Strict JSON Data Extraction" --> FastPath
+    
+    TaskType -- "Algorithmic Logic / Multi-File Refactor / Formal Math / Security Audit" --> AccuracyCheck{"Can Standard Model with Few-Shot / CoT\nachieve >= 98% reliability in evals?"}
+    
+    AccuracyCheck -- "Yes (Sufficient)" --> FastPath
+    AccuracyCheck -- "No (Hallucinates subtle bugs or logic flaws)" --> BudgetCheck{"Can Budget Absorb 10x-50x Token Overhead\n& 10s-45s Time-To-First-Token?"}
+    
+    BudgetCheck -- "Yes" --> ReasoningTier["Deploy Reasoning Model with Test-Time Compute\n(Claude 3.7 Thinking, o3, DeepSeek-R1)"]
+    BudgetCheck -- "No (Cost / Hardware Constrained)" --> DistillTier["Deploy Distilled Reasoning SLM\n(DeepSeek-R1-Distill-Qwen-14B / Phi-4)"]
+```
+
+##### The Golden Rule of Reasoning Selection:
+> **"If a Senior Software Engineer would need a whiteboard and 15 minutes of quiet thinking before typing code, dispatch a Reasoning Model. If a Junior Engineer could write the answer off the top of their head in 30 seconds, use a Standard Model or an SLM."**
+
+---
+
+#### 5. Thinking Token Economics: The 50:1 Asymmetry & Budget Governance
+
+The defining economic characteristic of reasoning models is the **output token asymmetry**. 
+
+##### The 5,000:100 Reality
+When a user asks:
+> *"Does this concurrency loop contain a potential race condition under the .NET weak memory model? Answer strictly with YES or NO and a one-sentence proof."*
+
+* **Visible Output Emitted:** 28 tokens (`"YES. The memory barrier is omitted prior to reading the volatile pointer, permitting CPU instruction reordering on ARM64 architectures."`).
+* **Hidden Thinking Tokens Emitted:** **5,240 tokens!**
+* **The Economic Consequence:** In cloud API pricing, **all thinking tokens are billed as output tokens**. Since output tokens typically cost $3\times$ to $5\times$ more than input tokens ($15/1M vs $3/1M), that simple boolean check cost:
+  $$\text{Cost} = \left(\frac{150 \text{ input}}{10^6} \times \$3.00\right) + \left(\frac{5,240 \text{ thinking} + 28 \text{ visible}}{10^6} \times \$15.00\right) = \$0.00045 + \$0.07902 = \mathbf{\$0.0795}$$
+  A single YES/NO query cost nearly **8 cents** because the model explored hundreds of memory-ordering execution branches in its internal scratchpad.
+
+##### Mermaid Thinking Token Lifecycle:
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client as Client / Microservice
+    participant Gateway as API Gateway & Token Governor
+    participant Engine as LLM Serving Engine
+    participant KV as GPU KV-Cache Memory
+
+    Client->>Gateway: POST /v1/messages (Prompt: 800 tokens, thinking budget: 8,000)
+    Gateway->>Engine: Prefill Phase (800 input tokens)
+    Engine->>KV: Populate KV-Cache with prompt attention keys/values
+
+    Note over Engine,KV: TEST-TIME COMPUTE PHASE (Internal Scratchpad)
+    loop Thinking Token Generation (Tokens 1 to 5,000)
+        Engine->>Engine: Generate internal CoT token (Hypothesis exploration)
+        Engine->>KV: Store thinking token activation in KV-Cache
+        Engine->>Engine: Process Reward Model score evaluation
+        alt Logic Flaw Detected
+            Engine->>Engine: Emit self-correction token ("Backtrack: Assumption violated...")
+        end
+    end
+
+    Note over Engine,Client: VISIBLE DECODE PHASE (Final Answer)
+    loop Visible Token Emission (Tokens 1 to 100)
+        Engine->>Engine: Emit final verified token
+        Engine-->>Client: Stream visible token (TTFT: ~14.2s)
+    end
+
+    Engine-->>Gateway: Usage Payload: { input: 800, thinking: 5000, output: 100 }
+    Gateway-->>Client: HTTP Response + Cost Header: $0.0789 (Billed as 800 In + 5100 Out)
+```
+
+##### Configurable Thinking Budgets (0 to 64K)
+Modern architectures mandate explicit thinking budgets:
+* **`budget_tokens: 0` (or `disabled`):** Instantly forces the model to bypass the scratchpad and behave as an ultra-low-latency standard instruction LLM (supported natively in Claude 3.7 Sonnet).
+* **`budget_tokens: 1024..4096` (Light Reasoning):** Ideal for verifying regex expressions, detecting subtle SQL injection vectors, or parsing ambiguous date formats.
+* **`budget_tokens: 16000..64000` (Deep Architectural Reasoning):** Reserved for multi-file AST migrations, protocol reverse-engineering, security threat modeling, and formal logic proofs.
+
+##### Production Implementation: Python Budget Governor
+```python
+import os
+from anthropic import Anthropic
+from typing import Dict, Any
+
+def execute_reasoned_task(
+    system_prompt: str, 
+    user_prompt: str, 
+    thinking_budget: int = 4096,
+    max_output: int = 1024
+) -> Dict[str, Any]:
+    """
+    Executes a task against Claude 3.7 Sonnet with an enforced thinking budget
+    and calculates exact financial cost including the 50:1 asymmetry.
+    """
+    client = Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+    
+    # Configure hybrid thinking: 0 disables thinking; >= 1024 enables extended CoT
+    thinking_config = (
+        {"type": "enabled", "budget_tokens": thinking_budget}
+        if thinking_budget >= 1024
+        else {"type": "disabled"}
+    )
+
+    response = client.messages.create(
+        model="claude-3-7-sonnet-20250219",
+        max_tokens=max_output + (thinking_budget if thinking_budget >= 1024 else 0),
+        thinking=thinking_config,
+        system=system_prompt,
+        messages=[{"role": "user", "content": user_prompt}]
+    )
+
+    # Extract token telemetry
+    input_tokens = response.usage.input_tokens
+    output_tokens = response.usage.output_tokens
+    
+    # Claude 3.7 reports thinking tokens inside output_tokens or subfield
+    thinking_tokens = getattr(response.usage, "thinking_tokens", 0)
+    visible_tokens = output_tokens - thinking_tokens
+
+    # Claude 3.7 Pricing: $3.00 / 1M input, $15.00 / 1M output (including thinking)
+    input_cost = (input_tokens / 1_000_000.0) * 3.00
+    output_cost = (output_tokens / 1_000_000.0) * 15.00
+    total_cost = input_cost + output_cost
+
+    return {
+        "text": "".join([block.text for block in response.content if block.type == "text"]),
+        "thinking_tokens": thinking_tokens,
+        "visible_tokens": visible_tokens,
+        "input_tokens": input_tokens,
+        "total_cost_usd": round(total_cost, 6)
+    }
+```
+
+##### Production Implementation: C# / .NET 9 Reasoning Token Budget Policy
+```csharp
+using System.Text.Json.Serialization;
+
+namespace EnterpriseAi.Infrastructure.Governance;
+
+public record ReasoningUsage(
+    [property: JsonPropertyName("prompt_tokens")] int PromptTokens,
+    [property: JsonPropertyName("completion_tokens")] int CompletionTokens,
+    [property: JsonPropertyName("thinking_tokens")] int ThinkingTokens
+);
+
+public class ReasoningGovernor
+{
+    private const decimal InputCostPerMillion = 3.00m;
+    private const decimal OutputCostPerMillion = 15.00m;
+    private const decimal MaxPermissibleCostPerRequest = 0.50m; // Circuit breaker at 50 cents
+
+    public static (bool IsApproved, decimal TotalCostUsd, string Reason) ValidateAndAudit(ReasoningUsage usage)
+    {
+        // Thinking tokens are billed at the premium output rate alongside visible completion tokens
+        int totalBillableOutput = usage.CompletionTokens; // In Anthropic/OpenAI, completion includes thinking
+        
+        decimal inputCost = (usage.PromptTokens / 1_000_000.0m) * InputCostPerMillion;
+        decimal outputCost = (totalBillableOutput / 1_000_000.0m) * OutputCostPerMillion;
+        decimal totalCost = inputCost + outputCost;
+
+        if (totalCost > MaxPermissibleCostPerRequest)
+        {
+            return (false, totalCost, $"Cost threshold breached: ${totalCost:F4} > ${MaxPermissibleCostPerRequest:F4}");
+        }
+
+        // Asymmetry check: Alert if thinking-to-visible ratio exceeds 50:1
+        int visibleTokens = Math.Max(1, usage.CompletionTokens - usage.ThinkingTokens);
+        double asymmetryRatio = (double)usage.ThinkingTokens / visibleTokens;
+        
+        if (asymmetryRatio > 50.0)
+        {
+            // Log telemetry warning: high thinking token burn for low visible output
+            Console.WriteLine($"[ALERT] Extreme thinking asymmetry: {asymmetryRatio:F1}:1 ratio ({usage.ThinkingTokens} thinking vs {visibleTokens} visible)");
+        }
+
+        return (true, totalCost, "Approved");
+    }
+}
+```
+
+---
+
+#### 6. Production War Story: The 2 AM Thinking Token Runaway Bankruptcy
+
+> **"It's 2:14 AM on Sunday. Your pager buzzes with a high-severity alert from AWS Cost Explorer: the LLM API gateway just incurred $4,800 in charges over the last 90 minutes."**
+
+##### The Incident
+A tier-1 fintech company integrated Claude 3.7 Thinking into an automated batch pipeline that triaged inbound merchant chargeback disputes. The engineer configured:
+```python
+# THE DEADLY DEFAULT:
+thinking={"type": "enabled", "budget_tokens": 32000}
+```
+A merchant submitted a dispute package containing a scanned 40-page PDF with contradictory handwritten ledger dates, conflicting wire confirmation numbers, and an ambiguous claim of fraud.
+
+The reasoning model entered an intense recursive hypothesis loop:
+1. *Hypothesis A:* The wire cleared on March 12th. *(Contradicts document 3, page 14).*
+2. *Hypothesis B:* The wire cleared on March 14th. *(Contradicts bank statement timestamp).*
+3. *Hypothesis C:* Simulating banking clearing house retry intervals...
+
+Because the chargeback worker was managed by an aggressive background SQS queue with an automated 3-retry dead-letter policy, every worker timeout caused another instance to pick up the exact same job. Each attempt burned **32,000 thinking tokens** at $15/1M ($0.48 per attempt) while running for 55 seconds. When 100 concurrent workers processed the queue, the system burned:
+$$100 \text{ workers} \times 30 \text{ attempts/hr} \times \$0.48 = \mathbf{\$1,440/\text{hour}}$$
+
+Before the on-call engineer woke up, **$3,600 had evaporated** to parse a single $45 disputed chargeback.
+
+##### The Root Causes
+1. **Unbounded Thinking Budgets:** Allocating 32,000 thinking tokens for an automated batch triage task that only required basic classification.
+2. **Missing Token Dead-Man Switches:** The SQS consumer lacked an idempotent budget check; retries re-ran full inference with identical thinking budgets.
+3. **No Fallback Degradation:** The service didn't degrade to a standard model (or `budget_tokens: 2048`) upon detecting an ambiguous document.
+
+##### The Post-Mortem Architecture:
+* Hard-coded `budget_tokens: 2048` for all automated background classification workers.
+* Dynamic thinking budgets: allocate 16k+ tokens **only** when an explicit human architect triggers a deep-analysis flag in the back-office console.
+* Implemented a distributed Redis token-bucket governor that halts any tenant task exceeding $0.25 total inference cost.
+
+---
+
+#### 7. Anti-Patterns vs. Production Best Practices
+
+| Anti-Pattern | Why It Breaks in Production | Correct Architectural Solution |
+|---|---|---|
+| **Unbounded Thinking in Batch Queues** | Automated workers burn maximum allocated thinking tokens (up to 64k) on ambiguous edge cases, draining cloud budgets overnight. | Set strict per-task thinking ceilings (e.g., `budget_tokens: 2048` for batch workers; reserve 16k+ for interactive senior engineering tasks). |
+| **Forcing Direct JSON Output on Thinking Models** | Forcing a reasoning model to output raw JSON without scratchpad tokens breaks its ability to verify logic before serialization, resulting in syntax errors or skipped logic. | Allow the model to think freely inside hidden CoT or `<think>` tags, then extract the final validated JSON from a designated `<output>` delimiter. |
+| **Reasoning Models for Real-Time Autocomplete / UI** | TTFT spikes to 10s–30s as the model explores internal reasoning paths, destroying user experience and triggering frontend HTTP timeouts. | Use fast SLMs (e.g., Phi-4, Qwen 2.5 7B) or standard models (GPT-4o-mini) for sub-second user-facing interactions. |
+| **Zeroing Out Temperature on Reasoning Models** | Setting `temperature = 0.0` on certain reasoning models (like o1/o3 or DeepSeek-R1) can cripple the entropy needed for search-space exploration and induce repetitive thinking loops. | Follow provider specifications: leave temperature at the model's native default ($1.0$ for o-series, $0.6$ for DeepSeek-R1) to allow diverse internal search paths. |
+
+---
+
+#### 8. The Small Language Model (SLM) & Distillation Revolution [GOOD-TO-HAVE] 🟡
+
+While frontier models like o3 and Claude 3.7 scale cloud test-time compute, an equally transformative revolution is taking place on the edge: **the distillation of reasoning capabilities into Small Language Models (SLMs)** ranging from 1.5B to 14B parameters.
+
+```mermaid
+flowchart TD
+    Frontier["Frontier Teacher Models\n(DeepSeek-R1 671B, Claude 3.7 Thinking)"] --> CoTTraces["800,000+ Curated Reasoning Traces\n(<think> exploration, self-correction, verification)"]
+    CoTTraces --> Distillation["Supervised Fine-Tuning & Direct Preference Optimization (DPO)"]
+    
+    Distillation --> SLM1["DeepSeek-R1-Distill-Qwen-14B\n(Runs on 16GB VRAM / Mac M-Series)"]
+    Distillation --> SLM2["DeepSeek-R1-Distill-Llama-8B\n(Runs on 8GB VRAM / RTX 4070)"]
+    Distillation --> SLM3["Microsoft Phi-4 (14B)\n(Synthetic Reasoning Pretraining)"]
+    
+    SLM1 & SLM2 & SLM3 --> EdgeDeploy["Air-Gapped Local Inference\n• Zero Cloud API Costs\n• Zero Data Exfiltration Risk\n• 40-100 Tokens/sec Local Decode"]
+```
+
+##### 1. Microsoft Phi-4 (14B)
+* **Architecture:** 14-billion parameter dense transformer trained under the philosophy that "textbooks and synthetic reasoning data are all you need."
+* **Superpower:** Matches or beats original GPT-4 on math (MATH benchmark > 80%) and competition coding, despite fitting on a single $1,500 consumer GPU or Apple MacBook Pro (M2/M3/M4 with 24GB Unified Memory).
+* **Enterprise Fit:** Local IDE code completion, private document parsing in healthcare and banking.
+
+##### 2. Google Gemma 2 (2B, 9B, 27B)
+* **Architecture:** Built with interleaved local sliding-window attention and global attention layers, trained via logit distillation from Gemini 1.5 Ultra teachers.
+* **Superpower:** The 9B variant punches far above its weight class, rivaling previous-generation 70B models while executing at 80+ tokens/second on an NVIDIA RTX 4090.
+* **Enterprise Fit:** Edge on-device classification, edge gateway routing, autonomous robotics.
+
+##### 3. Alibaba Qwen 2.5 (0.5B to 72B)
+* **Architecture:** Pretrained on 18 trillion tokens with native support for 128k context windows and 29+ languages.
+* **Superpower:** **Qwen 2.5 Coder 32B** achieved parity with Claude 3.5 Sonnet on software engineering benchmarks (SWE-Bench Lite), becoming the premier open-weights foundation for local agentic coding.
+* **Enterprise Fit:** Enterprise-hosted coding copilots, automated pull-request reviewers, multilingual query routers.
+
+##### 4. DeepSeek-R1 Distillations (The Open Reasoning Miracle)
+DeepSeek demonstrated that reasoning is not an exclusive property of massive models. By using DeepSeek-R1 (671B) to generate 800,000 high-quality reasoning traces, they distilled reasoning behaviors directly into compact open architectures:
+* **DeepSeek-R1-Distill-Qwen-1.5B / 7B / 14B / 32B**
+* **DeepSeek-R1-Distill-Llama-8B / 70B**
+
+The **R1-Distill-Qwen-14B** model scores **73.7% on AIME 2024** and **93.9% on MATH 500**—surpassing the original dense GPT-4o while running comfortably in 4-bit quantization (AWQ/GGUF) on a single 16GB VRAM GPU!
+
+##### SLM Hardware Footprint & Deployment Matrix:
+
+| Model | Parameters | Quantization | VRAM Required | Max Throughput (vLLM / Ollama) | Math & Code Tier | Ideal Enterprise Role |
+|---|---|---|---|---|---|---|
+| **DeepSeek-R1-Distill-Qwen-1.5B** | 1.8B | INT4 (GGUF) | 1.8 GB | ~140 tok/s | Intermediate Algebra / Basic Logic | Edge mobile devices, embedded IoT, local query intent routing |
+| **DeepSeek-R1-Distill-Llama-8B** | 8.0B | INT4 (AWQ) | 6.2 GB | ~85 tok/s | Advanced Math (AIME 50%) / Solid Python | Developer laptop copilot, private document auditing |
+| **DeepSeek-R1-Distill-Qwen-14B** | 14.7B | INT4 (AWQ) | 10.5 GB | ~65 tok/s | Elite Math (AIME 73.7%) / Senior Coding | On-prem air-gapped reasoning, private financial analysis |
+| **Microsoft Phi-4** | 14.7B | FP8 / INT4 | 9.8 GB | ~70 tok/s | Elite STEM / Academic Logic | Healthcare compliance checks, internal code refactoring |
+| **Qwen 2.5 Coder 32B** | 32.5B | INT4 (AWQ) | 20.5 GB | ~42 tok/s | Frontier Coding (SWE-Bench 40%+) | Dedicated departmental coding copilot on a single RTX 4090 |
+| **Gemma 2 27B** | 27.2B | INT4 (GGUF) | 17.0 GB | ~48 tok/s | General Knowledge / Multilingual | Air-gapped enterprise search synthesis, internal policy assistant |
 
 ---
 

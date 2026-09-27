@@ -76,7 +76,7 @@ from dataclasses import dataclass
 from typing import List, Dict, Any
 from pydantic import BaseModel, Field
 
-# Pricing parameters per 1M tokens (e.g., Claude 3.7 Sonnet / GPT-4.5 / o3 tier)
+# Pricing parameters per 1M tokens (e.g., Claude 3.5 Sonnet / GPT-4o tier)
 PRICE_PER_M_INPUT = 3.00
 PRICE_PER_M_OUTPUT = 15.00
 

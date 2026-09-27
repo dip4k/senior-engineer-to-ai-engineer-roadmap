@@ -41,38 +41,33 @@
 - **[Azure AI Agent Service](https://learn.microsoft.com/azure/ai-services/agents/)**: Cloud-native agent hosting with isolated execution sandboxes and Microsoft Entra ID governance.
 
 ### OpenAI Platform
-- **[OpenAI Documentation](https://platform.openai.com/docs/)**: API reference for frontier reasoning models (o1, o3-mini) and multimodal models (GPT-4.5, o3-mini).
+- **[OpenAI Documentation](https://platform.openai.com/docs/)**: API reference for frontier reasoning models (o1, o3-mini) and multimodal models (GPT-4o, GPT-4o-mini).
 - **[OpenAI Agents SDK (`openai-agents`)](https://github.com/openai/openai-agents-python)**: Official production framework (successor to Swarm) featuring multi-agent handoffs, guardrails, and tracing.
 - **[OpenAI Structured Outputs Guide](https://platform.openai.com/docs/guides/structured-outputs)**: Constrained grammar decoding and 100% strict JSON schema enforcement.
 - **[OpenAI Reasoning Models Guide](https://platform.openai.com/docs/guides/reasoning)**: Test-time compute mechanics, reasoning tokens, and `reasoning_effort` tuning.
 
 ---
 
-## 2. Model Context Protocol (MCP) & Agent-to-Agent (A2A) Standards
+## 2. Model Context Protocol (MCP) Standards
 
 - **[Model Context Protocol Official Site](https://modelcontextprotocol.io/)**: Protocol specifications, architecture overviews, and getting-started tutorials.
-- **[MCP Specification (JSON-RPC 2.0)](https://spec.modelcontextprotocol.io/)**: Complete open standard governing Transports (`stdio`, `Streamable HTTP`), Tools, Resources, Prompts, and Tasks Extension.
-- **[Google Agent-to-Agent (A2A) Protocol Specification](https://a2a-protocol.org/)**: The open standard for cross-vendor multi-agent interoperability, Agent Capability Cards (`agent.json`), and task lifecycles under the **Agentic AI Foundation**.
+- **[MCP Specification (JSON-RPC 2.0)](https://spec.modelcontextprotocol.io/)**: Complete open standard governing Transports (`stdio`, `SSE`), Tools, Resources, Prompts, and Reverse Sampling.
+- **[MCP GitHub Organization](https://github.com/modelcontextprotocol)**: Official repositories including TypeScript SDK, Python SDK, Kotlin SDK, and reference servers.
 - **[FastMCP Python Library](https://github.com/jlowin/fastmcp)**: High-level, ergonomic framework for authoring production-ready MCP servers with Pydantic typing.
-- **[SWE-bench Harness](https://github.com/swe-bench/SWE-bench)**: The gold-standard benchmark evaluation harness providing decoupled 3-tier Docker environments for evaluating autonomous coding agents.
-- **[Anthropic Claude Cookbooks](https://github.com/anthropics/claude-cookbooks)**: Production recipes for orchestrator-worker workflows, prompt caching, tool use, and offline evals.
+- **[Anthropic MCP Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/mcp)**: Guide to connecting Claude Desktop, Cursor, and Claude Code to external tools via MCP.
 
 ---
 
 ## 3. Official Courses & Video Masterclasses
 
 ### DeepLearning.AI Courses (Andrew Ng & Frontier Labs)
-- **[AI Agents in LangGraph](https://www.deeplearning.ai/short-courses/ai-agents-in-langgraph/)** (Harrison Chase & Rotem Weiss): Controllable cyclic graphs, state persistence, agentic search, and human-in-the-loop workflows.
-- **[Long-Term Agentic Memory With LangGraph](https://www.deeplearning.ai/short-courses/)**: Implementing durable procedural, episodic, and semantic memory using LangGraph and LangMem.
-- **[Multi AI Agent Systems with crewAI](https://www.deeplearning.ai/short-courses/multi-ai-agent-systems-with-crewai/)** (João Moura): Role-playing agents, inter-agent delegation, and structured crew workflows.
-- **[Evaluating and Debugging Generative AI](https://www.deeplearning.ai/short-courses/evaluating-debugging-generative-ai/)**: Tracing agent execution, MLOps logging, and systematic failure-mode debugging.
 - **[MCP: Build Rich-Context AI Apps with Anthropic](https://www.deeplearning.ai/short-courses/mcp-build-rich-context-ai-apps-with-anthropic/)**: Hands-on course building and deploying MCP servers with Anthropic engineers.
 - **[Reasoning with o1](https://www.deeplearning.ai/short-courses/reasoning-with-o1/)**: Taught in partnership with OpenAI; covers test-time compute, reasoning tokens, and task delegation.
 - **[Claude Code: A Highly Agentic Coding Assistant](https://www.deeplearning.ai/short-courses/claude-code-a-highly-agentic-coding-assistant/)**: Official Anthropic course on terminal agent orchestration, repo mapping, and MCP tool execution.
+- **[Building toward Computer Use with Anthropic](https://www.deeplearning.ai/short-courses/building-toward-computer-use-with-anthropic/)**: Multimodal UI navigation, coordinate grounding, and desktop agent execution.
+- **[Agent Skills with Anthropic](https://www.deeplearning.ai/short-courses/agent-skills-with-anthropic/)**: Building modular, reusable agent instruction folders and subagent delegation workflows.
 - **[Reinforcement Fine-Tuning LLMs with GRPO](https://www.deeplearning.ai/short-courses/reinforcement-fine-tuning-llms-with-grpo/)**: Group Relative Policy Optimization (the algorithm powering DeepSeek R1 and reasoning models).
-
-### Specialized Industry Cohort Courses
-- **[AI Evals For Engineers & PMs (Maven)](https://maven.com/parlance-labs/evals)** (Hamel Husain & Shreya Shankar): The industry gold-standard cohort course on Analyze-Measure-Improve evaluation loops, error analysis, and trajectory evaluations.
+- **[ChatGPT Prompt Engineering for Developers](https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/)**: Foundational prompting tactics by Isa Fulford & Andrew Ng.
 
 ### Andrej Karpathy's Academy
 - **[Neural Networks: Zero to Hero](https://karpathy.ai/zero-to-hero.html)**: The gold-standard video series building micrograd, makemore, WaveNet, and a full GPT from scratch.
@@ -93,16 +88,13 @@
   - *[Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/)*: Why offline evals separate toy prototypes from durable software.
   - *[LLM Evals FAQ](https://hamel.dev/blog/posts/evals-faq/)*: Binary pass/fail criteria, synthetic dataset curation, and LLM-as-a-judge pitfalls.
   - *[How Do I Evaluate Agentic Workflows?](https://hamel.dev/blog/posts/evals-faq/how-do-i-evaluate-agentic-workflows.html)*: Trajectory evaluations, intermediate states, and tool-call assertions.
-- **[Chip Huyen's AI Engineering Writings](https://huyenchip.com/)**:
-  - *AI Engineering: Building Applications with Foundation Models* (O'Reilly, 2025).
-  - *[Agents (Jan 2025)](https://huyenchip.com/2025/01/07/agents.html)*: Cognitive architectures, tool interfaces, and autonomous agent loops.
-  - *[Common Pitfalls When Building Generative AI Applications (Jan 2025)](https://huyenchip.com/2025/01/16/common-pitfalls.html)*: Architectural anti-patterns in production.
 - **[Eugene Yan's Applied LLM Patterns](https://eugeneyan.com/)**:
   - *[Patterns for Building LLM-based Systems & Products](https://eugeneyan.com/writing/llm-patterns/)*: Retrieval, routing, guardrails, and caching architectures.
-  - *[AlignEval & Cybersecurity Evaluation Harnesses](https://eugeneyan.com/)*: Continuous evaluation and benchmark harness design.
 - **[Lilian Weng's AI Safety & Systems Writing](https://lilianweng.github.io/)**:
   - *[LLM Powered Autonomous Agents](https://lilianweng.github.io/posts/2023-06-23-agent/)*: Planning (Subgoal decomposition), Memory, and Tool use taxonomy.
   - *[Adversarial Attacks on LLMs](https://lilianweng.github.io/posts/2023-10-25-adv-attack-llm/)*: Jailbreaking, prompt injections, and defensive boundaries.
+- **[Chip Huyen's AI Engineering Architecture](https://huyenchip.com/)**:
+  - *[Building LLM applications for production](https://huyenchip.com/2023/04/11/llm-engineering.html)*: Latency, cost, prompt engineering, and evaluation trade-offs.
 - **[Simon Willison's Weblog](https://simonwillison.net/)**:
   - Comprehensive documentation and ongoing tracking of Prompt Injection vulnerabilities and AI security.
 

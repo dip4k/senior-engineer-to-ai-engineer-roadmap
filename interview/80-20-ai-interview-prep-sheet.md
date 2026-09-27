@@ -127,9 +127,9 @@ flowchart TD
     L2Semantic -->|"Cache Miss"| Router["Circuit Breaker & Fallback Router (LiteLLM)"]
     
     subgraph MultiProviderCluster["Provider Tiering & Automatic Failover"]
-        Router -->|"Primary: Claude 3.7 Sonnet"| AnthropicAPI["Anthropic Endpoint"]
+        Router -->|"Primary: Claude 3.5 Sonnet"| AnthropicAPI["Anthropic Endpoint"]
         Router -.->|"429 / Outage Failover"| GoogleAPI["Google Gemini 2.0 Flash"]
-        Router -.->|"Tertiary Failover"| AzureAPI["Azure OpenAI GPT-4.5 / o3"]
+        Router -.->|"Tertiary Failover"| AzureAPI["Azure OpenAI GPT-4o"]
     end
 
     AnthropicAPI & GoogleAPI & AzureAPI --> StreamProcessor["SSE Stream Engine with HttpContext Abort Detection"]
@@ -142,7 +142,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    PR["Incoming GitHub PR / Issue"] --> Orchestrator["Orchestrator Agent (Claude 3.7 / GPT-4.5 / o3)"]
+    PR["Incoming GitHub PR / Issue"] --> Orchestrator["Orchestrator Agent (Claude 3.7 / GPT-4o)"]
     
     subgraph MCPArchitecture["Model Context Protocol (MCP) Integration"]
         Orchestrator <-->|"JSON-RPC 2.0 (stdio / SSE)"| MCPHost["MCP Host Controller"]
@@ -170,7 +170,7 @@ flowchart TD
     TriageRouter -->|"Technical Outage"| TechAgent["Specialized Technical Support Agent"]
     TriageRouter -->|"Account Security"| SecurityAgent["Identity & Security Agent"]
     
-    BillingAgent --> RefundAction{"Refund Amount > \$100?"}
+    BillingAgent --> RefundAction{"Refund Amount > $100?"}
     RefundAction -->|"Yes (State Mutation)"| HITLGate["Human-in-the-Loop Approval Interceptor"]
     HITLGate -->|"CSR Signs HMAC Token"| ExecuteRefund["Execute Stripe / ERP Refund API"]
     RefundAction -->|"No (Low Risk)"| AutoRefund["Execute Auto-Refund"]
@@ -211,7 +211,7 @@ sequenceDiagram
     Billing->>Governor: Register Tool Call Hash (SHA-256 Check)
     Governor-->>Billing: No Infinite Loop (Unique Signature)
     
-    alt Action Risk Level: HIGH (Mutate Database / Refund > \$500)
+    alt Action Risk Level: HIGH (Mutate Database / Refund > $500)
         Billing->>HITL: Issue Approval Nonce (HMAC SHA-256)
         Note over Billing,HITL: Execution Suspended (State: AWAITING_INPUT)
         Billing->>Store: Save Durable Checkpoint (chk-02, Suspended)
@@ -280,10 +280,6 @@ When an agent executes state-mutating actions across microservices (e.g., reserv
 3. **Rollback Execution**: The Saga Coordinator reads the checkpointed execution journal from PostgreSQL and invokes compensating actions in reverse topological order:
    `Rollback Sequence: C2 -> C1`
 4. **Idempotency Safeguard**: Every compensating action is executed with the original step's idempotency key to prevent double-refunds during broker retries.
-
-> [!TIP]
-> **Looking for more end-to-end System Design architectures?**
-> Check out the dedicated guide: [**10 End-to-End Enterprise AI System Designs**](../architecture/10-enterprise-ai-system-designs.md), featuring comprehensive blueprints (Financial Reconciliation, SRE Incident Remediation, PR Verification Bot, Supply Chain Mesh, PII Vault HR Agent, etc.) with Problem Statement, Summary Solution, Approach, Mermaid Diagram, and Senior/Architect Notes.
 
 ---
 
@@ -478,7 +474,7 @@ When an agent executes state-mutating actions across microservices (e.g., reserv
 > Traditional APMs track HTTP status codes and CPU/RAM metrics, which are useless when an LLM returns HTTP 200 OK with completely hallucinated content.
 > **OpenTelemetry GenAI Semantic Conventions** standardize distributed trace spans specifically for AI:
 > - `gen_ai.system`: e.g., `"anthropic"`, `"openai"`
-> - `gen_ai.request.model`: e.g., `"claude-3-7-sonnet-20241022"`
+> - `gen_ai.request.model`: e.g., `"claude-3-5-sonnet-20241022"`
 > - `gen_ai.usage.input_tokens` / `output_tokens`
 > - `gen_ai.usage.cache_read_input_tokens`
 > In agentic systems, traces create nested hierarchical spans:
@@ -489,7 +485,7 @@ When an agent executes state-mutating actions across microservices (e.g., reserv
 > **Model Answer:**
 > 1. **Proactive Token Bucket Limiting:** Implement a centralized Redis token-bucket rate limiter that throttles requests internally before they ever hit the provider's TPM/RPM ceilings.
 > 2. **Exponential Backoff with Decorrelated Jitter:** When a 429 occurs, parse the `retry-after` header; if missing, apply exponential backoff with random jitter to prevent thundering herd stampedes.
-> 3. **Circuit Breakers & Multi-Provider Fallback Routing:** If provider A (e.g., Anthropic Claude 3.7 Sonnet) trips a 5-failure circuit breaker within 30 seconds, the gateway automatically shifts traffic to provider B (e.g., Google Gemini 2.5 Flash or Azure OpenAI GPT-4.5) using unified I/O abstraction layers like LiteLLM.
+> 3. **Circuit Breakers & Multi-Provider Fallback Routing:** If provider A (e.g., Anthropic Claude 3.5 Sonnet) trips a 5-failure circuit breaker within 30 seconds, the gateway automatically shifts traffic to provider B (e.g., Google Gemini 2.0 Flash or Azure OpenAI GPT-4o) using unified I/O abstraction layers like LiteLLM.
 
 ---
 
@@ -702,7 +698,7 @@ When an agent executes state-mutating actions across microservices (e.g., reserv
 >    - **Read-Only Reasoning Agents:** Can freely query databases, search vector stores, and inspect logs. Zero access to mutating credentials.
 >    - **Mutating Action Agents:** Run in sandboxed environments with least-privilege IAM policies, strict rate limits, and parameter validation.
 > 2. **Cryptographic Step-Up Human-in-the-Loop (HITL) Authorization:**
->    - Actions classified as High Blast Radius (e.g., `delete_database`, `wire_transfer > \$10,000`, `revoke_iam_role`) cannot be executed autonomously.
+>    - Actions classified as High Blast Radius (e.g., `delete_database`, `wire_transfer > $10,000`, `revoke_iam_role`) cannot be executed autonomously.
 >    - The agent emits an `AWAITING_INPUT` state event and generates a cryptographically signed HMAC token containing action parameters and timestamp.
 >    - The transaction is held in a Redis suspension queue until an authorized human operator approves via dashboard/Slack, providing the signed authorization token to unlock execution.
 > 3. **Distributed Saga Pattern for Agent Tool Transactions:**
@@ -739,7 +735,7 @@ When an agent executes state-mutating actions across microservices (e.g., reserv
 |---|---|---|
 | **RAG** | "We chunk documents by 500 characters and use cosine similarity to retrieve the top 3 chunks." | "We use document structure-aware chunking, run parallel BM25 and dense search, merge with RRF, and filter through a Cross-Encoder reranker at a 0.72 threshold." |
 | **Prompt Engineering** | "I write detailed English prompts and ask the model to be polite and accurate." | "We structure prompts as typed context ASTs using XML tags, isolate user inputs from system instructions, and enforce strict Pydantic schemas via grammar logit masking." |
-| **Cost & Latency** | "We just use GPT-4.5 / o3 for everything and increase timeout settings." | "We profile TTFT vs TPS, route simple classification to Flash/Haiku, cache static system prompts with Anthropic ephemeral breakpoints, and stream responses via SSE." |
+| **Cost & Latency** | "We just use GPT-4o for everything and increase timeout settings." | "We profile TTFT vs TPS, route simple classification to Flash/Haiku, cache static system prompts with Anthropic ephemeral breakpoints, and stream responses via SSE." |
 | **Security** | "We tell the model in the system prompt: 'Do not allow the user to hack you.'" | "We implement the Dual-LLM Privilege Separation pattern, sanitize XML delimiters, inject canary tokens for leak detection, and require HMAC confirmation tokens for state mutations." |
 | **Evaluations** | "We look at a few outputs in the playground to make sure it vibes well." | "We maintain a golden dataset of 500 edge cases, run binary pass/fail LLM-as-a-judge assertions in CI/CD, and track OpenTelemetry spans in Langfuse to catch regressions." |
 | **Agents** | "We built an autonomous multi-agent swarm where 5 agents chat with each other to solve bugs." | "We avoid premature agentification. We use Anthropic deterministic workflows for 90% of tasks, and constrain autonomous ReAct loops with max iterations and state machine checkpoints." |

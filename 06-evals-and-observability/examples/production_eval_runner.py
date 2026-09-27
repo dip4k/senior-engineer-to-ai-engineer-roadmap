@@ -50,7 +50,7 @@ Evaluation Protocol:
 """
 
 class ProductionEvaluator:
-    def __init__(self, judge_model: str = "gpt-4.5"):
+    def __init__(self, judge_model: str = "gpt-4o"):
         self.judge_model = judge_model
         # Use Langfuse-instrumented OpenAI client for automated trace capture
         self.client = instrumented_openai

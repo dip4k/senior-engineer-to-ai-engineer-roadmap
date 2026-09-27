@@ -51,8 +51,9 @@ flowchart TD
     Operator --> AutoBook
     
     AutoBook --> SagaCheck{"Commit Succeeded?"}
-    SagaCheck -- "Yes" --> Audit[(Immutable ERP Journal)]
+    SagaCheck -- "Yes" --> Audit[("Immutable ERP Journal")]
     SagaCheck -- "No" --> Compensate["Saga Rollback: Reverse Ledger Entry"]
+
 ```
 
 ### 1.5 Senior / Architect Notes

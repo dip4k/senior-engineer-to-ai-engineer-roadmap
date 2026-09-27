@@ -1,11 +1,7 @@
 # The Senior AI Engineer & Architect Transition Guide
 ## Enterprise Architecture, Decision Frameworks, and Implementation Playbook
 
-> **Your roadmap from traditional Software 1.0 to building resilient, AI-native systems in production.**
-
-Let's be honest. If you've spent the last decade building rock-solid, predictable microservices, stepping into the world of AI feels like building a house on Jell-O. You are used to strict schemas, ACID transactions, and 100% deterministic code. Suddenly, you're dealing with models that guess the next word, hallucinate APIs, and fail silently.
-
-But here is the secret: your traditional software engineering discipline is the exact skill set missing in today's fragile AI prototypes. We don't need more prompt hacks; we need architecture.
+> **An authoritative architectural guide for Senior Engineers, Tech Leads, Principal Developers, and Software Architects designing and deploying production AI applications and autonomous agentic systems.**
 
 ---
 
@@ -38,8 +34,6 @@ If you have spent 8+ years building enterprise software, you already know how to
 
 The transition to AI engineering does **not** require throwing away that experience or becoming an ML researcher. In fact, your traditional software engineering discipline is the exact skill set missing in today's fragile AI prototypes.
 
-> **Rule of Thumb:** Think of the LLM as a highly capable but wildly uncoordinated junior developer. You wouldn't let them push straight to prod without CI/CD, tests, and code review. Similarly, you shouldn't let an LLM execute a tool without a strict JSON schema, an auth gate, and a sandboxed runtime.
-
 ### The Evolution: From Non-AI Software to AI Solutions
 
 To understand where foundation models fit in production, let's trace how we got here:
@@ -61,8 +55,6 @@ flowchart LR
         B3 --> C3["Harness: State Machines & MCP"]
         C3 --> D3["Output: Goal Completion"]
     end
-
-    S1 ==>|"Evolution"| S2 ==>|"Evolution"| S3
 ```
 
 #### Step 1: Software 1.0 — The Non-AI Deterministic Baseline
@@ -119,7 +111,7 @@ To focus engineering effort on high-impact patterns, all topics in this curricul
 | **Prompt Engineering** | **Prompt Caching Mechanics** | `[MUST-HAVE]` 🔴 | Reusing KV-cache blocks across requests to reduce latency and API token costs. | HTTP caching (ETags), Memoization |
 | **Knowledge Systems** | **Hybrid Retrieval (Dense HNSW + Sparse BM25)** | `[MUST-HAVE]` 🔴 | Combining semantic meaning with exact keyword/code matching for high accuracy. | Database indexing, Inverted indexes |
 | **Knowledge Systems** | **Reciprocal Rank Fusion (RRF) & Reranking** | `[MUST-HAVE]` 🔴 | Fusing heterogeneous candidate lists and scoring deep relevance with cross-encoders. | Search ranking algorithms, Sorting |
-| **Tooling & Protocols** | **Model Context Protocol (MCP) JSON-RPC 2.0** | `[MUST-HAVE]` 🔴 | Standardized open protocol connecting models to internal data sources and tools. MCP is basically USB-C for AI. | JSON-RPC, REST, Microservices |
+| **Tooling & Protocols** | **Model Context Protocol (MCP) JSON-RPC 2.0** | `[MUST-HAVE]` 🔴 | Standardized open protocol connecting models to internal data sources and tools. | JSON-RPC, REST, Microservices |
 | **Tooling & Protocols** | **Tool Sandboxing & Ephemeral Execution** | `[MUST-HAVE]` 🔴 | Isolating dynamic code and file modifications inside containerized boundaries. | Container isolation (Docker, gVisor) |
 | **Agentic Systems** | **Deterministic State Machines** | `[MUST-HAVE]` 🔴 | Replacing loose loops with explicit state transitions, graph reducers, and checkpointing. | Finite State Machines, Saga pattern |
 | **Agentic Systems** | **Human-in-the-Loop (HITL) Step-Up Approval** | `[MUST-HAVE]` 🔴 | Enforcing human approval tokens for irreversible state mutations (writes, payments). | 2FA, Authorization gates, Workflow engines |
@@ -158,8 +150,6 @@ flowchart TD
 
 ## 4. Deep-Dive Enterprise Architecture Use Cases
 
-> **War Story:** Alice in finance once spent 4 hours trying to figure out why an AI chatbot hallucinated a \$500 charge on an invoice, only for the team to trace it back to a lack of deterministic grounding in their retrieval pipeline.
-
 Each enterprise use case has been extracted into a standalone architectural blueprint with production topologies, code patterns, and governance checklists:
 
 | # | Enterprise Use Case | Core Architectural Pattern | Dedicated Blueprint |
@@ -172,7 +162,6 @@ Each enterprise use case has been extracted into a standalone architectural blue
 | **06** | **Agent-to-Agent (A2A) & Multi-Agent Swarms** | Hierarchical supervisor orchestration vs peer-to-peer swarm handoffs with asynchronous event messaging. | [View Blueprint](./use-cases/use-case-06-agent-swarms-a2a.md) |
 
 *For the complete directory of architectural blueprints, see [**`use-cases/README.md`**](./use-cases/README.md).*
-*For 10 full end-to-end system design case studies (problem statement, architecture diagram, tradeoffs), see [**`architecture/10-enterprise-ai-system-designs.md`**](./architecture/10-enterprise-ai-system-designs.md).*
 
 ---
 

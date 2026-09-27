@@ -38,7 +38,7 @@ public class AgentEvaluationTestSuite
 
         // Initialize Semantic Kernel with OpenAI / Azure OpenAI connectors
         var builder = Kernel.CreateBuilder();
-        builder.AddOpenAIChatCompletion("gpt-4.5", Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "mock-key");
+        builder.AddOpenAIChatCompletion("gpt-4o", Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "mock-key");
         builder.AddOpenAITextEmbeddingGeneration("text-embedding-3-small", Environment.GetEnvironmentVariable("OPENAI_API_KEY") ?? "mock-key");
         _kernel = builder.Build();
     }
