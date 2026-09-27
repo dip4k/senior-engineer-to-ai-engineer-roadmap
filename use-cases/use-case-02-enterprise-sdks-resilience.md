@@ -46,7 +46,7 @@ client = Anthropic()
     wait=wait_exponential_jitter(initial=1.0, max=30.0, jitter=2.0),
     reraise=True
 )
-def call_resilient_model(system_prompt: str, user_prompt: str, model: str = "claude-3-7-sonnet-20250219") -> str:
+def call_resilient_model(system_prompt: str, user_prompt: str, model: str = "claude-3-7-sonnet-latest") -> str:
     """Invokes foundation model with exponential backoff and jitter."""
     response = client.messages.create(
         model=model,

@@ -151,7 +151,7 @@ public static class Program
         kernelBuilder.Services.AddSingleton<IAutoFunctionInvocationFilter, EnterpriseToolGovernanceFilter>();
 
         // Note: Configure with live Azure OpenAI / OpenAI endpoint
-        // kernelBuilder.AddAzureOpenAIChatCompletion("gpt-4o", "https://your-endpoint.openai.azure.com", "api-key");
+        // kernelBuilder.AddAzureOpenAIChatCompletion("gpt-4.5", "https://your-endpoint.openai.azure.com", "api-key");
         
         var kernel = kernelBuilder.Build();
 

@@ -29,7 +29,11 @@ flowchart TD
 3. [Deep-Dive Engineering & Implementation](#3-deep-dive-engineering--implementation-must-have-)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows-must-have-)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices-must-have-)
+   * [5.1 Loop Engineering: The Fourth Discipline](#51-loop-engineering-the-fourth-discipline-must-have-)
+   * [5.2 Code-as-Action (CodeAct) vs JSON Tool Calling](#52-code-as-action-codeact-vs-json-tool-calling-good-to-have-)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns-must-have-)
+   * [6.8 Enterprise Protocol Stack & Framework Unification (2026 Edition)](#68-enterprise-protocol-stack--framework-unification-2026-edition-must-have-)
+   * [Agent Framework Matrix 2026](#agent-framework-matrix-2026-must-have-)
 7. [Hands-On Practice Labs & Common Problem Solutions](#7-hands-on-practice-labs--common-problem-solutions-must-have-)
 8. [Enterprise Reference Code Implementations](#8-enterprise-reference-code-implementations-must-have-)
 9. [Verified Curated Resources & Reference Index](#9-verified-curated-resources--reference-index-knowledge-base-)
@@ -204,9 +208,9 @@ flowchart LR
     R2 --> R5["Frontier Model (Complex Analysis)"]
 ```
 
-Routing uses a lightweight classifier (a fast LLM like Claude 3.5 Haiku, Gemini 1.5 Flash, or a semantic embedding classifier) to inspect user input and direct it to the optimal downstream handler.
+Routing uses a lightweight classifier (a fast LLM like Claude 3.5 Haiku, Gemini 2.5 Flash, or a semantic embedding classifier) to inspect user input and direct it to the optimal downstream handler.
 
-* **Cost & Latency Optimization**: 80% of enterprise queries (FAQ lookups, password resets) do not require expensive frontier reasoning models (Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro). Routing delivers 5x cost reduction and 3x latency improvements by directing simple queries to fast models and reserving frontier models for complex multi-step reasoning.
+* **Cost & Latency Optimization**: 80% of enterprise queries (FAQ lookups, password resets) do not require expensive frontier reasoning models (Claude 3.7 Sonnet, GPT-4.5, Gemini 1.5 Pro). Routing delivers 5x cost reduction and 3x latency improvements by directing simple queries to fast models and reserving frontier models for complex multi-step reasoning.
 * **Specialized Domain Prompts**: Prevents system prompt dilution. Instead of maintaining a monstrous 8,000-token prompt that attempts to cover legal, billing, technical support, and HR rules, routing directs the user to a lean, hyper-focused 500-token prompt tailored to their domain.
 
 #### Parallelization: Sectioning & Voting [GOOD-TO-HAVE] 🟡
@@ -227,7 +231,7 @@ Parallelization executes multiple concurrent LLM calls across two distinct parad
    * Worker 2: Algorithmic complexity and performance audit.
    * Worker 3: Documentation and naming convention compliance.
    * *Consolidator*: Merges all three reviews into a unified PR review comment.
-2. **Voting (Consensus & Diversity)**: The system executes multiple identical prompts with varying temperatures or across different foundation model families (e.g., Claude 3.5 Sonnet, GPT-4o, Gemini 1.5 Pro) to elect a consensus output. 
+2. **Voting (Consensus & Diversity)**: The system executes multiple identical prompts with varying temperatures or across different foundation model families (e.g., Claude 3.7 Sonnet, GPT-4.5, Gemini 1.5 Pro) to elect a consensus output. 
    * Used for high-stakes compliance classifications, legal document extraction, or automated production deployments where false positives carry extreme financial cost.
 
 #### Orchestrator-Workers: Central Decomposition & Worker Synthesis [MUST-HAVE] 🔴
@@ -440,7 +444,7 @@ Microsoft provides a three-tiered portfolio of agent technologies spanning enter
    - **Cons**: Dynamic conversational chat loops can easily degenerate into infinite banter without strict termination criteria; high token consumption.
 
 3. **Azure AI Agent Service (Enterprise Managed Agent Platform)**:
-   - **Fully Managed Infrastructure**: Enterprise cloud service hosting agents built on frontier models (GPT-4o, LLaMA 3.3) without managing runtime VM/container clusters.
+   - **Fully Managed Infrastructure**: Enterprise cloud service hosting agents built on frontier models (GPT-4.5 / o3, LLaMA 3.3) without managing runtime VM/container clusters.
    - **Enterprise Security & Compliance**: Built-in integration with Microsoft Entra ID (RBAC), private virtual networks (VNet/Private Endpoints), customer-managed encryption keys (CMEK), and HIPAA/SOC2 compliance.
    - **Native Knowledge & Tool Bindings**: Direct out-of-the-box connectors to Azure AI Search, Azure Functions, OpenAPI specifications, and Code Interpreter in sandboxed micro-VMs.
    - **Pros**: Zero infrastructure maintenance, unified billing, enterprise identity governance, turn-key tool execution sandboxes.
@@ -522,8 +526,8 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    AgA["Triage Agent"] <-- "Dynamic Handoff + Context" --> AgB["Billing Agent"]
-    AgB <-- "Dynamic Handoff + Context" --> AgC["Support Agent"]
+    AgA["Triage Agent"] <-->|"Dynamic Handoff + Context"| AgB["Billing Agent"]
+    AgB <-->|"Dynamic Handoff + Context"| AgC["Support Agent"]
 ```
 
 * Popularized by the OpenAI Swarm reference pattern. Agents operate as peer nodes in a mesh network with the ability to dynamically transfer execution control ("hand off") to another agent along with the conversation state.
@@ -1199,6 +1203,303 @@ sequenceDiagram
 
 ---
 
+### Harness vs. Scaffold: The Structural Boundary [MUST-HAVE] 🔴
+
+Grab a coffee and let's clear up one of the most widespread confusions in enterprise agent design: the fundamental difference between an **Agent Scaffold** and an **Agent Harness**.
+
+```mermaid
+flowchart TD
+    subgraph Scaffold["THE SCAFFOLD (Structural Topology)"]
+        S1["LangGraph / DAG Nodes"] --> S2["Conditional Routing Edges"]
+        S2 --> S3["State Schema & Reducers"]
+        S3 --> S4["Message Dispatching"]
+    end
+
+    subgraph Harness["THE HARNESS (Operational Armor & Safety Containment)"]
+        H1["Execution Sandboxes (Docker/gVisor/WASM)"]
+        H2["Action Fingerprinting (SHA-256 Cycle Governor)"]
+        H3["Progressive Budget & Token Decay"]
+        H4["Compensating Sagas & Transaction Rollback"]
+        H5["Deterministic Invariant Checkpoints"]
+    end
+
+    Model["Stochastic LLM Reasoning Engine"]
+    Scaffold --> Model
+    Model --> Scaffold
+    Harness -.->|Wraps & Constrains| Scaffold
+    Harness -.->|Supervises & Intercepts| Model
+```
+
+#### ELI10: The High-Rise Window Washer Analogy
+
+Imagine you are managing a crew cleaning windows on the 60th floor of a downtown skyscraper:
+* **The Scaffold** is the exterior metal catwalk, the steel cables, and the elevator pulleys. It dictates *how* the workers navigate from Floor 40 to Floor 41, which tracks they can roll along, and where the water buckets sit. In software, your scaffold is your graph topology, prompt chains, LangGraph StateGraph, routing edges, and reducer functions. It defines the structural plumbing.
+* **The Harness** is the heavy-duty fall-arrest body harness clipped to an independent steel lifeline, the deceleration lanyard that absorbs kinetic shock, the high-wind alarm that halts the motor when gusts hit 45 mph, and the perimeter safety nets on Floor 20. If the catwalk shudders or the worker slips, the harness prevents a fatal plummet. In software, your harness is your execution sandbox, cryptographic cycle governor, token spend circuit breaker, timeout cancellation token, and distributed rollback saga.
+
+> [!WARNING]
+> **The Scaffold Fallacy**: Junior teams spend 90% of their engineering cycles swapping scaffolds (switching from LangChain to AutoGen to CrewAI to LangGraph) while completely ignoring the harness. When their autonomous agent burns $1,200 in 30 minutes or accidentally drops a production database table because it looped on an error, they blame the model's "hallucinations." The model didn't fail; your **harness** was nonexistent.
+
+| Architectural Dimension | Agent Scaffold (The Structural Wiring) | Agent Harness (The Operational Armor) |
+|---|---|---|
+| **Core Responsibility** | How data, messages, and state transitions flow between LLM calls and tool executions. | How safety, resource limits, and execution boundaries are strictly governed and bounded. |
+| **Primary Primitives** | State graphs, DAG nodes, conditional edge routers, channel reducers, message queues. | Cryptographic cycle hashes, token/time governors, sandboxes, rollback sagas, linter assertion gates. |
+| **Architectural Analogy** | The steel scaffolding, stairs, and catwalks on a construction site. | The safety harness, carabiners, deceleration lanyard, and fall-arrest nets. |
+| **Typical Failure If Missing** | Spaghettified code, untyped state, impossible-to-trace branching logic. | Runaway $500 API bills, infinite loops, corrupt DB writes, Tier-1 production outages. |
+| **Representative Tooling** | LangGraph, AutoGen, CrewAI, PydanticAI graph nodes. | Docker/gVisor sandboxes, OpenTelemetry governors, Redis token buckets, SQLite saga logs. |
+
+---
+
+### 5.1 Loop Engineering: The Fourth Discipline [MUST-HAVE] 🔴
+
+Over the last four years, enterprise AI engineering has evolved across four distinct architectural disciplines:
+
+```mermaid
+flowchart LR
+    D1["1. Prompt Engineering<br/>(2022 - 2023)<br/><i>'Say the right words in one shot'</i>"] --> D2["2. Context Engineering<br/>(2023 - 2024)<br/><i>'Feed right tokens at right time'</i>"]
+    D2 --> D3["3. Harness & Scaffold<br/>(2024 - 2025)<br/><i>'Armor & wire the execution graph'</i>"]
+    D3 --> D4["4. Loop Engineering<br/>(2025 - 2026+)<br/><i>'Autonomous cycle governance'</i>"]
+```
+
+#### What is Loop Engineering?
+
+> **Loop Engineering** is the **deliberate systems engineering of autonomous Perceive → Plan → Act → Observe → Reflect cycles** to guarantee convergence, prevent epistemic deadlocks, enforce strict fiscal/temporal boundaries, and synthesize deterministic escape hatches when stochastic reasoning derails.
+
+> [!IMPORTANT]
+> **The Senior Architect's Axiom**:
+> **"Without loop engineering, an agent is just a while-loop with a credit card."**
+
+Anyone can write `while not done: response = llm.chat(tools)`. That is not an agent; that is an automated bankruptcy script waiting to execute.
+
+#### War Story: The 2:14 AM Vault Meltdown
+
+> *"It's 2:14 AM on a Sunday. Your pager erupts with P1 alerts. An autonomous incident-remediation agent deployed to diagnose a failing worker node in Kubernetes hit a permissions glitch: HashiCorp Vault returned an HTTP 403 `PermissionDenied` on a secret lookup.*
+> 
+> *The agent's system prompt had been written with high enthusiasm: 'You are an elite SRE. Be persistent, explore all hypotheses, and resolve the issue.'*
+> 
+> *So it was persistent. It reasoned: 'Perhaps the path needs a trailing slash.' Failed. 'Perhaps I should query Vault via the raw REST API.' Failed. 'Perhaps I should base64-encode the token.' Failed. 'Perhaps I should test every mount point.'*
+> 
+> *By 2:45 AM, the agent had executed **240 autonomous loop cycles**, consumed **38 million tokens**, accumulated **$570 in API charges**, and pounded the internal Vault cluster with **950 requests per second**—tripping enterprise rate limiters and locking out human on-call engineers from authenticating to fix the original pod!"*
+
+If that agent had possessed Loop Engineering, Turn 3 would have detected an identical action hash, triggered progressive budget decay, tripped an escape hatch, and escalated to a human within 45 seconds at a cost of $0.04.
+
+#### The Four Core Disciplines of Loop Prevention & Stability
+
+To build agents that survive production, Senior AI Architects implement four deterministic control-plane mechanisms:
+
+```mermaid
+flowchart TD
+    Start["Perceive Environment & State"] --> Plan["Plan Next Tactical Step"]
+    Plan --> CheckFingerprint{"1. Action Fingerprinting<br/>SHA-256 in Ring Buffer?"}
+    
+    CheckFingerprint -- "Duplicate Detected" --> EscapeHatch["4. Escape Hatch Synthesis<br/>• Freeze State Snapshot<br/>• Inject Partial Summary<br/>• Escalate to Human (HITL)"]
+    CheckFingerprint -- "Unique Action" --> Execute["Act: Execute in Sandbox"]
+    
+    Execute --> Observe["Observe: Sanitize & Compact"]
+    Observe --> Reflect["Reflect on Outcome"]
+    
+    Reflect --> CheckConvergence{"3. Convergence Monitor<br/>Semantic Progress > ε?"}
+    CheckConvergence -- "No Progress (Stall)" --> EscapeHatch
+    CheckConvergence -- "Forward Progress" --> CheckBudget{"2. Budget Decay<br/>Turns & Tokens Remaining?"}
+    
+    CheckBudget -- "Ceiling Reached" --> EscapeHatch
+    CheckBudget -- "Budget Healthy" --> CheckDone{"Goal Satisfied?"}
+    
+    CheckDone -- "No" --> Plan
+    CheckDone -- "Yes" --> Terminal["Final Verified Result"]
+    EscapeHatch --> Terminal
+```
+
+##### 1. Action Fingerprinting (SHA-256)
+When an LLM encounters an unexpected error or an empty search response, its default stochastic tendency is to re-invoke the same tool with trivially rearranged parameters. 
+
+To eradicate this, the harness computes a canonical cryptographic fingerprint for every tool invocation:
+```text
+Fingerprint = SHA256( tool_name + "::" + CanonicalJSON(sorted_kwargs) )
+```
+The runtime stores these fingerprints in an in-memory sliding-window ring buffer (depth $K = 4$). If the current fingerprint matches any entry in the buffer without an intervening change in external environment state:
+1. The tool execution is **immediately blocked** (zero network or compute overhead).
+2. The runtime returns an explicit deterministic error: `CycleDetectedException: You previously invoked this exact tool call with identical arguments and received an error. You are prohibited from repeating it. Formulate an alternative strategy.`
+
+```python
+import hashlib
+import json
+from collections import deque
+from typing import Any, Dict
+
+class ActionFingerprinter:
+    """Sliding-window cryptographic cycle detector for agent tool calls."""
+    def __init__(self, window_size: int = 4):
+        self.history: deque[str] = deque(maxlen=window_size)
+        
+    def generate_hash(self, tool_name: str, kwargs: Dict[str, Any]) -> str:
+        # Canonical sort ensures {"a": 1, "b": 2} matches {"b": 2, "a": 1}
+        canonical_str = json.dumps({"tool": tool_name, "args": kwargs}, sort_keys=True)
+        return hashlib.sha256(canonical_str.encode("utf-8")).hexdigest()
+
+    def record_and_check_cycle(self, tool_name: str, kwargs: Dict[str, Any]) -> bool:
+        """Returns True if a cyclical repetition is detected; records hash if clean."""
+        action_hash = self.generate_hash(tool_name, kwargs)
+        if action_hash in self.history:
+            return True  # 🚨 Cycle detected!
+        self.history.append(action_hash)
+        return False
+```
+
+##### 2. Progressive Budget Decay
+Agents that are granted a fixed 10-turn budget often squander turns 1 through 7 on frivolous exploratory queries, then abruptly run out of turns before producing the final result. 
+
+**Progressive Budget Decay** dynamically alters the agent's runtime parameters as the remaining budget shrinks:
+
+| Budget Phase | Turns | Temperature | Available Tool Registry | Model Guidance & Urgency |
+|---|---|---|---|---|
+| **Phase 1: Broad Exploration** | Turns 1 - 3 | `0.6` | 100% of tools (Search, Query, Inspect) | "Explore broadly. Formulate testable hypotheses." |
+| **Phase 2: Directed Convergence** | Turns 4 - 6 | `0.3` | Restricted to high-confidence tools; observation payload pruned 80% | "Focus on validating your primary hypothesis. Do not branch." |
+| **Phase 3: Urgent Finalization** | Turns 7 - 8 | `0.1` | Mutating tools disabled; only read/verify allowed | "Budget 80% exhausted. Synthesize verified findings into final deliverable." |
+| **Phase 4: Emergency Escape** | Turn 9+ | `0.0` | Zero tools allowed | "Hard limit reached. Output structured partial summary immediately." |
+
+##### 3. Convergence Monitoring
+An agent might avoid exact-duplicate action fingerprints while still wandering aimlessly—e.g., searching for "error in pod", then "pod error logs", then "Kubernetes crash pod".
+
+**Convergence Monitoring** measures whether the agent is actually closing the semantic distance between its current state and the goal:
+* **Semantic Thought Drift**: The runtime embeds the agent's intermediate "Thought" scratchpad at each step $t$ and computes the cosine distance from $t-1$. If $\text{sim}(e_t, e_{t-1}) > 0.94$ across three consecutive turns, the agent is experiencing an **epistemic stall** (repeating the same reasoning in different words).
+* **Checklist Milestone Delta**: The planner maintains an immutable checklist in state. If no sub-goal transitions from `IN_PROGRESS` to `COMPLETED` after three tool turns, the convergence supervisor halts the loop.
+
+##### 4. Escape Hatch Synthesis
+When a cycle is detected, budget is exhausted, or convergence stalls, an un-engineered system crashes with a Python traceback or drops the WebSocket connection. 
+
+A Loop-Engineered system executes **Escape Hatch Synthesis**:
+1. The runtime suppresses the exception from the end-user.
+2. It injects a deterministic template into the context:
+   ```markdown
+   [SYSTEM ALERT: EXECUTION HALTED BY LOOP GOVERNOR]
+   Reason: Action fingerprint cycle detected on tool 'query_vault'.
+   Instruction: Synthesize an immediate Partial Deliverable containing:
+   1. Confirmed Facts: What has been definitively verified so far.
+   2. Blockers: What specific assumption or dependency failed.
+   3. Next Actions: Exact manual or automated steps required by a human engineer.
+   ```
+3. The session is committed to durable storage as `SUSPENDED_ESCALATION` and dispatches an HITL notification with full correlation traces.
+
+---
+
+### 5.2 Code-as-Action (CodeAct) vs JSON Tool Calling [GOOD-TO-HAVE] 🟡
+
+For years, the industry standard for LLM tool invocation has been **JSON Tool Calling** (pioneered by OpenAI Function Calling). In this paradigm, when an LLM wants to call a tool, it outputs a JSON object adhering to a predefined schema:
+```json
+{"name": "fetch_user_orders", "arguments": {"user_id": "usr_9921"}}
+```
+
+In 2024–2026, a radically more efficient paradigm emerged: **Code-as-Action (CodeAct)**. Instead of outputting rigid JSON blobs, **the agent writes and executes native Python or TypeScript code directly to interact with its environment and tools**.
+
+```mermaid
+flowchart TD
+    subgraph JSONPattern["CLASSICAL JSON TOOL CALLING (Multi-Turn Ping-Pong)"]
+        J1["LLM: emit JSON for Tool A"] --> JR1["Runtime executes Tool A"]
+        JR1 --> J2["LLM reads output, emit JSON for Tool B"]
+        J2 --> JR2["Runtime executes Tool B"]
+        JR2 --> J3["LLM reads output, emit JSON for Tool C"]
+        J3 --> JR3["Runtime executes Tool C"]
+        JR3 --> J4["LLM outputs final answer"]
+    end
+
+    subgraph CodeActPattern["CODE-AS-ACTION (CodeAct: Single-Turn Expressive Script)"]
+        C1["LLM: Emits 5-line Python script using tools directly<br/>res_a = tool_a()<br/>if res_a.valid:<br/>    for item in res_a.items: tool_b(item)<br/>print(summary)"]
+        C1 --> CR1["Sandboxed Python Kernel executes all in 5ms"]
+        CR1 --> C2["LLM outputs final answer (Done in 1-2 turns!)"]
+    end
+```
+
+#### ELI10: The Restaurant Order Slip vs. The Kitchen Assistant
+
+* **JSON Tool Calling** is like ordering dinner by checking boxes on paper slips, one dish at a time. You hand the waiter a slip for soup. He walks to the kitchen, brings back the soup. You inspect it. Then you hand him another slip for salad. He walks back, brings the salad. If you want to know if the kitchen has truffle oil before ordering risotto, you have to submit a query slip, wait for the response, and then submit the risotto slip. Every action costs a round trip!
+* **CodeAct** is like writing a smart 3-sentence note to the kitchen: *"Check if you have truffle oil. If yes, cook the risotto with extra cheese; if no, cook the cacio e pepe. Bring both out with water."* The kitchen executes your instructions in one seamless sequence.
+
+#### Why CodeAct Outperforms JSON: The Empirical Reality
+
+Published research by Wang et al. (*Executable Code Actions Elicit Better LLM Agents*) and real-world telemetry from frontier systems prove two dramatic metrics:
+
+> [!TIP]
+> **The CodeAct Advantage**:
+> * **30% Fewer Turns**: Complex multi-step operations that require 8–10 turns of JSON ping-pong are completed in **2–3 turns** using CodeAct.
+> * **20% Higher Task Success Rate**: Eliminates malformed JSON syntax errors, parameter hallucination, and escaping headaches.
+
+1. **Native Control Flow**: Models don't need to return to the host orchestrator just to execute a `for` loop, an `if/else` check, or a `math.sqrt()` calculation.
+2. **Dynamic In-Memory Composition**: The agent can pipe the output of Tool A directly into Tool B (`data = fetch(); result = transform(data)`) without serializing 50KB of intermediate JSON through the context window!
+3. **Natural Alignment with Pre-Training**: LLMs have ingested petabytes of GitHub code. They are fundamentally better at writing idiomatic Python than generating deeply nested JSON schemas.
+
+#### Where CodeAct Is Used Today
+
+* **Hugging Face `smolagents`**: Built entirely around the `CodeAgent` primitive, where agents write Python actions to invoke tools, manipulate dataframes, and browse APIs.
+* **Anthropic Claude Code**: Claude Code writes bash commands, file-manipulation scripts, and Python utilities directly inside a secure sandbox rather than relying on restrictive JSON schemas.
+
+#### Architectural Tradeoff: JSON Calling vs. CodeAct
+
+| Architectural Dimension | Classical JSON Tool Calling | Code-as-Action (CodeAct) |
+|---|---|---|
+| **Syntax & Grammar** | Rigid JSON Schema payloads (`{"name": "...", "args": {...}}`) | Executable Python / TypeScript code blocks |
+| **Control Flow** | Must round-trip to LLM for every branch, loop, or variable filter | Handled locally in code (`for`, `while`, `if/else`, list comprehensions) |
+| **Intermediate State** | Bloats LLM context window with raw JSON observations | Stored in ephemeral Python sandbox memory; only print outputs return |
+| **Turn Efficiency** | High turn count (6 - 15 turns for non-trivial tasks) | **~30% fewer turns** to reach terminal objective |
+| **Benchmark Success** | Lower on complex tasks due to compounding serialization errors | **~20% higher task success** (SWE-bench, GAIA) |
+| **Security & Sandbox** | Low risk: JSON is passive data parsed by host application | **High risk**: Requires hardened sandbox (Docker, gVisor, WASM, AST whitelist) |
+| **Ecosystem Champions** | OpenAI Function Calling, LangChain classical tools | Hugging Face `smolagents`, Anthropic Claude Code |
+
+#### CodeAct Production Anti-Pattern vs. Safe Sandboxed Implementation
+
+##### The Anti-Pattern: Unrestricted `eval()` / `exec()`
+
+```python
+# ❌ DANGEROUS ANTI-PATTERN: Executing LLM-generated code directly on the host!
+def execute_agent_code_unsafe(llm_code: str):
+    # If the LLM generates: import os; os.system("rm -rf /") -> Goodbye production!
+    return exec(llm_code)
+```
+
+##### The Right Way: Safe CodeAct Runner with AST Inspection and Restricted Builtins
+
+```python
+import ast
+from typing import Any, Dict
+
+class SafeCodeActExecutor:
+    """Production CodeAct runner with AST safety validation and isolated globals."""
+    
+    FORBIDDEN_MODULES = {"os", "sys", "subprocess", "shutil", "socket", "pathlib"}
+    
+    def __init__(self, tool_registry: Dict[str, Any]):
+        # Inject only approved tools and safe primitives
+        self.safe_globals = {
+            "__builtins__": {
+                "range": range, "len": len, "int": int, "float": float,
+                "str": str, "list": list, "dict": dict, "set": set,
+                "sum": sum, "min": min, "max": max, "print": print
+            },
+            **tool_registry
+        }
+
+    def validate_ast(self, code: str) -> None:
+        """Statically inspects the syntax tree to reject dangerous calls before execution."""
+        tree = ast.parse(code)
+        for node in ast.walk(tree):
+            # Reject import statements
+            if isinstance(node, (ast.Import, ast.ImportFrom)):
+                for alias in getattr(node, "names", []):
+                    if alias.name in self.FORBIDDEN_MODULES:
+                        raise SecurityError(f"Import of '{alias.name}' is strictly prohibited.")
+            # Reject access to private or dunder attributes (__subclasses__, etc.)
+            if isinstance(node, ast.Attribute) and node.attr.startswith("_"):
+                raise SecurityError(f"Access to private attribute '{node.attr}' is prohibited.")
+
+    def run(self, code: str) -> Dict[str, Any]:
+        """Safely executes validated code and captures execution outputs."""
+        self.validate_ast(code)
+        local_scope: Dict[str, Any] = {}
+        exec(code, self.safe_globals, local_scope)
+        return local_scope
+```
+
+---
+
 ## 6. Production Failure Modes & Anti-Patterns [MUST-HAVE] 🔴
 
 ### 1. Unbounded Reasoning Loops Draining Budgets [MUST-HAVE] 🔴
@@ -1264,6 +1565,172 @@ sequenceDiagram
   * **Least-Privilege Agent IAM Tiers**: Diagnostic agents are provisioned with read-only roles. Destructive mutation tools require elevated security context.
   * **Distributed Saga Pattern with Compensating Rollback Tools**: Every state-mutating tool must implement a deterministic compensating counterpart. If downstream validation fails, the orchestrator triggers automated rollback steps.
   * **HITL Step-Up Gating with Signed HMAC Nonces**: State-mutating tools above a defined risk threshold automatically suspend graph execution and require an authenticated, cryptographically signed approval token before executing.
+
+---
+
+### 6.8 Enterprise Protocol Stack & Framework Unification (2026 Edition) [MUST-HAVE] 🔴
+
+The enterprise agent landscape in 2026 is unrecognizable compared to the wild-west experimentation of 2023–2024. Two major sea changes have occurred:
+1. **The Protocol Revolution**: Monolithic, proprietary agent silos have given way to the **Tri-Protocol Stack** (MCP + A2A + AG-UI), decoupling tools, agent coordination, and user interfaces into open standards.
+2. **Framework Consolidation**: Frameworks have matured from academic prototypes into hardened, type-safe enterprise runtimes. Microsoft unified its agent portfolio into **Microsoft Agent Framework (MAF 1.0 GA)**, and Google standardized cloud-native agents with **Google ADK GA** and its `agents-cli` toolchain.
+
+---
+
+#### 1. The Tri-Protocol Stack: MCP + A2A + AG-UI [MUST-HAVE] 🔴
+
+When enterprise architects design scalable multi-agent systems today, they standardize on three decoupled, orthogonal protocol layers:
+
+```mermaid
+flowchart TD
+    subgraph Northbound["NORTHBOUND INTERACTION: AG-UI PROTOCOL"]
+        direction TB
+        Client["Web / Mobile / IDE Client<br/>(CopilotKit, assistant-ui, Web Chat)"]
+        ClientStream["• Stream Partial Thought Tokens<br/>• Generative UI Interactive Components<br/>• HITL Step-Up Nonce Dialogs<br/>• Artifact Previews (Code/Diffs/Charts)"]
+        Client <--> ClientStream
+    end
+
+    subgraph CoreMesh["ORCHESTRATION & AGENT MESH: A2A PROTOCOL"]
+        direction TB
+        Supervisor["Supervisor / Gateway Agent<br/>(Triage & Routing)"]
+        SpecA["Specialist Agent: Coding<br/>(Sandboxed CodeAct)"]
+        SpecB["Specialist Agent: SRE/DB<br/>(SQL & Cloud Diagnostics)"]
+        
+        A2ABus["A2A Distributed Event Mesh (gRPC / Kafka)<br/>• W3C Correlation ID Tracing (#corr-9021)<br/>• Typed Lifecycle Envelopes (SUBMITTED, ACK, HITL)<br/>• Distributed Saga Compensating Rollbacks"]
+        
+        Supervisor <--> A2ABus
+        SpecA <--> A2ABus
+        SpecB <--> A2ABus
+    end
+
+    subgraph Southbound["SOUTHBOUND INTEGRATION: MCP PROTOCOL"]
+        direction TB
+        MCPHost["MCP Client Runtime Host"]
+        MCPSQL["MCP Database Server<br/>(PostgreSQL/Snowflake)"]
+        MCPGit["MCP GitHub Server<br/>(PRs/Branches/Commits)"]
+        MCPDocs["MCP Knowledge Base Server<br/>(Internal Vector Search)"]
+
+        MCPHost <--> MCPSQL
+        MCPHost <--> MCPGit
+        MCPHost <--> MCPDocs
+    end
+
+    ClientStream <== "AG-UI Protocol (SSE / WebSocket)" ==> Supervisor
+    CoreMesh <== "MCP Protocol (JSON-RPC 2.0 / stdio / SSE)" ==> Southbound
+```
+
+##### Southbound: MCP (Model Context Protocol) — The Tool Plane
+* **Direction**: Downward (Agent ➔ Infrastructure, Tools, and Resources).
+* **Role**: MCP standardizes how any LLM agent discovers, negotiates, and executes external tools and retrieves structured enterprise resources.
+* **Why It Matters**: Solves the $M \times N$ matrix problem. Instead of writing bespoke integrations for every model provider against GitHub, Slack, Postgres, and Jira, teams write an MCP server once. Any MCP-compliant agent can immediately consume it over JSON-RPC 2.0.
+
+##### East-West: A2A (Agent-to-Agent Protocol) — The Collaboration Plane
+* **Direction**: Lateral (Agent ➔ Peer Agent).
+* **Role**: A2A standardizes inter-agent message envelopes across microservice boundaries, organizations, and programming languages (Python, C#, Go).
+* **Why It Matters**: Enforces strict lifecycle state machines (`SUBMITTED` ➔ `ACK` ➔ `PROCESSING` ➔ `AWAITING_INPUT` ➔ `COMPLETED`/`FAILED`), distributed W3C TraceContext propagation, cryptographic idempotency keys, and compensating rollback sagas when distributed multi-agent operations fail midway.
+
+##### Northbound: AG-UI (Agent-to-User Interface Protocol) — The Human Interaction Plane
+* **Direction**: Upward (Agent ➔ Human Operator / Client UI).
+* **Role**: AG-UI standardizes how the agent streams intermediate cognitive states to frontend applications (e.g., CopilotKit, assistant-ui).
+* **Why It Matters**: Prevents the "frozen screen" anti-pattern. Instead of waiting 45 seconds for a final answer, AG-UI streams:
+  1. *Intermediate Thought Cards* ("Analyzing query plan...")
+  2. *Tool Execution Badges* ("Querying PostgreSQL table `customers`...")
+  3. *Generative UI Widgets* (Interactive approval buttons, form inputs, diff editors)
+  4. *Cryptographic HITL Nonces* for one-click human approvals.
+
+---
+
+#### 2. Microsoft Agent Framework (MAF 1.0 GA): The Convergence of Semantic Kernel & AutoGen [MUST-HAVE] 🔴
+
+For over two years, enterprise engineering teams in the Microsoft ecosystem faced an architectural dilemma:
+* **Semantic Kernel** offered rock-solid, strongly typed ASP.NET Core dependency injection, C#/.NET 8/9 native plugins, and enterprise function filter middleware—but lacked conversational multi-agent flexibility.
+* **AutoGen** offered dynamic multi-agent debate, conversational persona swarms, and an asynchronous Actor model—but lacked enterprise type-safety and was historically prone to conversational runaways.
+
+In late 2025/2026, Microsoft resolved this fragmentation with the General Availability of **Microsoft Agent Framework (MAF 1.0 GA)**:
+
+```mermaid
+flowchart LR
+    SK["Semantic Kernel<br/>• Strongly typed C#/.NET plugins<br/>• Filter pipelines (Auth/Audit)<br/>• Dependency Injection"] --> MAF["MICROSOFT AGENT FRAMEWORK<br/>(MAF 1.0 GA)<br/>• Unified C# & Python API<br/>• Event-driven Actor swarms<br/>• Enterprise filter middleware<br/>• Native Azure Agent Service"]
+    AG["AutoGen (v0.4+)<br/>• Conversational multi-agent swarms<br/>• Asynchronous Actor runtime<br/>• Peer-to-peer debate"] --> MAF
+```
+
+##### Architectural Highlights of MAF 1.0 GA:
+1. **Unified Action & Security Layer**: Leverages Semantic Kernel's `[KernelFunction]` and filter pipeline (`IFunctionInvocationFilter`) as the deterministic security and audit boundary for all tool executions.
+2. **Actor-Based Multi-Agent Mesh**: Employs AutoGen's asynchronous event-driven Actor architecture for distributed agent messaging, eliminating centralized supervisor bottlenecks.
+3. **Dual-Language First-Class Parity**: Complete feature and architectural parity across C# (.NET 9) and Python, allowing enterprise teams to write core business logic plugins in C# while deploying specialized data-science agents in Python.
+4. **Cloud-Native Azure AI Agent Service Hosting**: Native one-click deployment to managed Azure AI infrastructure with Microsoft Entra ID (RBAC), private VNet endpoints, and customer-managed keys (CMEK).
+
+---
+
+#### 3. Google ADK GA & The `agents-cli` Lifecycle Toolchain [MUST-HAVE] 🔴
+
+Google's **Agent Development Kit (ADK)** has reached General Availability (GA), establishing a code-first, zero-magic standard for deploying production agents on Google Cloud and Vertex AI.
+
+Unlike frameworks that wrap standard programming paradigms in layers of opaque class hierarchies, Google ADK treats agents as native, testable functions with typed state schemas.
+
+##### The `agents-cli` Production Lifecycle
+
+The core differentiator of Google ADK GA is its end-to-end command-line lifecycle tool: `agents-cli`:
+
+```mermaid
+flowchart LR
+    S["agents-cli scaffold create<br/>• Typed Pydantic Schemas<br/>• MCP tool bindings<br/>• Docker / CI configs"] --> E["agents-cli eval run<br/>• Trajectory evaluation<br/>• LLM-as-a-judge tests<br/>• Golden dataset regression"]
+    E --> D["agents-cli deploy<br/>• Cloud Run Serverless<br/>• Vertex Agent Engine<br/>• Auto IAM & OpenTelemetry"]
+```
+
+1. **`agents-cli scaffold create`**:
+   - Bootstraps production-grade TypeScript or Python agent repositories with pre-configured directory structures, typed Pydantic state schemas, MCP client configurations, and GitHub Actions workflows.
+2. **`agents-cli eval run`**:
+   - Executes automated trajectory evaluations against version-controlled golden datasets.
+   - Evaluates not just the final output text, but intermediate tool invocation sequences, argument validity, and token budget consumption using automated LLM-as-a-judge scorers.
+3. **`agents-cli deploy`**:
+   - Packages and deploys the agent directly to serverless Google Cloud Run or Vertex AI Agent Engine.
+   - Automatically provisions least-privilege IAM roles, binds to private Cloud SQL / Datastore backends, and enables OpenTelemetry trace exports to Google Cloud Trace.
+
+---
+
+#### Agent Framework Matrix 2026 [MUST-HAVE] 🔴
+
+When choosing an agent framework in 2026, engineering leads must evaluate across programming language, orchestration paradigm, tool calling model, protocol support, state durability, and enterprise readiness:
+
+| Framework | Primary Language | Orchestration Paradigm | Tool Calling Model | Protocol Support (MCP / A2A / AG-UI) | State & Checkpointing | HITL Support | Best Enterprise Production Fit |
+|---|---|---|---|---|---|---|---|
+| **Google ADK** | Python, TypeScript | Code-First Async Functions & Graph Workflows | JSON Schema & Native Functions | • MCP: Native Client/Server<br>• A2A: REST/gRPC<br>• AG-UI: Supported | Managed Vertex AI Session Store / Firestore / SQLite | Native Async Approval Hooks & Step-Up Nonces | Google Cloud ecosystems, Gemini-powered microservices, enterprise GCP teams |
+| **LangGraph** | Python, TypeScript | Cyclical StateGraph (Nodes, Edges, Reducers) | JSON Schema & Typed Tools | • MCP: Via Adapters<br>• A2A: Via Custom Graph Router<br>• AG-UI: Supported (LangGraph Platform) | **Maximum**: Durable Checkpointers (`PostgresSaver`, Redis, SQLite) with Time-Travel | **First-Class**: Native `interrupt_before` and `interrupt_after` hooks | Complex stateful cyclical agents, long-running multi-day workflows, financial sagas |
+| **OpenAI Agents SDK** | Python | Lightweight Dynamic Handoffs & Sandboxes | JSON Schema & Python Sandbox Tools | • MCP: Community Adapters<br>• A2A: Native Handoff Routines<br>• AG-UI: Webhook / Streaming | Ephemeral Memory & Managed Session Containers | Native Guardrail Gates & Step-Up Approvals | OpenAI-native enterprise applications, customer service handoff meshes, real-time voice |
+| **PydanticAI** | Python | Model-Agnostic Type-Safe Agents with DI | Strongly Typed Pydantic Schema Tools | • MCP: Supported<br>• A2A: Via FastAPI / REST<br>• AG-UI: Via SSE / Logfire | Type-Safe State Injection via Pydantic Models | Dynamic Validation Retry Loops & Custom Approval Gates | FastAPI microservices, type-safe Python backends, high-reliability data extraction |
+| **Microsoft Semantic Kernel / MAF 1.0** | C# (.NET 8/9), Python, Java | Typed Plugins, Filter Pipelines & Actor Mesh | Strongly Typed Methods & Native Plugins | • MCP: First-Class Server/Client<br>• A2A: Native Actor Mesh<br>• AG-UI: CopilotKit & Azure UI | Azure Cosmos DB / Redis / SQLite Durable Checkpoints | Enterprise Function Invocation Filter Middleware | Enterprise .NET 9 backends, Azure AI Foundry, Microsoft 365 Copilot extensions |
+| **CrewAI** | Python | Role-Playing Swarms (Agents, Tasks, Crews) | JSON Schema & LangChain Tool Wrappers | • MCP: Partial via Wrappers<br>• A2A: Internal Crew Bus<br>• AG-UI: Community Connectors | In-Memory & Basic SQLite / Chroma Storage | User Confirmation Prompts & Task Feedback Hooks | Rapid prototyping of role-playing teams, market research swarms, content generation |
+| **smolagents** | Python | Code-as-Action (CodeAgent) & Native Python Actions | **CodeAct**: Model writes executable Python code | • MCP: Via Hugging Face Hub / Tools<br>• A2A: HTTP/JSON<br>• AG-UI: Gradio / Web Client | Ephemeral Execution State in Sandboxed Python Memory | AST Code Inspection & Sandbox Interception Gates | High-efficiency coding agents, data analysis pipelines, Hugging Face model ecosystems |
+
+##### Architectural Verdicts & Framework Teardowns
+
+1. **Google ADK (Agent Development Kit)**:
+   * *The Verdict*: The cleanest code-first framework for Python and TypeScript teams building on Google Cloud. The `agents-cli` toolchain solves the developer experience gap from project scaffolding to golden-dataset CI/CD evaluation and Cloud Run deployment.
+   * *When to choose*: Your organization standardizes on Google Cloud / Vertex AI and demands clean, unbloated code without heavyweight class abstractions.
+
+2. **LangGraph**:
+   * *The Verdict*: The industry gold standard for complex, stateful, cyclical reasoning graphs. Its durable checkpointers (`PostgresSaver`) and time-travel debugging capabilities make it unbeatable for mission-critical enterprise workflows that require human-in-the-loop approvals and zero-loss crash recovery.
+   * *When to choose*: Multi-step reasoning loops requiring persistent state machines, branch resumption, and rigorous audit trails.
+
+3. **OpenAI Agents SDK**:
+   * *The Verdict*: The official production-hardened successor to OpenAI Swarm. Offers exceptionally clean agent-to-agent handoffs without the overhead of centralized supervisors, paired with isolated execution sandboxes.
+   * *When to choose*: High-throughput multi-agent triage swarms and conversational handoffs built on OpenAI frontier models.
+
+4. **PydanticAI**:
+   * *The Verdict*: The developer ergonomics champion for Python engineers who live in FastAPI and Pydantic. Built-in dependency injection (`deps_type`) makes testing and mocking external services trivial, while Pydantic validation loops eliminate malformed outputs.
+   * *When to choose*: Backend microservices requiring strict type safety, unit testability, and seamless FastAPI integration.
+
+5. **Microsoft Semantic Kernel / MAF 1.0 GA**:
+   * *The Verdict*: The undisputed king for enterprise C#/.NET 9 engineering organizations. Unifies Semantic Kernel's rock-solid typed plugin filters with AutoGen's event-driven actor multi-agent swarms.
+   * *When to choose*: Enterprise IT environments, ASP.NET Core microservices, and Microsoft Azure ecosystem deployments.
+
+6. **CrewAI**:
+   * *The Verdict*: Highly accessible and intuitive for building role-playing agent swarms (e.g., "Researcher", "Writer", "Reviewer"). However, its high conversational overhead and loose state persistence make it better suited for research and content generation than transactional enterprise state machines.
+   * *When to choose*: Rapid POCs, content synthesis swarms, and collaborative multi-persona brainstorm engines.
+
+7. **smolagents (Hugging Face)**:
+   * *The Verdict*: The pioneer of Code-as-Action (CodeAct). By having agents write native Python snippets instead of emitting rigid JSON schemas, `smolagents` achieves 30% fewer turns and 20% higher task success rates on complex tool chaining tasks.
+   * *When to choose*: Code-generation agents, data-science and dataframe manipulation workflows, and lightweight footprint environments.
 
 ---
 

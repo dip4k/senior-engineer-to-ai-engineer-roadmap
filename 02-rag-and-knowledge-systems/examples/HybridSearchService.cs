@@ -92,7 +92,7 @@ namespace EnterpriseRag.AzureSearch
         private readonly Kernel _kernel;
         private readonly IChatCompletionService _chatService;
 
-        public GroundedRAGSynthesizer(string openAiApiKey, string modelId = "gpt-4o")
+        public GroundedRAGSynthesizer(string openAiApiKey, string modelId = "gpt-4.5")
         {
             var builder = Kernel.CreateBuilder();
             builder.AddOpenAIChatCompletion(modelId, openAiApiKey);

@@ -45,7 +45,7 @@ public interface ITokenGovernorService
 
 public class TokenGovernorService : ITokenGovernorService
 {
-    private readonly TiktokenTokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4o");
+    private readonly TiktokenTokenizer _tokenizer = TiktokenTokenizer.CreateForModel("gpt-4.5");
     private const int HARD_MAX_INPUT_TOKENS = 32_000;
     private const double MAX_DOLLAR_LIMIT_PER_REQUEST = 0.50;
 

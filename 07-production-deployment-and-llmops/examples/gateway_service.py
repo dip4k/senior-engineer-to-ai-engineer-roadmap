@@ -52,7 +52,7 @@ async def lifespan(app: FastAPI):
         {
             "model_name": "enterprise-chat",
             "litellm_params": {
-                "model": "anthropic/claude-3-7-sonnet-20250219",
+                "model": "anthropic/claude-3-7-sonnet-latest",
                 "api_key": os.getenv("ANTHROPIC_API_KEY", "mock-key"),
                 "rpm": 1000,
                 "tpm": 80000,
@@ -61,7 +61,7 @@ async def lifespan(app: FastAPI):
         {
             "model_name": "enterprise-chat",
             "litellm_params": {
-                "model": "azure/gpt-4o",
+                "model": "azure/gpt-4.5",
                 "api_key": os.getenv("AZURE_OPENAI_API_KEY", "mock-key"),
                 "api_base": os.getenv("AZURE_OPENAI_ENDPOINT", "https://mock.openai.azure.com/"),
                 "api_version": "2024-08-01-preview",
@@ -72,7 +72,7 @@ async def lifespan(app: FastAPI):
         {
             "model_name": "enterprise-chat-fallback",
             "litellm_params": {
-                "model": "gemini/gemini-2.0-flash",
+                "model": "gemini/gemini-2.5-flash",
                 "api_key": os.getenv("GEMINI_API_KEY", "mock-key"),
                 "rpm": 3000,
                 "tpm": 200000,

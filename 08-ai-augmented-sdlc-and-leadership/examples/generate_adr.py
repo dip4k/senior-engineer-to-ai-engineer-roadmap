@@ -36,7 +36,7 @@ Git Diff:
 {diff[:8000]}
 """
     response = client.chat.completions.create(
-        model="gpt-4o",
+        model="gpt-4.5",
         messages=[{"role": "user", "content": prompt}],
         temperature=0.2
     )

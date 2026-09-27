@@ -30,7 +30,7 @@ class FinancialAnalysis(BaseModel):
 
 # Create type-safe Agent with dependency injection and structured result type
 finance_agent = Agent[DatabaseService, FinancialAnalysis](
-    model="claude-3-7-sonnet-latest",  # Or gpt-4o, gemini-2.0-flash
+    model="claude-3-7-sonnet-latest",  # Or gpt-4.5, gemini-2.5-flash
     deps_type=DatabaseService,
     result_type=FinancialAnalysis,
     system_prompt=(

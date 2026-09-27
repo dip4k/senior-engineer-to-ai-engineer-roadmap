@@ -42,7 +42,7 @@ class EnterprisePromptCompiler:
 
         # 3. Construct Context Hierarchy with Explicit Cache Breakpoint
         response = self.client.messages.create(
-            model="claude-3-7-sonnet-20250219",
+            model="claude-3-7-sonnet-latest",
             max_tokens=1024,
             temperature=0.0,
             system=[

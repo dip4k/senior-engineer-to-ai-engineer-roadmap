@@ -5,7 +5,7 @@
 ### Core Architectural Components & Implementation Steps:
 
 1. **Exact Multi-Model Token Profiler:**
-   - Detect the target model family (`gpt-4o`, `claude-3-5-sonnet`, `gemini-2-flash`, `llama-3.3-70b`).
+   - Detect the target model family (`gpt-4.5`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
    - Use the appropriate native tokenizer bindings (`tiktoken` / `tokenizers` / C# `Microsoft.ML.Tokenizers`).
    - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
 

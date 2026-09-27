@@ -35,9 +35,9 @@ flowchart TD
    - **Tier 1**: Exact string hash matching (`SHA-256`) against Redis with TTL = 24 hours.
    - **Tier 2**: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity $\ge 0.92$, serve cached content immediately.
 2. **Dynamic Tiered Resilience Router**:
-   - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4o.
+   - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4.5 / o3.
    - **Secondary Model**: Google Cloud Vertex AI Gemini 1.5 Pro.
-   - **Tertiary Model (Degraded)**: Gemini 1.5 Flash or Claude 3.5 Haiku.
+   - **Tertiary Model (Degraded)**: Gemini 2.5 Flash or Claude 3.5 Haiku.
    - Configure a circuit breaker: If the primary provider fails 5 times consecutively or returns HTTP 429, trip the circuit into `OPEN` state for 30 seconds and route traffic directly to the secondary provider.
 3. **Token Budget & Rate Limiting**:
    - Enforce a tenant quota: 100,000 tokens per tenant per day.

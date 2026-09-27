@@ -11,7 +11,7 @@ var client = new AzureOpenAIClient(
     new Uri(builder.Configuration["AzureOpenAI:Endpoint"]!),
     new System.ClientModel.ApiKeyCredential(builder.Configuration["AzureOpenAI:ApiKey"]!));
 
-var chatClient = client.GetChatClient("gpt-4o");
+var chatClient = client.GetChatClient("gpt-4.5");
 
 app.MapPost("/api/v1/compliance/verify", async (AuditLogRequest request) =>
 {

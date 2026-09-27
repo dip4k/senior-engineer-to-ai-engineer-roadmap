@@ -45,7 +45,9 @@
 - Sampling parameters: Temperature, Top-P, Top-K, Min-P, Seed
 - Vector embeddings & Semantic similarity spaces
 - Multimodal foundation models (Text, Vision, Audio)
-- Reasoning & Thinking models (OpenAI o1, o3-mini, Claude 3.7 Sonnet extended thinking, DeepSeek R1)
+- Reasoning & Thinking models (OpenAI o1, o3, o4-mini, Claude 4 Opus, Claude 3.7 Sonnet extended thinking, Gemini 2.5 Thinking, DeepSeek-R1)
+- Thinking token economics: Reasoning token pricing, hidden scratchpad billing, and inference budget caps
+- Small Language Models (SLMs) on device and edge: Microsoft Phi-4, Google Gemma 2, Alibaba Qwen 2.5
 - Test-Time Compute: Reasoning tokens, thinking budgets, and inference scaling laws
 - Inference mechanics: Prefill vs. Decode phases, TTFT vs. Tokens-Per-Second (TPS)
 - Physical hardware realities: Memory bandwidth ceilings & KV-cache VRAM allocation
@@ -54,6 +56,7 @@
 ### Curated Resources
 - [Google AI for Developers](https://ai.google.dev/) — *Official Gemini 2.0/2.5 APIs, models, and quickstarts*
 - [Anthropic Claude Documentation](https://docs.anthropic.com/) — *Claude 3.7 Sonnet models, hybrid reasoning, and capabilities*
+- [DeepSeek-R1 Research Paper](https://arxiv.org/abs/2501.12948) — *Incentivizing reasoning capability in LLMs via reinforcement learning (GRPO)*
 - [DeepLearning.AI — Reasoning with o1](https://www.deeplearning.ai/short-courses/reasoning-with-o1/) — *Test-time compute, chain-of-thought, and reasoning budgets with OpenAI*
 - [DeepLearning.AI — Reinforcement Fine-Tuning LLMs with GRPO](https://www.deeplearning.ai/short-courses/reinforcement-fine-tuning-llms-with-grpo/) — *Group Relative Policy Optimization behind DeepSeek R1*
 - [Hugging Face LLM Course](https://huggingface.co/learn/llm-course/) — *Open-source models, tokenization, and inference*
@@ -158,21 +161,25 @@
 
 ### Core Topics
 - MCP architecture & Protocol specifications (JSON-RPC 2.0 wire format)
+- Linux Foundation donation & open governance ecosystem (10,000+ public/community MCP servers)
+- Stateless Core architecture specification (July 2026 revision)
 - MCP Host (Orchestrator), MCP Client, and MCP Server topology
 - Primitives: Tools (actions), Resources (data), Prompts (templates)
-- Standardized tool discovery (`tools/list`) & Dynamic schema negotiation
+- MCP Tasks Extension: Long-running asynchronous tasks, progress notifications, and task cancellation
+- MCP Apps: Interactive UI rendering, tool frontends, and human-in-the-loop widgets
+- Standardized tool discovery (`tools/list`), dynamic schema negotiation, and `ttlMs` client-side caching
 - Transports: `stdio` (local subprocess) vs. `SSE` / HTTP (remote microservices)
 - FastMCP Python framework for high-level schema definition
 - Agent Skills: Modular folder-based instructions and MCP capability extensions
 - Reverse Sampling: Server requesting LLM completions through Host
-- Authentication, Authorization, and TLS/mTLS configuration
+- Enterprise authentication & authorization: OAuth 2.1 authorization code flow with PKCE, TLS/mTLS configuration
 - Ephemeral container sandboxing (Docker, gVisor) for tool execution
-- Production MCP servers & Enterprise gateway patterns
+- Production MCP servers (10K+ ecosystem) & Enterprise gateway patterns
 
 ### Curated Resources
-- [Model Context Protocol — Official Documentation](https://modelcontextprotocol.io/) — *Official architecture and quickstarts*
-- [MCP Specification](https://modelcontextprotocol.io/specification/latest) — *JSON-RPC 2.0 RFC standard*
-- [MCP GitHub Organization](https://github.com/modelcontextprotocol) — *Core SDKs (TypeScript, Python, Kotlin)*
+- [Model Context Protocol — Official Documentation](https://modelcontextprotocol.io/) — *Official architecture, Linux Foundation governance, and quickstarts*
+- [MCP Specification & Governance](https://modelcontextprotocol.io/specification/latest) — *Stateless Core (July 2026), Tasks extension, OAuth 2.1, and JSON-RPC 2.0 standard*
+- [MCP GitHub Organization](https://github.com/modelcontextprotocol) — *Core SDKs (TypeScript, Python, Kotlin) and 10K+ server registry*
 - [FastMCP GitHub Repository](https://github.com/jlowin/fastmcp) — *High-level framework for building MCP servers*
 - [DeepLearning.AI — MCP: Build Rich-Context AI Apps](https://www.deeplearning.ai/short-courses/mcp-build-rich-context-ai-apps-with-anthropic/) — *Hands-on MCP apps with Anthropic engineers*
 - [DeepLearning.AI — Agent Skills with Anthropic](https://www.deeplearning.ai/short-courses/agent-skills-with-anthropic/) — *Modular instruction folders and subagent tooling*
@@ -220,16 +227,23 @@
   - **Microsoft Semantic Kernel**: Enterprise C#/.NET plugins, DI containers, and `AgentGroupChat`
 - Tool selection, execution, and observation feedback
 - State tracking, termination conditions, and timeout budgets
+- Loop Engineering: Convergence detection, oscillation mitigation, and infinite-loop tripwires
+- CodeAct architecture: Executing executable Python code actions vs. structured JSON tool calls
+- Harness Engineering: Test harnesses, sandboxed workspace runtimes, and environment injection for agent self-validation
+- Durable execution for agents: Temporal.io workflow state machines and DBOS transactional serverless runtimes
+- AutoGen architectural bifurcation: AutoGen v0.4 (async event-driven architecture) vs. AG2 (multi-agent continuation fork)
 - Multi-Agent Topologies: Supervisor, Hierarchical Teams, Swarm / Dynamic Handoff, Debate
 - Human-in-the-Loop (HITL) pause, approval, and resume patterns
 
 ### Curated Resources
 - [PydanticAI Official Documentation](https://ai.pydantic.dev/) — *Type-safe agent framework by the Pydantic team*
 - [OpenAI Agents SDK (`openai-agents`)](https://github.com/openai/openai-agents-python) — *Official production framework for multi-agent handoffs*
+- [Hugging Face smolagents](https://github.com/huggingface/smolagents) — *Minimalist CodeAct agent framework executing Python actions*
 - [Building Effective Agents (Anthropic Engineering)](https://www.anthropic.com/engineering/building-effective-agents) — *The foundational workflow vs. agent taxonomy*
 - [Google ADK Documentation](https://google.github.io/adk-docs/) — *Code-first multi-agent framework*
 - [LangGraph Documentation](https://langchain-ai.github.io/langgraph/) — *Durable stateful agent orchestration*
 - [Microsoft Semantic Kernel](https://learn.microsoft.com/semantic-kernel/) — *Enterprise AI orchestration for C# and Python*
+- [AG-UI (Agentic GUI Protocol)](https://github.com/ag-ui/ag-ui) — *Standardized agent UI interaction layer and human-in-the-loop frontend integration*
 
 ---
 
@@ -237,20 +251,29 @@
 
 ### Core Topics
 - Context windows as dynamic, finite memory systems
+- Context Abstract Syntax Tree (AST): Hierarchical token layout and structured semantic zoning
+- Context budgeting: Deterministic token allocations for instructions, tools, retrieved RAG, and scratchpad
+- Context rot & Attention degradation under prolonged multi-turn sessions
+- Maximum Effective Context Window (MECW) vs. advertised theoretical limits
 - Context construction: System instructions, few-shot examples, dynamic state
 - Context prioritization & Dynamic re-anchoring
-- Context compression: LLMLingua, token pruning
+- Context compression: LLMLingua-2, token pruning, task-agnostic compression
 - Hierarchical conversation summarization
 - Context routing: Directing specialized prompts to specialized sub-agents
 - Context isolation & Cross-tenant contamination prevention
 - Mitigating "Lost-in-the-Middle" attention valleys
+- Tool loadout pruning: Dynamic reduction of tool schemas to prevent attention dilution
+- Anthropic Contextual Retrieval: Prepended contextual explanation chunks for RAG
+- Just-In-Time (JIT) tool & context discovery: Fetching specialized schemas and context slices on-demand
 - Tool-result pruning & Intermediate scratchpad management
 - Prompt Caching & Prefix Caching mechanics (Anthropic, Gemini, OpenAI)
 
 ### Curated Resources
 - [Anthropic Prompt Caching Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — *Architecture and economics of prefix caching*
+- [Anthropic Contextual Retrieval Guide](https://www.anthropic.com/news/contextual-retrieval) — *Optimizing RAG retrieval using chunk-specific context prepending*
 - [Gemini Context Caching Guide](https://ai.google.dev/gemini-api/docs/caching?lang=python) — *Explicit context caching and TTL management*
 - [Google Gemini Caching API Reference](https://ai.google.dev/api/caching) — *REST and SDK caching primitives*
+- [Microsoft LLMLingua-2 Repository](https://github.com/microsoft/LLMLingua) — *Task-agnostic prompt compression and token pruning*
 
 ---
 
@@ -258,19 +281,29 @@
 
 ### Core Topics
 - Conversation history tracking & Window sliding
+- 4-Tier Memory Taxonomy: Ephemeral Working Memory, Short-Term Session Buffer, Long-Term Episodic Memory, Persistent Semantic Knowledge
 - Session management & Distributed session stores (Redis, PostgreSQL)
 - Working memory (scratchpad & ephemeral state)
 - Short-term memory (active session turns)
 - Long-term memory: Semantic (facts), Episodic (past experiences), Procedural (tool rules)
+- Autonomous memory platforms: Mem0 (personalized memory layer) and Letta (stateful agent OS)
+- Temporal Knowledge Graph memory: Zep and Graphiti for evolving episodic relationship tracking
+- Hippocampal associative memory: HippoRAG for neurobiology-inspired multi-hop recall
 - Memory retrieval via vector search & Reciprocal Rank Fusion
+- Forgetting curves & decay mechanisms: Ebbinghaus curve modeling for recency-frequency decay
 - Memory summarization, compaction, and lifecycle management
 - Session pause, resumption, and checkpointing
 - Session forking: Speculative branching and rollback
-- Memory governance & Data privacy compliance (GDPR right to be forgotten)
+- Standardized memory interoperability: MCP `server-memory` reference protocol for cross-agent recall
+- Memory governance & Data privacy compliance: Crypto-shredding of tenant keys for GDPR right to be forgotten
 
 ### Curated Resources
 - [Google ADK Sessions & Memory Guide](https://google.github.io/adk-docs/sessions/) — *Stateful sessions and memory management*
 - [Google ADK Memory Module](https://google.github.io/adk-docs/sessions/memory/) — *Long-term memory persistence*
+- [Mem0 Official Documentation](https://docs.mem0.ai/) — *Production memory layer for personalized AI agents*
+- [Letta Documentation](https://docs.letta.com/) — *Operating system for building stateful LLM agents with tiered memory*
+- [Zep & Graphiti Knowledge Graphs](https://github.com/getzep/graphiti) — *Dynamic temporal knowledge graphs for agent memory*
+- [HippoRAG Research Paper](https://arxiv.org/abs/2405.14831) — *Neurobiologically inspired long-term associative memory for LLMs*
 - [Agent Engineering Roadmap — Memory](https://github.com/audi0417/agent-engineering-roadmap) — *Memory patterns for autonomous agents*
 
 ---
@@ -343,14 +376,15 @@
 ## Phase 13 — Claude / Anthropic Ecosystem
 
 ### Core Topics
-- Claude models: Claude 3.5 Sonnet, 3.5 Haiku, Claude 3.7 Sonnet (Hybrid Reasoning)
+- Claude models: Claude 3.7 Sonnet, 3.5 Haiku, Claude 3.7 Sonnet (Hybrid Reasoning), Claude Sonnet 4, Claude 4 Opus
+- Extended context windows: 1M+ token context windows with high recall fidelity
 - Anthropic Messages API & Streaming responses
 - Anthropic Python and TypeScript SDKs
 - Strict tool use & Structured JSON output schemas
 - Native prompt caching breakpoints (`cache_control: {"type": "ephemeral"}`)
 - Claude Desktop & Claude Code CLI agent integration
 - Agent Skills & Model Context Protocol (MCP) implementations
-- Context compaction & Multi-turn conversation management
+- Context compaction, server-side auto-compaction, and multi-turn conversation management
 
 ### Curated Resources
 - [Anthropic Claude Documentation](https://docs.anthropic.com/) — *Comprehensive guide to Claude models and APIs*
@@ -365,12 +399,14 @@
 
 ### Core Topics
 - Gemini models: Gemini 2.0 Flash, 2.5 Flash, 2.5 Pro (Thinking / Long Context)
+- Gemini Thinking Mode: Explicit thinking budget control (`thinking_budget`) and chain-of-thought inspection
+- Ultra-long context processing: 2M+ token active context windows with multimodal ingestion
 - Google GenAI SDK: Python (`google-genai`) and C# / .NET (`Google.GenAI`)
 - High-performance Function Calling & Native Structured Outputs
 - Native Multimodal inputs: Text, Audio, Images, Video, PDF
 - Streaming API contracts & Disconnect truncation
 - Vertex AI Enterprise Grounding (Google Search & BigQuery)
-- Explicit Context Caching APIs (TTL-based cache creation)
+- Explicit Context Caching APIs (TTL-based cache creation) & Storage-based caching
 - Google Interactions API & Real-time Live API (WebSockets)
 
 ### Curated Resources
@@ -507,17 +543,22 @@
 ## Phase 21 — A2A & Agent Interoperability
 
 ### Core Topics
-- Agent-to-Agent (A2A) communication protocols
+- Agent-to-Agent (A2A) communication protocols & A2A v1.0 Linux Foundation standardization
+- Tri-protocol stack architecture: MCP (Agent-to-Tool), A2A (Agent-to-Agent federation), AG-UI (Agent-to-Human UI)
+- AG-UI (Agentic GUI Protocol): Standardized agent-to-user interface protocol for streaming widgets and approvals
+- Agent Communication Protocol (ACP) merger & specification unification
 - Standardized message envelopes: Sender, Recipient, Authorization tokens, Payloads
 - Dynamic agent capability discovery & Manifest publishing
 - Agent task delegation, Contract negotiation, and Handoffs
 - Multi-agent federation across heterogeneous frameworks (ADK, LangGraph, Semantic Kernel)
-- Protocol comparison: MCP (Tool-to-Agent) vs. A2A (Agent-to-Agent)
+- Protocol comparison: MCP (Tool-to-Agent) vs. A2A (Agent-to-Agent) vs. AG-UI (Agent-to-User)
 - Cross-tenant agent authorization & Least privilege delegation
 
 ### Curated Resources
 - [A2A Protocol GitHub Repository](https://github.com/a2aproject/A2A) — *Open specification for Agent-to-Agent communication*
-- [A2A Protocol Documentation](https://a2a-protocol.org/) — *Architecture and message standard*
+- [A2A Protocol Documentation & v1.0 Spec](https://a2a-protocol.org/) — *Linux Foundation architecture and message standard*
+- [AG-UI Protocol Specification](https://ag-ui.org/) — *Standardized agent UI interaction layer and rich client components*
+- [Agent Communication Protocol (ACP)](https://github.com/agent-communication-protocol/acp) — *Standardized agent messaging and communication protocol*
 - [Google ADK A2A Documentation](https://google.github.io/adk-docs/) — *Multi-agent communication patterns*
 
 ---
@@ -583,6 +624,10 @@ Keep these permanently bookmarked for implementation patterns and current standa
 | [**`microsoft/graphrag`**](https://github.com/microsoft/graphrag) | Modular graph-based retrieval augmented generation |
 | [**`UKGovernmentBEIS/inspect_ai`**](https://github.com/UKGovernmentBEIS/inspect_ai) | Framework for large language model evaluation and safety testing |
 | [**`mohsen-bahrami-mb/AI-Engineering-Roadmap`**](https://github.com/mohsen-bahrami-mb/AI-Engineering-Roadmap) | Comprehensive AI engineering reference guide |
+| [**`huggingface/smolagents`**](https://github.com/huggingface/smolagents) | Minimalist library for building code-centric agents with CodeAct |
+| [**`letta-ai/letta`**](https://github.com/letta-ai/letta) | Stateful LLM agent operating system with tiered memory management |
+| [**`browser-use/browser-use`**](https://github.com/browser-use/browser-use) | Open-source framework enabling AI agents to interact with web browsers |
+| [**`sgl-project/sglang`**](https://github.com/sgl-project/sglang) | High-performance LLM and vision model serving framework with RadixAttention |
 
 ---
 

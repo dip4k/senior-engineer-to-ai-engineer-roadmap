@@ -60,7 +60,7 @@ public sealed class PrimaryModelProviderClient : IModelProviderClient
         double temperature, 
         [EnumeratorCancellation] CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Calling Primary LLM Provider (Claude 3.7 / GPT-4o)...");
+        _logger.LogInformation("Calling Primary LLM Provider (Claude 3.7 / GPT-4.5 / o3)...");
         
         // Simulating streaming chunks from underlying provider SDK
         string[] simulatedTokens = ["Enterprise ", "resilience ", "achieved ", "via ", ".NET 9 ", "and ", "Polly v8."];

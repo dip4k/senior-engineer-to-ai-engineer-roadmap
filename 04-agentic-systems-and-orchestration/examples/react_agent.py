@@ -148,7 +148,7 @@ class EnterpriseReActEngine:
     def _mock_llm_inference(self, prompt: str) -> Dict[str, Any]:
         """
         Simulated LLM call emitting structured ReAct thoughts and actions.
-        In production, replace this with Claude 3.5 Sonnet / Gemini 1.5 Pro API calls.
+        In production, replace this with Claude 3.7 Sonnet / Gemini 1.5 Pro API calls.
         """
         turn = len(self.history)
         if turn == 0:

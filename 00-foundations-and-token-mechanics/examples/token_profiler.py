@@ -16,8 +16,8 @@ class ProductionTokenProfiler:
     PROVIDER_RATES = {
         "claude-3-7-sonnet": {"input_per_m": 3.00, "output_per_m": 15.00, "encoding": "cl100k_base", "is_reasoning": True},
         "o3-mini": {"input_per_m": 1.10, "output_per_m": 4.40, "encoding": "o200k_base", "is_reasoning": True},
-        "gpt-4o": {"input_per_m": 2.50, "output_per_m": 10.00, "encoding": "o200k_base", "is_reasoning": False},
-        "gemini-2.0-flash": {"input_per_m": 0.10, "output_per_m": 0.40, "encoding": "cl100k_base", "is_reasoning": False},
+        "gpt-4.5": {"input_per_m": 2.50, "output_per_m": 10.00, "encoding": "o200k_base", "is_reasoning": False},
+        "gemini-2.5-flash": {"input_per_m": 0.10, "output_per_m": 0.40, "encoding": "cl100k_base", "is_reasoning": False},
         "deepseek-r1": {"input_per_m": 0.55, "output_per_m": 2.19, "encoding": "cl100k_base", "is_reasoning": True},
     }
 
