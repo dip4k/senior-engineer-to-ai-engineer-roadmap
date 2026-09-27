@@ -170,7 +170,7 @@ flowchart TD
     TriageRouter -->|"Technical Outage"| TechAgent["Specialized Technical Support Agent"]
     TriageRouter -->|"Account Security"| SecurityAgent["Identity & Security Agent"]
     
-    BillingAgent --> RefundAction{"Refund Amount > $100?"}
+    BillingAgent --> RefundAction{"Refund Amount > \$100?"}
     RefundAction -->|"Yes (State Mutation)"| HITLGate["Human-in-the-Loop Approval Interceptor"]
     HITLGate -->|"CSR Signs HMAC Token"| ExecuteRefund["Execute Stripe / ERP Refund API"]
     RefundAction -->|"No (Low Risk)"| AutoRefund["Execute Auto-Refund"]
@@ -211,7 +211,7 @@ sequenceDiagram
     Billing->>Governor: Register Tool Call Hash (SHA-256 Check)
     Governor-->>Billing: No Infinite Loop (Unique Signature)
     
-    alt Action Risk Level: HIGH (Mutate Database / Refund > $500)
+    alt Action Risk Level: HIGH (Mutate Database / Refund > \$500)
         Billing->>HITL: Issue Approval Nonce (HMAC SHA-256)
         Note over Billing,HITL: Execution Suspended (State: AWAITING_INPUT)
         Billing->>Store: Save Durable Checkpoint (chk-02, Suspended)

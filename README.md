@@ -64,7 +64,7 @@ flowchart LR
 | **Multi-Agent Systems** | Uncontrolled conversational chatter | **Tri-Protocol Stack** (MCP + Google A2A + AG-UI) |
 | **Reasoning Engine** | Manual Chain-of-Thought prompts | **Native Thinking Tokens** (o3/o4-mini, Claude Thinking, DeepSeek-R1) |
 | **Context Ceilings** | 8K–128K tokens (frequent OOMs) | **200K–2M+ tokens** (MECW awareness & prompt caching) |
-| **Cost Profile** | $30–60 / 1M tokens (GPT-4) | **$0.075–3.00 / 1M tokens** (200x spread, 50% off Batch APIs) |
+| **Cost Profile** | \$30–60 / 1M tokens (GPT-4) | **\$0.075–3.00 / 1M tokens** (200x spread, 50% off Batch APIs) |
 | **Regulatory Compliance** | Voluntary best practices | **EU AI Act Enforced** (GPAI obligations, crypto-shredding) |
 | **Coding Workflow** | Single-line tab autocomplete | **Autonomous Agentic Coding** (Claude Code CLI, Cursor, Windsurf) |
 
@@ -106,7 +106,7 @@ flowchart TD
 | **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Loop Engineering (action hashing, budget decay), CodeAct vs JSON, durable state checkpointing, Microsoft Agent Framework (MAF 1.0 GA), Google ADK GA, and the Tri-Protocol stack. | 2 Weeks | Staff |
 | **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and egress filtering. | 1 Week | Lead |
 | **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, discrete binary LLM-as-a-judge rubrics, golden test datasets, CI/CD regression gates, and OpenTelemetry GenAI semantic conventions. | 1 Week | Lead |
-| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Batch APIs (50% red-eye discount), 2026 model pricing spread ($0.075 to $75/M), dual-tier caching (SHA-256 + Vector), and Edge AI deployment. | 2 Weeks | Lead/Ops |
+| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Batch APIs (50% red-eye discount), 2026 model pricing spread (\$0.075 to \$75/M), dual-tier caching (SHA-256 + Vector), and Edge AI deployment. | 2 Weeks | Lead/Ops |
 | **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | The Big Seven agentic coding tools (Claude Code, Cursor, Windsurf), The Trust Gap (90% usage vs 29% trust), Verified Agentic Engineering, and machine-readable `AGENT.md` contracts. | Ongoing | Executive |
 
 ---
@@ -117,9 +117,9 @@ Choose the track tailored to your current focus and engineering background:
 
 | Track | Objective | Target Modules | Primary Outcome |
 |:---|:---|:---|:---|
-| **Track 1: Precision Core & RAG** | Master retrieval and grounding | Phases 00 $	o$ 01 $	o$ 02 $	o$ 06 | Production-grade grounded search with Late Chunking, GraphRAG, cross-encoder rerankers, and continuous evaluation gates. |
-| **Track 2: Autonomous Agent Architect** | Build resilient tool-using swarms | Phases 01 $	o$ 03 $	o$ 04 $	o$ 05 | Stateful agents with strict JSON schemas, Stateless MCP servers, Google A2A protocol, loop engineering, and dual-LLM quarantine. |
-| **Track 3: Production LLMOps & Leadership** | Enterprise infrastructure & governance | Phases 06 $	o$ 07 $	o$ 08 $	o$ Master Guides | Resilient multi-provider gateways, Batch API processing, OpenTelemetry tracing, `AGENT.md` codebase contracts, and EU AI Act compliance. |
+| **Track 1: Precision Core & RAG** | Master retrieval and grounding | Phases 00 → 01 → 02 → 06 | Production-grade grounded search with Late Chunking, GraphRAG, cross-encoder rerankers, and continuous evaluation gates. |
+| **Track 2: Autonomous Agent Architect** | Build resilient tool-using swarms | Phases 01 → 03 → 04 → 05 | Stateful agents with strict JSON schemas, Stateless MCP servers, Google A2A protocol, loop engineering, and dual-LLM quarantine. |
+| **Track 3: Production LLMOps & Leadership** | Enterprise infrastructure & governance | Phases 06 → 07 → 08 → Master Guides | Resilient multi-provider gateways, Batch API processing, OpenTelemetry tracing, `AGENT.md` codebase contracts, and EU AI Act compliance. |
 
 ---
 
@@ -233,7 +233,7 @@ Every topic across the curriculum is classified using a pragmatic 3-tier taxonom
 * 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
 * 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
 * ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
-* 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 $	o$ 3.0 shift, polyglot matrix, and 90-day execution plan.
+* 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 → 3.0 shift, polyglot matrix, and 90-day execution plan.
 * 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
 * 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
 * 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
