@@ -150,10 +150,10 @@
 - Multi-tenant data isolation & Document-level RBAC
 
 ### Curated Resources
-- [LlamaIndex Advanced RAG Guide](https://docs.llamaindex.ai/) — *Rerankers, query engines, and hybrid pipelines*
+- [LlamaIndex Advanced RAG Guide](https://docs.llamaindex.ai/en/stable/optimizing/advanced_retrieval/advanced_retrieval/) — *Rerankers, query engines, and hybrid pipelines*
 - [Microsoft GraphRAG GitHub](https://github.com/microsoft/graphrag) — *Modular graph-based RAG pipeline*
 - [Pinecone Learning Center — Hybrid Search](https://www.pinecone.io/learn/) — *Combining dense and sparse retrieval*
-- [Hamel Husain — Creating a Great RAG System](https://hamel.dev/blog/posts/course/) — *Evaluation and retrieval optimization*
+- [Hamel Husain — Creating a Great RAG System](https://hamel.dev/blog/posts/evals/) — *Evaluation and retrieval optimization*
 
 ---
 
@@ -269,6 +269,7 @@
 - Prompt Caching & Prefix Caching mechanics (Anthropic, Gemini, OpenAI)
 
 ### Curated Resources
+- [Top 15 Beginner Mistakes Cheatsheet](./beginner-mistakes-cheatsheet.md) — *15 catastrophic AI anti-patterns, prompt traps, and architectural remedies*
 - [Anthropic Prompt Caching Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching) — *Architecture and economics of prefix caching*
 - [Anthropic Contextual Retrieval Guide](https://www.anthropic.com/news/contextual-retrieval) — *Optimizing RAG retrieval using chunk-specific context prepending*
 - [Gemini Context Caching Guide](https://ai.google.dev/gemini-api/docs/caching?lang=python) — *Explicit context caching and TTL management*
@@ -280,24 +281,20 @@
 ## Phase 9 — Memory & Sessions
 
 ### Core Topics
-- Conversation history tracking & Window sliding
 - 4-Tier Memory Taxonomy: Ephemeral Working Memory, Short-Term Session Buffer, Long-Term Episodic Memory, Persistent Semantic Knowledge
 - Session management & Distributed session stores (Redis, PostgreSQL)
-- Working memory (scratchpad & ephemeral state)
-- Short-term memory (active session turns)
-- Long-term memory: Semantic (facts), Episodic (past experiences), Procedural (tool rules)
 - Autonomous memory platforms: Mem0 (personalized memory layer) and Letta (stateful agent OS)
 - Temporal Knowledge Graph memory: Zep and Graphiti for evolving episodic relationship tracking
 - Hippocampal associative memory: HippoRAG for neurobiology-inspired multi-hop recall
-- Memory retrieval via vector search & Reciprocal Rank Fusion
+- Memory retrieval via vector search & Reciprocal Rank Fusion (RRF)
 - Forgetting curves & decay mechanisms: Ebbinghaus curve modeling for recency-frequency decay
 - Memory summarization, compaction, and lifecycle management
-- Session pause, resumption, and checkpointing
-- Session forking: Speculative branching and rollback
+- Session pause, resumption, checkpointing, and speculative branching (forking)
 - Standardized memory interoperability: MCP `server-memory` reference protocol for cross-agent recall
 - Memory governance & Data privacy compliance: Crypto-shredding of tenant keys for GDPR right to be forgotten
 
 ### Curated Resources
+- [Lab 5: Agent Memory & State Management System](../04-agentic-systems-and-orchestration/labs/lab5-agent-memory-system.md) — *Hands-on lab covering 4-tier taxonomy, temporal decay, MaaS, and GDPR crypto-shredding*
 - [Google ADK Sessions & Memory Guide](https://google.github.io/adk-docs/sessions/) — *Stateful sessions and memory management*
 - [Google ADK Memory Module](https://google.github.io/adk-docs/sessions/memory/) — *Long-term memory persistence*
 - [Mem0 Official Documentation](https://docs.mem0.ai/) — *Production memory layer for personalized AI agents*
@@ -324,7 +321,7 @@
 - Human escalation triggers & Emergency stop mechanisms
 
 ### Curated Resources
-- [Google ADK Documentation](https://google.github.io/adk-docs/) — *Resilience, callbacks, and error handling*
+- [Google ADK Callbacks & Plugins](https://google.github.io/adk-docs/agents/callbacks/) — *Resilience, callbacks, and error handling*
 - [Microsoft Semantic Kernel](https://learn.microsoft.com/en-us/semantic-kernel/) — *Integration with Polly enterprise resilience policies*
 - [OpenTelemetry Documentation](https://opentelemetry.io/docs/) — *Failure tracing and distributed monitoring*
 
@@ -369,7 +366,7 @@
 - [OpenTelemetry GenAI Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — *Official W3C / CNCF specification*
 - [Langfuse Documentation & Architecture](https://langfuse.com/docs) — *Open-source AI observability and tracing*
 - [Arize Phoenix](https://phoenix.arize.com/) — *Vector retrieval diagnostics and evaluation tracing*
-- [Google ADK Observability](https://google.github.io/adk-docs/) — *Built-in telemetry and logging in ADK*
+- [Google ADK Telemetry & Tracing](https://google.github.io/adk-docs/observability/) — *Built-in telemetry and logging in ADK*
 
 ---
 
@@ -497,7 +494,7 @@
 ### Curated Resources
 - [Anthropic Documentation — Cost & Latency](https://docs.anthropic.com/) — *Token efficiency best practices*
 - [Gemini Context Caching Guide](https://ai.google.dev/gemini-api/docs/caching) — *Slashing input costs via memory caching*
-- [Hamel Husain — Mastering LLMs](https://hamel.dev/blog/posts/course/) — *Latency and cost optimization*
+- [Eugene Yan — Patterns for Building LLM Systems](https://eugeneyan.com/writing/llm-patterns/) — *Patterns for latency, caching, and cost optimization*
 
 ---
 
@@ -533,9 +530,10 @@
 - Vendor risk assessment & Foundation model provider SLA evaluation
 
 ### Curated Resources
-- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) — *Federal standards for trustworthy AI*
-- [Google Secure AI Framework (SAIF)](https://saif.google/) — *Practical security and risk management*
-- [OWASP GenAI Security Project](https://genai.owasp.org/) — *Enterprise compliance and security guides*
+- [AI Governance & Compliance Engineering Guide](./ai-governance-and-compliance-guide.md) — *Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding*
+- [NIST AI Risk Management Framework](https://www.nist.gov/itl/ai-risk-management-framework) — *Federal standards for trustworthy AI systems*
+- [Google Secure AI Framework (SAIF)](https://saif.google/) — *Practical security, red teaming, and risk management*
+- [OWASP AI Red Teaming & Security](https://genai.owasp.org/) — *Enterprise compliance and adversary testing guides*
 - [Microsoft Responsible AI](https://www.microsoft.com/en-us/ai/responsible-ai) — *Principles, governance, and tools*
 
 ---
@@ -559,7 +557,7 @@
 - [A2A Protocol Documentation & v1.0 Spec](https://a2a-protocol.org/) — *Linux Foundation architecture and message standard*
 - [AG-UI Protocol Specification](https://ag-ui.org/) — *Standardized agent UI interaction layer and rich client components*
 - [Agent Communication Protocol (ACP)](https://github.com/agent-communication-protocol/acp) — *Standardized agent messaging and communication protocol*
-- [Google ADK A2A Documentation](https://google.github.io/adk-docs/) — *Multi-agent communication patterns*
+- [Google ADK Multi-Agent Collaboration](https://google.github.io/adk-docs/agents/multi-agent/) — *Multi-agent communication patterns*
 
 ---
 
@@ -577,10 +575,10 @@
 - Ephemeral execution sandboxing (gVisor runsc, WASM)
 
 ### Curated Resources
-- [Google ADK Documentation](https://google.github.io/adk-docs/) — *Durable agents and advanced state*
+- [Google ADK Sessions & Stateful Agents](https://google.github.io/adk-docs/sessions/) — *Durable agents and advanced state*
 - [Anthropic Research — Building Effective Agents](https://www.anthropic.com/research/building-effective-agents) — *Orchestration principles*
 - [LangGraph Documentation](https://docs.langchain.com/oss/python/langgraph/overview) — *State graphs and durable checkpointing*
-- [LlamaIndex Workflows](https://docs.llamaindex.ai/) — *Event-driven async agent orchestration*
+- [LlamaIndex Workflows](https://docs.llamaindex.ai/en/stable/module_guides/workflow/) — *Event-driven async agent orchestration*
 
 ---
 

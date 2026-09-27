@@ -30,7 +30,7 @@
 - **[Anthropic Claude Documentation](https://docs.anthropic.com/)**: Primary reference for Claude 3.7 Sonnet (hybrid reasoning & extended thinking) and Claude 3.5 Haiku.
 - **[Anthropic Claude Code CLI](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code)**: Official agentic coding assistant CLI with native MCP integration and terminal tool execution.
 - **[Anthropic Prompt Engineering Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)**: Authoritative guidance on XML boundaries, system instructions, and extended thinking budgets.
-- **[Building Effective Agents (Anthropic Engineering)](https://www.anthropic.com/engineering/building-effective-agents)**: Seminal architectural guide on workflow patterns (Chaining, Routing, Parallelization, Orchestrator-Workers, Evaluator-Optimizer).
+- **[Anthropic Tool Use & Function Calling Guide](https://docs.anthropic.com/en/docs/build-with-claude/tool-use)**: Detailed specifications for JSON tool definition schemas, parallel tool calls, and error handling.
 - **[Claude Prompt Caching](https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching)**: Mechanics of 5-minute ephemeral prefix caching, achieving 90% cost and 80% latency reductions.
 - **[Anthropic Interactive Courses (GitHub)](https://github.com/anthropics/courses)**: Interactive developer tutorials on Tool Use, Prompt Engineering, and Model Context Protocol.
 
@@ -42,7 +42,7 @@
 
 ### OpenAI Platform
 - **[OpenAI Documentation](https://platform.openai.com/docs/)**: API reference for frontier reasoning models (o1, o3-mini) and multimodal models (GPT-4o, GPT-4o-mini).
-- **[OpenAI Agents SDK (`openai-agents`)](https://github.com/openai/openai-agents-python)**: Official production framework (successor to Swarm) featuring multi-agent handoffs, guardrails, and tracing.
+- **[OpenAI Function Calling Guide](https://platform.openai.com/docs/guides/function-calling)**: Model-level tool-calling specifications, strict JSON mode, and multi-turn function execution loops.
 - **[OpenAI Structured Outputs Guide](https://platform.openai.com/docs/guides/structured-outputs)**: Constrained grammar decoding and 100% strict JSON schema enforcement.
 - **[OpenAI Reasoning Models Guide](https://platform.openai.com/docs/guides/reasoning)**: Test-time compute mechanics, reasoning tokens, and `reasoning_effort` tuning.
 

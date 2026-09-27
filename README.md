@@ -348,19 +348,10 @@ var sessionResult = await agentWorkflow.ExecuteDurableAsync(workflowContext, exe
 
 ## ⚡ Quick Navigation & Reference Hub
 
-- 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
-- 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 $\to$ 3.0 shift, polyglot matrix, and 90-day execution plan.
-- 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
-- 🚨 [**Top Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
-- 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
-- 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
-
----
-
-## ⚡ Quick Navigation & Reference Hub
-
 - 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
 - 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 $\to$ 3.0 shift, polyglot matrix, and 90-day execution plan.
 - 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
+- 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
+- ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
 - 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
 - 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
