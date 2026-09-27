@@ -142,8 +142,10 @@ Master production patterns through runnable, verified implementations in Python 
 
 ## 🌟 The Premier Standalone Engineering Guides
 
-In addition to the 9 curriculum phases, this repository provides 5 authoritative reference playbooks:
+In addition to the 9 curriculum phases, this repository provides 7 authoritative reference playbooks:
 
+* 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Strategic roadmap covering test-time compute, Model Context Protocol (MCP), MicroVM sandboxing, RadixAttention KV-caching, GraphRAG, and ISO 42001 governance.
+* 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): Battle-tested guide for Senior, Staff, and AI Engineers tackling crisis leadership, cascading production outages, silent ML data leakage, and the CARL+S framework.
 * 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic anti-patterns (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools, vibe checks) with 2:00 AM war stories, ELI10 analogies, and concrete code fixes.
 * ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act enforcement, 4-tier risk classification, GPAI model rules, NIST AI RMF, and GDPR Article 17 crypto-shredding.
 * 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for core enterprise patterns.
@@ -226,6 +228,8 @@ Every topic across the curriculum is classified using a pragmatic 3-tier taxonom
 
 ## ⚡ Quick Navigation & Reference Hub
 
+* 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Test-time compute, MCP, MicroVM sandboxing, RadixAttention KV caching, GraphRAG, and 12-month adoption timeline.
+* 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): The CARL+S framework, 6 crisis archetypes, production outage scripts, and silent ML drift post-mortems.
 * 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
 * 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
 * ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
