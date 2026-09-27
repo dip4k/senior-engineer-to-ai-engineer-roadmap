@@ -1768,6 +1768,16 @@ This section provides four hands-on, production-grade practice labs addressing t
 > 
 > Objective: Implement transaction rollback for tool failures.
 
+### Lab 5: Agent Memory & State Management System [MUST-HAVE] 🔴
+> **[View Lab 5: Agent Memory System](./labs/lab5-agent-memory-system.md)**
+> 
+> Objective: Implement 4-tier memory architecture (Working, Short-Term, Long-Term Semantic/Episodic/Procedural), Ebbinghaus temporal decay, MaaS integration, and GDPR crypto-shredding.
+
+### Lab 6: Multimodal Vision & Document Understanding Agent [MUST-HAVE] 🔴
+> **[View Lab 6: Multimodal Agent](./labs/lab6-multimodal-agent.md)**
+> 
+> Objective: Implement vision token economics, high-resolution document tiling, white-text visual injection defense, and schema-grounded financial extraction.
+
 ---
 
 ## 8. Enterprise Reference Code Implementations [MUST-HAVE] 🔴

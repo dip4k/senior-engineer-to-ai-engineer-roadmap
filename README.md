@@ -1,53 +1,38 @@
-# AI Engineer & Agentic Systems Roadmap: Senior & Lead Developer Edition
+# 🚀 The AI-Native Engineer Roadmap
+### Production Architecture, Autonomous Agents & Systems Engineering for Senior Tech Leads
 
-> **A production-focused engineering masterclass for Senior Engineers, Tech Leads, and Software Architects building enterprise AI applications and autonomous agentic systems.**
+[![Verified: September 2026](https://img.shields.io/badge/Verified-September%202026-blue.svg)](#-the-ai-engineering-landscape-then-vs-now)
+[![Stack: Python 3.12+ | .NET 9](https://img.shields.io/badge/Polyglot-Python%20%7C%20.NET%209-brightgreen.svg)](#-dual-language-enterprise-stack)
+[![Protocols: MCP | A2A | AG-UI](https://img.shields.io/badge/Protocols-MCP%20%7C%20A2A%20%7C%20AG--UI-orange.svg)](#-enterprise-protocols--ecosystem)
+[![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
+
+> **The Definitive Engineering Curriculum**: Moving developers from fragile "vibe coding" and prompt alchemy to deterministic, production-grade **Software 3.0 systems engineering**.
 
 Have you noticed how easy it is to build a mind-blowing AI demo over a weekend, but how brutally hard it is to keep it running in production on a Tuesday morning? 
 
 When you move from traditional Software 1.0 (where an `if` statement behaves the exact same way every single time) to non-deterministic AI (where your core reasoning engine might hallucinate a JSON parameter or get trapped in an infinite loop), it's completely disorienting. 
 
-This roadmap isn't a fluffy list of AI tools or marketing jargon. It's a pragmatic engineering blueprint. We are going to treat LLMs not as magic oracles, but as **probabilistic reasoning microservices** that need strict deterministic harnesses—think rate limits, bounded state machines, typed schemas, and human-in-the-loop authorization gates.
+This repository is not a collection of surface-level tutorials or marketing buzzwords. It is a battle-tested **architectural masterclass** treating Large Language Models not as magical oracles, but as **probabilistic reasoning microservices** governed by deterministic harnesses: finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
 
 ---
 
-```mermaid
-flowchart TD
-    Top["THE AI-NATIVE SENIOR ARCHITECT<br>System Design • Safety • Evals • Tooling • Production"]
-    Top --> PowerUser
-    Top --> Engineer
-    
-    subgraph PowerUser["AI POWER USER"]
-        PU1["AI Coding Tools"]
-        PU2["SDLC Acceleration"]
-        PU3["Architecture RFCs"]
-        PU4["Automated PR Reviews"]
-    end
-    
-    subgraph Engineer["AI ENGINEER"]
-        E1["LLM Inference Specs"]
-        E2["Context Engineering"]
-        E3["Deterministic Evals"]
-        E4["Production LLMOps"]
-    end
-    
-    PowerUser --> Bottom
-    Engineer --> Bottom
-    Bottom["AGENTIC SYSTEMS & ORCHESTRATION<br>ReAct • MCP • Multi-Agent • State Machines • Memory"]
-```
+## 📑 Table of Contents
+
+1. [The AI Engineering Landscape: Then vs. Now](#-the-ai-engineering-landscape-then-vs-now)
+2. [Master Curriculum Syllabus (Phases 00–08)](#-master-curriculum-syllabus)
+3. [Recommended Learning Paths](#-recommended-learning-paths)
+4. [Hands-On Practice Labs Showcase](#-hands-on-practice-labs-showcase)
+5. [The Premier Standalone Engineering Guides](#-the-premier-standalone-engineering-guides)
+6. [Enterprise Architecture Blueprints](#-enterprise-architecture-blueprints)
+7. [Enterprise Protocols & Ecosystem Alignment](#-enterprise-protocols--ecosystem-alignment)
+8. [Architectural Mastery Tiers](#-architectural-mastery-tiers)
+9. [⚡ Quick Navigation & Reference Hub](#-quick-navigation--reference-hub)
 
 ---
 
-## 🕐 The AI Engineering Landscape: Then vs. Now `[MUST-HAVE]` 🔴
+## 🕐 The AI Engineering Landscape: Then vs. Now
 
-If you stepped away from AI engineering in early 2024 and returned today, you wouldn't just find smarter models—you would find an entirely different engineering discipline.
-
-> **☕ The Coffee Chat Summary**: In early 2024, AI engineering felt like creative alchemy. You crafted elaborate prompt strings, pleaded with the model to output valid JSON, and prayed your regex wouldn't choke on an unescaped markdown quote. Today, AI engineering is **systems engineering**. We treat LLMs like non-deterministic microservices bounded by finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
-
-### 💡 The Paradigm Shift (ELI10)
-
-Think of early 2024 AI as hiring a brilliant savant who only answers questions verbally over an intercom. You had to phrase questions very carefully ("prompt engineering"), hope they didn't hallucinate, and manually re-type their answers into your database.
-
-In late 2026, AI engineering is like building an automated factory assembly line. The foundation model is a standardized compute engine plugged into an industrial bus via **Model Context Protocol (MCP)**, managed by deterministic state machines, and governed by strict compiler-level schemas.
+If you stepped away from AI engineering in early 2024 and returned today, you wouldn't just find smarter models—you would find an entirely different engineering discipline:
 
 ```mermaid
 flowchart LR
@@ -60,7 +45,7 @@ flowchart LR
 
     subgraph Y2026["September 2026: Systems Engineering"]
         direction TB
-        A2["Typed Context Engineering<br>(Pydantic / FSM Grammar)"] --> B2["Reasoning Engine with Native Tokens<br>(Claude 4, o3/o4-mini, DeepSeek-R1)"]
+        A2["Context Engineering & AST<br>(Pydantic / FSM Grammar)"] --> B2["Reasoning Engines with Thinking Tokens<br>(Claude 4, o3/o4-mini, DeepSeek-R1)"]
         B2 --> C2["Standardized Protocols<br>(MCP + A2A + AG-UI)"]
         C2 --> D2["Automated CI/CD Eval Gates<br>(OpenTelemetry Spans & Judges)"]
     end
@@ -68,115 +53,102 @@ flowchart LR
     Y2024 ==> Y2026
 ```
 
-### 📊 Architectural Evolution: Early 2024 vs. September 2026
+### 📊 Architectural Evolution
 
-| Dimension | Early 2024 | September 2026 |
+| Dimension | Early 2024 (Software 2.0 / Prompt Era) | September 2026 (Software 3.0 / Systems Era) |
 |:---|:---|:---|
-| **Core Skill** | Prompt Engineering | Context Engineering |
-| **Agent Maturity** | Research / Demos | Production Deployments |
-| **Tool Standard** | Custom integrations | MCP (Linux Foundation) |
-| **Memory** | Ad-hoc | 4-tier taxonomy |
-| **Multi-Agent** | Experimental | MAF 1.0, ADK GA, A2A v1.0 |
-| **Protocols** | None | MCP + A2A + AG-UI tri-stack |
-| **Models** | GPT-4, Claude 2 | Gemini 2.5, Claude 4, o3/o4-mini, DeepSeek-R1 |
-| **Cost** | $30–60/M | $0.075–3.00/M |
-| **Context** | 8K–128K | 200K–2M+ |
-| **Reasoning** | Manual CoT | Native thinking tokens |
-| **Governance** | Voluntary | EU AI Act enforced |
-| **Coding** | Autocomplete | Autonomous agentic coding |
-
-> **🔥 Production War Story: The 2:00 AM Regex Failure**:
-> *In early 2024, an enterprise order-routing agent went live using prompt-based JSON instructions. At 2:15 AM, the model added an unescaped double quote inside a customer note field. The custom regex parser failed, throwing an unhandled exception. The naive wrapper retried continuously in an unbounded loop, burning $4,200 in API credits before someone's pager finally woke up the on-call architect.*
-> *In September 2026, production systems don't parse strings. Logits are constrained to Pydantic schemas via finite-state machine grammar decoders, execution is isolated via MCP servers, and gateways enforce strict token budgets.*
+| **Core Skill** | Prompt Engineering (phrasing tricks) | **Context Engineering** (compiled ASTs, budgeting, compaction) |
+| **Agent Maturity** | Research demos & fragile while-loops | **Loop Engineering** (action fingerprints, progressive budget decay) |
+| **Tool Calling** | Ad-hoc JSON blobs & fragile regex | **Model Context Protocol (MCP)** (Linux Foundation standard) |
+| **Memory Architecture** | Raw chat history dumps in RAM | **4-Tier Memory Taxonomy** (Working, Short-Term, Long-Term, MaaS) |
+| **Multi-Agent Systems** | Uncontrolled conversational chatter | **Tri-Protocol Stack** (MCP + Google A2A + AG-UI) |
+| **Reasoning Engine** | Manual Chain-of-Thought prompts | **Native Thinking Tokens** (o3/o4-mini, Claude Thinking, DeepSeek-R1) |
+| **Context Ceilings** | 8K–128K tokens (frequent OOMs) | **200K–2M+ tokens** (MECW awareness & prompt caching) |
+| **Cost Profile** | $30–60 / 1M tokens (GPT-4) | **$0.075–3.00 / 1M tokens** (200x spread, 50% off Batch APIs) |
+| **Regulatory Compliance** | Voluntary best practices | **EU AI Act Enforced** (GPAI obligations, crypto-shredding) |
+| **Coding Workflow** | Single-line tab autocomplete | **Autonomous Agentic Coding** (Claude Code CLI, Cursor, Windsurf) |
 
 ---
 
-## 🗺️ Master Curriculum Progression
+## 🗺️ Master Curriculum Syllabus
 
-> **Rule of Thumb:** Don't skip straight to building multi-agent swarms. If you don't understand underlying inference physics (like the KV-Cache) or prompt caching economics, your agents will be slow, expensive, and fragile. Learn the physics first.
-
-The curriculum is structured sequentially from inference physics to autonomous multi-agent systems and engineering leadership:
+The curriculum progresses systematically from silicon and hardware inference realities up to multi-agent orchestration and engineering leadership:
 
 ```mermaid
 flowchart TD
     S0["Phase 00: Foundations & Token Mechanics<br>• Test-Time Compute • KV-Cache • Reasoning Tokens • TTFT/TPS"] --> S1
-    S1["Phase 01: Prompt & Context Engineering<br>• Schema Enforcement • Prompt Caching • XML Framing"] --> S2
+    S1["Phase 01: Context Engineering — The Master Discipline<br>• Context AST • 13K Budgeting • 4-Tier Compaction • Schema Masking"] --> S2
     S1 --> S3
     
-    subgraph CoreTracks["Parallel Core Tracks"]
+    subgraph CoreTracks["Parallel Industrial Tracks"]
         S2["Phase 02: Advanced Enterprise RAG<br>• Late Chunking • Hybrid (HNSW+BM25) • GraphRAG • Rerankers"]
-        S3["Phase 03: Tools & Model Context Protocol<br>• Stateless MCP 2026 • Streamable HTTP • Tasks • Sandboxing"]
+        S3["Phase 03: Tools & Model Context Protocol<br>• Stateless MCP 2026 • Streamable HTTP • Tasks • Container Sandboxing"]
     end
     
     S2 --> S4
     S3 --> S4
     
-    S4["Phase 04: Agentic Systems & Orchestration<br>• ReAct • Durable Checkpoints • MAF 1.0 • Google A2A • Saga Pattern"] --> S5
+    S4["Phase 04: Agentic Systems & Orchestration<br>• Loop Engineering • CodeAct • Checkpointing • Tri-Protocol Stack"] --> S5
     S5["Phase 05: AI Security, Guardrails & Trust<br>• Dual-LLM Quarantine • Canary Tokens • OWASP Top 10"] --> S6
     S6["Phase 06: Evals, Observability & Telemetry<br>• Binary Evals • Golden Datasets • OpenTelemetry GenAI Spans"] --> S7
-    S7["Phase 07: Enterprise Deployment & LLMOps<br>• AI Gateways • Dual-Tier Caching • SSE Streaming"] --> S8
-    S8["Phase 08: AI-Augmented SDLC & Leadership<br>• AGENT.md Directives • Coding Agents • CI Review Bots"]
+    S7["Phase 07: Production Deployment & LLMOps<br>• Resilient AI Gateways • Batch APIs • Dual-Tier Caching • Edge AI"] --> S8
+    S8["Phase 08: AI-Augmented SDLC & Leadership<br>• Agentic Coding (Big 7) • Trust Gap • AGENT.md Contracts • Verified Engineering"]
 ```
 
----
+### 📚 Syllabus & Module Directory
 
-## 📚 Curriculum Structure & Phased Syllabus
-
-| Phase | Directory | Focus & Key Deliverables | Estimated Time | Level |
+| Phase | Module Name | Core Architectural Deliverables | Duration | Target Level |
 |:---:|:---|:---|:---:|:---:|
-| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Test-time compute & reasoning tokens (Claude 3.7 Thinking, OpenAI o1/o3-mini, DeepSeek R1), KV-Cache VRAM sizing formulas, TTFT vs TPS, PagedAttention. | 1-2 Weeks | Core |
-| **01** | [**Prompt & Context Engineering**](./01-prompt-and-context-engineering/README.md) | Prompt hierarchy, Anthropic XML tags, FSM constrained grammar decoding, 5-min ephemeral prompt caching economics. | 2 Weeks | Core |
-| **02** | [**Advanced Enterprise RAG**](./02-rag-and-knowledge-systems/README.md) | **4 Sub-Phases**: 2.1 Late Chunking & Multimodal Parsing • 2.2 Hybrid Search (Dense HNSW + BM25) • 2.3 Agentic RAG & GraphRAG • 2.4 Cross-Encoder Reranking & RBAC. | 2-3 Weeks | Advanced |
-| **03** | [**Tools & Model Context Protocol**](./03-tools-and-model-context-protocol/README.md) | **MCP July 2026 Stateless Core**, Streamable HTTP transport, FastMCP servers, Tasks Extension for background jobs, CIMD auth, container sandboxing, HITL approval. | 2 Weeks | Advanced |
-| **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | **5 Pillars**: 4.1 ReAct Cognitive Loops • 4.2 Durable State Checkpointing • 4.3 Swarms & Microsoft Agent Framework (MAF 1.0) • 4.4 Google Agent2Agent (A2A) Protocol • 4.5 Saga Pattern & Resilience. | 3 Weeks | Architect |
-| **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP LLM Top 10, Dual-LLM Privilege Separation (Quarantine), cryptographic canary tokens, NeMo / Llama Guard 3, ephemeral sandboxes. | 1-2 Weeks | Architect |
-| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Hamel Husain 3-level evaluation model, binary LLM-as-a-judge rubrics, golden test sets, OpenTelemetry GenAI spans. | 2 Weeks | Architect |
-| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Serverless vs vLLM, LiteLLM Resilient AI Gateway, dual-tier caching (Exact SHA-256 + Vector), SSE streaming. | 2 Weeks | Lead/Ops |
-| **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | Autonomous coding agents (Claude Code, Cursor, Windsurf), `AGENT.md` contracts, AI-driven TDD verification, automated PR review. | Ongoing | Executive |
-| **Playbook** | [**Senior Transition Guide**](./senior-transition-guide.md) | Software 1.0 $\to$ 3.0 shift, 6 enterprise use cases, 6 hands-on practice labs, and 90-day execution roadmap. | 1 Week | Staff/Lead |
-| **Interview** | [**80/20 Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md) | Master System Design Blueprints, 25 architect technical Q&As, tradeoff cheat matrices, and hardware formulas. | Continuous | Master |
-| **Resource Map** | [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md) | Phase-by-phase reference linking all 24 topics to official documentation, courses, and GitHub repositories. | Reference | All Levels |
+| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth, prefill vs decode, reasoning models (test-time compute), thinking token economics, and SLMs (Phi-4, Gemma 2). | 1 Week | Senior |
+| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, MECW context rot, dynamic tool loadout pruning, and LLMLingua-2. | 1 Week | Senior |
+| **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), Cross-Encoder rerankers, and GraphRAG. | 2 Weeks | Lead |
+| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), streamable HTTP transports, Tasks extension for async jobs, tool schema caching, and Docker/gVisor sandboxing. | 1 Week | Lead |
+| **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Loop Engineering (action hashing, budget decay), CodeAct vs JSON, durable state checkpointing, Microsoft Agent Framework (MAF 1.0 GA), Google ADK GA, and the Tri-Protocol stack. | 2 Weeks | Staff |
+| **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and egress filtering. | 1 Week | Lead |
+| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, discrete binary LLM-as-a-judge rubrics, golden test datasets, CI/CD regression gates, and OpenTelemetry GenAI semantic conventions. | 1 Week | Lead |
+| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Batch APIs (50% red-eye discount), 2026 model pricing spread ($0.075 to $75/M), dual-tier caching (SHA-256 + Vector), and Edge AI deployment. | 2 Weeks | Lead/Ops |
+| **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | The Big Seven agentic coding tools (Claude Code, Cursor, Windsurf), The Trust Gap (90% usage vs 29% trust), Verified Agentic Engineering, and machine-readable `AGENT.md` contracts. | Ongoing | Executive |
 
 ---
 
-## 🎯 Architectural Mastery Tiers
+## 📖 Recommended Learning Paths
 
-> **War Story:** I once saw a team spend three months and \$50,000 trying to train a custom model for extracting invoices, only to realize that a well-written prompt with a strict JSON schema and Anthropic's 5-minute cache could do it better, faster, and cheaper. Spend your energy where it actually counts.
+Choose the track tailored to your current focus and engineering background:
 
-Every topic across this roadmap is tagged with a 3-tier classification to focus your engineering energy where it delivers maximum ROI:
-
-| Tier | Meaning & Scope | Focus Allocation |
-|:---|:---|:---:|
-| `[MUST-HAVE]` 🔴 | **Production Invariants & Core Architecture**: Essential for enterprise applications, production reliability, immediate business ROI, and system architecture. Non-negotiable foundation. | **80% Focus** |
-| `[GOOD-TO-HAVE]` 🟡 | **Advanced Scaling & Complex Orchestration**: Swarm handoffs, specialized memory graphs, custom guardrails, latency optimizations, and high-concurrency scaling. | **15% Focus** |
-| `[KNOWLEDGE-BASE]` 🔵 | **Conceptual Reference & Architectural Intuition**: Mathematical derivations, training physics, and hardware formulas. Understand mental models; skip coding from scratch. | **5% Focus** |
-
----
-
-## 📖 Recommended Reading Paths
-
-| Track | Objective | Target Phases | Key Outcome |
+| Track | Objective | Target Modules | Primary Outcome |
 |:---|:---|:---|:---|
-| **Path A** | **Enterprise Knowledge & Advanced RAG** | Phases 00 $\to$ 01 $\to$ 02 $\to$ 06 | Production grounded search with Late Chunking (highlighting the whole page instead of shredding it first), GraphRAG, cross-encoder reranking, and discrete binary evaluation. |
-| **Path B** | **Autonomous Tool-Using Agents & Swarms** | Phases 01 $\to$ 03 $\to$ 04 $\to$ 05 | Stateful agents with strict JSON schemas, Stateless MCP 2026 (USB-C for AI), Google A2A protocol, durable state machines, and dual-LLM quarantine. |
-| **Path C** | **LLMOps, Infrastructure & Leadership** | Phases 07 $\to$ 08 $\to$ Playbook $\to$ Interview | Resilient multi-provider gateways, OpenTelemetry tracing, `AGENT.md` repository directives, and system design mastery. |
+| **Track 1: Precision Core & RAG** | Master retrieval and grounding | Phases 00 $	o$ 01 $	o$ 02 $	o$ 06 | Production-grade grounded search with Late Chunking, GraphRAG, cross-encoder rerankers, and continuous evaluation gates. |
+| **Track 2: Autonomous Agent Architect** | Build resilient tool-using swarms | Phases 01 $	o$ 03 $	o$ 04 $	o$ 05 | Stateful agents with strict JSON schemas, Stateless MCP servers, Google A2A protocol, loop engineering, and dual-LLM quarantine. |
+| **Track 3: Production LLMOps & Leadership** | Enterprise infrastructure & governance | Phases 06 $	o$ 07 $	o$ 08 $	o$ Master Guides | Resilient multi-provider gateways, Batch API processing, OpenTelemetry tracing, `AGENT.md` codebase contracts, and EU AI Act compliance. |
 
 ---
 
-## 🧪 Hands-On Practice Labs
+## 🧪 Hands-On Practice Labs Showcase
 
-Master production patterns by building and verifying these standalone reference implementations:
+Master production patterns through runnable, verified implementations in Python (Pydantic v2) and C# (.NET 9):
 
-| Lab | Name | Core Architectural Deliverable | Lab File |
+| Lab | Name | Core Architectural Deliverable | Lab Location |
 |:---:|:---|:---|:---|
-| **01** | **Multi-Tenant Hybrid RAG** | BM25 + Dense HNSW search, Reciprocal Rank Fusion, and cross-encoder reranking with tenant isolation. | [View Lab](./labs/lab-01-multi-tenant-hybrid-rag.md) |
-| **02** | **Tool Execution with MCP** | Model Context Protocol JSON-RPC 2.0 server & client with schema validation and container sandboxing. | [View Lab](./labs/lab-02-tool-execution-with-mcp.md) |
-| **03** | **Stateful Agent Orchestration** | Directed state machine with graph reducers, durable SQLite checkpointing, and execution pause/resume. | [View Lab](./labs/lab-03-stateful-agent-orchestration.md) |
-| **04** | **Agent Failure Defense** | Rolling SHA-256 action loop detection, blast radius previews, and automated context compaction at 75% capacity. | [View Lab](./labs/lab-04-agent-failure-defense.md) |
-| **05** | **AI Observability & Tracing** | Distributed tracing with OpenTelemetry GenAI semantic spans, token metrics, and Jaeger/Langfuse export. | [View Lab](./labs/lab-05-ai-observability-tracing.md) |
-| **06** | **Dual-LLM Quarantine & Guardrails** | Unprivileged Reader LLM parsing untrusted input, cryptographic canary tokens, and egress leakage filters. | [View Lab](./labs/lab-06-dual-llm-quarantine-guardrails.md) |
+| **01** | **Stateful Agent with HITL Approval** | Cyclical state machine with graph reducers, durable checkpointing, and execution pause/resume for human authorization. | [`lab1-stateful-agent-hitl.md`](./04-agentic-systems-and-orchestration/labs/lab1-stateful-agent-hitl.md) |
+| **02** | **Multi-Agent Swarm with A2A Handoffs** | Dynamic specialist handoffs using the Agent2Agent (A2A) protocol with correlation tracking and envelope validation. | [`lab2-multi-agent-swarm.md`](./04-agentic-systems-and-orchestration/labs/lab2-multi-agent-swarm.md) |
+| **03** | **Infinite Loop & Deadlock Recovery** | Cryptographic SHA-256 tool hashing, ring-buffer cycle detection, and progressive budget decay governors. | [`lab3-infinite-loops.md`](./04-agentic-systems-and-orchestration/labs/lab3-infinite-loops.md) |
+| **04** | **Distributed Agent Saga Pattern** | Two-phase tool commits with forward actions and compensating rollback tools for failed external operations. | [`lab4-saga-pattern.md`](./04-agentic-systems-and-orchestration/labs/lab4-saga-pattern.md) |
+| **05** | **Agent Memory & State Management** | 4-tier memory taxonomy (Working, Short-Term, Long-Term Semantic/Episodic), Ebbinghaus decay, MaaS, and GDPR crypto-shredding. | [`lab5-agent-memory-system.md`](./04-agentic-systems-and-orchestration/labs/lab5-agent-memory-system.md) |
+| **06** | **Multimodal Vision & Document Agent** | High-resolution document tiling math, white-text visual injection quarantine, and schema-grounded financial invoice extraction. | [`lab6-multimodal-agent.md`](./04-agentic-systems-and-orchestration/labs/lab6-multimodal-agent.md) |
 
-*For comprehensive module-specific capstones (e.g., Code Review Engine, CI/CD Eval Gate, Resilient AI Gateway), see each module's `labs/` directory.*
+*For end-to-end module capstones (Token Economics Analyzer, Context Pipeline, Enterprise RAG Pipeline, MCP Server, Security Guardrails, and CI/CD Eval Gate), see each phase's `labs/` directory.*
+
+---
+
+## 🌟 The Premier Standalone Engineering Guides
+
+In addition to the 9 curriculum phases, this repository provides 5 authoritative reference playbooks:
+
+* 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic anti-patterns (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools, vibe checks) with 2:00 AM war stories, ELI10 analogies, and concrete code fixes.
+* ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act enforcement, 4-tier risk classification, GPAI model rules, NIST AI RMF, and GDPR Article 17 crypto-shredding.
+* 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for core enterprise patterns.
+* 🎯 [**80/20 AI System Design Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md): Master cheat sheet for Senior & Staff AI Engineer interviews, covering 5 master system designs, 25 architect Q&As, and tradeoff matrices.
+* 📘 [**The Senior AI Engineer & Architect Transition Guide**](./senior-transition-guide.md): The definitive guide for Senior Software Engineers transitioning from Software 1.0/2.0 to AI-Native Engineering, featuring a 90-day execution roadmap.
 
 ---
 
@@ -214,12 +186,11 @@ flowchart LR
     UC6 --> P6
 ```
 
-*Detailed architectural specifications, failure modes, and code samples for each blueprint are in [**`senior-transition-guide.md`**](./senior-transition-guide.md#4-deep-dive-on-the-6-senior-enterprise-ai-use-cases).*  
-*For end-to-end production architectures with block diagrams, problem statements, and architect notes, see [**`10 Enterprise AI System Designs`**](./architecture/10-enterprise-ai-system-designs.md).*
-
 ---
 
-## 🏛️ Ecosystem Alignment
+## 🏛️ Enterprise Protocols & Ecosystem Alignment
+
+Modern AI systems engineering relies on open, standardized protocols rather than proprietary walled gardens:
 
 ```mermaid
 flowchart LR
@@ -228,14 +199,14 @@ flowchart LR
     A --> D["Microsoft & OpenAI"]
     A --> E["Open-Source Standards"]
 
-    B --> B1["Claude 3.7 Thinking & Claude Code"]
+    B --> B1["Claude 4 & Claude Code CLI"]
     B --> B2["Model Context Protocol (MCP 2026)"]
 
     C --> C1["Google GenAI SDK (google-genai)"]
     C --> C2["Google ADK & Agent2Agent (A2A)"]
 
     D --> D1["Microsoft Agent Framework (MAF 1.0)"]
-    D --> D2["OpenAI Agents SDK & Azure Agent Service"]
+    D --> D2["OpenAI Agents SDK & Azure AI Foundry"]
 
     E --> E1["PydanticAI & LangGraph"]
     E --> E2["FastMCP & OpenTelemetry GenAI Spans"]
@@ -243,115 +214,22 @@ flowchart LR
 
 ---
 
----
+## 🎯 Architectural Mastery Tiers
 
-## 🚨 Quick Reference: Top Beginner Mistakes `[MUST-HAVE]` 🔴
+Every topic across the curriculum is classified using a pragmatic 3-tier taxonomy so you can prioritize your study time:
 
-When experienced Software 1.0 and 2.0 engineers begin building AI agent systems, they often stumble into the same category of failure: **treating probabilistic reasoning engines like deterministic procedural functions**. 
-
-> **☕ The Coffee Chat Summary**: In traditional software, if an API call fails, you retry. If you need data, you make a function call. If you need output, you write an algorithm. But when you wrap an LLM in an unbounded while-loop without step budgets, durable checkpointing, or token masks, you aren't building an "autonomous agent"—you're building an infinite-cost recursive bomb.
-
-### 💡 The Analogy (ELI10)
-
-Imagine hiring an intern and giving them a company credit card. If you say *"Research our competitors and email them,"* with no limits, they might send 10,000 emails, book 40 flights, and max out the company accounts before lunch. 
-
-An autonomous agent needs **guardrail fences**, **step allowances**, **sandboxed tools**, and a **supervisor looking over its shoulder**—not just good intentions.
-
-### 🛑 Naive Anti-Pattern vs. Enterprise Architecture
-
-```mermaid
-flowchart TD
-    subgraph AntiPattern["❌ Naive Fragile Loop (The 2:00 AM Incident)"]
-        direction TB
-        A1["User Prompt"] --> B1["Unbounded While-Loop in Memory"]
-        B1 --> C1["Direct Shell / DB Execution<br>(No Sandbox, No Schema)"]
-        C1 --> D1["JSON Parsing Fails / Trailing Comma"]
-        D1 --> B1
-        B1 --> E1["💥 OOM Crash or $5,000 Token Exhaustion"]
-    end
-
-    subgraph ResilientPattern["✅ Production Architectural Harness"]
-        direction TB
-        A2["User Request"] --> B2["Durable State Machine<br>(Postgres Checkpointing)"]
-        B2 --> C2["Circuit Breaker<br>(Max 10 Steps • $1.50 Budget)"]
-        C2 --> D2["Standardized MCP Server<br>(Container Sandboxed + HITL Gate)"]
-        D2 --> E2["Structured Output Mask<br>(Grammar-Guided Logit Filter)"]
-        E2 --> F2["OpenTelemetry Spans & CI Eval Gate"]
-    end
-```
-
-### 📋 The Top 5 Beginner Traps at a Glance
-
-| # | Anti-Pattern (The Trap) | Why It Fails in Production | Enterprise Production Fix |
-|:---:|:---|:---|:---|
-| **1** | **Prompt Begging for JSON** (`"Output only raw JSON"`) | Temperature & prompt drift cause trailing commas, markdown fences, or truncated brackets that break `json.loads()`. | **Constrained Schema Decoding**: Use Pydantic schemas / JSON Schema with native FSM token masking. |
-| **2** | **Volatile While-Loops** (`while not done: agent.step()`) | A single network blip, 429 rate limit, or model loop consumes tokens and erases entire conversational history from RAM. | **Durable State Graphs**: Persist step snapshots via LangGraph / Semantic Kernel with SQLite/Postgres checkpointing. |
-| **3** | **Naive Dense-Only RAG** (Chunk 500 $\to$ Embed $\to$ Cosine) | Fails on exact keywords (part numbers, UUIDs, SKUs), ignores document hierarchy, and retrieves out-of-context text. | **Hybrid Search + Reranking**: BM25 + Dense HNSW fused with Reciprocal Rank Fusion (RRF) and Cross-Encoder reranking. |
-| **4** | **Unsandboxed Tool Execution** (`exec(code)` or raw SQL) | Prompt injections or hallucinated arguments can drop tables, leak secrets, or spawn rogue child processes. | **Model Context Protocol (MCP)**: Run tools inside ephemeral isolated Docker containers with Human-in-the-Loop (HITL) gates. |
-| **5** | **Vibe-Check Testing** (Eyeballing playground outputs) | Subjective and non-repeatable. Changing one word in a system prompt silently degrades 15% of downstream tasks. | **Deterministic CI/CD Evals**: Continuous evaluation pipelines with golden test datasets and binary LLM-as-a-judge rubrics. |
-
-### 💻 Code Comparison: Naive vs. Production
-
-#### Python: Unstructured Prompting vs. Grammar-Constrained Outputs
-
-```python
-# ❌ ANTI-PATTERN: Prompt begging with fragile regex parsing
-response = client.chat.completions.create(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": "Extract customer info from email. Return JSON only!"}]
-)
-# 💥 2:00 AM Crash: Model returns '```json\n{"name": "Alice"}\n```' or trailing comma
-data = json.loads(response.choices[0].message.content)
-
-# ✅ PRODUCTION PATTERN: Schema-constrained structured decoding
-from pydantic import BaseModel, Field
-from typing import Literal
-
-class CustomerExtraction(BaseModel):
-    name: str = Field(description="Full legal name of customer")
-    account_id: str = Field(pattern=r"^CUST-[0-9]{6}$")
-    tier: Literal["standard", "premium", "enterprise"]
-
-completion = client.beta.chat.completions.parse(
-    model="gpt-4o",
-    messages=[{"role": "user", "content": f"Extract customer: {raw_email}"}],
-    response_format=CustomerExtraction  # Enforces finite-state-machine token mask
-)
-customer: CustomerExtraction = completion.choices[0].message.parsed
-```
-
-#### C# (.NET): Volatile Loop vs. Bounded Resilient Orchestration
-
-```csharp
-// ❌ ANTI-PATTERN: In-memory unbounded loop with zero circuit breakers
-while (!taskComplete)
-{
-    var plan = await agent.GeneratePlanAsync(state); // 💥 Runaway recursion, zero state persistence
-    await agent.ExecuteToolAsync(plan.NextAction);
-}
-
-// ✅ PRODUCTION PATTERN: Bounded state graph with checkpointing and step budget
-var executionOptions = new AgentExecutionPolicy
-{
-    MaxStepBudget = 10,
-    TotalCostCeiling = 2.50m,
-    Checkpointer = new PostgresStateCheckpointer(connectionString),
-    HighRiskToolApproval = HumanInTheLoopGate.RequireApproval
-};
-
-var sessionResult = await agentWorkflow.ExecuteDurableAsync(workflowContext, executionOptions, cancellationToken);
-```
-
-> 📖 **Deep Dive**: For comprehensive root-cause analysis, architecture diagrams, and reproduction playbooks across all 15 enterprise failure modes, check out the [**Top Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md).
+* **[MUST-HAVE] 🔴 (The 80% Core)**: Non-negotiable primitives, production failure modes, and architectural standards required to build systems that survive in production without crashing or overspending.
+* **[GOOD-TO-HAVE] 🟡 (The 15% Advanced)**: Edge-case optimizations, emerging protocols, and multi-agent coordination patterns that separate Senior from Staff AI Engineers.
+* **[KNOWLEDGE-BASE] 🔵 (The 5% Deep Theory)**: Historical context, hardware physics, and foundational papers for comprehensive mastery.
 
 ---
 
 ## ⚡ Quick Navigation & Reference Hub
 
-- 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
-- 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 $\to$ 3.0 shift, polyglot matrix, and 90-day execution plan.
-- 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
-- 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
-- ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
-- 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
-- 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
+* 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
+* 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
+* ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
+* 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 $	o$ 3.0 shift, polyglot matrix, and 90-day execution plan.
+* 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
+* 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
+* 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
