@@ -2,7 +2,7 @@
 ### Breakthrough Architectures, Test-Time Compute, Agent Protocols & Systems Engineering
 
 > **The Definitive Technology Roadmap for Tech Leads, Principal Architects, and Engineering Leadership.**  
-> [Home / Master Curriculum](./README.md) • [Senior Transition Guide](./senior-transition-guide.md) • [System Design Interview Sheet](./interview/80-20-ai-interview-prep-sheet.md) • [High-Stakes Behavioral Stories](./interview/high-stakes-behavioral-and-scenario-guide.md)
+> [Home / Master Curriculum](./README.md) • [🛡️ Production Readiness Review (PRR)](./architecture/production-readiness-review.md) • [🏛️ Architectural ADRs](./architecture/adrs/README.md) • [🚨 Post-Mortems](./architecture/post-mortems/README.md) • [System Design Interview Sheet](./interview/80-20-ai-interview-prep-sheet.md) • [Behavioral Stories](./interview/high-stakes-behavioral-and-scenario-guide.md)
 
 ---
 

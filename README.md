@@ -142,8 +142,11 @@ Master production patterns through runnable, verified implementations in Python 
 
 ## 🌟 The Premier Standalone Engineering Guides
 
-In addition to the 9 curriculum phases, this repository provides 7 authoritative reference playbooks:
+In addition to the 9 curriculum phases, this repository provides authoritative enterprise reference playbooks, audit gates, and architectural records:
 
+* 🛡️ [**The AI Production Readiness Review (PRR) Audit Gate**](./architecture/production-readiness-review.md): The 50-point enterprise go-live audit checklist across availability, token budgets, sandboxing, durability, OpenTelemetry, and EU AI Act compliance.
+* 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md): Formal trade-off records settling foundational debates (`pgvector` vs Qdrant, Model Context Protocol vs REST, System 2 reasoning vs SLMs, RadixAttention vs external memory).
+* 🚨 [**Production Post-Mortems & Failure Compendium**](./architecture/post-mortems/README.md): Detailed SRE root-cause analyses (RCAs) of catastrophic production outages, cascading KV-cache stampedes, silent feature leakage, and cyclic agent deadlocks.
 * 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Strategic roadmap covering test-time compute, Model Context Protocol (MCP), MicroVM sandboxing, RadixAttention KV-caching, GraphRAG, and ISO 42001 governance.
 * 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): Battle-tested guide for Senior, Staff, and AI Engineers tackling crisis leadership, cascading production outages, silent ML data leakage, and the CARL+S framework.
 * 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic anti-patterns (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools, vibe checks) with 2:00 AM war stories, ELI10 analogies, and concrete code fixes.
@@ -228,6 +231,9 @@ Every topic across the curriculum is classified using a pragmatic 3-tier taxonom
 
 ## ⚡ Quick Navigation & Reference Hub
 
+* 🛡️ [**AI Production Readiness Review (PRR)**](./architecture/production-readiness-review.md): 50-point enterprise go-live audit gate (availability, token caps, sandboxing, evals).
+* 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md): Battle-tested decisions on vector DBs, MCP, reasoning models, and KV caching.
+* 🚨 [**Production Post-Mortems Compendium**](./architecture/post-mortems/README.md): Detailed blameless RCAs on cache stampedes, feature leakage, and agent loops.
 * 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Test-time compute, MCP, MicroVM sandboxing, RadixAttention KV caching, GraphRAG, and 12-month adoption timeline.
 * 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): The CARL+S framework, 6 crisis archetypes, production outage scripts, and silent ML drift post-mortems.
 * 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).

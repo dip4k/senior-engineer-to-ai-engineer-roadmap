@@ -1,6 +1,8 @@
 # 10 Enterprise AI System Designs: End-to-End Architectural Blueprints
 
-> **A comprehensive architectural manual for Senior AI Engineers, Tech Leads, and Enterprise Solutions Architects designing, scaling, and governing production-grade AI systems.**
+> **A comprehensive architectural manual for Senior AI Engineers, Tech Leads, and Enterprise Solutions Architects designing, scaling, and governing production-grade AI systems.**  
+> 
+> [Home / Master Curriculum](../README.md) • [🛡️ Production Readiness Review (PRR)](./production-readiness-review.md) • [🏛️ Architectural ADRs](./adrs/README.md) • [🚨 Post-Mortems](./post-mortems/README.md) • [Emerging AI Roadmap](../ai-technology-roadmap-2025-2026.md)
 
 ---
 
