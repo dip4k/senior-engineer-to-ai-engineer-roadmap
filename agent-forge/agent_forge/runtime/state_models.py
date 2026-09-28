@@ -35,6 +35,7 @@ class AgentEvent(BaseModel):
         "session_started",
         "turn_started",
         "model_decision",
+        "tool_repair_requested",
         "tool_executing",
         "tool_completed",
         "human_approval_required",

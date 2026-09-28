@@ -157,6 +157,7 @@ In addition to the 9 curriculum phases, this repository provides authoritative e
 * ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act enforcement, 4-tier risk classification, GPAI model rules, NIST AI RMF, and GDPR Article 17 crypto-shredding.
 * 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for core enterprise patterns.
 * 🎯 [**80/20 AI System Design Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md): Master cheat sheet for Senior & Staff AI Engineer interviews, covering 5 master system designs, 25 architect Q&As, and tradeoff matrices.
+* 🎙️ [**The AI Platform Engineer Interview Handbook**](./interview/ai-platform-engineer-handbook.md): The specialized technical interview guide for Senior/Staff AI Platform roles, featuring back-of-the-envelope capacity math (KV-cache VRAM, 1B vector sizing), vector storage internals (HNSW tombstoning, ACORN predicate search), 45-minute live coding challenges, and SRE incident war stories.
 * 📘 [**The Senior AI Engineer & Architect Transition Guide**](./senior-transition-guide.md): The definitive guide for Senior Software Engineers transitioning from Software 1.0/2.0 to AI-Native Engineering, featuring a 90-day execution roadmap.
 
 ---

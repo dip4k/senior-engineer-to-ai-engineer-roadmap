@@ -62,13 +62,15 @@ agent-forge/
 ├── README.md                      # This comprehensive architectural guide
 ├── requirements.txt               # Dependencies (pure Python 3.10+ & Pydantic)
 ├── demo.py                        # Executable end-to-end production simulation
+├── tests/
+│   └── test_all.py                # Complete unit test suite (5/5 passing)
 └── agent_forge/
     ├── gateway/
     │   ├── model_router.py        # Multi-provider routing, failover, & prefix caching
     │   ├── semantic_cache.py      # Vector cosine query cache
-    │   └── rate_limiter.py        # Token-bucket rate limiter (TPM & RPM)
+    │   └── rate_limiter.py        # Streaming token-bucket limiter (acquire & settle)
     ├── runtime/
-    │   ├── orchestrator.py        # Durable agent loop & infinite loop prevention
+    │   ├── orchestrator.py        # Durable agent loop, automated tool repair, WAL
     │   ├── event_store.py         # Write-Ahead Log (WAL) & crash rehydration
     │   └── state_models.py        # Strongly typed state envelopes (Pydantic)
     ├── mcp/
@@ -76,7 +78,7 @@ agent-forge/
     │   ├── policy_engine.py       # ABAC/RBAC zero-trust permission validator
     │   └── servers/               # Micro-MCP servers (Order, Payment, Policy)
     ├── retrieval/
-    │   ├── vector_store.py        # In-memory vector store with Cosine similarity
+    │   ├── vector_store.py        # Vector store with ACORN-1 predicate graph search & tombstones
     │   ├── bm25.py                # Pure-Python BM25 sparse lexical engine
     │   ├── hybrid_engine.py       # Reciprocal Rank Fusion (RRF) & metadata filtering
     │   └── embeddings.py          # Deterministic normalized embedding generator

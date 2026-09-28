@@ -2,20 +2,22 @@
 """
 AgentForge: End-to-End Enterprise AI Platform Demonstration
 Demonstrates:
-  1. AI Gateway with Token-Bucket Throttling & Semantic Caching
+  1. AI Gateway with Token-Bucket Throttling & Streaming Settlement
   2. Model Context Protocol (MCP 2026) with Zero-Trust Security Policies
   3. Hybrid Retrieval with BM25 + Dense Vectors + Reciprocal Rank Fusion (RRF)
-  4. Durable Agent Runtime with Write-Ahead Logging (WAL) and Crash Rehydration
-  5. Idempotent Tool Execution
-  6. OpenTelemetry GenAI Semantic Conventions Tracing
-  7. Automated CI Quality Gates (Trajectory & Groundedness Evals)
+  4. ACORN-1 Predicate-Guided 2-Hop Graph Traversal vs. Standard Disconnection
+  5. Vector Store Tombstone Soft-Deletes & Segment Compaction
+  6. Durable Agent Runtime with WAL, Crash Rehydration, & Automated Tool Repair
+  7. Idempotent Tool Execution (Preventing Duplicate Financial Debits)
+  8. OpenTelemetry GenAI Semantic Conventions Tracing
+  9. Automated CI Quality Gates (Trajectory & Groundedness Evals)
 """
 
 import sys
 import time
 from agent_forge.gateway import TokenBucketLimiter, SemanticCache, ModelRouter
 from agent_forge.mcp import MCPClient, PolicyEngine, OrderMCPServer, PaymentMCPServer, PolicyMCPServer
-from agent_forge.retrieval import HybridRetriever
+from agent_forge.retrieval import HybridRetriever, VectorDocument, EmbeddingGenerator
 from agent_forge.runtime import EventStore, DurableOrchestrator, AgentSession
 from agent_forge.observability import GenAITracer, ConsoleTraceExporter
 from agent_forge.evals import TrajectoryEvaluator, GroundednessEvaluator, QualityScorecard
@@ -32,7 +34,7 @@ def main():
     tracer = GenAITracer(service_name="agent-forge-core")
     root_span = tracer.start_span("agent_forge.pipeline.execute", attributes={"app.env": "production"})
 
-    # 2. Ingress & Traffic Management: Gateway with Token-Bucket & Cache
+    # 2. Ingress & Traffic Management: Gateway with Streaming Token-Bucket & Cache
     rate_limiter = TokenBucketLimiter(default_rpm=120, default_tpm=200_000)
     semantic_cache = SemanticCache(similarity_threshold=0.96)
     router = ModelRouter(
@@ -40,7 +42,7 @@ def main():
         semantic_cache=semantic_cache,
         primary_model="claude-3-5-sonnet-20241022"
     )
-    print(" [x] AI Gateway configured (Token-Bucket Limiter + Prefix Cache + Failover)")
+    print(" [x] AI Gateway configured (Streaming Token-Bucket + Prefix Cache + Failover)")
 
     # 3. Model Context Protocol (MCP 2026): Tool Servers & Client
     mcp_client = MCPClient()
@@ -87,9 +89,9 @@ def main():
     print(" [x] Durable Orchestrator & Event-Sourced Write-Ahead Log ready")
 
     # =========================================================================
-    # STEP 1: HYBRID RAG SEARCH (Before Agent Turn)
+    # STEP 1: HYBRID RAG & ACORN-1 PREDICATE GRAPH SEARCH
     # =========================================================================
-    print_banner("STEP 1: HYBRID RETRIEVAL (BM25 + DENSE + RECIPROCAL RANK FUSION)")
+    print_banner("STEP 1: HYBRID RETRIEVAL & ACORN-1 PREDICATE GRAPH SEARCH")
     customer_query = "My order 9182 was charged twice ($49.00). Can I get a refund for the duplicate charge?"
     print(f"Customer Ingress Query: \"{customer_query}\"\n")
 
@@ -97,15 +99,38 @@ def main():
     rag_results = retriever.search(customer_query, top_k=2, filter_metadata={"region": "US"})
     rag_span.end()
 
-    print("Top Grounded Policies Retrieved:")
+    print("Top Grounded Policies Retrieved via Hybrid RRF:")
     for i, res in enumerate(rag_results, 1):
         print(f"  {i}. [RRF Score: {res.rrf_score:.5f}] (Dense Rank: {res.dense_rank}, Sparse Rank: {res.sparse_rank})")
         print(f"     Content: \"{res.content}\"")
 
+    # Live Demonstration of ACORN-1 2-Hop Search vs Standard 1-Hop Graph Disconnection
+    print("\n--- Live Demonstration: ACORN-1 Predicate Traversal vs. Standard Graph Traversal ---")
+    gen = EmbeddingGenerator(dimension=64)
+    # Chain: doc_pol_101 (US) -> doc_pol_103 (EU) -> doc_pol_102 (US)
+    retriever.vector_store.documents["doc_pol_101"].neighbors = ["doc_pol_103"]
+    retriever.vector_store.documents["doc_pol_103"].neighbors = ["doc_pol_102"]
+    retriever.vector_store.documents["doc_pol_102"].neighbors = []
+
+    q_vec = gen.generate("US Customer Policies")
+    std_res = retriever.vector_store.standard_graph_search(q_vec, entry_point_id="doc_pol_101", filter_metadata={"region": "US"})
+    acorn_res = retriever.vector_store.acorn1_search(q_vec, entry_point_id="doc_pol_101", filter_metadata={"region": "US"})
+
+    print(f"  • Standard 1-Hop Traversal matches: {[r[0].id for r in std_res]} (Blocked by EU node; suffers Graph Disconnection!)")
+    print(f"  • ACORN-1 2-Hop Traversal matches:  {[r[0].id for r in acorn_res]} (Successfully hopped over EU node to discover US policies!)")
+
+    # Demonstration of Tombstone Soft-Delete & Compaction
+    print("\n--- Live Demonstration: Vector Tombstones & Segment Compaction ---")
+    retriever.vector_store.soft_delete("doc_pol_102")
+    active_after_del = retriever.vector_store.search(q_vec, top_k=5)
+    print(f"  • Search after soft-deleting 'doc_pol_102': {[r[0].id for r in active_after_del]} (Excluded from results via Tombstone bitset)")
+    reclaimed = retriever.vector_store.compact()
+    print(f"  • Compaction executed: {reclaimed} tombstone segment(s) permanently purged and graph links rewired.")
+
     # =========================================================================
-    # STEP 2: MULTI-TURN DURABLE AGENT EXECUTION
+    # STEP 2: MULTI-TURN DURABLE AGENT LOOP & AUTOMATED TOOL REPAIR
     # =========================================================================
-    print_banner("STEP 2: DURABLE AGENT LOOP EXECUTION (CRASH-RESILIENT WAL)")
+    print_banner("STEP 2: DURABLE AGENT LOOP & AUTOMATED TOOL REPAIR")
     session = AgentSession(
         session_id="sess_9182_enterprise",
         tenant_id="tenant_retail_us",
@@ -119,11 +144,22 @@ def main():
     print(f"Total Turns Completed: {session.current_turn}")
     print(f"\nFinal Assistant Response:\n\"{final_answer}\"")
 
+    # Verify that the Tool Repair was triggered for malformed amount parameter
+    repair_events = [
+        e for e in event_store.get_events("sess_9182_enterprise") 
+        if e.event_type == "tool_repair_requested"
+    ]
+    if repair_events:
+        rep = repair_events[0]
+        print(f"\n [✓] Automated Tool Call Repair Verified in WAL!")
+        print(f"     Tool: {rep.payload.get('tool')}")
+        print(f"     Diagnostic: {rep.payload.get('repair_note')}")
+
     # =========================================================================
     # STEP 3: DEMONSTRATE CRASH RESILIENCE & REHYDRATION
     # =========================================================================
     print_banner("STEP 3: TESTING SYSTEM RESILIENCY (CRASH & REHYDRATION REPLAY)")
-    print("Simulating server failure: rehydrating agent session from raw event store...")
+    print("Simulating container crash: rehydrating agent session from raw event store...")
     rehydrated_session = event_store.rehydrate_session("sess_9182_enterprise")
     assert rehydrated_session is not None, "Failed to rehydrate session"
     print(f" [✓] Session Successfully Restored! Session ID: {rehydrated_session.session_id}")
@@ -131,7 +167,7 @@ def main():
     print(f" [✓] Total WAL Events Recorded: {len(event_store.get_events('sess_9182_enterprise'))}")
 
     # =========================================================================
-    # STEP 4: DEMONSTRATE TOOL IDEMPOTENCY
+    # STEP 4: DEMONSTRATE FINANCIAL SAFETY & IDEMPOTENCY
     # =========================================================================
     print_banner("STEP 4: TESTING FINANCIAL SAFETY (TOOL IDEMPOTENCY PROTECTION)")
     print("Attempting duplicate refund execution with identical idempotency key...")
@@ -158,7 +194,6 @@ def main():
     # =========================================================================
     print_banner("STEP 6: CI/CD EVALUATION GATES (TRAJECTORY & GROUNDEDNESS)")
     
-    # Extract actual tool sequence
     events = event_store.get_events("sess_9182_enterprise")
     actual_tools = [
         e.payload.get("tool") for e in events 

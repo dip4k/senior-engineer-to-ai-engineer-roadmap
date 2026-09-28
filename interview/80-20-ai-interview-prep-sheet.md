@@ -2,10 +2,10 @@
 
 > **The definitive master study sheet for Senior Developers, Tech Leads, and AI Architects preparing for Senior & Staff AI Engineer System Design, Architecture, and Technical Interviews.**
 > 
-> [Home / Master Curriculum](../README.md) • [🎯 High-Stakes Behavioral Stories Guide](./high-stakes-behavioral-and-scenario-guide.md) • [🗺️ Emerging AI Roadmap (2025–2026)](../ai-technology-roadmap-2025-2026.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [Phase 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [Phase 02: Enterprise RAG](../02-rag-and-knowledge-systems/README.md)
+> [Home / Master Curriculum](../README.md) • [🎙️ AI Platform Engineer Interview Handbook](./ai-platform-engineer-handbook.md) • [🎯 High-Stakes Behavioral Stories Guide](./high-stakes-behavioral-and-scenario-guide.md) • [🗺️ Emerging AI Roadmap (2025–2026)](../ai-technology-roadmap-2025-2026.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [Phase 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [Phase 02: Enterprise RAG](../02-rag-and-knowledge-systems/README.md)
 
 > [!TIP]
-> **Technical vs. Behavioral Interviews**: This sheet covers **System Design & Technical Architecture**. For handling crisis leadership, cascading outages, silent ML data leakage, and the CARL+S story framework, see the companion [**High-Stakes Behavioral & Scenario Interviews Guide**](./high-stakes-behavioral-and-scenario-guide.md). Master the core curriculum first — the interview answers follow naturally from deep understanding of the underlying engineering concepts.
+> **Technical vs. Behavioral vs. Platform Engineering**: This sheet covers general **System Design & Technical Architecture**. For deep-dive capacity math, vector engine storage internals (tombstoning, 1B sharding), 45-minute live coding challenges, and SRE incident war stories, study the companion [**AI Platform Engineer Interview Handbook**](./ai-platform-engineer-handbook.md). For crisis leadership and CARL+S frameworks, see [**High-Stakes Behavioral & Scenario Interviews Guide**](./high-stakes-behavioral-and-scenario-guide.md).
 
 ---
 

@@ -93,7 +93,7 @@ class ModelRouter:
                     name="payment_issue_refund",
                     arguments={
                         "transaction_id": "tx_9182_b",
-                        "amount": 49.00,
+                        "amount": "$49.00",  # Intentionally string with '$' to demonstrate automated tool repair
                         "reason": "Duplicate charge on order 9182"
                     }
                 )

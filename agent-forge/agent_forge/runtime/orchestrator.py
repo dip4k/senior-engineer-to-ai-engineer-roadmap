@@ -4,7 +4,7 @@ Executes multi-turn agent loops with event-sourced WAL, tool repair,
 infinite loop safeguards, and human-in-the-loop pause/resume.
 """
 
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any, Optional, Tuple
 import hashlib
 import time
 from .state_models import AgentSession, Message, ToolCall, ToolResult, AgentEvent
@@ -28,6 +28,26 @@ class DurableOrchestrator:
     def _generate_idempotency_key(self, session_id: str, turn: int, tool_name: str, args: Dict[str, Any]) -> str:
         raw = f"{session_id}:{turn}:{tool_name}:{str(sorted(args.items()))}"
         return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:16]
+
+    def _validate_and_repair_tool_arguments(self, tool_name: str, arguments: Dict[str, Any]) -> Tuple[Dict[str, Any], Optional[str]]:
+        """
+        Validates arguments against known type schemas and repairs common LLM mistakes
+        (e.g., passing '$49.00' string instead of 49.00 float).
+        """
+        repaired = dict(arguments)
+        repair_note = None
+
+        if tool_name == "payment_issue_refund":
+            raw_amount = repaired.get("amount")
+            if isinstance(raw_amount, str):
+                cleaned = raw_amount.replace("$", "").strip()
+                try:
+                    repaired["amount"] = float(cleaned)
+                    repair_note = f"Repaired parameter 'amount': string '{raw_amount}' -> float {repaired['amount']}"
+                except ValueError:
+                    pass
+
+        return repaired, repair_note
 
     def run(self, session: AgentSession, user_input: Optional[str] = None) -> str:
         """
@@ -94,6 +114,23 @@ class DurableOrchestrator:
                 ))
 
                 for tool_call in response.tool_calls:
+                    # 0. Tool Argument Schema Validation & Automated Repair
+                    repaired_args, repair_note = self._validate_and_repair_tool_arguments(
+                        tool_call.name, tool_call.arguments
+                    )
+                    if repair_note:
+                        self.event_store.append(AgentEvent(
+                            session_id=session.session_id,
+                            turn_index=turn,
+                            event_type="tool_repair_requested",
+                            payload={
+                                "tool": tool_call.name,
+                                "original": tool_call.arguments,
+                                "repair_note": repair_note
+                            }
+                        ))
+                        tool_call.arguments = repaired_args
+
                     # 1. Zero-Trust Policy Check
                     auth_result = self.policy_engine.evaluate(
                         tenant_id=session.tenant_id,
