@@ -14,7 +14,8 @@
 | **04** | **Enterprise Failure Modes & Defense** | Mitigating indirect prompt injection, runaway iteration deadlocks, context drift, and unbounded token spend. | [Read Blueprint](./use-case-04-failure-modes-defense.md) |
 | **05** | **OpenTelemetry, Evals & LLMOps** | OpenTelemetry GenAI spans, discrete binary evaluation gates, and cryptographic canary token leakage filters. | [Read Blueprint](./use-case-05-otel-evals-telemetry.md) |
 | **06** | **Agent-to-Agent (A2A) & Multi-Agent Swarms** | Hierarchical supervisor orchestration vs peer-to-peer swarm handoffs with asynchronous event messaging. | [Read Blueprint](./use-case-06-agent-swarms-a2a.md) |
-| **SYS** | **10 End-to-End Enterprise AI System Designs** | 10 comprehensive architectural blueprints with problem statements, architectures, and architect trade-offs. | [Read 10 System Designs](../architecture/10-enterprise-ai-system-designs.md) |
+| **07** | **Copilot Studio & Enterprise PaaS MCP Bridge** | Bridging Microsoft Copilot Studio & low-code PaaS to serverless Python/.NET MCP servers over SSE with Azure AI Search grounding. | [Read Blueprint](./use-case-07-copilot-studio-and-paas-mcp-bridge.md) |
+| **SYS** | **11 End-to-End Enterprise AI System Designs** | 11 comprehensive architectural blueprints with problem statements, architectures, and architect trade-offs. | [Read 11 System Designs](../architecture/10-enterprise-ai-system-designs.md) |
 
 ---
 

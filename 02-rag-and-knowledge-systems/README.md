@@ -46,7 +46,14 @@ flowchart TD
 
 ---
 
-> **Taxonomy Note**: Refer to the [main README](../README.md#architectural-mastery-tiers) for curriculum classification symbols (🔴, 🟡, 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers high-precision retrieval and knowledge systems. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal retrieval primitives: Late Chunking, dense HNSW + sparse BM25 hybrid search, Reciprocal Rank Fusion (RRF), cross-encoder rerankers, multi-tenant RBAC filtering, and Ontological GraphRAG.
+> - **Platform-Specific Implementations (`[GOOD-TO-KNOW] 🟡 (Platform Specific)`)**: Managed cloud search platforms (Azure AI Search, AWS Bedrock Knowledge Bases, Google Vertex AI Search) and managed document extraction services (Azure Document Intelligence, AWS Textract). Focus on these only if your organization uses that specific cloud provider.
+> - **Foundational Theory (`[KNOWLEDGE-BASE] 🔵`)**: Vector indexing internals, HNSW graph construction mathematics, DiskANN, and dense embedding dimensionality geometry.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -55,11 +62,22 @@ flowchart TD
 1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model)
 2. [Why This Matters for Senior/Lead Developers](#2-why-this-matters-for-seniorlead-developers)
 3. [Deep-Dive Engineering & Implementation](#3-deep-dive-engineering--implementation)
+   - [Ingestion, Extraction & Document Parsing [MUST-HAVE] 🔴](#ingestion-extraction--document-parsing-must-have-)
+   - [Chunking Strategies & Structural Preservation [MUST-HAVE] 🔴](#chunking-strategies--structural-preservation-must-have-)
+   - [Embeddings & Vector Representations [KNOWLEDGE-BASE] 🔵](#embeddings--vector-representations-knowledge-base-)
+   - [Vector Indexing & Storage Engine Architecture [KNOWLEDGE-BASE] 🔵](#vector-indexing--storage-engine-architecture-knowledge-base-)
+   - [Advanced Multi-Stage Retrieval Patterns [MUST-HAVE] 🔴](#advanced-multi-stage-retrieval-patterns-must-have-)
+   - [Query Transformation & Multi-Query Routing [GOOD-TO-KNOW] 🟡](#query-transformation--multi-query-routing-good-to-know-)
+   - [Advanced RAG Architectures: CRAG, Self-RAG & GraphRAG [GOOD-TO-KNOW] 🟡](#advanced-rag-architectures-crag-self-rag--graphrag-good-to-know-)
+   - [Enterprise Ontological RAG & GraphRAG [MUST-HAVE] 🔴](#enterprise-ontological-rag--graphrag-must-have-)
+   - [Cloud Retrieval Reference Architecture (Azure AI Search) [GOOD-TO-KNOW] 🟡 (Platform Specific)](#cloud-retrieval-reference-architecture-azure-ai-search-good-to-know--platform-specific)
+   - [Enterprise Document Parsing & Layout Extraction Pipelines (Azure Doc Intelligence vs AWS Textract) [GOOD-TO-KNOW] 🟡 (Platform Specific)](#enterprise-document-parsing--layout-extraction-pipelines-azure-doc-intelligence-vs-aws-textract-good-to-know--platform-specific)
+   - [Enterprise Cloud Grounding Platforms [GOOD-TO-KNOW] 🟡 (Platform Specific)](#enterprise-cloud-grounding-platforms-good-to-know--platform-specific)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns)
 7. [Enterprise Production Code Implementations](#7-enterprise-production-code-implementations)
-8. [Verified Curated Resources & Reference Index](#8-verified-curated-resources--reference-index)
+8. [Verified Curated Resources & Reference Index [KNOWLEDGE-BASE] 🔵](#8-verified-curated-resources--reference-index)
 9. [Capstone Engineering Challenge](#9-capstone-engineering-challenge)
 
 ---
@@ -318,7 +336,7 @@ Where:
 
 ---
 
-### Query Transformation & Multi-Query Routing `[GOOD-TO-HAVE]` 🟡
+### Query Transformation & Multi-Query Routing `[GOOD-TO-KNOW]` 🟡
 
 User queries are often underspecified, conversational, or contain complex multi-part logic. Pre-retrieval transformations reshape queries into optimal search representations.
 
@@ -334,7 +352,7 @@ flowchart TD
 
 ---
 
-### Advanced RAG Architectures: CRAG, Self-RAG & GraphRAG `[GOOD-TO-HAVE]` 🟡
+### Advanced RAG Architectures: CRAG, Self-RAG & GraphRAG `[GOOD-TO-KNOW]` 🟡
 
 #### 1. Corrective RAG (CRAG)
 CRAG introduces an active evaluation loop that grades the quality of retrieved documents before generation:
@@ -362,7 +380,221 @@ GraphRAG solves this by:
 
 ---
 
-### Enterprise Data Grounding: Google Cloud & Azure AI `[GOOD-TO-HAVE]` 🟡
+### Enterprise Ontological RAG & GraphRAG `[MUST-HAVE]` 🔴
+
+While basic GraphRAG extracts unstructured entity-relation-entity triples via open-ended LLM prompting, production enterprise systems quickly degrade into chaotic, disconnected "knowledge hairballs." In high-stakes enterprise domains (procurement, healthcare, legal, finance), unstructured graphs suffer from entity duplication, ambiguous relational edges, and catastrophic semantic drift during multi-hop reasoning.
+
+**Ontological RAG** solves this by constraining Knowledge Graph generation and query traversal within **formal enterprise ontologies, domain taxonomies, and controlled vocabularies**.
+
+```mermaid
+flowchart TD
+    subgraph RawWorld["1. UNSTRUCTURED ENTERPRISE CORPUS"]
+        Docs["Contracts • Invoices • Specs • ERP Records • Technical Manuals"]
+    end
+
+    subgraph OntoExtraction["2. TAXONOMY-GUIDED EXTRACTION & CANONICALIZATION"]
+        LLM_Ext["LLM Extractor with Strict Schema"]
+        OntoDB[("Formal Enterprise Ontology<br>• UNSPSC Procurement Codes<br>• Org Hierarchy / RACI<br>• MDM Product Hierarchies<br>• ISO / Legal Taxonomies")]
+        LLM_Ext -->|Extract Triples| Resolver["Entity Resolution & Canonicalization Engine"]
+        OntoDB -->|Taxonomy Constraints & Schemas| Resolver
+        Resolver --> GraphDB[("Validated Enterprise Knowledge Graph<br>(Neo4j / Amazon Neptune / Cosmos DB Gremlin)")]
+    end
+
+    subgraph MultiHopQuery["3. ONTOLOGICALLY CONSTRAINED MULTI-HOP RETRIEVAL"]
+        UserQuery["User Query:<br>'Audit all Class 432115 microcomputer purchases across EMEA subsidiaries'"]
+        Planner["Query Decomposition & Ontological Expander"]
+        OntoDB -->|Hypernym / Hyponym Expansion<br>(UNSPSC 43211503 Laptop, 43211507 Desktop)| Planner
+        Planner --> CypherGen["Constrained Graph Traversal (Cypher / GQL)"]
+        GraphDB --> CypherGen
+        CypherGen --> Pruner["Semantic Drift Boundary Pruner<br>(Rejects ungrounded associative hops)"]
+        Pruner --> GroundedContext["Deterministic Multi-Hop Context"]
+    end
+
+    RawWorld --> OntoExtraction
+    UserQuery --> MultiHopQuery
+```
+
+#### 1. The Breakdown of Naive GraphRAG in the Enterprise
+
+In an unconstrained property graph generated by naive GraphRAG:
+- **Entity Duplication & Aliasing**: The model extracts `IBM`, `International Business Machines`, `Big Blue`, and `IBM Corporation` as 4 separate nodes with disjoint edge clusters, severing associative connectivity.
+- **Relational Ambiguity**: Edges are labeled with arbitrary natural language predicates (`associated_with`, `has_dealings_in`, `handles`, `talked_to`). During a 3-hop query, the traversal drifts across vague semantic links into completely irrelevant domains (**Semantic Bleed**).
+- **Taxonomic Blindness**: If a user asks *"List all IT hardware spend"*, naive vector search or graph traversal fails to link the query to an invoice for *"ThinkPad T14 Gen 4"* because the document never explicitly mentions the words "IT hardware."
+
+#### 2. Structuring Graphs with Formal Enterprise Ontologies
+
+Ontological RAG bridges the gap between statistical vector representations and deterministic symbolic knowledge:
+
+##### Standardized Taxonomy Integration (e.g., UNSPSC & MDM)
+- **UNSPSC (United Nations Standard Products and Services Code)** establishes an 8-digit four-level hierarchy:
+  $$\text{Segment (e.g., 43: Information Technology)} \to \text{Family (21: Computer Equipment)} \to \text{Class (15: Computers)} \to \text{Commodity (03: Notebook Computers)}$$
+- During document ingestion, the extraction prompt forces the model to resolve raw product descriptions against the corporate Master Data Management (MDM) catalog and UNSPSC taxonomy:
+  ```json
+  {
+    "raw_entity": "ThinkPad T14",
+    "canonical_uri": "corp://mdm/products/SKU-9941",
+    "unspsc_code": "43211503",
+    "taxonomy_path": ["Information Technology", "Computer Equipment", "Computers", "Notebook Computers"],
+    "entity_type": "HardwareAsset"
+  }
+  ```
+
+##### Preventing Semantic Mismatch in Multi-Hop Queries
+When answering complex multi-hop queries (e.g., *"Which European subsidiaries procured communications equipment from vendors with unresolved SOC 2 violations?"*):
+1. **Taxonomy-Guided Query Expansion**: The query planner queries the ontology to expand `"communications equipment"` to all child UNSPSC codes under Family `4322` (Data Voice networking equipment), generating a deterministic filter set.
+2. **Constrained Path Traversal**: Instead of exploring all connected edges in the property graph, the traversal query is constrained to strict ontological edge types:
+   ```cypher
+   // Constrained Multi-Hop Traversal Pruning Semantic Bleed
+   MATCH (sub:Subsidiary {region: "EMEA"})-[:PROCURED_ASSET]->(po:PurchaseOrder)
+   MATCH (po)-[:INCLUDES_ITEM]->(item:ProcuredItem)
+   MATCH (item)-[:CLASSIFIED_AS]->(c:UNSPSC_Class)
+   WHERE c.code STARTS WITH "4322"
+   MATCH (po)-[:FULFILLED_BY]->(v:Vendor)
+   MATCH (v)-[:HAS_COMPLIANCE_AUDIT]->(a:AuditReport {audit_type: "SOC2"})
+   WHERE a.status = "UNRESOLVED"
+   RETURN sub.legal_name, v.vendor_name, item.product_name, a.finding_summary;
+   ```
+3. **Semantic Boundary Pruning**: Edge traversals are limited by formal relation semantics (`owl:ObjectProperty` domain and range constraints). If a node does not belong to the allowed ontological class for that relation, traversal down that branch is immediately terminated.
+
+---
+
+### Cloud Retrieval Reference Architecture (Azure AI Search) `[GOOD-TO-KNOW] 🟡 (Platform Specific)`
+
+In enterprise Microsoft environments, **Azure AI Search** serves as the gold-standard managed retrieval engine, providing native two-stage hybrid search, multi-tenant RBAC, and integrated semantic reranking.
+
+```mermaid
+flowchart TD
+    subgraph Client["API CLIENT / ORCHESTRATOR"]
+        UQ["User Query + Entra ID JWT Token"]
+    end
+
+    subgraph AzureAISearch["AZURE AI SEARCH ENGINE"]
+        subgraph Stage1["STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
+            PFilter["OData Security Pre-Filter<br>(search.in(tenant_id, 'tenant_42') and security_groups/any(...))"]
+            
+            subgraph DenseEngine["Dense Vector Engine"]
+                HNSW["HNSW / DiskANN Index<br>(Cosine / Dot Product)"]
+            end
+            
+            subgraph SparseEngine["Sparse Lexical Engine"]
+                BM25["BM25 Inverted Index<br>(Custom Tokenizers & Analyzers)"]
+            end
+            
+            PFilter --> HNSW
+            PFilter --> BM25
+            
+            HNSW --> TopDense["Top 50 Dense Candidates"]
+            BM25 --> TopSparse["Top 50 Sparse Candidates"]
+        end
+
+        subgraph Fusion["STAGE 2: RECIPROCAL RANK FUSION (RRF)"]
+            RRF["RRF Merging & Normalization<br>RRF_Score = 1/(60 + r_dense) + 1/(60 + r_sparse)"]
+            TopDense --> RRF
+            TopSparse --> RRF
+            RRF --> Top50["Top 50 Fused Candidates"]
+        end
+
+        subgraph Stage3["STAGE 3: MICROSOFT TURING SEMANTIC RERANKER"]
+            Turing["Turing Cross-Attention Transformer<br>• Semantic Relevance Grading (0.0 - 4.0)<br>• Extractive Captions with Highlight Offsets<br>• Extractive Answers"]
+            Top50 --> Turing
+            Turing --> Top5["Top 5 High-Precision Chunks with Grounded Captions"]
+        end
+    end
+
+    UQ --> PFilter
+    Top5 --> LLM["To LLM Generator (OpenAI / Azure Foundry)"]
+```
+
+##### Practical Patterns for Azure AI Search
+1. **Semantic Hybrid Fusion (Dense Vector + BM25)**:
+   - Queries execute concurrently against the Lucene BM25 inverted index and the HNSW/DiskANN vector index.
+   - Exact strings (part numbers `SN-88019`, error codes `0x80004005`, email addresses) are captured with 100% precision by BM25.
+   - Conceptual synonyms (*"machine learning infrastructure cost reduction"*) are captured by the dense vector index.
+2. **The Microsoft Turing Semantic Reranker**:
+   - The top 50 fused candidates are processed by Microsoft's proprietary Turing deep cross-attention model.
+   - The reranker computes a semantic relevance score between $0.00$ and $4.00$, reordering candidates based on actual query intent rather than pure keyword or embedding overlap.
+   - Generates **Extractive Captions** with highlight tags (`<mark>...</mark>`) that pinpoint the exact supporting evidence within chunks, dramatically simplifying citation generation.
+3. **Security Pre-Filtering with OData Expressions**:
+   - Query-time access control is evaluated *before* or *during* vector graph traversal, preventing Filter Starvation:
+   ```json
+   {
+     "search": "enterprise security policy remote work",
+     "vectorQueries": [
+       {
+         "kind": "vector",
+         "vector": [0.0124, -0.0482, 0.0891],
+         "fields": "content_vector",
+         "k": 50
+       }
+     ],
+     "filter": "tenant_id eq 'tenant-corp-01' and security_principals/any(p: search.in(p, 'group-infosec,group-engineering,user-alice'))",
+     "queryType": "semantic",
+     "semanticConfiguration": "default-semantic-config",
+     "queryCaption": "extractive|highlight-true",
+     "top": 5
+   }
+   ```
+
+---
+
+### Enterprise Document Parsing & Layout Extraction Pipelines (Azure Doc Intelligence vs AWS Textract) `[GOOD-TO-KNOW] 🟡 (Platform Specific)`
+
+Production RAG systems ingest complex enterprise artifacts: multi-column whitepapers, financial statements with borderless tables, scanned legal agreements with signatures, and technical schematics. Simple string extraction (`pdfminer`, `pypdf`) collapses columns and flattens tables into gibberish.
+
+Production architectures employ dedicated **Cloud Document Layout Engines**:
+
+```mermaid
+flowchart TD
+    subgraph Ingest["DOCUMENT LANDING ZONE"]
+        S3["AWS S3 / Azure Blob Storage<br>(Raw PDF, TIFF, DOCX, XLSX)"] --> Event["Cloud Event Trigger<br>(Event Grid / S3 Event Notification)"]
+    end
+
+    subgraph ExtractionPipeline["LAYOUT EXTRACTION & GEOMETRIC NORMALIZATION"]
+        Event --> Worker["Serverless Worker (Azure Function / AWS Lambda)"]
+        
+        alt Azure Ecosystem
+            Worker --> ADI["Azure Document Intelligence<br>(prebuilt-layout model)"]
+            ADI --> ADI_Out["• Markdown Structured Output<br>• HTML Tabular Reconstruction<br>• Reading Order Polygon Sort<br>• Selection Mark & Signature Detect"]
+        else AWS Ecosystem
+            Worker --> Textract["AWS Textract<br>(AnalyzeDocument: LAYOUT + TABLES + FORMS)"]
+            Textract --> Textract_Out["• PAGE / BLOCK Geometry Tree<br>• Merged Multi-Page Table Cells<br>• Key-Value Extraction Pairs<br>• Reading Order Sequence Flow"]
+        end
+    end
+
+    subgraph Chunking["STRUCTURAL CHUNKING & ENRICHMENT"]
+        ADI_Out --> StructChunk["Layout-Aware Hierarchical Chunking<br>(Preserves Table Integrity & Section Headers)"]
+        Textract_Out --> StructChunk
+        StructChunk --> Emb["Embedding Generation (text-embedding-3 / Titan Vector)"]
+        Emb --> CloudIndex[("Cloud Search Index<br>(Azure AI Search / Amazon OpenSearch)")]
+    end
+```
+
+##### Deep-Dive: Azure Document Intelligence (`prebuilt-layout`)
+- **Reading Order Detection**: Reconstructs multi-column pages into natural reading order using geometric bounding polygons (`[x1, y1, x2, y2, x3, y3, x4, y4]`), eliminating horizontal column cross-bleeding.
+- **Tabular Geometry & Markdown Serialization**: Accurately recognizes cell coordinate spans (`rowSpan`, `columnSpan`) and converts complex financial balance sheets into clean GitHub-flavored Markdown tables (`| Header |`) or semantic HTML tables (`<table>...</table>`), which preserve coordinate alignment in vector embedding spaces.
+- **Selection Mark Recognition**: Detects checkbox and radio button states (`selected` vs `unselected`) in corporate compliance forms.
+
+##### Deep-Dive: AWS Textract (`AnalyzeDocument`)
+- **Block Relationship Graph**: Textract outputs a JSON graph of `BLOCK` objects linked by `Relationships`:
+  - `PAGE` blocks link to `LAYOUT_SECTION_HEADER`, `LAYOUT_TEXT`, and `TABLE` blocks.
+  - `TABLE` blocks contain `CELL` blocks referencing coordinate matrices with `RowIndex` and `ColumnIndex`.
+  - `KEY_VALUE_SET` blocks link `KEY` (question label) to `VALUE` (form answer) via spatial proximity and visual heuristics.
+- **Production Assembly Pattern**: A post-processing Lambda reconstructs this block hierarchy into semantic Markdown, wrapping tables in isolated chunks to guarantee they are never sliced mid-row during chunking.
+
+##### Document Parser Comparison Matrix
+
+| Architectural Feature | Naive Text Extractors (`pypdf`, `pymupdf`) | Azure Document Intelligence (`prebuilt-layout`) | AWS Textract (`AnalyzeDocument`) | Frontier Multimodal Vision (Gemini 2.0 / GPT-4o) |
+|---|---|---|---|---|
+| **Multi-Column Reading Order** | Fails (merges lines horizontally) | **Near Perfect (Geometric polygon sort)** | **Near Perfect (Layout blocks)** | Excellent (Native visual attention) |
+| **Complex Borderless Tables** | Completely scrambled | **Exceptional (Outputs valid Markdown/HTML)** | **Exceptional (Cell coordinate grid)** | Good (Can hallucinate numbers) |
+| **Form Key-Value Pairs** | Lost in raw text | Extracted via `prebuilt-document` | **Native `FORMS` block extraction** | Excellent with prompt extraction |
+| **Processing Latency** | **Fastest (< 100ms/page)** | 1.5–3.0s / page | 2.0–4.0s / page | 3.0–8.0s / page |
+| **Processing Cost (1,000 pgs)** | \$0.00 (Self-hosted CPU) | ~\$10.00 | ~\$15.00–\$20.00 | ~\$10.00–\$30.00 |
+| **Best Production Fit** | Plain text single-column novels/logs | **Enterprise PDFs, financial reports, contracts** | **Government forms, claims, loan documents** | Complex diagrams, engineering blueprints |
+
+---
+
+### Enterprise Cloud Grounding Platforms `[GOOD-TO-KNOW] 🟡 (Platform Specific)`
 
 ```mermaid
 flowchart TD

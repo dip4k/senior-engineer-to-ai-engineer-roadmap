@@ -19,7 +19,14 @@ flowchart TD
 
 ---
 
-> **Taxonomy Note**: Refer to the [main README](../README.md#architectural-mastery-tiers) for curriculum classification symbols (🔴, 🟡, 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers both universal inference physics and specialized model adaptation strategies. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal transformer inference mechanics, prefill vs. decode memory bandwidth bottlenecks, KV-cache sizing, reasoning tokens (test-time compute), and core quantization mathematics that apply across any deployment target.
+> - **Platform-Specific & Advanced Implementations (`[GOOD-TO-KNOW] 🟡`)**: Specific inference engine flags (vLLM, TensorRT-LLM, SGLang), hardware-specific kernel tiling (FlashAttention, BitNet b1.58), and SLM distillation workflows. Study these based on your team's serving architecture.
+> - **Foundational Theory (`[KNOWLEDGE-BASE] 🔵`)**: Mathematical derivations of self-attention matrices and token sampling probability distributions.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -28,15 +35,28 @@ flowchart TD
 1. [Executive Summary: It's Not a Brain, It's a Calculator](#1-executive-summary-its-not-a-brain-its-a-calculator)
 2. [The 2:00 AM Reality Check (Why This Matters)](#2-the-200-am-reality-check-why-this-matters)
 3. [Deep-Dive Architecture & Mechanical Internals](#3-deep-dive-architecture--mechanical-internals)
+   - [3.1. Scaled Dot-Product & Self-Attention Equations [KNOWLEDGE-BASE] 🔵](#31-scaled-dot-product--self-attention-equations-knowledge-base-)
+   - [3.2. Attention Architectures: MHA vs. MQA vs. GQA [MUST-HAVE] 🔴](#32-attention-architectures-mha-vs-mqa-vs-gqa-must-have-)
+   - [3.3. FlashAttention: IO-Aware Tiling [GOOD-TO-KNOW] 🟡](#33-flashattention-io-aware-tiling-good-to-know-)
+   - [3.4. Rotary Position Embeddings (RoPE) [GOOD-TO-KNOW] 🟡](#34-rotary-position-embeddings-rope-good-to-know-)
+   - [3.5. Mixture-of-Experts (MoE) [GOOD-TO-KNOW] 🟡](#35-mixture-of-experts-moe-good-to-know-)
 4. [Inference Execution: Coffee Sips & Token Pours](#4-inference-execution-coffee-sips--token-pours)
+   - [4.1. TTFT vs. TPS [MUST-HAVE] 🔴](#41-ttft-vs-tps-must-have-)
+   - [4.2. PagedAttention [MUST-HAVE] 🔴](#42-pagedattention-must-have-)
+   - [4.3. Speculative Decoding [GOOD-TO-KNOW] 🟡](#43-speculative-decoding-good-to-know-)
+   - [4.4. Precision, Quantization & VRAM Formulas [MUST-HAVE] 🔴](#44-precision-quantization--vram-formulas-must-have-)
 5. [Tokens, Tokenization & BPE: Why Spaces Cost Money](#5-tokens-tokenization--bpe-why-spaces-cost-money)
+   - [5.1. BPE Mechanics & Vocabularies [MUST-HAVE] 🔴](#51-bpe-mechanics--vocabularies-must-have-)
 6. [Sampling Mechanics & Probability Shaping](#6-sampling-mechanics--probability-shaping)
-7. [Reasoning Models & Test-Time Compute Scaling](#7-reasoning-models--test-time-compute-scaling-must-have-)
-8. [Comparative Tradeoff Matrices](#8-comparative-tradeoff-matrices)
-9. [Production Failure Modes (War Stories)](#9-production-failure-modes-war-stories)
-10. [Production Code Implementations](#10-production-code-implementations)
-11. [Curated Verified Resources](#11-curated-verified-resources)
-12. [Capstone Engineering Challenge](#12-capstone-engineering-challenge)
+   - [6.1. Logits, Softmax & Temperature [MUST-HAVE] 🔴](#61-logits-softmax--temperature-must-have-)
+7. [Reasoning Models & Test-Time Compute Scaling [MUST-HAVE] 🔴](#7-reasoning-models--test-time-compute-scaling-must-have-)
+   - [8. The Small Language Model (SLM) & Distillation Revolution [GOOD-TO-KNOW] 🟡](#8-the-small-language-model-slm--distillation-revolution-good-to-know-)
+8. [Model Adaptation, Distillation & Parameter-Efficient Fine-Tuning (PEFT) [MUST-HAVE] 🔴](#8-model-adaptation-distillation--parameter-efficient-fine-tuning-peft-must-have-)
+9. [Comparative Tradeoff Matrices](#9-comparative-tradeoff-matrices)
+10. [Production Failure Modes (War Stories)](#10-production-failure-modes-war-stories)
+11. [Production Code Implementations](#11-production-code-implementations)
+12. [Curated Verified Resources [KNOWLEDGE-BASE] 🔵](#12-curated-verified-resources)
+13. [Capstone Engineering Challenge](#13-capstone-engineering-challenge)
 
 ---
 
@@ -144,7 +164,7 @@ $$\text{Memory Reduction Factor} = \frac{H_Q}{H_{KV}}$$
 
 ---
 
-### 3.3. FlashAttention: IO-Aware Tiling `[GOOD-TO-HAVE]` 🟡
+### 3.3. FlashAttention: IO-Aware Tiling `[GOOD-TO-KNOW]` 🟡
 
 Standard attention materializes a massive $N \times N$ matrix in GPU HBM. That memory thrashing is a performance killer. FlashAttention divides the work into SRAM-sized chunks.
 
@@ -166,7 +186,7 @@ flowchart LR
 
 ---
 
-### 3.4. Rotary Position Embeddings (RoPE) `[GOOD-TO-HAVE]` 🟡
+### 3.4. Rotary Position Embeddings (RoPE) `[GOOD-TO-KNOW]` 🟡
 
 How does the model know token order? RoPE represents token position as a rotation of the Query and Key vectors in the complex 2D plane. 
 
@@ -179,7 +199,7 @@ flowchart LR
 
 ---
 
-### 3.5. Mixture-of-Experts (MoE) `[GOOD-TO-HAVE]` 🟡
+### 3.5. Mixture-of-Experts (MoE) `[GOOD-TO-KNOW]` 🟡
 
 Instead of firing every neuron for every word, MoE routes tokens to specialized sub-networks.
 
@@ -263,7 +283,7 @@ flowchart TD
 
 ---
 
-### 4.3. Speculative Decoding `[GOOD-TO-HAVE]` 🟡
+### 4.3. Speculative Decoding `[GOOD-TO-KNOW]` 🟡
 
 Speculative decoding couples a tiny, ultra-fast "draft model" (the eager junior dev) to guess the next few words, and a massive "target model" (the senior architect) to verify them all at once.
 
@@ -340,17 +360,7 @@ flowchart TD
 
 ---
 
-## 7. Reasoning Models & Test-Time Compute Scaling [MUST-HAVE] 🔴
-
-### 7.2. Thinking Token Dynamics & Architectural Tradeoffs `[MUST-HAVE]` 🔴
-
-- **Visible vs. Hidden Tokens:** Reasoning models emit thousands of "thinking tokens" into an internal scratchpad before producing user-visible text.
-- **Billing Mechanics:** Providers bill thinking tokens at the standard **Output Token Rate**, even when thinking tokens are hidden from the final user response.
-- **Latency Impact:** TTFT increases from < 1 second to 5 - 45 seconds as the model conducts multi-step tree-of-thought exploration.
-
----
-
-### Reasoning Models & Test-Time Compute Scaling [MUST-HAVE] 🔴
+## 7. Reasoning Models & Test-Time Compute Scaling `[MUST-HAVE]` 🔴
 
 The AI industry spent six years optimizing pre-training: feeding tens of trillions of tokens into increasingly colossal clusters of GPUs to build dense foundation models. But by late 2024, pre-training began hitting the physical limits of human web text and power availability. 
 
@@ -659,7 +669,7 @@ Before the on-call engineer woke up, **$3,600 had evaporated** to parse a single
 
 ---
 
-#### 8. The Small Language Model (SLM) & Distillation Revolution [GOOD-TO-HAVE] 🟡
+#### 8. The Small Language Model (SLM) & Distillation Revolution `[GOOD-TO-KNOW]` 🟡
 
 While frontier models like o3 and Claude 3.7 scale cloud test-time compute, an equally transformative revolution is taking place on the edge: **the distillation of reasoning capabilities into Small Language Models (SLMs)** ranging from 1.5B to 14B parameters.
 
@@ -710,7 +720,179 @@ The **R1-Distill-Qwen-14B** model scores **73.7% on AIME 2024** and **93.9% on M
 
 ---
 
-## 8. Comparative Tradeoff Matrices
+## 8. Model Adaptation, Distillation & Parameter-Efficient Fine-Tuning (PEFT) `[MUST-HAVE]` 🔴
+
+When enterprise applications demand domain mastery, architectural teams face a critical engineering decision: **Should you prompt, retrieve, fine-tune, or reason?** 
+
+Treating foundation models as immutable black boxes accessible only via prompt engineering leaves massive operational efficiencies and cost optimizations on the table. To build production-grade, economically viable AI systems, engineers must master the continuum of model adaptation—from parameter-efficient weight updates (LoRA and QLoRA) to knowledge distillation into Small Language Models (SLMs) and test-time reasoning.
+
+---
+
+### 8.1. Mathematical Foundations of LoRA & QLoRA
+
+#### Low-Rank Adaptation (LoRA)
+Introduced by Hu et al. (2021), LoRA is based on the insight that the weight updates $\Delta W$ during task-specific adaptation have a low "intrinsic dimension" or intrinsic rank $r \ll \min(d, k)$.
+
+Instead of updating the full frozen pre-trained weight matrix $W_0 \in \mathbb{R}^{d \times k}$ (which would require billions of parameters and immense VRAM for optimizer states):
+$$W = W_0 + \Delta W$$
+
+LoRA factorizes the weight update into two low-rank matrices:
+$$\Delta W = B \cdot A$$
+where $B \in \mathbb{R}^{d \times r}$ and $A \in \mathbb{R}^{r \times k}$, with rank $r \ll \min(d, k)$.
+
+```mermaid
+flowchart LR
+    X["Input Activation (x: d × 1)"] --> Freeze["Frozen Pre-Trained Weights\n(W_0: d × k)\n[Zero Gradients]"]
+    X --> MatA["Down-Projection Matrix A\n(A: r × k, Gaussian N(0, σ²))"]
+    MatA --> MatB["Up-Projection Matrix B\n(B: d × r, Initialized to 0)"]
+    MatB --> Scale["Scale Factor: (α / r)"]
+    Freeze --> Sum["(+) Element-wise Addition"]
+    Scale --> Sum
+    Sum --> Out["Output Activation (h = W_0·x + (α/r)·B·A·x)"]
+```
+
+##### 1. Initialization Dynamics
+- Matrix $A$ is initialized from a Gaussian distribution: $A \sim \mathcal{N}\left(0, \frac{1}{r}\right)$ or $\mathcal{N}(0, \sigma^2)$.
+- Matrix $B$ is initialized strictly to **zero**: $B = 0$.
+- **Why this matters:** At the start of training, $\Delta W = B \cdot A = 0 \cdot A = 0$. The model's behavior is completely unmodified at step 0, preventing catastrophic initial gradient shock.
+
+##### 2. The Scaling Factor ($\alpha / r$)
+During the forward pass, the modified output activation vector $h$ is computed as:
+$$h = W_0 x + \Delta W x = W_0 x + \frac{\alpha}{r} (B A x)$$
+where $\alpha$ is a constant hyperparameter. 
+- When tuning rank $r$, scaling by $\frac{\alpha}{r}$ stabilizes the learning rate and gradient magnitudes, eliminating the need to re-tune learning rates when experimenting with different ranks $r \in \{4, 8, 16, 32, 64\}$.
+- **Standard Enterprise Rule of Thumb:** Set $\alpha = 2r$ (e.g., $r = 16, \alpha = 32$).
+
+##### 3. Parameter Reduction Math
+For a single attention projection matrix in a 70B model with hidden dimension $d = k = 8192$:
+- **Full Fine-Tuning:** $8192 \times 8192 = 67,108,864$ parameters (67.1M parameters per matrix).
+- **LoRA Adapter ($r = 16$):** 
+  $$\text{Parameters}_{\text{LoRA}} = r \times (d + k) = 16 \times (8192 + 8192) = 262,144 \text{ parameters}$$
+  This represents a **$99.61\%$ reduction in trainable parameters**!
+- Across all attention heads ($W_q, W_k, W_v, W_o$) and MLP layers ($W_{\text{gate}}, W_{\text{up}}, W_{\text{down}}$), total trainable parameters drop from 70B to under 150M.
+
+##### 4. Zero Inference Latency Overhead
+During deployment, the low-rank update can be merged directly into the base weights prior to inference:
+$$W_{\text{serving}} = W_0 + \frac{\alpha}{r} (B \cdot A)$$
+Because matrix addition is associative, the forward pass at runtime is a single standard GEMM: $h = W_{\text{serving}} x$. There is **zero latency penalty or memory fragmentation** during inference compared to the base model.
+
+---
+
+#### QLoRA: Quantized Low-Rank Adaptation
+While LoRA reduces trainable parameters and optimizer memory, the frozen base model weights $W_0$ still consume massive VRAM (e.g. 140 GB of VRAM for a 70B model in 16-bit precision). QLoRA (Dettmers et al., 2023) solves this by compressing $W_0$ to 4-bit precision while preserving 16-bit fine-tuning performance through three key innovations:
+
+```mermaid
+flowchart TD
+    subgraph QLoRAInnovations["The 3 Pillars of QLoRA"]
+        NF4["1. 4-bit NormalFloat (NF4)\n• Quantile-spaced quantization\n• Matches normal distribution of weights\n• Zero information-loss vs FP4/INT4"]
+        DQ["2. Double Quantization (DQ)\n• Quantizes quantization constants (scales)\n• 32-bit float -> 8-bit float with block size 256\n• Saves 0.37 bits/param (~3GB on 65B model)"]
+        Paged["3. Paged Optimizers\n• CUDA Unified Memory paging\n• Pages AdamW 32-bit states to CPU RAM\n• Prevents OOM during gradient spikes"]
+    end
+    
+    NF4 & DQ & Paged --> Footprint["Enables 70B parameter fine-tuning on a SINGLE 48GB GPU\n(or 14B on consumer 16GB-24GB GPUs)"]
+```
+
+##### 1. 4-Bit NormalFloat (NF4)
+Standard INT4 or FP4 assumes uniformly distributed numbers. However, pre-trained neural network weights follow a zero-centered Gaussian distribution: $W \sim \mathcal{N}(0, \sigma^2)$.
+- NF4 constructs 16 discrete quantization bins such that **each bin has an equal number of expected data points** (quantile quantization).
+- This maximizes the theoretical Shannon entropy of the 4-bit representation, preventing dynamic range collapse and outperforming both standard INT4 and FP4 without empirical accuracy loss.
+
+##### 2. Double Quantization (DQ)
+Quantization requires storing scaling constants $c_1$ for each block of weights (e.g., block size 64). Storing $c_1$ in FP32 adds:
+$$\frac{32 \text{ bits}}{64 \text{ weights}} = 0.5 \text{ bits per parameter}$$
+Double Quantization applies an 8-bit FP8 quantizer with block size 256 to the quantization constants $c_1$ themselves. This compresses the quantization constant footprint to:
+$$\frac{8 \text{ bits}}{64} + \frac{32 \text{ bits}}{64 \times 256} \approx 0.125 + 0.002 = 0.127 \text{ bits per parameter}$$
+Saves **0.373 bits per parameter**, translating to roughly **3 GB of VRAM saved on a 65B/70B model**—often the exact margin needed to fit within standard 48GB (A6000 / A40) or 80GB (A100/H100) VRAM envelopes.
+
+##### 3. Paged Optimizers
+During long-context backward passes or activation gradient checkpointing, sudden memory spikes cause out-of-memory (OOM) allocation failures. QLoRA allocates optimizer states (32-bit AdamW first and second moments) via CUDA Unified Memory. When VRAM saturates during peak backward passes, the memory controller automatically pages non-active optimizer tensors to host CPU RAM and pages them back asynchronously when needed.
+
+---
+
+### 8.2. The 4-Way Decision Matrix: Prompt Caching vs. RAG vs. LoRA vs. Test-Time Compute
+
+Senior engineers must know when to apply each strategy. Choosing the wrong mechanism wastes millions of dollars or cripples production latency SLAs.
+
+```mermaid
+flowchart TD
+    Start(["Incoming Enterprise Workload"]) --> LatencyCheck{"Strict Latency SLA?\n(e.g., TTFT < 500ms or interactive UI)"}
+    
+    LatencyCheck -- "Yes (< 500ms)" --> DynamicFactCheck{"Does knowledge change frequently\n(hourly/daily) or require citations?"}
+    DynamicFactCheck -- "Yes" --> RAG_Fast["RAG with Small SLM + Semantic Cache\n(Pre-computed embeddings + light context)"]
+    DynamicFactCheck -- "No" --> VolumeCheck{"High Request Volume (>50k/mo)\n& specialized syntax/style?"}
+    VolumeCheck -- "Yes" --> LoRA_SLM["LoRA / QLoRA Fine-Tuned SLM\n(Bakes 3,000 prompt tokens into weights;\nsub-80ms TTFT, zero third-party API fee)"]
+    VolumeCheck -- "No" --> PromptCache["Prompt Caching on Frontier Model\n(Cached static prefix; 90% cost cut, TTFT ~150ms)"]
+
+    LatencyCheck -- "No (Async / Queue / Worker / Copilot)" --> TaskComplexity{"Problem Complexity & Reasoning Nature?"}
+    TaskComplexity -- "Multi-step algorithmic verification / Formal math / Security audit" --> TestTimeCompute["Test-Time Compute (Reasoning Model)\n(o3, Claude 3.7 Thinking, DeepSeek-R1;\nAllocates 4k-16k scratchpad tokens)"]
+    TaskComplexity -- "Unbounded enterprise knowledge base (>100k docs, live inventory)" --> RAG_Standard["Enterprise RAG Pipeline\n(Hybrid BM25 + Vector Search + Cross-Encoder Re-ranker)"]
+    TaskComplexity -- "Repetitive structured task with large unchanging policy" --> PromptCache
+```
+
+#### Detailed Architectural Comparison
+
+| Dimension | Prompt Caching (Prefix KV-Cache) | Retrieval-Augmented Generation (RAG) | LoRA / QLoRA Fine-Tuning (PEFT) | Test-Time Compute (Reasoning Models) |
+|---|---|---|---|---|
+| **Primary Purpose** | Accelerate latency & slash cost on repeated prompt prefixes | Ground models on dynamic external knowledge with verifiable citations | Internalize specialized syntax, style, tone, and narrow classification | Solve complex novel logic, multi-hop math, and multi-file code refactoring |
+| **Model Weights** | **Frozen (Unmodified)** | **Frozen (Unmodified)** | **Modified** (Trained low-rank adapter matrices $B \cdot A$) | **Frozen (Unmodified)** |
+| **Time-To-First-Token (TTFT)** | **Fast** (~100ms - 200ms on cache hit) | **Moderate** (~300ms - 900ms: retrieval + re-rank + prefill) | **Ultra-Fast** (~50ms - 100ms on dedicated SLM) | **High / Asymmetric** (~3,000ms - 35,000ms due to CoT search) |
+| **Variable Cost Profile** | 90% discount on cached input prefix tokens | Standard input rates + embedding & vector DB queries | Lowest token consumption (eliminates few-shot context) | **High**: 50:1 token asymmetry (thinking billed as output) |
+| **Knowledge Freshness** | Session / static prefix level | **Real-Time** (Updated instantly in vector DB/SQL) | **Static** (Requires retraining / adapter re-tuning) | Static parametric knowledge + prompt context |
+| **Source Citation / Audit** | Supported via prompt grounding | **Deterministic** (Document chunk ID, URL, page #) | **Poor / Black-box** (Parametric weight retrieval) | Explains deduction path in `<think>` scratchpad |
+| **Risk Factors** | Cache invalidation on prefix edit (prefix taint) | Semantic chunk fragmentation; retrieval misses; context rot | Catastrophic forgetting; data curation overhead; adapter drift | Runaway token bankruptcy; HTTP timeout in synchronous APIs |
+| **Break-Even Volume** | > 1,000 requests with identical prefix | Any volume requiring dynamic external data | > 50,000 requests/mo (amortizes training/dataset cost) | Low-volume, high-value mission-critical tasks |
+
+---
+
+### 8.3. Knowledge Distillation Mechanics: Frontier Reasoning into SLMs
+
+While frontier models like OpenAI o3 and Claude 3.7 scale cloud test-time compute, deploying them for high-volume enterprise tasks ($10M+$ requests/month) is financially and operationally prohibitive. **Knowledge Distillation** transfers the cognitive reasoning and formatting capabilities of massive frontier "teacher" models into compact "student" models (Small Language Models: Phi-4 14B, Qwen 2.5 7B/14B/32B, LLaMA-3.1 8B).
+
+```mermaid
+flowchart TD
+    Teacher["Frontier Teacher Model\n(Claude 3.7 Thinking / o3 / DeepSeek-R1 671B)"] --> RawData["Complex Domain Problem Set\n(Math, Code, Architecture, Edge Cases)"]
+    RawData --> CoTGen["High-Temperature CoT Generation\nProduces full reasoning traces with self-correction"]
+    CoTGen --> RejectionSampling["Rejection Sampling & Verification Filter\n• Execution sandbox (Unit test validation)\n• Formal solver check\n• Drop incorrect / circular reasoning traces"]
+    RejectionSampling --> CleanDataset["Curated Reasoning Dataset\n(800k+ High-Fidelity Step-by-Step Traces)"]
+    CleanDataset --> SFT["Supervised Fine-Tuning (SFT / QLoRA)\nStudent Model: Phi-4 (14B) or Qwen 2.5 (14B)"]
+    SFT --> DPO["Direct Preference Optimization (DPO)\nPreference alignment on concise vs redundant paths"]
+    DPO --> EdgeSLM["Production Distilled SLM\n• 90%+ Frontier Reasoning Accuracy\n• 95% Cost Reduction\n• Runs on Single A10G / RTX 4090 / On-Prem"]
+```
+
+#### 1. Distillation Paradigms
+
+##### A. Logit-Level Distillation (White-Box)
+In classic knowledge distillation (Hinton et al., 2015), the student minimizes the Kullback-Leibler (KL) divergence between its output logits $z_S$ and the teacher's soft probability distribution $z_T$ at temperature $\tau$:
+$$\mathcal{L}_{KD} = (1 - \lambda) \mathcal{L}_{CE}(y, \sigma(z_S)) + \lambda \tau^2 D_{KL}\left(\sigma\left(\frac{z_T}{\tau}\right) \parallel \sigma\left(\frac{z_S}{\tau}\right)\right)$$
+*Limitation:* Proprietary frontier models (OpenAI, Anthropic) do not expose full vocabulary logits, making pure logit distillation impossible for closed APIs.
+
+##### B. Sequence-Level CoT Trace Distillation (Black-Box / Rejection Sampling)
+The breakthrough demonstrated by DeepSeek-R1 and Microsoft Phi-4 is **reasoning trace distillation**:
+1. Prompt frontier teacher models with rich, diverse domain problems.
+2. The teacher generates complete reasoning traces containing internal deliberation: `<think>` exploration, hypothesis testing, error recognition, and final resolution.
+3. **Rejection Sampling (Automated Verification):** Every trace is run through an automated ground-truth verifier (e.g., Python code test harness, symbolic math solver, or schema validator). Traces where the model arrived at an incorrect answer or hallucinated syntax are discarded.
+4. The verified reasoning chains are formatted into instruction-tuning datasets for compact open-weight models (e.g. Qwen 2.5 14B or Phi-4).
+
+#### 2. The Economic & Operational Payoff
+- **Cost Reduction:** Dropping from frontier API pricing ($3/$15 per 1M tokens) to self-hosted quantized SLMs ($0.20/$0.60 or flat GPU instance cost) yields a **95% to 98% reduction in monthly inference TCO**.
+- **Data Privacy & Air-Gapped Deployment:** Regulated industries (defense, healthcare, investment banking) can deploy the distilled 14B model locally inside private VPCs with zero data exfiltration risk.
+- **Latency Acceleration:** A 14B INT4 model on an NVIDIA A100 or H100 achieves **80 to 120 tokens/second** generation speed with sub-70ms TTFT.
+
+---
+
+### 8.4. Production Tooling: The Adaptation Decision Engine
+To determine the exact mathematical breakeven point and financial TCO across Prompt Caching, RAG, LoRA, and Test-Time Compute for your workload:
+
+Run the production decision calculator in [`examples/adaptation_decision_matrix.py`](./examples/adaptation_decision_matrix.py):
+
+```bash
+python 00-foundations-and-token-mechanics/examples/adaptation_decision_matrix.py
+```
+This utility ingests your monthly request volume, prompt token distribution, latency SLA, and knowledge dynamics to output deterministic architectural recommendations, multi-month TCO comparisons, and disqualification audits.
+
+---
+
+## 9. Comparative Tradeoff Matrices
 
 | Dimension | Small Language Model (SLM) | Standard Frontier Model | Reasoning Frontier Model |
 |---|---|---|---|
@@ -721,7 +903,7 @@ The **R1-Distill-Qwen-14B** model scores **73.7% on AIME 2024** and **93.9% on M
 
 ---
 
-## 9. Production Failure Modes (War Stories)
+## 10. Production Failure Modes (War Stories)
 
 ### The Thinking Token Bankruptcy
 You deploy a reasoning model inside an autonomous loop. It gets stuck. It burns 32,000 hidden thinking tokens at \$60/1M trying to figure out why it's stuck. **Fix:** Hard cap `budget_tokens: 2048`.
@@ -731,7 +913,7 @@ You set `max_tokens` too low. The LLM gets cut off midway through generating JSO
 
 ---
 
-## 10. Production Code Implementations
+## 11. Production Code Implementations
 
 Complete runnable implementations are in [`examples/`](./examples/).
 
@@ -751,6 +933,26 @@ def profile_payload(self, system_prompt: str, user_prompt: str, max_expected_out
     ...
 ```
 
+### Python: Adaptation Decision Matrix & TCO Engine
+> **Implementation**: [`examples/adaptation_decision_matrix.py`](./examples/adaptation_decision_matrix.py)
+
+```python
+# Evaluates TCO across Prompt Caching, RAG, LoRA, and Test-Time Compute
+engine = AdaptationDecisionEngine()
+result = engine.recommend(WorkloadProfile(
+    name="High-Volume E-Commerce Support",
+    monthly_requests=500_000,
+    prompt_tokens_per_request=3_500,
+    completion_tokens_per_request=300,
+    latency_sla_ms=1200,
+    task_variability=TaskVariability.LOW,
+    knowledge_dynamics=KnowledgeDynamics.STATIC,
+    accuracy_criticality=0.7
+))
+print(result["recommendation"]["selected_strategy"])
+# >>> 'LoRA / QLoRA Fine-Tuning (PEFT)' (Saves $47,000/yr vs prompt stuffing)
+```
+
 ### C# / .NET 9: Token Budgeting Service
 > **Implementation**: [`examples/TokenGovernorService.cs`](./examples/TokenGovernorService.cs)
 
@@ -764,12 +966,16 @@ if (totalInput > HARD_MAX_INPUT_TOKENS || cost > MAX_DOLLAR_LIMIT_PER_REQUEST)
     return new BudgetReport(false, totalInput, cost, kvCacheMb, "Quota exceeded");
 ```
 
-## 11. Curated Verified Resources
+---
+
+## 12. Curated Verified Resources
 - **[Andrej Karpathy — Intro to Large Language Models (YouTube)](https://www.youtube.com/watch?v=zjkBMFhNj_g)**
 - **[Jay Alammar — The Illustrated Transformer](https://jalammar.github.io/illustrated-transformer/)**
+- **[Edward Hu et al. — LoRA: Low-Rank Adaptation of Large Language Models (arXiv:2106.09685)](https://arxiv.org/abs/2106.09685)**
+- **[Tim Dettmers et al. — QLoRA: Efficient Finetuning of Quantized LLMs (arXiv:2305.14314)](https://arxiv.org/abs/2305.14314)**
 - **[vLLM Official Documentation](https://docs.vllm.ai/)**
 
 ---
 
-## 12. Capstone Engineering Challenge
+## 13. Capstone Engineering Challenge
 > Build a production token economics analyzer. See the [full capstone specification](./labs/capstone-token-economics-analyzer.md).

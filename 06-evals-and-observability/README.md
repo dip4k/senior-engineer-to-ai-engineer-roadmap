@@ -4,7 +4,14 @@
 
 ---
 
-> Curriculum taxonomy aligns with the [3-tier classification defined in the root README](../README.md) (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers evaluation methodologies, telemetry, and observability. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal evaluation hierarchy (Hamel Husain's 3-level evals), deterministic assertion tests, LLM-as-a-judge scorers for groundedness and relevance, curated golden datasets, OpenTelemetry GenAI semantic conventions, and multi-turn trajectory validation.
+> - **Specialized Monitoring & Drift Analytics (`[MUST-HAVE] 🔴` for MLOps/Lead Roles; `[GOOD-TO-KNOW] 🟡` for App Devs)**: Tri-partite drift monitoring (Data Drift via PSI, Concept Drift, Prompt Drift), unifying offline MLflow tracking with online OTel GenAI spans.
+> - **Foundational Theory & Benchmarking Papers (`[KNOWLEDGE-BASE] 🔵`)**: Academic evaluation benchmarks (MMLU, GSM8K, HumanEval) and judge calibration mathematics.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -26,15 +33,16 @@ flowchart TD
 1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#-executive-summary--lead-mental-model-must-have-)
 2. [Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴](#️-why-this-matters-for-senior--lead-developers-must-have-)
 3. [The Three Levels of Evals (The Hamel Husain Framework) [MUST-HAVE] 🔴](#-the-three-levels-of-evals-the-hamel-husain-framework-must-have-)
-4. [Agent & Trajectory Evaluation [GOOD-TO-HAVE] 🟡](#-agent--trajectory-evaluation-good-to-have-)
+4. [Agent & Trajectory Evaluation [MUST-HAVE] 🔴](#-agent--trajectory-evaluation-must-have-)
 5. [Curation of Evaluation Datasets [MUST-HAVE] 🔴](#-curation-of-evaluation-datasets-must-have-)
 6. [Observability, Distributed Tracing & OpenTelemetry [MUST-HAVE] 🔴](#-observability-distributed-tracing--opentelemetry-must-have-)
 7. [Key Telemetry & Performance Metrics [MUST-HAVE] 🔴](#-key-telemetry--performance-metrics-must-have-)
-8. [Evaluation Methodologies Comparison [MUST-HAVE] 🔴](#️-evaluation-methodologies-comparison-must-have-)
-9. [Production Failure Modes, Biases & Anti-Patterns [MUST-HAVE] 🔴](#️-production-failure-modes-biases--anti-patterns-must-have-)
-10. [Production-Grade Code Implementations [MUST-HAVE] 🔴](#-production-grade-code-implementations-must-have-)
-11. [Curated Verified Resources & Seminal Reading [KNOWLEDGE-BASE] 🔵](#-curated-verified-resources--seminal-reading-knowledge-base-)
-12. [Capstone Challenge: Automated CI/CD Evaluation Pipeline [MUST-HAVE] 🔴](#-capstone-challenge-automated-cicd-evaluation-pipeline-must-have-)
+8. [Hybrid ML + GenAI Continuous Monitoring & Drift Detection [MUST-HAVE] 🔴](#-hybrid-ml--genai-continuous-monitoring--drift-detection-must-have-)
+9. [Evaluation Methodologies Comparison [MUST-HAVE] 🔴](#️-evaluation-methodologies-comparison-must-have-)
+10. [Production Failure Modes, Biases & Anti-Patterns [MUST-HAVE] 🔴](#️-production-failure-modes-biases--anti-patterns-must-have-)
+11. [Production-Grade Code Implementations [MUST-HAVE] 🔴](#-production-grade-code-implementations-must-have-)
+12. [Curated Verified Resources & Seminal Reading [KNOWLEDGE-BASE] 🔵](#-curated-verified-resources--seminal-reading-knowledge-base-)
+13. [Capstone Challenge: Automated CI/CD Evaluation Pipeline [MUST-HAVE] 🔴](#-capstone-challenge-automated-cicd-evaluation-pipeline-must-have-)
 
 ---
 
@@ -172,7 +180,7 @@ Senior architects design evaluations around **Binary Pass/Fail Rubrics** equippe
 
 ---
 
-### Level 3: Online Human & Production Telemetry [GOOD-TO-HAVE] 🟡
+### Level 3: Online Human & Production Telemetry [GOOD-TO-KNOW] 🟡
 
 While Levels 1 and 2 run offline before deployment, Level 3 operates continuously on live production traffic, capturing the ultimate ground truth: real human interaction and system telemetry.
 
@@ -202,7 +210,7 @@ flowchart TD
 
 ---
 
-## 🤖 Agent & Trajectory Evaluation [GOOD-TO-HAVE] 🟡
+## 🤖 Agent & Trajectory Evaluation [MUST-HAVE] 🔴
 
 Evaluating a multi-step autonomous agent is fundamentally different from evaluating a single-turn chatbot. A single turn produces text; an agent executes a **state trajectory** consisting of observations, reasoning thoughts, tool calls, environment responses, and state mutations.
 
@@ -451,6 +459,278 @@ flowchart TD
 * **Formula**:
   $$\text{Cost} = \sum (\text{Input Tokens} \times P_{in}) + \sum (\text{Output Tokens} \times P_{out}) + \text{Tool Compute Cost}$$
 * **Why it matters**: Allows engineering to establish unit economics: *"An automated customer support resolution costs \$0.042, whereas a manual agent costs \$4.50."*
+
+---
+
+## 🔄 Hybrid ML + GenAI Continuous Monitoring & Drift Detection [MUST-HAVE] 🔴
+
+In modern enterprise architectures, generative AI does not exist in a vacuum. Production systems are almost universally **Hybrid AI Systems**:
+* A **classical tabular model** (e.g., XGBoost, LightGBM, scikit-learn) scores credit default, predicts fraud risk, or ranks recommendation candidates in sub-10ms latencies.
+* An **autonomous GenAI agent** ingests that statistical score, queries enterprise knowledge via RAG, evaluates business policies, and orchestrates remediation workflows or generates customer communications.
+
+Operating these hybrid architectures creates a severe operational challenge: **Tooling and telemetry fragmentation**. Data Science teams monitor offline experiment registries in **MLflow** or **Weights & Biases (W&B)**, while Software and AI Platform teams monitor online distributed traces in **OpenTelemetry (OTel)**, Datadog, or Langfuse.
+
+```mermaid
+flowchart TD
+    subgraph Ingress["PRODUCTION INGRESS"]
+        Trans["User Transaction / Event X"]
+    end
+
+    subgraph ClassicalPlane["CLASSICAL ML LAYER (MLflow / W&B)"]
+        Scorer["XGBoost Fraud Scorer<br/>(Logged via MLflow Model Registry)"]
+        MLMeta["MLflow Run ID: #run-8812<br/>Model: fraud-xgb:v4.2"]
+    end
+
+    subgraph OTelBridge["TELEMETRY BRIDGE & CONTEXT PROPAGATION"]
+        Carrier["W3C traceparent carrier<br/>Attributes: ml.model.version, ml.score"]
+    end
+
+    subgraph GenAIPlane["GENAI ORCHESTRATION LAYER (OpenTelemetry)"]
+        Agent["Autonomous Fraud Investigation Agent<br/>(OTel Root Span: agent_investigation)"]
+        Tools["Tool Calls: freeze_card, alert_user<br/>(OTel Child Spans)"]
+        LLM["Claude 3.7 / GPT-4o Triage<br/>(OTel Child Span: chat_completion)"]
+    end
+
+    subgraph DriftEngine["TRI-PARTITE DRIFT MONITORING ENGINE"]
+        D1["<b>1. DATA DRIFT (P(X))</b><br/>• PSI on tabular features<br/>• Embedding centroid shift"]
+        D2["<b>2. CONCEPT DRIFT (P(Y|X))</b><br/>• Ground-truth chargeback logs<br/>• Rolling ROC-AUC degradation"]
+        D3["<b>3. PROMPT DRIFT (P(Tokens|Prompt))</b><br/>• Vendor API silent updates<br/>• Automated hourly canary probes"]
+    end
+
+    Trans --> Scorer
+    Scorer -.-> MLMeta
+    Scorer --> Carrier
+    Carrier --> Agent
+    Agent --> Tools & LLM
+    Carrier -.-> DriftEngine
+    Tools -.-> DriftEngine
+```
+
+---
+
+### Unifying Classical ML Tracking with OpenTelemetry GenAI Spans [MUST-HAVE] 🔴
+
+When a production incident occurs (e.g., an agent suddenly begins freezing legitimate customer accounts), engineers must trace the failure across the entire hybrid pipeline without toggling between disconnected dashboards.
+
+#### 1. W3C TraceContext Propagation Across Model Boundaries
+The tabular inference step must initialize or extend the W3C `traceparent` context header. The ML scoring span injects its model provenance directly into the distributed trace:
+* `ml.model.name`: `fraud_classifier_xgboost`
+* `ml.model.version`: `v4.2.1`
+* `ml.experiment.id`: `mlflow_exp_9910`
+* `ml.run.id`: `4b88fa8192ce412`
+* `ml.prediction.score`: `0.842`
+* `ml.prediction.threshold`: `0.750`
+
+When the GenAI orchestrator receives the prediction, it extracts the W3C trace context, ensuring the LLM reasoning spans and tool execution spans appear as direct child nodes in a single, unified waterfall trace.
+
+#### 2. Hybrid Telemetry Correlation Pipeline (Python)
+
+```python
+"""
+hybrid_telemetry_bridge.py
+Unifies MLflow model tracking with OpenTelemetry GenAI distributed tracing.
+"""
+
+from typing import Dict, Any
+import mlflow
+from opentelemetry import trace
+from opentelemetry.trace import Status, StatusCode
+import numpy as np
+
+tracer = trace.get_tracer("enterprise.hybrid_ai")
+
+class HybridScoringService:
+    def __init__(self, mlflow_model_uri: str, model_version: str):
+        self.model_uri = mlflow_model_uri
+        self.model_version = model_version
+        # Load registered model from MLflow
+        self.model = mlflow.pyfunc.load_model(mlflow_model_uri)
+
+    def predict_and_trace(self, features: Dict[str, float], parent_context=None) -> Dict[str, Any]:
+        """Executes tabular prediction within an OpenTelemetry span containing MLflow metadata."""
+        with tracer.start_as_current_span("classical_ml_inference", context=parent_context) as span:
+            # 1. Enrich OpenTelemetry span with MLflow metadata
+            span.set_attribute("ml.system", "mlflow")
+            span.set_attribute("ml.model.uri", self.model_uri)
+            span.set_attribute("ml.model.version", self.model_version)
+            
+            # 2. Execute inference
+            feature_array = np.array(list(features.values())).reshape(1, -1)
+            raw_score = float(self.model.predict(feature_array)[0])
+            is_anomaly = raw_score > 0.80
+            
+            span.set_attribute("ml.inference.score", raw_score)
+            span.set_attribute("ml.inference.decision", "FLAG_FRAUD" if is_anomaly else "APPROVE")
+            span.set_status(Status(StatusCode.OK))
+            
+            return {
+                "score": raw_score,
+                "is_anomaly": is_anomaly,
+                # Export active traceparent for downstream GenAI agents
+                "trace_id": format(span.get_span_context().trace_id, "032x"),
+                "span_id": format(span.get_span_context().span_id, "016x")
+            }
+```
+
+---
+
+### Tri-Partite Drift Monitoring: Disentangling Data, Concept & Prompt Drift [MUST-HAVE] 🔴
+
+When performance degrades in a hybrid AI system, diagnosing the root cause requires isolating which component of the probability space has shifted:
+
+```mermaid
+flowchart LR
+    subgraph DataDrift["1. DATA DRIFT: P(X) Shifts"]
+        X1["Input Features / Prompts Change<br/>• Users submit new slang/formats<br/>• Sensor/feature distributions shift"]
+    end
+    
+    subgraph ConceptDrift["2. CONCEPT DRIFT: P(Y|X) Shifts"]
+        X2["World Truth Changes<br/>• Fraud tactics evolve<br/>• Same input leads to new outcome"]
+    end
+    
+    subgraph PromptDrift["3. PROMPT DRIFT: P(Tokens|Prompt) Shifts"]
+        X3["LLM Behavior Degrades<br/>• Vendor updates weights silently<br/>• Formatting compliance breaks"]
+    end
+```
+
+#### 1. Data Drift (Covariate Shift - $P(X)$ Shifts)
+* **What it is**: The probability distribution of incoming input features or user prompts changes relative to the baseline training/validation distribution, while the conditional truth remains unchanged.
+* **Classical Metrics**:
+  - **Population Stability Index (PSI)**:
+    $$\text{PSI} = \sum_{k=1}^K \left( \text{Actual}_k - \text{Expected}_k \right) \times \ln\left(\frac{\text{Actual}_k}{\text{Expected}_k}\right)$$
+    - $\text{PSI} < 0.10$: No significant shift.
+    - $0.10 \le \text{PSI} \le 0.20$: Moderate drift; warning triggered.
+    - $\text{PSI} > 0.20$: Severe drift; model retraining mandated.
+  - **Two-Sample Kolmogorov-Smirnov (K-S) Test** and **Wasserstein Distance** for continuous features.
+* **GenAI Metrics**:
+  - **Embedding Centroid Drift**: Measuring the shift in cosine similarity distributions of incoming user prompt embeddings against a frozen reference centroid using **Maximum Mean Discrepancy (MMD)**.
+  - Token length inflation and vocabulary entropy divergence.
+
+#### 2. Concept Drift (Conditional Shift - $P(Y \mid X)$ Shifts)
+* **What it is**: The underlying statistical relationship between features/prompts and real-world ground truth changes. Even if the inputs look identical, historical labels no longer apply.
+* **Real-World Example**: A credit applicant with a 680 credit score had a 95% repayment probability in 2024; during an unexpected economic shock in 2026, the repayment probability drops to 78%.
+* **Detection Mechanics**:
+  - Requires **Delayed Ground Truth Feedback Loops** (e.g., 30-day default chargebacks, human auditor dispute logs, user thumbs-down overrides).
+  - Track rolling window **ROC-AUC decay**, **Precision-Recall degradation**, and **Brier Score calibration drift**.
+
+#### 3. Prompt Drift & Vendor Behavioral Drift ($P(\text{Tokens} \mid \text{Prompt})$ Shifts)
+* **What it is**: The conditional distribution of generated tokens given an immutable prompt shifts over time. This is unique to cloud LLM APIs.
+* **The Silent Upgrade Trap**: Cloud LLM vendors (OpenAI, Anthropic, Google) periodically update model weights, apply RLHF safety fine-tunes, or alter quantization kernels without bumping API version strings.
+* **Symptoms**:
+  - A prompt that had a 99.8% valid JSON output rate suddenly drops to 92.4%.
+  - Refusal rates spike on benign business prompts due to aggressive vendor safety filters.
+  - Reasoning chain lengths contract by 40%, degrading multi-step math or coding accuracy.
+* **Detection Mechanics**:
+  - **Automated Hourly Canary Probes**: A background worker dispatches 20 deterministic "golden probe" prompts to live model endpoints every 60 minutes.
+  - Evaluates exact JSON schema compliance, token generation counts, and embedding distance from golden reference outputs. If canary variance exceeds 3 standard deviations, alerts sound before end-users notice.
+
+---
+
+### Drift Diagnostics & Incident Triage Matrix [MUST-HAVE] 🔴
+
+| Observed Symptom | Primary Drift Archetype | Diagnostic Investigation Steps | Corrective Engineering Action |
+|---|---|---|---|
+| Tabular risk model accuracy drops; feature distributions are identical to baseline. | **Concept Drift** ($P(Y \mid X)$) | Compare historical target correlation ($r_{xy}$) against recent ground-truth labels. | Retrain model on recent time-sliced data; recalibrate decision thresholds. |
+| Classical model outputs aberrant scores; PSI on key feature exceeds $0.25$. | **Data Drift** ($P(X)$) | Inspect upstream data pipeline; check for missing values, unit conversion bugs, or seasonal shifts. | Patch upstream data feed; retrain model with updated feature weights; update imputation. |
+| Agent tool calling begins failing with `JSONDecodeError` on an untouched prompt. | **Prompt Drift** ($P(\text{Tokens} \mid \text{Prompt})$) | Compare raw model responses against golden snapshots from 48 hours ago; check provider status logs. | Pin model to an explicit dated snapshot (e.g., `gpt-4o-2024-08-06` vs `gpt-4o`); add few-shot schema repair. |
+| User satisfaction drops; prompt embeddings cluster far from historical centroid. | **Data Drift (Prompt Level)** | Compute semantic clustering on recent prompt embeddings; identify emerging user intents. | Update RAG knowledge base; introduce new specialized router paths for emerging intents. |
+
+---
+
+### Production Implementation: Continuous Drift Detection & Canary Monitor (Python)
+
+```python
+"""
+drift_monitor.py
+Automated Tri-Partite Drift Monitor:
+Calculates tabular Population Stability Index (PSI) and executes hourly LLM Canary Probes.
+"""
+
+import numpy as np
+import json
+import logging
+from typing import List, Dict, Any
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("DriftMonitor")
+
+class DriftMonitoringEngine:
+    @staticmethod
+    def calculate_psi(expected: np.ndarray, actual: np.ndarray, num_buckets: int = 10) -> float:
+        """
+        Calculates the Population Stability Index (PSI) between baseline and production feature slices.
+        """
+        # Define quantile bucket boundaries based on expected distribution
+        percentiles = np.linspace(0, 100, num_buckets + 1)
+        buckets = np.percentile(expected, percentiles)
+        buckets[0] -= 1e-5
+        buckets[-1] += 1e-5
+
+        expected_counts, _ = np.histogram(expected, bins=buckets)
+        actual_counts, _ = np.histogram(actual, bins=buckets)
+
+        expected_pct = expected_counts / len(expected)
+        actual_pct = actual_counts / len(actual)
+
+        # Handle zero counts using epsilon smoothing
+        eps = 1e-4
+        expected_pct = np.where(expected_pct == 0, eps, expected_pct)
+        actual_pct = np.where(actual_pct == 0, eps, actual_pct)
+
+        psi_val = np.sum((actual_pct - expected_pct) * np.log(actual_pct / expected_pct))
+        return float(psi_val)
+
+    @staticmethod
+    def execute_llm_canary_probe(client, model_name: str, golden_prompt: str, expected_schema_keys: List[str]) -> Dict[str, Any]:
+        """
+        Executes a deterministic canary probe against a cloud LLM to detect Prompt/Vendor Drift.
+        """
+        logger.info(f"Executing Canary Probe on {model_name}...")
+        
+        # Synthetic simulation of LLM API call
+        # In production: response = client.chat.completions.create(model=model_name, messages=..., temperature=0.0)
+        simulated_response = '{"order_id": "ORD-1092", "status": "SHIPPED", "tracking_num": "TRK-991"}'
+        
+        try:
+            parsed = json.loads(simulated_response)
+            missing_keys = [k for k in expected_schema_keys if k not in parsed]
+            schema_valid = len(missing_keys) == 0
+            
+            return {
+                "model": model_name,
+                "schema_valid": schema_valid,
+                "missing_keys": missing_keys,
+                "drift_detected": not schema_valid
+            }
+        except json.JSONDecodeError as ex:
+            logger.error(f"🚨 CRITICAL PROMPT DRIFT DETECTED: Model output malformed JSON ({ex})")
+            return {
+                "model": model_name,
+                "schema_valid": False,
+                "error": str(ex),
+                "drift_detected": True
+            }
+
+if __name__ == "__main__":
+    # 1. Audit Tabular Data Drift (PSI)
+    np.random.seed(42)
+    baseline_features = np.random.normal(50, 10, 1000)
+    current_features = np.random.normal(56, 12, 1000) # Injected distribution shift
+    
+    psi_metric = DriftMonitoringEngine.calculate_psi(baseline_features, current_features)
+    print(f"\n[Telemetry Audit] Feature PSI: {psi_metric:.4f}")
+    if psi_metric > 0.20:
+        print("⚠️ ALERT: Severe Data Drift detected (PSI > 0.20). Triggering retraining pipeline!")
+    
+    # 2. Audit LLM Canary Drift
+    canary_result = DriftMonitoringEngine.execute_llm_canary_probe(
+        client=None,
+        model_name="claude-3-7-sonnet",
+        golden_prompt="Extract order JSON",
+        expected_schema_keys=["order_id", "status", "tracking_num"]
+    )
+    print(f"[Telemetry Audit] LLM Canary Probe Result: {canary_result}")
+```
 
 ---
 

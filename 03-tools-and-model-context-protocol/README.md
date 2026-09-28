@@ -46,7 +46,14 @@ flowchart TD
 
 ---
 
-> **Taxonomy Note**: Refer to the [main README](../README.md) for curriculum classification symbols (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers tool execution standards and the Model Context Protocol (MCP). **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal function calling wire protocol (JSON-RPC 2.0), Linux Foundation Stateless MCP 2026 specification (Tools, Resources, Prompts), schema caching, and zero-trust MicroVM sandboxing.
+> - **Platform-Specific & Framework Implementations (`[GOOD-TO-KNOW] 🟡 (Platform Specific)`)**: Enterprise low-code PaaS bridges (Microsoft Copilot Studio, Power Platform, Salesforce Agentforce), cloud-specific serverless hosting (Azure Container Apps, AWS Lambda response streaming), and specific enterprise ERP connectors (SAP S/4HANA, ServiceNow, Salesforce). Focus on these only if relevant to your enterprise stack.
+> - **Language Implementations (`[GOOD-TO-KNOW] 🟡 (Language Implementations)`)**: Specific Python (FastMCP), TypeScript, or C# (.NET) code idioms.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -55,6 +62,14 @@ flowchart TD
 1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model)
 2. [Why This Matters for Senior/Lead Developers](#2-why-this-matters-for-seniorlead-developers)
 3. [Deep-Dive Engineering & Architectural Primitives](#3-deep-dive-engineering--architectural-primitives)
+   * [3.1 Function Calling Primitives & Wire Protocol [MUST-HAVE] 🔴](#31-function-calling-primitives--wire-protocol-must-have-)
+   * [3.2 Model Context Protocol (MCP) Architecture & Specifications [MUST-HAVE] 🔴](#32-model-context-protocol-mcp-architecture--specifications-must-have-)
+   * [3.3 Core MCP Primitives: Tools, Resources, Prompts & Sampling [MUST-HAVE] 🔴](#33-core-mcp-primitives-tools-resources-prompts--sampling-must-have-)
+   * [3.4 Building Enterprise MCP Servers (Python, TypeScript, C#) [GOOD-TO-KNOW] 🟡 (Language Implementations)](#34-building-enterprise-mcp-servers-python-typescript-c-good-to-know--language-implementations)
+   * [3.5 Integrating MCP with Production Hosts [GOOD-TO-KNOW] 🟡](#35-integrating-mcp-with-production-hosts-good-to-know-)
+   * [3.6 Tool Enforcement, Constrained Decoding & Error Recovery [MUST-HAVE] 🔴](#36-tool-enforcement-constrained-decoding--error-recovery-must-have-)
+   * [3.7 Production Sandboxing, Security & Governance [MUST-HAVE] 🔴](#37-production-sandboxing-security--governance-must-have-)
+   * [3.8 Enterprise PaaS & Low-Code Extensibility via Model Context Protocol (MCP) [GOOD-TO-KNOW] 🟡 (Platform Specific)](#38-enterprise-paas--low-code-extensibility-via-model-context-protocol-mcp-good-to-know--platform-specific)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns)
@@ -458,7 +473,7 @@ sequenceDiagram
 
 ---
 
-### 3.4 Building Enterprise MCP Servers (Python, TypeScript, C#) [GOOD-TO-HAVE] 🟡
+### 3.4 Building Enterprise MCP Servers (Python, TypeScript, C#) [GOOD-TO-KNOW] 🟡 (Language Implementations)
 
 Production MCP servers must adhere to strict software engineering standards: structured logging to `stderr` (never `stdout` on stdio transports!), type-safe input parsing, and clean lifecycle management.
 
@@ -473,7 +488,7 @@ Production MCP servers must adhere to strict software engineering standards: str
 
 ---
 
-### 3.5 Integrating MCP with Production Hosts [GOOD-TO-HAVE] 🟡
+### 3.5 Integrating MCP with Production Hosts [GOOD-TO-KNOW] 🟡
 
 #### Configuring Local IDEs & Desktop Hosts
 
@@ -606,6 +621,201 @@ To deploy agentic tools in mission-critical enterprise environments, enforce fou
 | **Layer 2: Schema Least Privilege** | Read/write role segregation | Disjoin Query (read-only) from Mutation (state-altering) tools. Prohibit unconstrained shell or raw SQL execution. |
 | **Layer 3: Human-in-the-Loop (HITL)** | Two-phase commit with cryptographic tickets | Destructive operations (`DROP`, `DELETE`, financial transfers) emit approval tickets requiring explicit human confirmation. |
 | **Layer 4: Sandboxed Isolation** | Ephemeral microVMs & container sandboxes | Run code execution in Docker (`--read-only`, `--cap-drop=ALL`), gVisor (`runsc`), or WASM with blocked metadata IPs (`169.254.169.254`). |
+
+---
+
+### 3.8 Enterprise PaaS & Low-Code Extensibility via Model Context Protocol (MCP) [GOOD-TO-KNOW] 🟡 (Platform Specific)
+
+Modern enterprise AI deployments face a fundamental tension: **Business users and citizen developers** build front-office conversational assistants using low-code PaaS platforms (**Microsoft Copilot Studio**, **Power Platform / Power Automate**, **Salesforce Agentforce**), while **high-code AI engineers** build complex data pipelines, machine learning models, and secure microservices in Python and .NET.
+
+Historically, connecting low-code bots to backend microservices required authoring brittle, proprietary custom connectors for each platform. Standardizing enterprise tool execution on the **Model Context Protocol (MCP) over Server-Sent Events (SSE)** provides a unified, cross-platform extensibility layer.
+
+```mermaid
+flowchart TD
+    subgraph LowCodePaaS["ENTERPRISE LOW-CODE / PAAS RUNTIMES"]
+        CS["Microsoft Copilot Studio<br>(Conversational Orchestrator)"]
+        PP["Power Automate / Power Apps<br>(Workflow Automation)"]
+        AF["Salesforce Agentforce<br>(CRM Autonomous Agents)"]
+    end
+
+    subgraph SecurityGate["IDENTITY & PERIMETER GATEWAY"]
+        APIM["Azure API Management / AWS API Gateway<br>• Entra ID / Okta OAuth 2.0 Bearer Validation<br>• User Identity Token Forwarding (OBO Flow)<br>• HTTP SSE Connection Streaming Passthrough"]
+    end
+
+    subgraph ServerlessMCP["SERVERLESS CLOUD-NATIVE MCP HOSTS"]
+        ACA["Azure Container Apps (FastMCP Python / .NET 9 MCP)<br>• Dynamic Scale-to-Zero<br>• Persistent SSE Transport (/sse, /messages)<br>• Managed Identity to Cloud Resources"]
+        Lambda["AWS Lambda Function URLs (Streaming Mode)<br>• Response Streaming (awslambda.streamify_response)<br>• IAM / Cognito Scoped Execution"]
+    end
+
+    subgraph SystemsOfRecord["ENTERPRISE SYSTEMS OF RECORD (SoR)"]
+        SAP[("SAP S/4HANA ERP<br>(BAPIs / OData Services)")]
+        SNOW[("ServiceNow ITIL<br>(Table API / Scripted REST)")]
+        SFDC[("Salesforce CRM<br>(SOQL / Apex Actions)")]
+        AISearch[("Azure AI Search<br>(Hybrid Vector + BM25)")]
+    end
+
+    CS -->|OpenAPI Custom Connector (SSE)| APIM
+    PP -->|HTTP Connector (JSON-RPC 2.0)| APIM
+    AF -->|External Services / Named Credentials| APIM
+
+    APIM -->|Authenticated Bearer Token| ACA
+    APIM -->|Signed IAM / OIDC Request| Lambda
+
+    ACA -->|RFC / OData with Auth Boundaries| SAP
+    ACA -->|Scoped REST with Field Masking| SNOW
+    ACA -->|FLS/OLS Filtered SOQL| SFDC
+    ACA -->|OData Pre-filtered Hybrid Query| AISearch
+
+    Lambda --> SAP
+    Lambda --> SNOW
+    Lambda --> SFDC
+```
+
+#### 1. Bridging Low-Code Platforms to Custom MCP Servers
+
+##### Microsoft Copilot Studio & Power Platform
+- **Copilot Studio Custom Engine / OpenAPI Extension**: Copilot Studio agents interact with external systems through Custom Connectors defined via OpenAPI 3.0 specifications.
+- **The SSE Bridge Pattern**: Because Copilot Studio orchestrates tool calls dynamically at runtime, an API gateway or wrapper controller exposes the MCP Server's `/sse` and `/messages` endpoints.
+- **Dynamic Action Discovery**: Copilot Studio uses generative orchestration to discover available actions from the MCP tool registry (`tools/list`). When a business user asks *"What is the delivery status of PO-9021 in SAP?"*, Copilot Studio emits a structured tool call adhering to the MCP JSON-RPC 2.0 contract.
+- **Power Automate Integration**: Citizen developers can invoke MCP tools inside automated flows via HTTP actions, triggering high-code agent reasoning without writing backend code.
+
+##### Salesforce Agentforce
+- **Extending Agentforce Beyond Data Cloud**: Salesforce Agentforce natively queries Salesforce Data Cloud and CRM records. However, querying non-Salesforce data (e.g., real-time warehouse inventory in SAP or technical documentation in Azure AI Search) requires external tool execution.
+- **Named Credentials & External Services**: The MCP Server is registered within Salesforce as an **External Service** backed by **Named Credentials** (handling OAuth 2.0 handshake and token renewal).
+- **Agentforce Topic & Action Mapping**: MCP tools map directly to Agentforce **Agent Actions** attached to specific conversational Topics (e.g., "Order Remediation Topic" $\to$ `sap_check_inventory` MCP action).
+
+---
+
+#### 2. Hosting MCP Servers on Cloud-Native Serverless Infrastructure
+
+Exposing MCP servers over the internet to low-code PaaS engines requires production-grade serverless hosting supporting **Server-Sent Events (SSE)** and enterprise identity.
+
+##### Hosting on Azure Container Apps (ACA)
+Azure Container Apps provides the optimal serverless hosting environment for enterprise Python/.NET MCP servers:
+- **Streaming Response Configuration**: Configure ACA ingress to support streaming HTTP connections by setting keep-alive intervals and disabling response buffering:
+  ```yaml
+  # Azure Container Apps Ingress Configuration for MCP SSE
+  ingress:
+    external: true
+    targetPort: 8000
+    transport: auto
+    allowInsecure: false
+    clientCertificateMode: ignore
+    corsPolicy:
+      allowedOrigins:
+        - "https://copilotstudio.microsoft.com"
+        - "https://make.powerautomate.com"
+      allowedMethods: ["GET", "POST", "OPTIONS"]
+      allowedHeaders: ["Authorization", "Content-Type", "X-Session-ID"]
+  ```
+- **Scale-to-Zero vs. Active Keep-Alive**: While ACA can scale to zero instances to minimize idle costs, SSE clients require an active connection. Production deployments maintain `minReplicas: 1` during business hours and configure the MCP server to emit periodic SSE comment heartbeats (`: keep-alive\n\n` every 15 seconds) to prevent enterprise proxies from severing the stream.
+- **Managed Identity**: The container app authenticates against Azure Key Vault, Azure AI Search, and Cosmos DB using System-Assigned Managed Identity (`DefaultAzureCredential`), completely eliminating static API keys from application configuration.
+
+##### Hosting on AWS Lambda (Response Streaming)
+- In AWS environments, MCP servers can be hosted on AWS Lambda using **Lambda Response Streaming**:
+  ```python
+  # AWS Lambda Streaming Handler for MCP SSE (Python)
+  import json
+  from awslambdaric.lambda_context import LambdaContext
+
+  async def handler(event, response_stream, context: LambdaContext):
+      # Set HTTP SSE headers
+      response_stream.write_headers({
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          "Connection": "keep-alive"
+      })
+      
+      # Emit initial MCP SSE endpoint event
+      session_id = event["requestContext"]["requestId"]
+      endpoint_event = f"event: endpoint\ndata: /messages?sessionId={session_id}\n\n"
+      response_stream.write(endpoint_event.encode("utf-8"))
+      
+      # Keep-alive loop or await JSON-RPC execution
+      ...
+  ```
+
+##### Enterprise Identity: Entra ID OAuth 2.0 & Token Forwarding
+To prevent the **Confused Deputy Problem**, the MCP server must never execute backend mutations under a generic admin service account. Instead, it must enforce **Token Forwarding** and the **On-Behalf-Of (OBO)** flow:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as Corporate User
+    participant CS as Copilot Studio / Agentforce
+    participant Gateway as Azure APIM / Gateway
+    participant MCP as Serverless MCP Server (ACA)
+    participant SAP as SAP S/4HANA (Backend SoR)
+
+    User->>CS: "Approve expedited shipment for PO-1049"
+    Note over CS: User authenticated via Entra ID SSO (User JWT)
+    CS->>Gateway: POST /messages (JSON-RPC tools/call: approve_po)<br/>Header: Authorization: Bearer <User_JWT>
+    Gateway->>Gateway: Validate JWT Signature, Aud, & Scope (MCP.Tools.Execute)
+    Gateway->>MCP: Forward Request with Claims (oid, upn, roles)
+    Note over MCP: MCP Server verifies User Role & Permissions
+    MCP->>SAP: Execute BAPI with User Context / OBO Token
+    SAP-->>MCP: Mutation Committed (Audited under User UPN)
+    MCP-->>Gateway: JSON-RPC Result { "status": "APPROVED", "po": "PO-1049" }
+    Gateway-->>CS: Stream Result via SSE
+    CS-->>User: "PO-1049 has been approved under your signature."
+```
+
+1. **Audience & Scope Validation**: The MCP server validates that incoming JWT bearer tokens contain the registered Application URI (`api://mcp-enterprise-tools`) and required scope (`MCP.Tools.Execute`).
+2. **Identity Injection**: The server extracts the caller's unique User Principal Name (`upn`) and Object ID (`oid`), injecting them into downstream audit logs and database connection contexts.
+
+---
+
+#### 3. Enterprise System Connectors & Authorization Boundaries
+
+Exposing Systems of Record (SoR) as agentic tools introduces immense operational risk. A rogue or hallucinating agent could trigger irreversible ERP state mutations, close critical security tickets, or exfiltrate customer CRM tables. Production MCP servers implement **Strict Authorization Boundaries**:
+
+##### SAP ERP Connector Pattern
+- **Technology**: SAP NetWeaver RFC via `pyrfc` / SAP Cloud SDK (.NET/Java) or SAP OData v4 Services.
+- **Boundary Rules**:
+  - **Read Operations** (`sap_check_stock`, `sap_get_po_status`): Available autonomously to agents.
+  - **Write Operations** (`sap_create_sales_order`, `sap_post_goods_receipt`): Gated by strict parameter bounds (e.g., maximum order value $\le \$10,000$). Any order exceeding the threshold requires two-phase approval.
+  - **Input Sanitization**: SAP fields require rigid formatting. Material numbers must be validated as 18-character alphanumeric strings with leading zeros; Company Codes (`BUKRS`) must match uppercase 4-character strings.
+- **ABAP Authorization**: The tool executes using SAP authorization objects (`M_MATE_STA`, `M_EIKP_KAP`), ensuring the user cannot read materials outside their plant authorization.
+
+##### ServiceNow ITIL Connector Pattern
+- **Technology**: ServiceNow REST Table API & Scripted REST endpoints.
+- **Boundary Rules**:
+  - **Field-Level Masking**: When querying incidents (`sn_query_incident`), internal work notes, customer passwords, or API keys stored in description fields are scrubbed via regex before the payload reaches the model context.
+  - **State Transition Guard**: Agents are strictly prohibited from setting an Incident to `Resolved` (State 6) or `Closed` (State 7) directly. The agent can only append proposed resolution steps to `work_notes` (`POST /api/now/table/incident/{id}/work_notes`).
+
+##### Salesforce CRM Connector Pattern
+- **Technology**: Salesforce REST API / Tooling API.
+- **Boundary Rules**:
+  - **SOQL Injection Prevention**: Agents must never generate raw SOQL strings. The MCP tool accepts typed filter arguments and compiles them using a deterministic query builder:
+    ```python
+    # SAFE PARAMETERIZED SOQL BUILDER IN MCP TOOL
+    @mcp.tool()
+    async def find_crm_contacts(account_name: str, region: str) -> str:
+        """Finds active customer contacts within an authorized account and region."""
+        # Sanitize and validate inputs against strict alphanumeric patterns
+        safe_name = re.sub(r"[^a-zA-Z0-9\s]", "", account_name).strip()
+        safe_region = region.upper()
+        if safe_region not in ["NORTH_AMERICA", "EMEA", "APAC", "LATAM"]:
+            raise ValueError(f"Invalid region: {safe_region}")
+        
+        # Parameterized SOQL prevents injection vulnerabilities
+        soql = (
+            "SELECT Id, FirstName, LastName, Title, Email "
+            "FROM Contact "
+            "WHERE Account.Name LIKE :acc_name AND Region__c = :region "
+            "LIMIT 25"
+        )
+        return await salesforce_client.query(soql, acc_name=f"%{safe_name}%", region=safe_region)
+    ```
+  - **FLS & OLS Enforcement**: Enforces Field-Level Security (FLS) to ensure fields marked restricted (e.g., `Social_Security_Number__c`) are stripped from query projections.
+
+##### Enterprise Connectors Governance Matrix
+
+| System of Record | MCP Tool Scope | Permitted Agent Autonomy | Forbidden / Gated Actions (Requires HITL) | Mandatory Security Control |
+|---|---|---|---|---|
+| **SAP S/4HANA** | Inventory, Purchase Orders, Material Ledger | Read status, verify stock, calculate invoice totals | Create purchase orders > \$10k, post manual ledger adjustments, alter vendor bank details | BAPI parameter type validation, SAP RFC connection pool isolation, ABAP authorization object verification |
+| **ServiceNow** | Incidents, Change Requests, CMDB Assets | Read tickets, search knowledge articles, append work notes | Resolve incidents, approve emergency RFC changes, modify CMDB configuration baselines | PII/Secret regex masking, state transition validation, read-only REST service accounts |
+| **Salesforce CRM** | Leads, Accounts, Opportunities, Contacts | Query contact info, summarize account history, draft email tasks | Delete contact records, modify deal commission splits, export bulk CSV reports | Parameterized SOQL (No raw query input), Field-Level Security (FLS) enforcement, maximum 50-row limit |
 
 ---
 

@@ -160,6 +160,7 @@ Each enterprise use case has been extracted into a standalone architectural blue
 | **04** | **Enterprise Failure Modes & Defense** | Mitigating indirect prompt injection, runaway iteration deadlocks, context drift, and unbounded token spend. | [View Blueprint](./use-cases/use-case-04-failure-modes-defense.md) |
 | **05** | **OpenTelemetry, Evals & LLMOps** | OpenTelemetry GenAI spans, discrete binary evaluation gates, and cryptographic canary token leakage filters. | [View Blueprint](./use-cases/use-case-05-otel-evals-telemetry.md) |
 | **06** | **Agent-to-Agent (A2A) & Multi-Agent Swarms** | Hierarchical supervisor orchestration vs peer-to-peer swarm handoffs with asynchronous event messaging. | [View Blueprint](./use-cases/use-case-06-agent-swarms-a2a.md) |
+| **07** | **Copilot Studio & Enterprise PaaS MCP Bridge** | Bridging Microsoft Copilot Studio & low-code PaaS to serverless Python/.NET MCP servers over SSE with Azure AI Search grounding. | [View Blueprint](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md) |
 
 *For the complete directory of architectural blueprints, see [**`use-cases/README.md`**](./use-cases/README.md).*
 
@@ -175,6 +176,7 @@ Each enterprise use case has been extracted into a standalone architectural blue
 | **4** | Agent Failure Defense | [Module 04: Agentic Systems](./04-agentic-systems-and-orchestration/README.md) | [Lab 4 Specification](./labs/lab-04-agent-failure-defense.md) |
 | **5** | AI Observability & Tracing | [Module 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 5 Specification](./labs/lab-05-ai-observability-tracing.md) |
 | **6** | Dual-LLM Quarantine & Guardrails | [Module 05: Security & Guardrails](./05-ai-security-and-guardrails/README.md) | [Lab 6 Specification](./labs/lab-06-dual-llm-quarantine-guardrails.md) |
+| **7** | Hybrid ML Fairness & Explainability | [Module 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 7 Specification](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) |
 
 ---
 

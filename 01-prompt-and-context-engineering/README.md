@@ -21,7 +21,14 @@ flowchart TD
 
 ---
 
-> **Taxonomy Note**: Refer to the [main curriculum README](../README.md#architectural-mastery-tiers) for classification symbols: `[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵.
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers context architecture, budgeting, and the enterprise semantic layer. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal context budgeting, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, MECW context rot, FSM schema masking, prompt caching rules, and decoupling business decision rules from prompt text.
+> - **Platform-Specific & Advanced Optimizations (`[GOOD-TO-KNOW] 🟡`)**: Specialized prompt compression libraries (LLMLingua 2), assistant response prefilling, and sub-agent routing. Focus on these if relevant to your application architecture.
+> - **Curated Resources (`[KNOWLEDGE-BASE] 🔵`)**: Official provider prompt engineering specifications and foundational context papers.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -35,20 +42,21 @@ flowchart TD
 6. [Mitigating Lost-in-the-Middle & Boundary Pinning [MUST-HAVE] 🔴](#6-mitigating-lost-in-the-middle--boundary-pinning-must-have-)
 7. [Context Rot & Maximum Effective Context Window (MECW) [MUST-HAVE] 🔴](#7-context-rot--maximum-effective-context-window-mecw-must-have-)
 8. [Dynamic Tool Loadout Pruning [MUST-HAVE] 🔴](#8-dynamic-tool-loadout-pruning-must-have-)
-9. [Context Routing & Sub-Agent Orchestration [GOOD-TO-HAVE] 🟡](#9-context-routing--sub-agent-orchestration-good-to-have-)
-10. [Context Compression with LLMLingua 2 [GOOD-TO-HAVE] 🟡](#10-context-compression-with-llmlingua-2-good-to-have-)
-11. [Multimodal Context Assembly [GOOD-TO-HAVE] 🟡](#11-multimodal-context-assembly-good-to-have-)
+9. [Context Routing & Sub-Agent Orchestration [GOOD-TO-KNOW] 🟡](#9-context-routing--sub-agent-orchestration-good-to-know-)
+10. [Context Compression with LLMLingua 2 [GOOD-TO-KNOW] 🟡](#10-context-compression-with-llmlingua-2-good-to-know-)
+11. [Multimodal Context Assembly [GOOD-TO-KNOW] 🟡](#11-multimodal-context-assembly-good-to-know-)
 12. [Enterprise XML Architecture & Delimiter Isolation [MUST-HAVE] 🔴](#12-enterprise-xml-architecture--delimiter-isolation-must-have-)
 13. [The 4-Tier Enterprise Role Hierarchy [MUST-HAVE] 🔴](#13-the-4-tier-enterprise-role-hierarchy-must-have-)
 14. [Constrained Grammar Decoding (FSM Logit Masking) [MUST-HAVE] 🔴](#14-constrained-grammar-decoding-fsm-logit-masking-must-have-)
 15. [Physical Prompt Caching Economics & Mechanics [MUST-HAVE] 🔴](#15-physical-prompt-caching-economics--mechanics-must-have-)
-16. [Classical Prompt Patterns for Enterprise Workflows [MUST-HAVE] 🔴](#16-classical-prompt-patterns-for-enterprise-workflows-must-have-)
-17. [System Architecture & Visual Runtime Flows [MUST-HAVE] 🔴](#17-system-architecture--visual-runtime-flows-must-have-)
-18. [Comparative Tradeoff Matrices [MUST-HAVE] 🔴](#18-comparative-tradeoff-matrices-must-have-)
-19. [Production War Stories & Anti-Patterns [MUST-HAVE] 🔴](#19-production-war-stories--anti-patterns-must-have-)
-20. [Production Code Implementations (Python & C#) [MUST-HAVE] 🔴](#20-production-code-implementations-python--c-must-have-)
-21. [Curated Verified Resources [KNOWLEDGE-BASE] 🔵](#21-curated-verified-resources-knowledge-base-)
-22. [Capstone Engineering Challenge [MUST-HAVE] 🔴](#22-capstone-engineering-challenge-must-have-)
+16. [The Shared Semantic Layer & Business Logic Decoupling [MUST-HAVE] 🔴](#16-the-shared-semantic-layer--business-logic-decoupling-must-have-)
+17. [Classical Prompt Patterns for Enterprise Workflows [MUST-HAVE] 🔴](#17-classical-prompt-patterns-for-enterprise-workflows-must-have-)
+18. [System Architecture & Visual Runtime Flows [MUST-HAVE] 🔴](#18-system-architecture--visual-runtime-flows-must-have-)
+19. [Comparative Tradeoff Matrices [MUST-HAVE] 🔴](#19-comparative-tradeoff-matrices-must-have-)
+20. [Production War Stories & Anti-Patterns [MUST-HAVE] 🔴](#20-production-war-stories--anti-patterns-must-have-)
+21. [Production Code Implementations (Python & C#) [MUST-HAVE] 🔴](#21-production-code-implementations-python--c-must-have-)
+22. [Curated Verified Resources [KNOWLEDGE-BASE] 🔵](#22-curated-verified-resources-knowledge-base-)
+23. [Capstone Engineering Challenge [MUST-HAVE] 🔴](#23-capstone-engineering-challenge-must-have-)
 
 ---
 
@@ -481,7 +489,7 @@ class DynamicToolLoadoutRegistry:
 
 ---
 
-## 9. Context Routing & Sub-Agent Orchestration `[GOOD-TO-HAVE]` 🟡
+## 9. Context Routing & Sub-Agent Orchestration `[GOOD-TO-KNOW]` 🟡
 
 ### The Anti-Pattern: The Omniscient God Prompt
 Trying to build a single "Super Agent" with a 40,000-token system prompt containing instructions for triage, legal compliance, database querying, and code review is an architectural dead end.
@@ -508,7 +516,7 @@ flowchart TD
 
 ---
 
-## 10. Context Compression with LLMLingua 2 `[GOOD-TO-HAVE]` 🟡
+## 10. Context Compression with LLMLingua 2 `[GOOD-TO-KNOW]` 🟡
 
 When enterprise RAG pipelines retrieve extensive documentation, raw text contains massive grammatical redundancy: filler tokens, boilerplate headers, repeated prepositions, and non-informative phrasing.
 
@@ -544,7 +552,7 @@ flowchart LR
 
 ---
 
-## 11. Multimodal Context Assembly `[GOOD-TO-HAVE]` 🟡
+## 11. Multimodal Context Assembly `[GOOD-TO-KNOW]` 🟡
 
 When engineering context for vision and multimodal inputs, remember: **Images, PDFs, and audio are not magical blobs; they are translated into discrete token allocations.**
 
@@ -724,9 +732,168 @@ Because KV caching operates strictly on contiguous token prefixes starting from 
 
 ---
 
-## 16. Classical Prompt Patterns for Enterprise Workflows `[MUST-HAVE]` 🔴
+## 16. The Shared Semantic Layer & Business Logic Decoupling `[MUST-HAVE]` 🔴
 
-### 16.1. Few-Shot In-Context Learning (ICL) `[MUST-HAVE]` 🔴
+A pervasive antipattern in generative AI systems is using the LLM as a monolithic "God Prompt" that acts simultaneously as an unstructured text parser, a business rule repository, an arithmetic calculator, and a legal compliance officer.
+
+Senior AI architects recognize a foundational rule of enterprise systems:
+> **"Never force an autoregressive probabilistic model to store and evaluate deterministic business logic."**
+
+LLMs are extraordinary probabilistic translation and semantic extraction engines; they are terrible, un-auditable, and non-deterministic business rule engines. 
+
+```mermaid
+flowchart TD
+    subgraph AntiPattern["❌ THE PROMPT ANTI-PATTERN: Monolithic Prompt Bloat"]
+        RawUser1["Raw User Complaint"] --> GodPrompt["Monolithic System Prompt\n• 2,500 tokens of nested corporate rules\n• Tier tables, return windows, fee arithmetic\n• Subject to silent logic drift\n• Untestable & prone to hallucinated edge cases"]
+        GodPrompt --> ProbResult["Probabilistic Decision & Payout\n(May violate policy or miscalculate fees)"]
+    end
+
+    subgraph ProductionPattern["✅ THE PRODUCTION PATTERN: Decoupled Semantic Architecture"]
+        RawUser2["Raw User Complaint"] --> Extractor["LLM Extraction Engine\n• Lightweight prompt (<300 tokens)\n• Schema-grounded with Canonical Enums\n• Pushdown Automaton Logit Masking"]
+        Extractor --> TypedContract["Typed Extraction Contract\n(Pydantic / JSON Schema Validated Parameters)"]
+        
+        SemanticLayer["Enterprise Semantic Layer\n(Taxonomies, Ontologies, Domain Enums)"] -.->|Supplies Enums| Extractor
+        SemanticLayer -.->|Supplies Invariants| RuleEngine
+        
+        TypedContract --> RuleEngine["Deterministic Rule Engine\n• Decision Model & Notation (DMN) / Rules Table\n• Exact arithmetic & IEEE 754 precision\n• 100% automated unit-test coverage (<1ms)\n• Cryptographic audit trail of fired rules"]
+        RuleEngine --> DeterministicResult["Guaranteed Compliant Enterprise Action"]
+    end
+```
+
+---
+
+### 16.1. The Anti-Pattern: Hard-Coding Business Logic in Prompts
+
+In early prototypes, developers frequently write system prompts like:
+```text
+You are an enterprise claims agent. Follow these rules:
+1. If the customer is Standard tier, returns are allowed within 30 days. If Gold, 60 days. If Platinum, 90 days.
+2. For items damaged in shipping under $50 for Standard or $150 for Gold, auto-refund without return if photos are provided.
+3. If buyer's remorse and the item is unopened, issue a full refund. If opened, deduct a 15% restocking fee unless the customer is Platinum...
+[... 120 more lines of nested policy exceptions ...]
+```
+
+This monolithic prompt introduces four severe failure modes into production:
+
+#### 1. Silent Logic Drift & Fragmentation
+Enterprise business rules evolve continuously. When marketing changes a return window from 30 to 45 days, or legal updates a jurisdictional fee, engineers must search across dozens of microservice prompts, scattered markdown files, and disparate repositories. Inevitably, several prompts are missed, causing different channels (web, mobile, email agent) to adjudicate identical customer claims under contradictory rules.
+
+#### 2. Prompt Bloat & Attention Degradation
+Embedding hundreds of business rules inflates prompt context by 2,000 to 5,000 tokens per request. This not only multiplies API inference costs by orders of magnitude, but also degrades the model's self-attention across the actual user query (diluting the Signal-to-Noise Ratio).
+
+#### 3. Untestable Business Logic
+Compliance, legal, and financial auditors require 100% regression test coverage on policy boundary conditions. You cannot unit-test a prompt with mathematical certainty:
+- Even at `temperature = 0.0`, floating-point non-determinism across GPU clusters can flip a boundary decision on Day 30 vs. Day 31.
+- Prompts cannot be verified with standard CI/CD testing frameworks (`pytest`, `xUnit`) in sub-millisecond execution times. Testing 1,000 edge cases against a cloud LLM costs tens of dollars and takes minutes, rather than executing in 5ms in local code.
+
+#### 4. Hallucinated Edge Cases & Arithmetic Errors
+When presented with multiple overlapping rules, LLMs interpolate probabilistically. They will invent non-existent compromise policies (e.g. charging a 7.5% restocking fee that exists nowhere in corporate policy) or hallucinate basic arithmetic on tax deductions and currency conversions.
+
+---
+
+### 16.2. The Production Pattern: Decoupling the Semantic Layer & Rule Engines
+
+The solution is strict architectural decoupling:
+1. **The LLM is an Extraction Engine**: Its sole responsibility is parsing messy, unstructured human language and mapping it to a strongly typed semantic schema.
+2. **The Semantic Layer is the Source of Truth**: Centralized taxonomies, ontologies, and enum types govern the valid domain space.
+3. **The Rule Engine is the Adjudicator**: A deterministic software engine (pure functional code, DMN table, or business rule management system like Drools/Zen) applies corporate policy and calculates financial outputs.
+
+```
+┌────────────────────────────────────────────────────────────────────────────────────────┐
+│                                   THE CORE PRINCIPLE                                   │
+│                                                                                        │
+│   The LLM answers:                                                                     │
+│   "What did the customer state happened?" (Semantic Extraction)                        │
+│                                                                                        │
+│   The Rule Engine answers:                                                             │
+│   "What does corporate policy authorize us to do?" (Deterministic Adjudication)        │
+└────────────────────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+### 16.3. Schema-Grounded Parameterization with Pydantic
+
+Instead of telling the model what *actions* to take, engineers instruct the model to populate a strongly typed extraction contract:
+
+```python
+from enum import Enum
+from pydantic import BaseModel, Field
+
+# 1. Enterprise Semantic Layer (Centralized Ontologies)
+class ClaimReason(str, Enum):
+    DAMAGED_IN_SHIPPING = "DAMAGED_IN_SHIPPING"
+    DEFECTIVE_HARDWARE = "DEFECTIVE_HARDWARE"
+    BUYERS_REMORSE = "BUYERS_REMORSE"
+    SUSPECTED_COUNTERFEIT = "SUSPECTED_COUNTERFEIT"
+
+class ItemCondition(str, Enum):
+    UNOPENED_ORIGINAL_BOX = "UNOPENED_ORIGINAL_BOX"
+    OPENED_LIKE_NEW = "OPENED_LIKE_NEW"
+    DESTROYED_UNUSABLE = "DESTROYED_UNUSABLE"
+
+# 2. Extraction Contract (Bounded Parameters Only)
+class ExtractedClaim(BaseModel):
+    order_id: str
+    claim_reason: ClaimReason
+    reported_condition: ItemCondition
+    item_value_usd: float
+    days_since_delivery: int = Field(ge=0)
+    has_photo_evidence: bool = False
+```
+
+#### Dynamic Prompt Hydration
+The prompt compiler injects only the canonical enum keys and brief definitions into the LLM context:
+```xml
+<extraction_task>
+Extract the customer's claim parameters into the ExtractedClaim schema.
+Allowed Claim Reasons: DAMAGED_IN_SHIPPING, DEFECTIVE_HARDWARE, BUYERS_REMORSE, SUSPECTED_COUNTERFEIT.
+Do NOT adjudicate eligibility, approve refunds, or calculate fees. Output valid JSON only.
+</extraction_task>
+```
+
+#### Deterministic Adjudication in Code
+The validated Pydantic object is passed directly to the deterministic rule engine:
+```python
+class EnterprisePolicyRuleEngine:
+    POLICY_RETURN_WINDOWS = {CustomerTier.STANDARD: 30, CustomerTier.PLATINUM: 90}
+    
+    @classmethod
+    def evaluate(cls, tier: CustomerTier, claim: ExtractedClaim) -> RuleResult:
+        # 100% deterministic, testable, auditable
+        if claim.days_since_delivery > cls.POLICY_RETURN_WINDOWS[tier]:
+            return RuleResult(action=DecisionAction.REJECT, reason="POLICY_WINDOW_EXCEEDED")
+        ...
+```
+
+---
+
+### 16.4. Architectural Scorecard: Prompt Logic vs. Decoupled Architecture
+
+| Dimension | Monolithic Prompt Anti-Pattern | Decoupled Enterprise Architecture |
+|---|---|---|
+| **Unit Test Coverage** | **0%** (Non-deterministic, costly API calls) | **100%** (Deterministic test suites run in < 10ms in CI/CD) |
+| **Audit & Compliance** | Black-box LLM output; untraceable logic | Explicit audit trail recording each fired rule ID |
+| **Arithmetic Integrity** | Frequent rounding / deduction hallucinations | Exact IEEE 754 decimal arithmetic |
+| **Token Consumption** | 2,000–5,000 tokens re-transmitted on every call | < 300 tokens (85%+ token reduction) |
+| **Policy Change Velocity** | Requires editing prompts & extensive LLM re-evals | Update a single line in Rule Engine; zero-risk deploy |
+| **Prompt Injection Defense** | Vulnerable (adversary can say "waive all fees") | Immune (rule engine enforces hard invariants regardless of LLM text) |
+
+---
+
+### 16.5. Production Implementation
+A complete, runnable comparison between the naive monolithic prompt and the decoupled enterprise pattern is available in [`examples/semantic_layer_decoupling.py`](./examples/semantic_layer_decoupling.py).
+
+Run the benchmark locally:
+```bash
+python 01-prompt-and-context-engineering/examples/semantic_layer_decoupling.py
+```
+
+---
+
+## 17. Classical Prompt Patterns for Enterprise Workflows `[MUST-HAVE]` 🔴
+
+### 17.1. Few-Shot In-Context Learning (ICL) `[MUST-HAVE]` 🔴
 Providing 2 to 5 high-quality input/output pairs directly inside the system prompt steers model behavior through in-context Bayesian parameter adaptation without fine-tuning:
 
 ```xml
@@ -742,10 +909,10 @@ Providing 2 to 5 high-quality input/output pairs directly inside the system prom
 </examples>
 ```
 
-### 16.2. Chain-of-Thought (CoT) & Structured Scratchpads `[MUST-HAVE]` 🔴
+### 17.2. Chain-of-Thought (CoT) & Structured Scratchpads `[MUST-HAVE]` 🔴
 Instructing models to "Think step-by-step" forces the model to allocate intermediate token compute to reasoning before committing to a final answer. Structuring this inside `<thinking>` tags allows downstream services to parse the final answer cleanly while discarding the scratchpad.
 
-### 16.3. Assistant Response Prefilling `[GOOD-TO-HAVE]` 🟡
+### 17.3. Assistant Response Prefilling `[GOOD-TO-KNOW]` 🟡
 By pre-populating the start of the `Assistant` response, you can force the model to adopt specific formatting or skip introductory conversational pleasantries:
 
 ```python
@@ -758,7 +925,7 @@ messages = [
 
 ---
 
-## 17. System Architecture & Visual Runtime Flows `[MUST-HAVE]` 🔴
+## 18. System Architecture & Visual Runtime Flows `[MUST-HAVE]` 🔴
 
 ```mermaid
 sequenceDiagram
@@ -798,7 +965,7 @@ sequenceDiagram
 
 ---
 
-## 18. Comparative Tradeoff Matrices `[MUST-HAVE]` 🔴
+## 19. Comparative Tradeoff Matrices `[MUST-HAVE]` 🔴
 
 ### Output Schema Enforcement Paradigms
 
@@ -821,7 +988,7 @@ sequenceDiagram
 
 ---
 
-## 19. Production War Stories & Anti-Patterns `[MUST-HAVE]` 🔴
+## 20. Production War Stories & Anti-Patterns `[MUST-HAVE]` 🔴
 
 ### War Story 1: The $42,000 Weekend Invoice & The Timestamp Bug
 > *"It's 2:15 AM on Sunday. The engineering VP's phone rings with an AWS billing spike alert. Our new customer service agent spent $42,000 in 48 hours."*
@@ -850,11 +1017,11 @@ sequenceDiagram
 
 ---
 
-## 20. Production Code Implementations (Python & C#) `[MUST-HAVE]` 🔴
+## 21. Production Code Implementations (Python & C#) `[MUST-HAVE]` 🔴
 
 Complete, runnable implementations are available in the [`examples/`](./examples/) directory.
 
-### 20.1. Python: Production Context Pipeline with Pydantic v2 & Anthropic Caching
+### 21.1. Python: Production Context Pipeline with Pydantic v2 & Anthropic Caching
 > **Implementation**: [`examples/context_pipeline.py`](./examples/context_pipeline.py)
 
 Demonstrates Anthropic prompt caching breakpoints (`cache_control: {"type": "ephemeral"}`), schema generation via Pydantic v2, and token-bounded structured payload extraction.
@@ -925,7 +1092,42 @@ Render your final decision strictly conforming to CreditEvaluationResult JSON sc
 
 ---
 
-### 20.2. Python: The Tier 1 & Tier 2 Compaction Engine
+### 21.2. Python: Decoupled Semantic Layer & Deterministic Rule Engine
+> **Implementation**: [`examples/semantic_layer_decoupling.py`](./examples/semantic_layer_decoupling.py)
+
+Demonstrates the architectural decoupling of domain taxonomies and business rules from the LLM prompt. The LLM acts solely as a semantic parameter extractor, passing typed contracts to a deterministic rule engine with zero hallucination risk.
+
+```python
+from pydantic import BaseModel, Field
+from examples.semantic_layer_decoupling import (
+    CustomerTier, ClaimReason, ItemCondition, ExtractedClaimPayload, EnterprisePolicyRuleEngine
+)
+
+# 1. Semantic extraction output (populated via Constrained Grammar LLM)
+extracted_payload = ExtractedClaimPayload(
+    order_id="ORD-94821",
+    claim_reason=ClaimReason.DAMAGED_IN_SHIPPING,
+    reported_condition=ItemCondition.DESTROYED_UNUSABLE,
+    item_value_usd=35.00,
+    days_since_delivery=45,
+    has_photo_evidence=True,
+    customer_notes_summary="Package crushed in courier transit."
+)
+
+# 2. Deterministic Rule Execution (100% testable in CI/CD, <1ms execution)
+result = EnterprisePolicyRuleEngine.evaluate_claim(
+    customer_tier=CustomerTier.PLATINUM,
+    payload=extracted_payload
+)
+
+print(result.action)             # DecisionAction.AUTO_REFUND_NO_RETURN_REQUIRED
+print(result.refund_amount_usd)  # 35.00
+print(result.audit_rule_path)    # ['PASS_TIME: Claim within PLATINUM window (45 <= 90d)', 'RULE_AUTO_03...']
+```
+
+---
+
+### 21.3. Python: The Tier 1 & Tier 2 Compaction Engine
 
 ```python
 import re
@@ -978,7 +1180,7 @@ class ContextCompactor:
 
 ---
 
-### 20.3. C# / .NET 9: Strongly-Typed Strict JSON Schema Pipeline
+### 21.4. C# / .NET 9: Strongly-Typed Strict JSON Schema Pipeline
 > **Implementation**: [`examples/StrictJsonPipeline.cs`](./examples/StrictJsonPipeline.cs)
 
 Demonstrates Microsoft Semantic Kernel with Azure OpenAI, strict response formatting using JSON schema generation from C# records, and defensive deserialization filters.
@@ -1049,7 +1251,7 @@ public class StrictAuditPipeline
 
 ---
 
-## 21. Curated Verified Resources `[KNOWLEDGE-BASE]` 🔵
+## 22. Curated Verified Resources `[KNOWLEDGE-BASE]` 🔵
 
 ### Primary Documentation & Specifications
 - **[Anthropic Prompt Engineering Guide](https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview)**: The definitive reference for Claude prompt architecture, XML tags, and few-shot patterns.
@@ -1068,6 +1270,6 @@ public class StrictAuditPipeline
 
 ---
 
-## 22. Capstone Engineering Challenge `[MUST-HAVE]` 🔴
+## 23. Capstone Engineering Challenge `[MUST-HAVE]` 🔴
 
 > Build a Cached, Type-Safe Financial Compliance Engine implementing Context AST compilation, dynamic tool loadout pruning, and the 4-tier compaction pipeline. See the [full capstone specification](./labs/capstone-context-engineering-pipeline.md) for detailed requirements and evaluation rubrics.

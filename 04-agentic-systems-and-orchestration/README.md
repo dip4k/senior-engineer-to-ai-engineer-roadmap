@@ -4,7 +4,14 @@
 
 ---
 
-> **Taxonomy Note**: Refer to the [main README](../README.md) for curriculum classification symbols (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers autonomous agent runtimes, loops, and multi-agent coordination. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal loop engineering (WAL event logs, crash rehydration, cycle detection, SHA-256 action hashing, token budget decay), Human-in-the-Loop (HITL) step-up gates, the distributed Saga pattern with compensating tools, the Agent2Agent (A2A) protocol, and the Sourcing capability triad (Intake, Compare, SourceIQ).
+> - **Platform-Specific Agent Frameworks (`[GOOD-TO-KNOW] 🟡 (Platform Specific)`)**: Vendor-specific frameworks (Microsoft Agent Framework / Semantic Kernel / AutoGen, Google ADK & `agents-cli`, OpenAI Agents SDK, Claude SDK). You do NOT need to learn every framework—master the agnostic systems principles and apply them to whichever framework your team chooses.
+> - **Foundational Theory & Deep Science (`[KNOWLEDGE-BASE] 🔵`)**: Theoretical procedural memory models, formal cognitive architectures, and multi-agent game-theoretic proofs.
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -27,12 +34,20 @@ flowchart TD
 1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model-must-have-)
 2. [Why This Matters for Senior & Lead Developers](#2-why-this-matters-for-senior--lead-developers-must-have-)
 3. [Deep-Dive Engineering & Implementation](#3-deep-dive-engineering--implementation-must-have-)
+   * [3.5 Enterprise Agent Frameworks [GOOD-TO-KNOW] 🟡](#35-enterprise-agent-frameworks-good-to-know-)
+     * [Microsoft Agentic Frameworks: Semantic Kernel, AutoGen & Azure AI Agent Service [GOOD-TO-KNOW] 🟡 (Platform Specific)](#microsoft-agentic-frameworks-semantic-kernel-autogen--azure-ai-agent-service-good-to-know--platform-specific)
+     * [Google Agent Development Kit (ADK) [GOOD-TO-KNOW] 🟡 (Platform Specific)](#google-agent-development-kit-adk-good-to-know--platform-specific)
+     * [Anthropic Claude SDK & Minimalist Patterns [GOOD-TO-KNOW] 🟡 (Platform Specific)](#anthropic-claude-sdk--minimalist-patterns-good-to-know--platform-specific)
+     * [OpenAI Agents SDK: Enterprise Handoffs & Production Sandboxing [GOOD-TO-KNOW] 🟡 (Platform Specific)](#openai-agents-sdk-enterprise-handoffs--production-sandboxing-good-to-know--platform-specific)
+   * [3.7 Complex Context-Driven Procurement & Sourcing Workflows](#37-complex-context-driven-procurement--sourcing-workflows-must-have-)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows-must-have-)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices-must-have-)
    * [5.1 Loop Engineering: The Fourth Discipline](#51-loop-engineering-the-fourth-discipline-must-have-)
    * [5.2 Code-as-Action (CodeAct) vs JSON Tool Calling](#52-code-as-action-codeact-vs-json-tool-calling-good-to-have-)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns-must-have-)
    * [6.8 Enterprise Protocol Stack & Framework Unification (2026 Edition)](#68-enterprise-protocol-stack--framework-unification-2026-edition-must-have-)
+     * [Microsoft Agent Framework (MAF 1.0 GA) [GOOD-TO-KNOW] 🟡 (Platform Specific)](#2-microsoft-agent-framework-maf-10-ga-the-convergence-of-semantic-kernel--autogen-good-to-know--platform-specific)
+     * [Google ADK GA & The agents-cli Lifecycle Toolchain [GOOD-TO-KNOW] 🟡 (Platform Specific)](#3-google-adk-ga--the-agents-cli-lifecycle-toolchain-good-to-know--platform-specific)
    * [Agent Framework Matrix 2026](#agent-framework-matrix-2026-must-have-)
 7. [Hands-On Practice Labs & Common Problem Solutions](#7-hands-on-practice-labs--common-problem-solutions-must-have-)
 8. [Enterprise Reference Code Implementations](#8-enterprise-reference-code-implementations-must-have-)
@@ -380,7 +395,7 @@ flowchart TD
 
 ---
 
-### 3.5. Enterprise Agent Frameworks [GOOD-TO-HAVE] 🟡
+### 3.5. Enterprise Agent Frameworks [GOOD-TO-KNOW] 🟡
 
 When standardizing on an enterprise stack, engineering leads must evaluate framework tradeoffs across typing, state handling, debugging overhead, production reliability, and ecosystem lock-in:
 
@@ -424,7 +439,7 @@ Created by the LangChain team specifically to resolve the architectural limitati
   - **Coupling with LangChain Objects**: While much leaner than classic LangChain, it still defaults to LangChain core message schemas and serialization conventions.
   - **State Memory Management**: Unbounded accumulation in list reducers can cause state bloat without explicit compaction strategies.
 
-#### Microsoft Agentic Frameworks: Semantic Kernel, AutoGen & Azure AI Agent Service [MUST-HAVE] 🔴
+#### Microsoft Agentic Frameworks: Semantic Kernel, AutoGen & Azure AI Agent Service [GOOD-TO-KNOW] 🟡 (Platform Specific)
 
 Microsoft provides a three-tiered portfolio of agent technologies spanning enterprise runtime frameworks to managed cloud services:
 
@@ -450,7 +465,7 @@ Microsoft provides a three-tiered portfolio of agent technologies spanning enter
    - **Pros**: Zero infrastructure maintenance, unified billing, enterprise identity governance, turn-key tool execution sandboxes.
    - **Cons**: Vendor lock-in to the Azure cloud ecosystem; less flexibility for bespoke custom runtime scheduling.
 
-#### Google Agent Development Kit (ADK) [MUST-HAVE] 🔴
+#### Google Agent Development Kit (ADK) [GOOD-TO-KNOW] 🟡 (Platform Specific)
 Google's **Agent Development Kit (ADK)** is designed for enterprise-grade, code-first agent development integrated deeply with the Google Cloud and Gemini ecosystem.
 * **Code-First Architecture**: Avoids bloated abstractions; treats agents, tools, and orchestrators as native Python or TypeScript components.
 * **Tool & MCP Integration**: First-class support for Model Context Protocol (MCP) servers, allowing seamless tool sharing across enterprise boundaries.
@@ -461,7 +476,7 @@ Google's **Agent Development Kit (ADK)** is designed for enterprise-grade, code-
 * **Pros**: Ultra-clean code-first mental model, enterprise Google Cloud integration, end-to-end tooling from scaffolding to production monitoring.
 * **Cons**: Primarily optimized for the Google Cloud/Gemini ecosystem.
 
-#### Anthropic Claude SDK & Minimalist Patterns [MUST-HAVE] 🔴
+#### Anthropic Claude SDK & Minimalist Patterns [GOOD-TO-KNOW] 🟡 (Platform Specific)
 Anthropic champions a **minimalist, framework-free approach** centered on raw SDK primitives:
 * **Native Tool Calling**: Directly leveraging Claude's `tools`, `tool_use`, and `tool_result` content blocks.
 * **Prompt Caching**: Leveraging Claude's 5-minute ephemeral prompt cache to dramatically reduce latency and cost for long-running agent loops (caching system prompts, tool schemas, and historical turns).
@@ -477,7 +492,7 @@ Built by the Pydantic team, **PydanticAI** provides an ergonomic, production-gra
 * **Pros**: Native FastAPI developer experience, zero untyped dictionary parsing, built-in validation retry loops, lightweight and minimal abstractions.
 * **Cons**: Younger ecosystem than LangChain; fewer community third-party tool wrappers out of the box.
 
-#### OpenAI Agents SDK: Enterprise Handoffs & Production Sandboxing [MUST-HAVE] 🔴
+#### OpenAI Agents SDK: Enterprise Handoffs & Production Sandboxing [GOOD-TO-KNOW] 🟡 (Platform Specific)
 The **OpenAI Agents SDK (`openai-agents`)** is OpenAI's official production multi-agent framework, replacing the experimental Swarm project:
 * **Agent Handoffs**: First-class primitive allowing agents to transfer execution control and context directly to specialized peer agents without centralized supervisor bottlenecks.
 * **Built-in Guardrails & Sandboxes**: Provides out-of-the-box input/output guardrail interceptors and isolated execution sandboxes for safe code execution.
@@ -979,6 +994,337 @@ Operating autonomous agents in mission-critical environments introduces unique f
   1. **Observation Projection Middleware**: All raw tool payloads (e.g., raw JSON API outputs) must pass through a schema projector that discards null fields, removes tracking metadata, and caps array lengths to the top 5 items.
   2. **Summarization Bridges at Handoff Boundaries**: When execution transitions between agents, discard the raw dialogue history and replace it with a validated 400-token Handoff DTO.
   3. **Observation Pointer Caching**: Replace verbose tool outputs older than 2 turns with immutable pointer references: `[Tool Observation INV-401: Stored in Checkpoint Key chk_9981]`. If the model needs details, it must invoke a specific lookup tool.
+
+---
+
+### 3.7. Complex Context-Driven Procurement & Sourcing Workflows [MUST-HAVE] 🔴
+
+In global enterprises, procurement and strategic sourcing represent one of the most demanding proving grounds for autonomous agent architectures. Sourcing operations process billions of dollars in contract commitments across thousands of suppliers, operating under stringent legal liability, regulatory audit requirements (e.g., Sarbanes-Oxley, ESG mandates, FCPA), and complex multi-stakeholder approval matrices.
+
+A naive single-agent ReAct loop fails in enterprise sourcing for three systemic reasons:
+1. **Combinatorial Multi-Variable Constraints**: Sourcing decisions are never based on price alone; they balance payment terms ($Net\text{ }30$ vs. $Net\text{ }90$), warranty liabilities, SLAs, supplier diversity quotas, regional tax tariffs, carbon emission targets, and dynamic credit ratings.
+2. **Asymmetric Document Formats**: Quotations, statements of work (SOWs), and master services agreements (MSAs) arrive as unstructured 80-page scanned PDFs, complex multi-tab Excel rate cards, and semi-structured email threads.
+3. **Zero Tolerance for Hallucinated Authority**: An agent must never be permitted to autonomously approve spend limits, alter standard indemnification clauses, or bypass required financial controls.
+
+```mermaid
+flowchart TD
+    subgraph Ingress["PROCUREMENT INGRESS"]
+        Req["Unstructured Purchase Requisition / RFP Brief / Email"]
+    end
+
+    subgraph CapabilityTriad["THE SOURCING CAPABILITY TRIAD"]
+        Intake["<b>1. INTAKE ENGINE</b><br/>• Multi-variable entity extraction<br/>• Category taxonomies (UNSPSC)<br/>• Urgency & budget validation"]
+        Compare["<b>2. COMPARE ENGINE</b><br/>• Multi-vendor quote normalization<br/>• Compliance matrix scoring<br/>• MCDA Pareto tradeoff ranking"]
+        SourceIQ["<b>3. SOURCEIQ ENGINE</b><br/>• Historical ERP spend cross-check<br/>• Maverick spend detection<br/>• Contract anomaly & price creep"]
+    end
+
+    subgraph DeterministicBoundary["DETERMINISTIC RULE ENGINE (OPA / DMN)"]
+        DMN["<b>DMN Decision Table / Rego Engine</b><br/>• DOA Authority Check ($ Thresholds)<br/>• Sanctions & Preferred Vendor Rules<br/>• Mandatory Approval Route Matrix"]
+    end
+
+    subgraph ExecutionPlane["AGENT EXECUTION & HITL"]
+        Agent["Bounded Sourcing Specialist Agent<br/>(Drafts RFP, Negotiates, Synthesizes)"]
+        HITL["Human Buyer / VP Approval Gate"]
+        ERP["ERP System Commit (SAP / Coupa)"]
+    end
+
+    Ingress --> Intake
+    Intake --> DMN
+    DMN -->|Enriched Policy Envelope| Compare
+    Compare --> SourceIQ
+    SourceIQ --> Agent
+    Agent --> HITL
+    HITL --> ERP
+```
+
+#### The Sourcing Capability Triad [MUST-HAVE] 🔴
+
+Production enterprise sourcing systems structure agent capabilities into three specialized, cooperating engines:
+
+##### 1. Intake: Multi-Variable Request Routing & Triage
+The Intake engine transforms raw, ambiguous human procurement requests into structured, machine-verifiable requisition envelopes:
+* **Multi-Variable Entity & Constraint Extraction**: Ingests free-form text, attachments, and PR drafts to extract:
+  - Commodity/Service classification mapped to standard enterprise taxonomies (e.g., UNSPSC, eCl@ss).
+  - Financial variables: CapEx vs. OpEx, target budget, cost center, project code, and currency conversion parameters.
+  - Operational variables: Required delivery milestone dates, geographic jurisdiction, on-site vs. remote delivery, and service level agreements (SLAs).
+  - Risk & Regulatory constraints: Data sovereignty requirements, PII processing, security clearance tiers, and supplier diversity criteria.
+* **Semantic Triage & Workflow Selection**: Determines whether the request qualifies for:
+  - *Catalog Auto-Fulfillment*: Low-value off-the-shelf items routed directly to pre-negotiated punch-out catalogs.
+  - *Quick-Quote Flow*: Moderate spend ($10k–$50k) triggering automated requests for quotation (3-bids-and-a-buy).
+  - *Strategic Sourcing Event*: High spend ($> $50k) or novel categories requiring a formal multi-stage RFP/RFI process and legal review.
+
+##### 2. Compare: Multi-Supplier Quote Evaluation Against Compliance Matrices
+When responses to an RFP or competitive quotes arrive, the Compare engine normalizes disparate proposals and conducts multi-dimensional evaluation:
+* **Heterogeneous Quote Normalization**: Disparate supplier proposals (rate cards, tiered volume pricing, fixed-price milestones, time-and-materials estimates) are extracted and translated into a standardized **Total Cost of Ownership (TCO)** model.
+* **Compliance Matrix Verification**: Each proposal is evaluated against a mandatory corporate compliance matrix:
+  - *Information Security*: SOC 2 Type II, ISO/IEC 27001, FedRAMP, penetration testing cadence.
+  - *Legal & Commercial*: Limitation of liability caps (e.g., $2\times$ contract value), governing law, termination for convenience notice windows, IP assignment.
+  - *ESG & Governance*: Supplier diversity status (MBE/WBE/VBE), carbon footprint disclosures, modern slavery statements.
+* **Multi-Criteria Decision Analysis (MCDA)**: Employs weighted scoring algorithms across cost, capability, risk, and delivery timeline, generating a Pareto-optimal ranking frontier rather than a simplistic lowest-bidder recommendation.
+
+##### 3. SourceIQ: Spend Analytics & Anomaly Detection
+The SourceIQ engine acts as the continuous analytical brain of the procurement lifecycle, contextualizing incoming requests against historical spend patterns:
+* **Historical Spend Cross-Referencing**: Analyzes transactional histories across enterprise ERPs (SAP S/4HANA, Coupa, NetSuite) to evaluate whether identical or substitutable goods/services were procured elsewhere in the organization.
+* **Maverick & Rogue Spend Detection**: Identifies off-contract purchasing patterns, split purchase orders designed to evade approval thresholds (e.g., two $49,000 POs created on the same day to bypass a $50,000 VP threshold), and rogue vendors operating without master service agreements.
+* **Price Variance & Contract Creep Analysis**: Detects line-item price drift where a vendor gradually increases hourly consulting rates or software seat licenses upon automatic contract renewal without renegotiated authorization.
+* **Supplier Concentration Risk**: Evaluates organizational exposure to single-source suppliers and recommends secondary sourcing strategies when concentration exceeds risk thresholds.
+
+---
+
+#### Deterministic Rule Engine Handoff [MUST-HAVE] 🔴
+
+The most critical architectural failure mode in GenAI procurement systems is delegating business rule decisions directly to the LLM. 
+
+> [!CAUTION]
+> **The Hallucinated Authority Anti-Pattern**: If you prompt an LLM: *"Verify if this $150,000 purchase order requires CFO approval according to company policy,"* the model will occasionally decide that a Director's approval is sufficient, or hallucinate an exception based on friendly phrasing in the email. **In regulated procurement, corporate policy and delegation of authority (DOA) must remain 100% deterministic.**
+
+##### Decoupling Policy Evaluation from Agent Reasoning
+
+Production architectures enforce a strict boundary between **Deterministic Rule Engines** (e.g., Camunda DMN, Open Policy Agent / Rego, Drools) and **Stochastic Agent Execution**:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Buyer as Requester / Buyer
+    participant Intake as Intake Agent (LLM)
+    participant Engine as Deterministic Rule Engine (OPA / DMN)
+    participant Table as Corporate DOA Decision Table
+    participant Agent as Sourcing Specialist Agent (LLM)
+    participant Gate as HITL Approval Workflow
+
+    Buyer->>Intake: Submits SOW & Budget Request ($180,000)
+    Intake->>Intake: Extracts Structured Requisition DTO
+    Intake->>Engine: EvaluatePolicy(RequisitionDTO)
+    
+    activate Engine
+    Engine->>Table: Query Delegation of Authority Matrix
+    Note over Engine,Table: Evaluates exact rules:<br/>• Spend >= $100k -> VP Approval<br/>• Data=PII -> CISO Approval<br/>• Preferred Supplier? -> Flagged
+    Engine-->>Intake: Return PolicyEnvelope (RequiredApprovers, MaxBudget, PolicyInvariants)
+    deactivate Engine
+
+    Intake->>Agent: Dispatch Task + Immutable PolicyEnvelope
+    Note over Agent: Agent operates strictly within<br/>PolicyEnvelope invariants.
+    Agent->>Agent: Draft RFP / Compare Quotes
+    Agent->>Gate: Submit Recommendation for Mandated Sign-offs
+    Gate-->>Buyer: Awaiting VP Finance & CISO Approval
+```
+
+1. **Pre-Agent Rule Enforcement**: Before an agent initiates an RFP or contacts vendors, the normalized request is evaluated by an Open Policy Agent (OPA) or DMN engine. The rule engine injects an **Immutable Policy Envelope**:
+   - Authorized spending ceilings.
+   - Required sign-off personas (e.g., VP of Engineering, Procurement Director, CISO).
+   - Mandatory contract clauses and forbidden terms.
+2. **Constrained Agent Problem Solving**: The agent operates as a tactical execution worker inside the boundary set by the policy envelope. It drafts RFPs, extracts quote tables, and conducts vendor dialogue, but cannot mutate the policy requirements.
+3. **Post-Agent Rule Verification**: Before any contract is presented for electronic signature (e.g., DocuSign) or committed to SAP, the deterministic rule engine re-evaluates the finalized contract metadata to ensure zero policy drift.
+
+##### Concrete Implementation: Open Policy Agent (Rego) + Python Sourcing Orchestrator
+
+The following production implementation demonstrates the deterministic handoff: an OPA Rego policy establishes hard spending authority and compliance invariants, and a Python orchestrator wraps the LLM agent within this deterministic harness.
+
+```rego
+# policy/procurement_doa.rego
+# Open Policy Agent (OPA) Delegation of Authority Policy
+package enterprise.procurement
+
+default allow_auto_approval = false
+default requires_ciso_review = false
+default compliance_status = "REJECTED"
+
+# 1. Deterministic Delegation of Authority (DOA) Thresholds
+required_approvers[approver] {
+    input.amount_usd >= 100000
+    approver := "VP_FINANCE"
+}
+
+required_approvers[approver] {
+    input.amount_usd >= 50000
+    input.amount_usd < 100000
+    approver := "DIRECTOR_PROCUREMENT"
+}
+
+required_approvers[approver] {
+    input.amount_usd < 50000
+    input.preferred_supplier == false
+    approver := "MANAGER_SOURCING"
+}
+
+# 2. Information Security Invariant
+requires_ciso_review {
+    input.involves_pii == true
+}
+
+requires_ciso_review {
+    input.vendor_soc2_certified == false
+}
+
+# 3. Overall Compliance Clearance
+compliance_status = "CLEARED_FOR_SOURCING" {
+    count(violated_sanctions) == 0
+    input.amount_usd > 0
+}
+
+violated_sanctions[country] {
+    some country in input.restricted_jurisdictions
+    country == input.vendor_country
+}
+```
+
+```python
+"""
+sourcing_orchestrator.py
+Enterprise Procurement Workflow demonstrating Deterministic Rule Engine Handoff.
+Decouples policy evaluation (OPA/DMN) from the stochastic LLM Sourcing Agent.
+"""
+
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Any, Dict, List, Optional
+import json
+import logging
+from pydantic import BaseModel, Field
+
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("ProcurementSourcing")
+
+
+# 1. Strongly Typed Schemas for Requisition & Policy Envelopes
+class CommodityCategory(str, Enum):
+    CLOUD_INFRASTRUCTURE = "CLOUD_INFRASTRUCTURE"
+    PROFESSIONAL_SERVICES = "PROFESSIONAL_SERVICES"
+    SOFTWARE_SAAS = "SOFTWARE_SAAS"
+    HARDWARE = "HARDWARE"
+
+
+class RequisitionRequest(BaseModel):
+    requisition_id: str
+    requester_email: str
+    commodity: CommodityCategory
+    amount_usd: float = Field(gt=0)
+    involves_pii: bool = False
+    preferred_supplier: bool = False
+    vendor_country: str = "US"
+    vendor_soc2_certified: bool = True
+    project_description: str
+
+
+class PolicyEnvelope(BaseModel):
+    compliance_status: str
+    required_approvers: List[str]
+    requires_ciso_review: bool
+    policy_invariants: List[str]
+    is_blocked: bool = False
+
+
+# 2. Deterministic Rule Engine (Simulating OPA / Camunda DMN)
+class DeterministicPolicyEngine:
+    """Executes deterministic decision tables. ZERO LLM reasoning involved."""
+
+    @staticmethod
+    def evaluate_procurement_policy(req: RequisitionRequest) -> PolicyEnvelope:
+        approvers: List[str] = []
+        invariants: List[str] = []
+        is_blocked = False
+
+        # Sanction Check (Strict deterministic invariant)
+        restricted_countries = {"NK", "IR", "SY", "CU"}
+        if req.vendor_country in restricted_countries:
+            return PolicyEnvelope(
+                compliance_status="BLOCKED_BY_SANCTIONS",
+                required_approvers=[],
+                requires_ciso_review=True,
+                policy_invariants=["Immediate escalation to Global Trade Compliance."],
+                is_blocked=True,
+            )
+
+        # Spending Authority Thresholds (DMN Decision Table)
+        if req.amount_usd >= 100_000:
+            approvers.append("VP_FINANCE")
+            invariants.append("Mandatory 3-vendor competitive RFP required.")
+        elif req.amount_usd >= 50_000:
+            approvers.append("DIRECTOR_PROCUREMENT")
+            invariants.append("Minimum 2 independent price quotations required.")
+        else:
+            if not req.preferred_supplier:
+                approvers.append("MANAGER_SOURCING")
+
+        # Security Risk Invariants
+        requires_ciso = req.involves_pii or (not req.vendor_soc2_certified)
+        if requires_ciso:
+            approvers.append("CHIEF_INFORMATION_SECURITY_OFFICER")
+            invariants.append("Mandatory Third-Party Cyber Risk Assessment (TPCRA) gate.")
+
+        return PolicyEnvelope(
+            compliance_status="CLEARED_FOR_SOURCING",
+            required_approvers=sorted(list(set(approvers))),
+            requires_ciso_review=requires_ciso,
+            policy_invariants=invariants,
+            is_blocked=False,
+        )
+
+
+# 3. Stochastic Sourcing Agent Operating Under the Deterministic Harness
+class SourcingSpecialistAgent:
+    """
+    Autonomous LLM Agent tasked with tactical execution:
+    market research, RFP drafting, and proposal comparison.
+    Bounded strictly by the PolicyEnvelope.
+    """
+
+    def __init__(self, policy: PolicyEnvelope):
+        self.policy = policy
+
+    def execute_sourcing_plan(self, req: RequisitionRequest) -> Dict[str, Any]:
+        if self.policy.is_blocked:
+            logger.error("🛑 Sourcing aborted by deterministic governance engine.")
+            return {"status": "BLOCKED", "reason": self.policy.compliance_status}
+
+        logger.info(f"📋 Initializing Sourcing Agent for Requisition {req.requisition_id}")
+        logger.info(f"🔒 Active Policy Invariants: {self.policy.policy_invariants}")
+        logger.info(f"👥 Mandated Approval Gateways: {self.policy.required_approvers}")
+
+        # The LLM generates tactical execution artifacts bounded by policy
+        agent_sourcing_summary = {
+            "sourcing_strategy": (
+                "COMPETITIVE_RFP" if req.amount_usd >= 100_000 else "DIRECT_BENCHMARK"
+            ),
+            "negotiation_priorities": [
+                "Payment Terms: Net 60 days standard",
+                "Unlimited IP indemnification for enterprise customizations",
+                "Volume tier discounting starting at 500 active seats",
+            ],
+            "governance_payload": {
+                "approvers": self.policy.required_approvers,
+                "ciso_signoff_mandated": self.policy.requires_ciso_review,
+                "invariants_satisfied": True,
+            },
+        }
+        return agent_sourcing_summary
+
+
+# Example Orchestration Run
+if __name__ == "__main__":
+    requisition = RequisitionRequest(
+        requisition_id="REQ-2026-9041",
+        requester_email="sarah.connor@enterprise.com",
+        commodity=CommodityCategory.SOFTWARE_SAAS,
+        amount_usd=145000.00,
+        involves_pii=True,
+        preferred_supplier=False,
+        vendor_country="US",
+        vendor_soc2_certified=True,
+        project_description="Enterprise Customer Identity and Access Management (CIAM) SaaS migration.",
+    )
+
+    # STEP 1: Deterministic Decision Engine Execution (DMN/OPA)
+    policy_envelope = DeterministicPolicyEngine.evaluate_procurement_policy(requisition)
+
+    # STEP 2: Delegating to LLM Sourcing Agent with Policy Boundary
+    agent = SourcingSpecialistAgent(policy=policy_envelope)
+    result = agent.execute_sourcing_plan(requisition)
+    print("\nTerminal Sourcing Deliverable:")
+    print(json.dumps(result, indent=2))
+```
+
+---
 
 ## 4. System Architecture & Visual Flows [MUST-HAVE] 🔴
 
@@ -1639,7 +1985,7 @@ flowchart TD
 
 ---
 
-#### 2. Microsoft Agent Framework (MAF 1.0 GA): The Convergence of Semantic Kernel & AutoGen [MUST-HAVE] 🔴
+#### 2. Microsoft Agent Framework (MAF 1.0 GA): The Convergence of Semantic Kernel & AutoGen [GOOD-TO-KNOW] 🟡 (Platform Specific)
 
 For over two years, enterprise engineering teams in the Microsoft ecosystem faced an architectural dilemma:
 * **Semantic Kernel** offered rock-solid, strongly typed ASP.NET Core dependency injection, C#/.NET 8/9 native plugins, and enterprise function filter middleware—but lacked conversational multi-agent flexibility.
@@ -1661,7 +2007,7 @@ flowchart LR
 
 ---
 
-#### 3. Google ADK GA & The `agents-cli` Lifecycle Toolchain [MUST-HAVE] 🔴
+#### 3. Google ADK GA & The `agents-cli` Lifecycle Toolchain [GOOD-TO-KNOW] 🟡 (Platform Specific)
 
 Google's **Agent Development Kit (ADK)** has reached General Availability (GA), establishing a code-first, zero-magic standard for deploying production agents on Google Cloud and Vertex AI.
 

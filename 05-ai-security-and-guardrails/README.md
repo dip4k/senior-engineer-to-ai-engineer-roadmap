@@ -4,7 +4,14 @@
 
 ---
 
-> Curriculum taxonomy aligns with the [3-tier classification defined in the root README](../README.md) (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
+> [!NOTE]
+> **Learner-Friendly Guidance: Focus on What You Need**
+> This phase covers AI defense, security boundaries, and regulatory compliance. **Not all sections are mandatory for every engineer.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal threat models: OWASP Top 10 for LLMs, direct and indirect prompt injection defenses, Dual-LLM Privilege Quarantine, cryptographic canary token exfiltration detection, and active grounding validation.
+> - **Regulated AI & Specialized Auditing (`[MUST-HAVE] 🔴` for FinTech/Regulated Roles; `[GOOD-TO-KNOW] 🟡` for General Software)**: Algorithmic fairness testing in CI/CD with Fairlearn (Disparate Impact Ratio, demographic parity) and Explainable AI (TreeSHAP feature attribution to LLM adverse action notices).
+> - **Commercial Guardrails & WAF Tools (`[GOOD-TO-KNOW] 🟡 (Platform Specific)`)**: Vendor-specific guardrail services (NeMo Guardrails, Llama Guard, Azure AI Content Safety).
+>
+> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
 
 ---
 
@@ -32,6 +39,13 @@ flowchart TD
 1. [Executive Summary & Lead Mental Model](#1-executive-summary--lead-mental-model)
 2. [Why This Matters for Senior/Lead Developers](#2-why-this-matters-for-seniorlead-developers)
 3. [Deep-Dive Engineering & Implementation](#3-deep-dive-engineering--implementation)
+   * [The OWASP Top 10 for LLM Applications (Core Architect Focus) [MUST-HAVE] 🔴](#the-owasp-top-10-for-llm-applications-core-architect-focus-must-have-)
+   * [Prompt Injection Attacks: Mechanics, Exploits & Defenses [MUST-HAVE] 🔴](#prompt-injection-attacks-mechanics-exploits--defenses-must-have-)
+   * [Hallucination Management & Active Grounding Mitigation [MUST-HAVE] 🔴](#hallucination-management--active-grounding-mitigation-must-have-)
+   * [Guardrails Architectures: Multi-Tier Defensive Pipelines [GOOD-TO-KNOW] 🟡](#guardrails-architectures-multi-tier-defensive-pipelines-good-to-know-)
+     * [Commercial Guardrails: NVIDIA NeMo Guardrails vs. Meta Llama Guard vs. Guardrails AI [GOOD-TO-KNOW] 🟡 (Platform Specific)](#framework-deep-dive-nvidia-nemo-guardrails-vs-meta-llama-guard-vs-guardrails-ai-good-to-know--platform-specific)
+   * [Defensive Agent Architecture & Privilege Separation [MUST-HAVE] 🔴](#defensive-agent-architecture--privilege-separation-must-have-)
+   * [Regulated AI: Algorithmic Bias Mitigation & Explainability (XAI) [MUST-HAVE] 🔴 (FinTech/Regulated Roles; [GOOD-TO-KNOW] 🟡 for General Software)](#regulated-ai-algorithmic-bias-mitigation--explainability-xai-must-have-)
 4. [System Architecture & Visual Flows](#4-system-architecture--visual-flows)
 5. [Comparative Analysis & Tradeoff Matrices](#5-comparative-analysis--tradeoff-matrices)
 6. [Production Failure Modes & Anti-Patterns](#6-production-failure-modes--anti-patterns)
@@ -392,7 +406,7 @@ For structured data extraction (JSON, SQL, code), probabilistic token generation
 
 ---
 
-### Guardrails Architectures: Multi-Tier Defensive Pipelines [GOOD-TO-HAVE] 🟡
+### Guardrails Architectures: Multi-Tier Defensive Pipelines [GOOD-TO-KNOW] 🟡
 
 A production guardrail architecture is divided into two distinct execution checkpoints: **Pre-Inference** and **Post-Inference**.
 
@@ -427,7 +441,7 @@ flowchart TD
 
 ---
 
-#### Framework Deep Dive: NVIDIA NeMo Guardrails vs. Meta Llama Guard vs. Guardrails AI
+#### Framework Deep Dive: NVIDIA NeMo Guardrails vs. Meta Llama Guard vs. Guardrails AI [GOOD-TO-KNOW] 🟡 (Platform Specific)
 
 | Capability | NVIDIA NeMo Guardrails | Meta Llama Guard 3 | Guardrails AI |
 |---|---|---|---|
@@ -564,6 +578,328 @@ flowchart TD
 2. The gateway signs an ephemeral cryptographic token (HMAC-SHA256) encoding `(action, parameters, timestamp, session_id)`.
 3. The mutation requires explicit user out-of-band confirmation (Slack approval button, web UI modal, or biometric re-authentication).
 4. The tool execution proxy verifies the signature and expiration timestamp before committing the transaction.
+
+---
+
+### Regulated AI: Algorithmic Bias Mitigation & Explainability (XAI) [MUST-HAVE] 🔴
+
+In regulated industries—consumer finance, insurance, healthcare, housing, and talent acquisition—AI systems operate under strict legal liability. Regulations including the **EU AI Act** (Articles 10, 13, and 14 for High-Risk AI Systems), the **Equal Credit Opportunity Act (ECOA / CFPB Regulation B)**, the **Fair Credit Reporting Act (FCRA)**, and **Title VII of the Civil Rights Act** mandate that automated decisions must be statistically non-discriminatory and fully explainable to affected individuals.
+
+In these environments, deploying a black-box model or an unconstrained LLM generates existential legal risk. Senior AI Engineers must master two disciplines:
+1. **Automated Algorithmic Fairness Verification**: Embedding mathematical parity assertions into CI/CD release pipelines using libraries like Microsoft Fairlearn.
+2. **Hybrid Explainable AI (XAI)**: Coupling high-fidelity tabular feature attribution (SHAP/LIME) with hallucination-free LLM natural language justification generation.
+
+```mermaid
+flowchart TD
+    subgraph ApplicantData["REGULATED APPLICANT PIPELINE"]
+        Raw["Applicant Features X\n(Debt, Income, Credit Lines, Age, Gender)"]
+    end
+
+    subgraph FairnessAudit["CI/CD FAIRNESS GATE (FAIRLEARN)"]
+        Split["Stratified Protected Group Slices A"]
+        Metrics["Evaluate Disparate Impact Ratio (DIR)\nDemographic Parity • Equalized Odds"]
+        Gate{"Passes Regulatory\nThresholds? (DIR >= 0.80)"}
+    end
+
+    subgraph HybridInference["HYBRID DECISION & XAI RUNTIME"]
+        Model["Calibrated Tabular Model\n(XGBoost / LightGBM Risk Scorer)"]
+        SHAP["Local Feature Attribution (TreeSHAP)\nTop 4 Adverse Driving Features"]
+        Enclosure["Deterministic Reason Code Enclosure\n(ECOA Standard Regulatory Mappings)"]
+        GenLLM["Constrained Justification Generator\n(Generates Natural Language Adverse Action Notice)"]
+    end
+
+    Raw --> Model
+    Model --> Split --> Metrics --> Gate
+    Gate -- Pass --> SHAP
+    Gate -- Fail --> Abort["Block Deployment / Trigger Mitigation"]
+    SHAP --> Enclosure --> GenLLM
+    GenLLM --> Out["Auditable, Legally Compliant Adverse Action Notice"]
+```
+
+#### Measuring Algorithmic Fairness in CI/CD [MUST-HAVE] 🔴
+
+When models score human beings (loan approvals, insurance underwriting, fraud risk), bias easily creeps in through proxy variables in historical training data. Algorithmic fairness must be evaluated across sensitive protected attributes $A$ (gender, race, age, disability status).
+
+##### 1. The Core Fairness Formulations
+
+| Fairness Metric | Mathematical Formulation | Regulatory Benchmark | Interpretation & Production Context |
+|---|---|---|---|
+| **Disparate Impact Ratio (DIR)** | $$\text{DIR} = \frac{P(\hat{Y}=1 \mid A=\text{unprivileged})}{P(\hat{Y}=1 \mid A=\text{privileged})}$$ | **$\text{DIR} \ge 0.80$** (EEOC "Four-Fifths Rule") | Measures relative approval rates. If privileged selection rate is $70\%$, unprivileged rate cannot fall below $56\%$. |
+| **Demographic Parity Difference** | $$\Delta_{\text{DP}} = \max_a P(\hat{Y}=1 \mid A=a) - \min_a P(\hat{Y}=1 \mid A=a)$$ | Target: $\Delta_{\text{DP}} \le 0.10$ | Absolute divergence in positive outcome probability regardless of underlying group base rates. |
+| **Equalized Odds Difference** | $$\Delta_{\text{EO}} = \max \left(|\text{TPR}_{a} - \text{TPR}_{b}|, |\text{FPR}_{a} - \text{FPR}_{b}|\right)$$ | Target: $\Delta_{\text{EO}} \le 0.05$ | Mandates that the model is equally accurate for all groups; prevents higher false accusation or rejection rates for minorities. |
+| **Equal Opportunity Difference** | $$\Delta_{\text{Eopp}} = |\text{TPR}_{A=0} - \text{TPR}_{A=1}|$$ | Target: $\Delta_{\text{Eopp}} \le 0.05$ | Qualified candidates across all groups have equal probability of receiving a positive decision. |
+
+##### 2. Automated Fairness Gate Implementation (Fairlearn + pytest)
+
+In modern LLMOps/MLOps, models cannot be registered or deployed without passing automated fairness assertions in CI/CD. The following production test suite evaluates credit risk predictions using Microsoft `fairlearn`:
+
+```python
+"""
+test_fairness_cicd.py
+Enterprise CI/CD Algorithmic Bias Test Suite using Fairlearn.
+Ensures credit underwriting models satisfy EEOC and ECOA parity invariants.
+"""
+
+import pytest
+import numpy as np
+import pandas as pd
+from sklearn.ensemble import HistGradientBoostingClassifier
+from fairlearn.metrics import (
+    MetricFrame,
+    selection_rate,
+    true_positive_rate,
+    false_positive_rate,
+    demographic_parity_difference,
+    equalized_odds_difference
+)
+
+@pytest.fixture(scope="module")
+def model_and_validation_data():
+    """Generates synthetic loan portfolio data with protected demographic attribute."""
+    np.random.seed(42)
+    n_samples = 4000
+    
+    # Protected attribute: 0 = Historically Unprivileged Group, 1 = Privileged Group
+    group = np.random.binomial(1, 0.4, n_samples)
+    
+    # Financial features: Income, Debt-to-Income, Credit Score
+    income = np.random.normal(65000, 15000, n_samples)
+    dti = np.random.uniform(0.1, 0.6, n_samples)
+    credit_score = np.random.normal(700, 50, n_samples)
+    
+    # Ground truth loan default: Y = 1 (Approved), Y = 0 (Rejected)
+    latent_score = (income / 1000) * 0.4 - (dti * 50) + (credit_score * 0.1)
+    y_true = (latent_score > np.percentile(latent_score, 40)).astype(int)
+    
+    X = pd.DataFrame({"income": income, "dti": dti, "credit_score": credit_score})
+    
+    # Train candidate model
+    clf = HistGradientBoostingClassifier(random_state=42)
+    clf.fit(X, y_true)
+    y_pred = clf.predict(X)
+    
+    return clf, X, y_true, y_pred, group
+
+def test_disparate_impact_ratio_four_fifths_rule(model_and_validation_data):
+    """
+    EEOC Four-Fifths Rule Gate:
+    Selection rate of unprivileged group MUST be at least 80% of privileged group.
+    """
+    _, _, _, y_pred, group = model_and_validation_data
+    
+    metric_frame = MetricFrame(
+        metrics=selection_rate,
+        y_true=None,
+        y_pred=y_pred,
+        sensitive_features=group
+    )
+    
+    rate_unprivileged = metric_frame.by_group[0]
+    rate_privileged = metric_frame.by_group[1]
+    
+    disparate_impact_ratio = rate_unprivileged / rate_privileged
+    print(f"\n[CI/CD Audit] Disparate Impact Ratio: {disparate_impact_ratio:.3f}")
+    
+    assert disparate_impact_ratio >= 0.80, (
+        f"VIOLATION: Disparate Impact Ratio {disparate_impact_ratio:.3f} < 0.80. "
+        "Model violates EEOC Four-Fifths Rule and cannot be deployed to production."
+    )
+
+def test_equalized_odds_invariants(model_and_validation_data):
+    """
+    Equalized Odds Gate:
+    Difference in False Positive Rate and True Positive Rate between groups must be <= 0.08.
+    """
+    _, _, y_true, y_pred, group = model_and_validation_data
+    
+    eo_diff = equalized_odds_difference(
+        y_true=y_true,
+        y_pred=y_pred,
+        sensitive_features=group
+    )
+    print(f"[CI/CD Audit] Equalized Odds Difference: {eo_diff:.3f}")
+    
+    assert eo_diff <= 0.08, (
+        f"VIOLATION: Equalized Odds Difference {eo_diff:.3f} > 0.08. "
+        "Model exhibits disparate predictive accuracy across demographic groups."
+    )
+```
+
+---
+
+#### Explainable AI (XAI) for Hybrid Systems [MUST-HAVE] 🔴
+
+In high-stakes enterprise systems, the optimal architecture is rarely pure neural generation; it is a **Hybrid System**:
+* A **deterministic tabular ML model** (XGBoost, LightGBM, CatBoost) computes mathematical risk scores with rigorous statistical bounds.
+* A **generative LLM** transforms complex mathematical explanations into personalized, clear, and empathetic human language.
+
+##### The Hallucination Vulnerability in Explanations
+Under CFPB (Consumer Financial Protection Bureau) Circular 2022-03, creditors using complex algorithms must disclose the **specific, accurate principal reasons** an adverse action was taken. If an LLM is allowed to generate the adverse action notice based on general applicant context:
+* The LLM may hallucinate that an applicant was rejected due to *"recent inquiries"*, when in reality the model rejected them purely due to *"Debt-to-Income (DTI) ratio exceeding 45%"*.
+* In consumer lending, sending an adverse action letter citing hallucinated reasons violates federal law and incurs severe regulatory fines.
+
+##### Bridging SHAP Feature Attributions with Natural Language
+
+To eliminate hallucination, enterprise architectures enforce a **Deterministic Attribution Bridge**:
+
+```mermaid
+flowchart LR
+    A["Tabular Data x"] --> B["XGBoost Risk Model"]
+    B --> C["TreeSHAP Explainer"]
+    C --> D["Local Attributions phi_i"]
+    D --> E["Ranked Negative Features<br/>1. DTI: +0.42 log-odds risk<br/>2. Delinquencies: +0.31 risk"]
+    E --> F["Regulatory Code Dictionary<br/>Code 14: High Debt-to-Income<br/>Code 08: Delinquent History"]
+    F --> G["Constrained LLM Enclosure<br/>System Prompt: Cite ONLY Code 14 & 08"]
+    G --> H["Audited Adverse Action Letter"]
+```
+
+1. **Local Shapley Value Calculation**: For applicant $x$, compute local Shapley feature attributions $\phi_i(x)$ using **TreeSHAP**:
+   $$\phi_i(x) = \sum_{S \subseteq F \setminus \{i\}} \frac{|S|!(|F| - |S| - 1)!}{|F|!} [f(S \cup \{i\}) - f(S)]$$
+2. **Top Adverse Feature Selection**: Isolate the top $K$ features ($K=4$ under ECOA standards) that shifted the model's prediction toward rejection (most positive contribution to default log-odds).
+3. **Regulatory Mapping**: Map technical feature names (`rev_util_pct_last_12m`) to official CFPB adverse action reason codes.
+4. **Constrained Prompt Enclosure**: Pass the exact regulatory codes into an LLM system prompt. The model's generation is bounded by a Pydantic schema assertion verifying that no unapproved factors are mentioned.
+
+##### Production Implementation: XGBoost + TreeSHAP + Bounded LLM Generator
+
+```python
+"""
+hybrid_xai_adverse_action.py
+Production Hybrid XAI Pipeline:
+Combines XGBoost, TreeSHAP feature attributions, and a strictly constrained LLM
+to generate legally compliant Consumer Adverse Action Notices.
+"""
+
+from typing import List, Dict, Any
+from pydantic import BaseModel, Field
+import numpy as np
+import xgboost as xgb
+import shap
+
+# 1. Standard Regulatory Reason Code Dictionary (CFPB / ECOA compliant)
+REGULATORY_REASON_CODES = {
+    "debt_to_income": "Code 14: Proportion of monthly debt obligations to verified income is too high.",
+    "revolving_utilization": "Code 22: Total balance on revolving credit lines relative to credit limits is too high.",
+    "delinquent_accounts": "Code 08: Number of past-due credit accounts or delinquent obligations.",
+    "credit_history_length": "Code 11: Length of verifiable credit history is insufficient.",
+    "recent_inquiries": "Code 31: Number of recent inquiries on credit bureau report.",
+}
+
+# 2. Pydantic Output Contract for the Regulated Document
+class AdverseActionNotice(BaseModel):
+    applicant_id: str
+    decision: str = "DECLINED"
+    risk_score: int = Field(description="Credit bureau calibrated score (300-850)")
+    statutory_adverse_reasons: List[str] = Field(
+        min_length=1,
+        max_length=4,
+        description="The exact regulatory reason codes extracted via SHAP"
+    )
+    letter_body: str = Field(description="Customer-facing natural language explanation")
+
+
+class HybridXAIOrchestrator:
+    def __init__(self, model: xgb.XGBClassifier, feature_names: List[str]):
+        self.model = model
+        self.feature_names = feature_names
+        # Initialize fast C++ TreeSHAP explainer
+        self.explainer = shap.TreeExplainer(model)
+
+    def extract_top_adverse_factors(self, applicant_features: np.ndarray, top_k: int = 3) -> List[str]:
+        """
+        Computes local SHAP values and extracts the top features driving rejection.
+        In default prediction, positive SHAP value = increases risk of default.
+        """
+        shap_values = self.explainer.shap_values(applicant_features.reshape(1, -1))
+        # For binary classification, shap_values gives log-odds contribution
+        instance_shap = shap_values[0] if isinstance(shap_values, list) else shap_values[0]
+
+        # Sort indices by highest contribution to default risk
+        risk_increasing_indices = np.argsort(instance_shap)[::-1]
+
+        adverse_reasons: List[str] = []
+        for idx in risk_increasing_indices:
+            feat_name = self.feature_names[idx]
+            # Only include features that actively increased risk (positive attribution)
+            if instance_shap[idx] > 0 and feat_name in REGULATORY_REASON_CODES:
+                adverse_reasons.append(REGULATORY_REASON_CODES[feat_name])
+                if len(adverse_reasons) == top_k:
+                    break
+
+        return adverse_reasons
+
+    def generate_compliant_notice(
+        self, applicant_id: str, features: np.ndarray, score: int
+    ) -> AdverseActionNotice:
+        """Extracts SHAP reasons and generates a bounded natural language document."""
+        # 1. Deterministic SHAP extraction (Zero LLM hallucination possible)
+        adverse_reasons = self.extract_top_adverse_factors(features, top_k=2)
+
+        # 2. Constrained Prompt Template for LLM Generation
+        # The LLM is strictly prohibited from inventing reasons not in the list.
+        reasons_bulleted = "\n".join([f"- {r}" for r in adverse_reasons])
+        
+        prompt = f"""You are a compliance communications officer at an FDIC-regulated financial institution.
+Generate a formal Adverse Action Notice for applicant {applicant_id}.
+STATUTORY MANDATE: You must explain the decision based SOLELY on the following regulatory reasons:
+{reasons_bulleted}
+
+DO NOT mention or speculate on any other factors (such as age, location, employment, or cash reserves).
+Tone must be professional, objective, and respectful."""
+
+        # Simulated constrained LLM generation (In production: client.chat.completions with AdverseActionNotice schema)
+        synthetic_letter_body = (
+            f"Dear Applicant,\n\n"
+            f"Thank you for your recent application. After careful review of your credit report, "
+            f"we regret that we are unable to approve your credit application at this time. "
+            f"Under the Equal Credit Opportunity Act, our decision was based on the following principal factors:\n"
+            f"{reasons_bulleted}\n\n"
+            f"You have the right to request a free copy of your credit report within 60 days."
+        )
+
+        # 3. Post-Generation Invariant Assertion Gate
+        for reason in adverse_reasons:
+            assert reason.split(":")[0] in synthetic_letter_body, (
+                f"SAFETY INVARIANT VIOLATED: LLM omitted mandated statutory code {reason}"
+            )
+
+        return AdverseActionNotice(
+            applicant_id=applicant_id,
+            decision="DECLINED",
+            risk_score=score,
+            statutory_adverse_reasons=adverse_reasons,
+            letter_body=synthetic_letter_body
+        )
+
+
+# Example Execution
+if __name__ == "__main__":
+    feature_cols = ["debt_to_income", "revolving_utilization", "delinquent_accounts", "credit_history_length"]
+    
+    # Mock trained XGBoost model
+    X_dummy = np.array([
+        [0.25, 0.30, 0, 10],
+        [0.55, 0.85, 2, 2],
+        [0.15, 0.20, 0, 15]
+    ])
+    y_dummy = np.array([0, 1, 0])
+    
+    xgb_clf = xgb.XGBClassifier(n_estimators=10, max_depth=3, random_state=42)
+    xgb_clf.fit(X_dummy, y_dummy)
+
+    orchestrator = HybridXAIOrchestrator(model=xgb_clf, feature_names=feature_cols)
+
+    # Adverse applicant: high DTI (0.52) and high utilization (0.80)
+    declined_applicant_features = np.array([0.52, 0.80, 1, 3])
+    
+    notice = orchestrator.generate_compliant_notice(
+        applicant_id="APP-90214",
+        features=declined_applicant_features,
+        score=585
+    )
+
+    print("\nAudited Adverse Action Deliverable:")
+    print(notice.model_dump_json(indent=2))
+```
 
 ---
 

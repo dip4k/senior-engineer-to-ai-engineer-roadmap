@@ -1,4 +1,4 @@
-# 10 Enterprise AI System Designs: End-to-End Architectural Blueprints
+# 11 Enterprise AI System Designs: End-to-End Architectural Blueprints
 
 > **A comprehensive architectural manual for Senior AI Engineers, Tech Leads, and Enterprise Solutions Architects designing, scaling, and governing production-grade AI systems.**  
 > 
@@ -18,6 +18,7 @@
 8. [Dual-LLM Privilege Quarantine Architecture for Untrusted Ingestion](#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion)
 9. [Autonomous Supply Chain Predictive Inventory Rebalancing Mesh](#9-autonomous-supply-chain-predictive-inventory-rebalancing-mesh)
 10. [Enterprise HR & Corporate Policy Compliance Agent with PII Vault](#10-enterprise-hr--corporate-policy-compliance-agent-with-pii-vault)
+11. [Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer](#11-autonomous-enterprise-sourcing--procurement-mesh-with-shared-semantic-layer)
 
 ---
 
@@ -462,6 +463,115 @@ flowchart TD
 ### 10.5 Senior / Architect Notes
 - **Enclave Boundary**: The PII Tokenization Vault must run inside the enterprise's private VPC/enclave. Unmasked PII must never touch public LLM endpoints or third-party vector databases.
 - **Zero Retention Agreements**: Always execute Business Associate Agreements (BAA) and Zero Data Retention (ZDR) contracts with cloud AI providers to legally prohibit model training on enterprise context.
+
+---
+
+## 11. Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer
+
+### 11.1 Problem Statement
+Global enterprise procurement operations are severely fragmented across heterogeneous ERPs (SAP Ariba, Coupa, NetSuite), disparate supplier punch-out catalogs, legacy contract repositories, and unstructured PDF RFPs. Procurement organizations face three acute operational bottlenecks:
+1. **Intake Latency & Maverick Spend**: Line-of-business employees bypass convoluted procurement workflows because manual intake forms require selecting obscure general ledger (GL) accounting codes and navigating multi-departmental approvals (Legal, Security, Finance, ESG). This friction drives unauthorized credit card purchases ("maverick spend") and compliance violations.
+2. **Manual Supplier Benchmarking (Compare)**: Evaluating competing supplier proposals and RFPs is labor-intensive and inconsistent. Human procurement analysts struggle to normalize complex pricing tiers, differing volume discount curves, SLAs, cyber-risk certifications, and ESG compliance records across competing bids.
+3. **Siloed Spend Analytics (SourceIQ)**: Procurement leaders lack real-time spend intelligence. Identical SKUs, cloud resources, and SaaS software seats are routinely procured at wildly divergent price points by different business units without volume aggregation, duplicate vendor rationalization, or proactive contract renegotiation alerts.
+
+Naive GenAI implementations that allow LLMs to generate raw, unconstrained SQL queries directly against transactional ERP databases fail disastrously: models hallucinate accounting metric definitions (e.g., confusing *committed spend* with *cash disbursed*), bypass row-level and tenant access controls, and risk catastrophic hallucinated purchase order commits.
+
+### 11.2 Summary Solution
+An autonomous, event-driven sourcing and procurement mesh that decouples cognitive agent reasoning from underlying data schemas through an authoritative **Enterprise Shared Semantic Layer** (e.g., Cube, dbt Semantic Layer / MetricFlow, or Snowflake Semantic Layer).
+
+The mesh coordinates three specialized agent capabilities:
+1. **Intake (Multi-Variable Routing)**: Translates natural language requisitions into structured purchase intents, normalizes free-text items against standardized catalog taxonomy (UNSPSC / eCl@ss), evaluates multi-variable policy rules (spend threshold, vendor risk, budget owner, data privacy clearance), and orchestrates dynamic approval graphs.
+2. **Compare (Autonomous Supplier Evaluation)**: Benchmarks competing supplier quotes and RFPs using multi-criteria Pareto optimization across unit pricing, historical SLA track records, cyber risk posture, and ESG compliance.
+3. **SourceIQ (Continuous Spend Intelligence)**: An autonomous background intelligence agent that continuously ingests real-time invoice telemetry, detects price variance anomalies across subsidiaries, surfaces contract renewal renegotiation windows, and consolidates fragmented tail spend.
+
+All mutations to transactional ERPs are strictly mediated via the **Model Context Protocol (MCP 2026)** wrapped in a distributed **Saga Pattern** with Human-in-the-Loop (HITL) step-up authorization for high-value transactions.
+
+### 11.3 Approach
+1. **Multi-Channel Intake & Entity Extraction**:
+   - Inbound purchase requisitions originate from chat interfaces (Slack, Microsoft Teams, Copilot Studio) or corporate portals.
+   - The Intake Agent extracts structured parameters into Pydantic DTOs (item description, quantity, requested delivery date, cost center, business justification).
+2. **Semantic Taxonomy Harmonization**:
+   - The Intake Agent queries the Semantic Layer's Taxonomy Service using dual-encoder embeddings to map free-text items onto canonical enterprise catalog items and UNSPSC categories.
+   - If match confidence $< 0.85$, the agent prompts the requester for clarification with disambiguation options before proceeding.
+3. **Shared Semantic Layer Metric Execution**:
+   - All financial and operational calculations (*year-to-date department spend*, *remaining budget*, *contracted discount tiers*, *vendor historical SLA breach rate*) are fetched by querying the **Shared Semantic Layer** using high-level semantic queries (measures, dimensions, filters), rather than raw SQL.
+   - The Semantic Layer enforces row-level security (RLS), tenant isolation, and metric calculation consistency across all downstream agents.
+4. **Compare Engine (Supplier RFP & Bid Evaluation)**:
+   - When requisitions require competitive sourcing (e.g., spend $>\$25,000$), the Compare Agent retrieves candidate supplier contracts and past performance histories via Hybrid GraphRAG.
+   - Normalizes pricing models (fixed-fee vs. time-and-materials vs. volume tiered) and calculates a composite vendor utility score:
+     $$\text{Utility} = w_1 \cdot \text{CostEfficiency} + w_2 \cdot \text{SLA\_Reliability} + w_3 \cdot \text{ComplianceScore} - w_4 \cdot \text{RiskPenalty}$$
+   - Generates an auditable trade-off matrix highlighting the Pareto-optimal supplier recommendation.
+5. **SourceIQ Background Spend Intelligence**:
+   - Stream worker listens to Kafka/Event Hub invoice publication events.
+   - SourceIQ continuously recalculates cross-organization spend metrics via the Semantic Layer, alerting procurement category managers when identical SaaS licenses or hardware items differ by $>5\%$ across subsidiaries, or when aggregated volume crosses the threshold for enterprise discount renegotiation.
+6. **HITL Step-Up & Two-Phase Saga Commit**:
+   - Low-risk, catalog-backed requisitions under policy threshold ($<\$2,500$) auto-approve.
+   - High-value or anomalous requests generate a cryptographically signed approval token dispatched to the designated cost center owner and procurement officer.
+   - Upon dual-key cryptographic signature, the ERP Execution Agent invokes Stateless MCP tools (`create_purchase_order`, `encumber_budget`) with idempotency keys and registered compensating rollback actions (`cancel_purchase_order`, `release_budget_hold`).
+   - Immutable audit envelopes (reasoning chain, tool inputs/outputs, human signature) are archived to WORM storage.
+
+### 11.4 Architecture Block Diagram
+
+```mermaid
+flowchart TD
+    subgraph Inbound["Multi-Channel Intake Layer"]
+        Req["User Requisition<br>(Slack / Teams / Copilot Studio / Portal)"]
+    end
+
+    subgraph MeshCore["Autonomous Procurement Agent Mesh"]
+        IntakeAgent["1. Intake & Routing Agent<br>(Taxonomy Mapping & Policy FSM)"]
+        CompareAgent["2. Compare Agent<br>(RFP Evaluation & Supplier Benchmarking)"]
+        SourceIQ["3. SourceIQ Agent<br>(Spend Analytics & Contract Arbitrage)"]
+    end
+
+    subgraph SemanticLayer["Authoritative Enterprise Semantic Layer (Cube / MetricFlow)"]
+        Taxonomy["Taxonomy & Catalog Mapping<br>(UNSPSC / eCl@ss Harmonization)"]
+        MetricModels["Standardized Metric Models<br>(Committed Spend, YTD Budget, SLA Metrics)"]
+        AccessControl["Governance & Row-Level Security (RLS)"]
+    end
+
+    subgraph DataPlane["Data & Storage Plane"]
+        ERPs[("Transactional ERPs<br>(SAP Ariba / Coupa / NetSuite)")]
+        ContractRAG[("Contract Knowledge Graph<br>(GraphRAG + Leiden Summaries)")]
+        InvoiceStream[("Real-Time Invoice Telemetry<br>(Kafka / Event Hub)")]
+    end
+
+    subgraph ExecutionPlane["Governance & Execution Plane"]
+        HITL{"Policy & Spend Threshold<br>(Spend > \$10k or Risk > 0.4?)"}
+        SignOff["Procurement & Budget Owner<br>(HMAC Nonce Approval)"]
+        MCP_Gateway["Stateless MCP Gateway<br>(Idempotent ERP Mutation Tools)"]
+        AuditLog[("WORM Immutable Audit Vault<br>(SOX / ISO 42001 Compliance)")]
+    end
+
+    %% Flow connections
+    Req --> IntakeAgent
+    InvoiceStream --> SourceIQ
+
+    IntakeAgent <--> Taxonomy
+    IntakeAgent <--> MetricModels
+    CompareAgent <--> MetricModels
+    CompareAgent <--> ContractRAG
+    SourceIQ <--> MetricModels
+
+    SemanticLayer <--> ERPs
+
+    IntakeAgent --> HITL
+    CompareAgent --> HITL
+    SourceIQ -.->|"Proactive Opportunity Alert"| IntakeAgent
+
+    HITL -- "Auto-Approve (< Threshold)" --> MCP_Gateway
+    HITL -- "Step-Up Required" --> SignOff
+    SignOff --> MCP_Gateway
+
+    MCP_Gateway -->|"Saga Commit"| ERPs
+    MCP_Gateway -->|"Trace & Payload Signoff"| AuditLog
+```
+
+### 11.5 Senior / Architect Notes
+- **Strict Separation of Semantic Taxonomy from Agent Decision Loops**: Never permit autonomous LLMs to write raw, unconstrained SQL queries against transactional procurement databases. In production, raw SQL generation fails due to schema drift, undocumented joins, and inconsistent metric logic (e.g., whether taxes and shipping are factored into `total_spend`). By interposing an authoritative **Semantic Layer** (such as Cube or dbt Semantic Layer), the agent's action space is constrained to declaring high-level intent (`query_metrics(metrics=["realized_savings"], dimensions=["supplier.category", "time.quarter"], filters=[...])`). The semantic layer is responsible for compiling deterministic, performant, and RLS-filtered SQL.
+- **Taxonomy Drift & Catalog Harmonization**: Requester descriptions ("16-inch M3 MacBook Pro 36GB") rarely match ERP master catalog entries ("HW-LPT-APL-16-M3-001"). Use a two-tiered classification pipeline: a fast bi-encoder vector similarity search over canonical UNSPSC/eCl@ss embeddings, followed by an LLM-based reranking verification that checks attribute compatibility (CPU, RAM, storage). If ambiguity exists, the agent must ask clarifying questions rather than guessing.
+- **Saga Pattern for ERP State Mutations**: Purchasing operations cross multiple microservices (budget hold in NetSuite, PO creation in SAP Ariba, and notification in Slack). Because distributed two-phase commits across SaaS ERP APIs are impossible, implement an asynchronous **Saga Pattern**. Every forward tool (`create_po_draft`, `reserve_funds`) must have a corresponding compensating rollback tool (`delete_po_draft`, `release_funds_reservation`).
+- **Auditability and Regulatory Scrutiny**: Under Sarbanes-Oxley (SOX) Section 404 and the EU AI Act (High-Risk AI Systems for credit/procurement financial decisions), automated purchase commitments must provide a tamper-evident audit trail. Every agent execution path must store the initial prompt, semantic queries executed, vendor scores, approval signatures, and final MCP tool payloads in append-only WORM storage.
 
 ---
 

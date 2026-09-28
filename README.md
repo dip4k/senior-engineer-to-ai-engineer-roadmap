@@ -14,6 +14,15 @@ When you move from traditional Software 1.0 (where an `if` statement behaves the
 
 This repository is not a collection of surface-level tutorials or marketing buzzwords. It is a battle-tested **architectural masterclass** treating Large Language Models not as magical oracles, but as **probabilistic reasoning microservices** governed by deterministic harnesses: finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
 
+> [!NOTE]
+> **Learner-Friendly Architecture: Multi-Track Guidance**
+> This repository is a comprehensive masterclass spanning the entire modern AI engineering landscape. **Not all sections or modules are mandatory for every engineer or job role.**
+> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal architectural principles (KV-cache physical realities, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry) that every senior AI engineer must master, regardless of programming language or cloud provider.
+> - **Platform-Specific Implementations (`[GOOD-TO-KNOW] 🟡`)**: Specialized cloud services (e.g. Azure AI Search, AWS Bedrock, GCP Vertex), enterprise platforms (Microsoft Copilot Studio, Power Platform, SAP), and framework-specific SDKs. Focus on these only if they directly match your current enterprise stack or target role track.
+> - **Foundational Theory (`[KNOWLEDGE-BASE] 🔵`)**: Silicon physics, mathematical proofs, and seminal research papers for deep conceptual mastery.
+>
+> Check the **[Recommended Learning Paths](#-recommended-learning-paths)** to follow the curriculum tailored directly to your role (e.g., RAG Architect, Autonomous Agent Engineer, Platform Engineer, or Enterprise AI Lead).
+
 ---
 
 ## 📑 Table of Contents
@@ -99,14 +108,14 @@ flowchart TD
 
 | Phase | Module Name | Core Architectural Deliverables | Duration | Target Level |
 |:---:|:---|:---|:---:|:---:|
-| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth, prefill vs decode, reasoning models (test-time compute), thinking token economics, and SLMs (Phi-4, Gemma 2). | 1 Week | Senior |
-| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, Prefix & Context Caching optimization, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, and MECW context rot. | 1 Week | Senior |
+| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth, prefill vs decode, reasoning models (test-time compute), thinking token economics, SLMs (Phi-4, Gemma 2), and **PEFT/LoRA fine-tuning & knowledge distillation**. | 1 Week | Senior |
+| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, Prefix & Context Caching optimization, **Shared Semantic Layer integration (Cube / MetricFlow)**, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, and MECW context rot. | 1 Week | Senior |
 | **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), ACORN predicate-filtered search, DiskANN, and GraphRAG. | 2 Weeks | Lead |
-| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), Streamable HTTP/SSE, Zero-Trust Tool Sandboxes (MicroVMs), financial idempotency keys, and tool schema caching. | 1 Week | Lead |
+| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), Streamable HTTP/SSE, **Enterprise PaaS MCP Bridge (Copilot Studio & Cloud PaaS)**, Zero-Trust Tool Sandboxes (MicroVMs), financial idempotency keys, and tool schema caching. | 1 Week | Lead |
 | **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Event-Sourced Write-Ahead Log (WAL), crash rehydration, Loop Engineering (action hashing, budget decay), Microsoft Agent Framework (MAF GA), and the Tri-Protocol stack. | 2 Weeks | Staff |
-| **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and egress filtering. | 1 Week | Lead |
-| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, multi-turn tool trajectory FSM validation, groundedness judges, and the dedicated OpenTelemetry `semantic-conventions-genai` repo standards. | 1 Week | Lead |
-| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Token-Bucket TPM/RPM throttling, vector semantic caching, Batch APIs (50% discount), and Edge AI deployment. | 2 Weeks | Lead/Ops |
+| **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and **Algorithmic Bias, Disparate Impact & Fairlearn audits (EU AI Act compliance)**. | 1 Week | Lead |
+| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, multi-turn tool trajectory FSM validation, groundedness judges, **Explainable AI (XAI / SHAP attribution grounding)**, and OpenTelemetry `semantic-conventions-genai` repo standards. | 1 Week | Lead |
+| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Token-Bucket TPM/RPM throttling, vector semantic caching, Batch APIs (50% discount), **Dynamic Multi-LoRA Adapter Serving (S-LoRA / vLLM multi-adapter routing)**, and Edge AI deployment. | 2 Weeks | Lead/Ops |
 | **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | The Big Seven agentic coding tools (Claude Code, Cursor, Windsurf), The Trust Gap (90% usage vs 29% trust), Verified Agentic Engineering, and machine-readable `AGENT.md` contracts. | Ongoing | Executive |
 
 ---
@@ -136,9 +145,10 @@ Master production patterns through runnable, verified implementations in Python 
 | **04** | **Distributed Agent Saga Pattern** | Two-phase tool commits with forward actions and compensating rollback tools for failed external operations. | [`lab4-saga-pattern.md`](./04-agentic-systems-and-orchestration/labs/lab4-saga-pattern.md) |
 | **05** | **Agent Memory & State Management** | 4-tier memory taxonomy (Working, Short-Term, Long-Term Semantic/Episodic), Ebbinghaus decay, MaaS, and GDPR crypto-shredding. | [`lab5-agent-memory-system.md`](./04-agentic-systems-and-orchestration/labs/lab5-agent-memory-system.md) |
 | **06** | **Multimodal Vision & Document Agent** | High-resolution document tiling math, white-text visual injection quarantine, and schema-grounded financial invoice extraction. | [`lab6-multimodal-agent.md`](./04-agentic-systems-and-orchestration/labs/lab6-multimodal-agent.md) |
-| **07** | **Enterprise Platform Core (`agent-forge`)** | Production reference implementation combining AI gateway, WAL crash rehydration, MCP 2026, ACORN/RRF hybrid retrieval, and OTel GenAI tracing. | [`agent-forge/`](./agent-forge/README.md) |
+| **07** | **Hybrid ML Fairness & Explainability** | Regulated financial credit & procurement pipeline: tabular ML risk scoring, Fairlearn bias audit (80% rule, DPD), SHAP attributions, and guarded LLM Adverse Action notices. | [`lab-07-hybrid-ml-fairness-and-explainability.md`](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) |
+| **Core** | **Enterprise Platform Core (`agent-forge`)** | Production reference implementation combining AI gateway, WAL crash rehydration, MCP 2026, ACORN/RRF hybrid retrieval, and OTel GenAI tracing. | [`agent-forge/`](./agent-forge/README.md) |
 
-*For end-to-end module capstones (Token Economics Analyzer, Context Pipeline, Enterprise RAG Pipeline, MCP Server, Security Guardrails, and CI/CD Eval Gate), see each phase's `labs/` directory.*
+*For complete standalone specifications across all engineering modules (Multi-Tenant Hybrid RAG, Tool Execution with MCP, Stateful Agent Orchestration, Agent Failure Defense, AI Observability & Tracing, Dual-LLM Quarantine, and Hybrid ML Fairness), explore the [`labs/`](./labs/) directory.*
 
 ---
 
@@ -155,7 +165,9 @@ In addition to the 9 curriculum phases, this repository provides authoritative e
 * 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): Battle-tested guide for Senior, Staff, and AI Engineers tackling crisis leadership, cascading production outages, silent ML data leakage, and the CARL+S framework.
 * 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic anti-patterns (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools, vibe checks) with 2:00 AM war stories, ELI10 analogies, and concrete code fixes.
 * ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act enforcement, 4-tier risk classification, GPAI model rules, NIST AI RMF, and GDPR Article 17 crypto-shredding.
-* 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for core enterprise patterns.
+* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for 11 core enterprise patterns, including the Autonomous Sourcing & Procurement Mesh with Shared Semantic Layer.
+* 🔌 [**Enterprise Use Case 07: Copilot Studio & Enterprise PaaS MCP Bridge**](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md): Architectural blueprint connecting low-code Copilot Studio to cloud PaaS microservices via Streamable HTTP MCP and Entra ID.
+* ⚖️ [**Lab 07: Hybrid ML Fairness & Explainability**](./labs/lab-07-hybrid-ml-fairness-and-explainability.md): Regulated credit/procurement pipeline with tabular ML, Fairlearn bias audit (80% rule), SHAP attributions, and grounded LLM adverse action notice generator.
 * 🎯 [**80/20 AI System Design Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md): Master cheat sheet for Senior & Staff AI Engineer interviews, covering 5 master system designs, 25 architect Q&As, and tradeoff matrices.
 * 🎙️ [**The AI Platform Engineer Interview Handbook**](./interview/ai-platform-engineer-handbook.md): The specialized technical interview guide for Senior/Staff AI Platform roles, featuring back-of-the-envelope capacity math (KV-cache VRAM, 1B vector sizing), vector storage internals (HNSW tombstoning, ACORN predicate search), 45-minute live coding challenges, and SRE incident war stories.
 * 📘 [**The Senior AI Engineer & Architect Transition Guide**](./senior-transition-guide.md): The definitive guide for Senior Software Engineers transitioning from Software 1.0/2.0 to AI-Native Engineering, featuring a 90-day execution roadmap.
@@ -164,7 +176,7 @@ In addition to the 9 curriculum phases, this repository provides authoritative e
 
 ## 🏢 Enterprise Architecture Blueprints
 
-The curriculum maps directly to the six primary enterprise AI architectural archetypes:
+The curriculum maps directly to the seven primary enterprise AI architectural archetypes, supported by comprehensive system designs and deep-dive use case blueprints:
 
 ```mermaid
 flowchart LR
@@ -176,6 +188,7 @@ flowchart LR
         UC4["4. Resilient AI Gateway<br>(Cost & Latency Governor)"]
         UC5["5. Continuous Evals Flywheel<br>(CI/CD Quality Gates)"]
         UC6["6. Autonomous SDLC Pipeline<br>(Software 3.0 & AGENT.md)"]
+        UC7["7. Copilot Studio & PaaS MCP Bridge<br>(Enterprise Low-Code to Cloud PaaS)"]
     end
     
     subgraph Curricula["Curriculum Coverage"]
@@ -186,6 +199,7 @@ flowchart LR
         P4["Phases 00, 05, 07"]
         P5["Phases 01, 06, 08"]
         P6["Phases 03, 04, 08"]
+        P7["Phases 03, 04, 07"]
     end
 
     UC1 --> P1
@@ -194,7 +208,24 @@ flowchart LR
     UC4 --> P4
     UC5 --> P5
     UC6 --> P6
+    UC7 --> P7
 ```
+
+### 🏛️ Dedicated Architectural Blueprints & System Designs
+
+* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): 11 complete end-to-end architectures (Problem Statement, Approach, Block Diagram, Senior/Architect Notes) including:
+  - Financial Reconciliation & Exception Management Engine (Saga Pattern)
+  - Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning (GraphRAG + RBAC)
+  - Autonomous Cloud Infrastructure SRE & Remediation Agent
+  - Autonomous AI Coding & PR Verification Bot (Software 3.0 SDLC)
+  - Omnichannel Customer Operations Triage & Peer Swarm (A2A + MCP)
+  - Enterprise Dual-Tier AI Gateway with Cost Governor & Semantic Caching
+  - Continuous Automated LLM Evaluation & Regression Gate (Hamel 3-Level Evals)
+  - Dual-LLM Privilege Quarantine Architecture for Untrusted Ingestion
+  - Autonomous Supply Chain Predictive Inventory Rebalancing Mesh
+  - Enterprise HR & Corporate Policy Compliance Agent with PII Vault
+  - **Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer** (Compare, Intake, SourceIQ)
+* 🔌 [**Enterprise Architectural Use Cases (01–07)**](./use-cases/README.md): Production reference blueprints including **Use Case 07: Copilot Studio & Enterprise PaaS MCP Bridge** (connecting low-code conversational copilots to serverless Python/.NET MCP servers over SSE with Azure AI Search grounding and Entra ID authentication).
 
 ---
 
@@ -228,9 +259,9 @@ flowchart LR
 
 Every topic across the curriculum is classified using a pragmatic 3-tier taxonomy so you can prioritize your study time:
 
-* **[MUST-HAVE] 🔴 (The 80% Core)**: Non-negotiable primitives, production failure modes, and architectural standards required to build systems that survive in production without crashing or overspending.
-* **[GOOD-TO-HAVE] 🟡 (The 15% Advanced)**: Edge-case optimizations, emerging protocols, and multi-agent coordination patterns that separate Senior from Staff AI Engineers.
-* **[KNOWLEDGE-BASE] 🔵 (The 5% Deep Theory)**: Historical context, hardware physics, and foundational papers for comprehensive mastery.
+* **[MUST-HAVE] 🔴 (Core Agnostic Systems Principles)**: Non-negotiable, language- and platform-agnostic primitives, production failure modes, and architectural standards required to build systems that survive in production without crashing or overspending.
+* **[GOOD-TO-KNOW] 🟡 (Platform-Specific & Framework Implementations)**: Cloud-specific services (Azure AI Search, Microsoft Copilot Studio, AWS Bedrock, GCP Vertex), framework-specific bindings, and niche edge-case optimizations. Learn these if relevant to your current technology stack or enterprise target.
+* **[KNOWLEDGE-BASE] 🔵 (Foundational Theory & Deep Science)**: Historical context, hardware physics, and foundational research papers for comprehensive theoretical mastery.
 
 ---
 
@@ -241,7 +272,9 @@ Every topic across the curriculum is classified using a pragmatic 3-tier taxonom
 * 🚨 [**Production Post-Mortems Compendium**](./architecture/post-mortems/README.md): Detailed blameless RCAs on cache stampedes, feature leakage, and agent loops.
 * 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Test-time compute, MCP, MicroVM sandboxing, RadixAttention KV caching, GraphRAG, and 12-month adoption timeline.
 * 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): The CARL+S framework, 6 crisis archetypes, production outage scripts, and silent ML drift post-mortems.
-* 🏗️ [**10 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes).
+* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes) across 11 core patterns including Autonomous Procurement Mesh & Semantic Layer.
+* 🔌 [**Enterprise Use Case 07: Copilot Studio & Enterprise PaaS MCP Bridge**](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md): Architectural blueprint connecting low-code Copilot Studio to cloud PaaS microservices via Streamable HTTP MCP and Entra ID.
+* ⚖️ [**Lab 07: Hybrid ML Fairness & Explainability**](./labs/lab-07-hybrid-ml-fairness-and-explainability.md): Regulated tabular ML risk scoring + Fairlearn bias audit (80% rule) + SHAP attributions + guarded LLM adverse action notice generator.
 * 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
 * ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
 * 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 → 3.0 shift, polyglot matrix, and 90-day execution plan.
