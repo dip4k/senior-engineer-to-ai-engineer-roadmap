@@ -4,6 +4,7 @@
 [![Verified: September 2026](https://img.shields.io/badge/Verified-September%202026-blue.svg)](#-the-ai-engineering-landscape-then-vs-now)
 [![Stack: Python 3.12+ | .NET 9](https://img.shields.io/badge/Polyglot-Python%20%7C%20.NET%209-brightgreen.svg)](#-dual-language-enterprise-stack)
 [![Protocols: MCP | A2A | AG-UI](https://img.shields.io/badge/Protocols-MCP%20%7C%20A2A%20%7C%20AG--UI-orange.svg)](#-enterprise-protocols--ecosystem)
+[![Glossary: 21 Practices](https://img.shields.io/badge/Glossary-21%20Practices-blueviolet.svg)](./ai-engineering-glossary-by-practice.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 > **The Definitive Engineering Curriculum**: Moving developers from fragile "vibe coding" and prompt alchemy to deterministic, production-grade **Software 3.0 systems engineering**.
@@ -23,19 +24,28 @@ This repository is not a collection of surface-level tutorials or marketing buzz
 >
 > Check the **[Recommended Learning Paths](#-recommended-learning-paths)** to follow the curriculum tailored directly to your role (e.g., RAG Architect, Autonomous Agent Engineer, Platform Engineer, or Enterprise AI Lead).
 
+> [!TIP]
+> **New to AI Engineering Terminology? Start with the Glossary**  
+> If you are encountering terms like *KV-cache, Late Chunking, ReAct loops, Model Context Protocol (MCP), or Hallucination* for the first time, keep the [**📖 Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) open as your companion reference. It breaks down every core concept into **1–2 concise sentences** categorized across 21 engineering disciplines, complete with trade-off decision trees.
+
 ---
 
 ## 📑 Table of Contents
 
+* 📖 [**Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) *(Essential 1–2 sentence companion guide across 21 disciplines)*
 1. [The AI Engineering Landscape: Then vs. Now](#-the-ai-engineering-landscape-then-vs-now)
 2. [Master Curriculum Syllabus (Phases 00–08)](#-master-curriculum-syllabus)
 3. [Recommended Learning Paths](#-recommended-learning-paths)
 4. [Hands-On Practice Labs Showcase](#-hands-on-practice-labs-showcase)
 5. [The Premier Standalone Engineering Guides](#-the-premier-standalone-engineering-guides)
+   * [5.1 🎯 Technical Interview & Career Transition Mastery](#1--technical-interview--career-transition-mastery)
+   * [5.2 🏛️ Enterprise Architecture, Platform Core & System Design](#2-️-enterprise-architecture-platform-core--system-design)
+   * [5.3 🛡️ Production SRE, Failure Defenses & Audit Gates](#3--production-sre-failure-defenses--audit-gates)
+   * [5.4 ⚖️ Strategic Roadmaps, Governance & Regulated Systems](#4-️-strategic-roadmaps-governance--regulated-systems)
 6. [Enterprise Architecture Blueprints](#-enterprise-architecture-blueprints)
 7. [Enterprise Protocols & Ecosystem Alignment](#-enterprise-protocols--ecosystem-alignment)
 8. [Architectural Mastery Tiers](#-architectural-mastery-tiers)
-9. [⚡ Quick Navigation & Reference Hub](#-quick-navigation--reference-hub)
+9. [⚡ Quick Navigation & Master Hub](#-quick-navigation--master-hub)
 
 ---
 
@@ -146,31 +156,55 @@ Master production patterns through runnable, verified implementations in Python 
 | **05** | **Agent Memory & State Management** | 4-tier memory taxonomy (Working, Short-Term, Long-Term Semantic/Episodic), Ebbinghaus decay, MaaS, and GDPR crypto-shredding. | [`lab5-agent-memory-system.md`](./04-agentic-systems-and-orchestration/labs/lab5-agent-memory-system.md) |
 | **06** | **Multimodal Vision & Document Agent** | High-resolution document tiling math, white-text visual injection quarantine, and schema-grounded financial invoice extraction. | [`lab6-multimodal-agent.md`](./04-agentic-systems-and-orchestration/labs/lab6-multimodal-agent.md) |
 | **07** | **Hybrid ML Fairness & Explainability** | Regulated financial credit & procurement pipeline: tabular ML risk scoring, Fairlearn bias audit (80% rule, DPD), SHAP attributions, and guarded LLM Adverse Action notices. | [`lab-07-hybrid-ml-fairness-and-explainability.md`](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) |
-| **Core** | **Enterprise Platform Core (`agent-forge`)** | Production reference implementation combining AI gateway, WAL crash rehydration, MCP 2026, ACORN/RRF hybrid retrieval, and OTel GenAI tracing. | [`agent-forge/`](./agent-forge/README.md) |
 
-*For complete standalone specifications across all engineering modules (Multi-Tenant Hybrid RAG, Tool Execution with MCP, Stateful Agent Orchestration, Agent Failure Defense, AI Observability & Tracing, Dual-LLM Quarantine, and Hybrid ML Fairness), explore the [`labs/`](./labs/) directory.*
+*For complete standalone specifications across all engineering modules, explore the [`labs/`](./labs/) directory. For the unified enterprise platform harness synthesizing these lab patterns, see [**AgentForge**](#2-️-enterprise-architecture-platform-core--system-design) under Enterprise Architecture below.*
 
 ---
 
 ## 🌟 The Premier Standalone Engineering Guides
 
-In addition to the 9 curriculum phases, this repository provides authoritative enterprise reference playbooks, audit gates, and architectural records:
+In addition to the 9 curriculum phases, this repository provides battle-tested enterprise reference playbooks, runnable platform cores, SRE failure compendiums, and interview preparation guides—organized below by their engineering focus and operational usefulness:
 
-* 🏗️ [**Senior AI Platform & Agent Infrastructure Roadmap**](./ai-platform-and-agent-infrastructure-roadmap.md): The unified preparation curriculum and systems guide for Agent Harness Platform Engineers and Vector/RAG Platform Architects, featuring zero-trust tool execution, durable event loops, and OpenTelemetry GenAI observability.
-* ⚒️ [**AgentForge Reference Platform (MVP / POC)**](./agent-forge/README.md): Complete, runnable reference implementation of an enterprise AI platform core with hybrid retrieval (BM25 + Dense + RRF), Model Context Protocol (MCP 2026), Write-Ahead Log (WAL) crash resilience, and automated CI/CD quality gates.
-* 🛡️ [**The AI Production Readiness Review (PRR) Audit Gate**](./architecture/production-readiness-review.md): The 50-point enterprise go-live audit checklist across availability, token budgets, sandboxing, durability, OpenTelemetry, and EU AI Act compliance.
-* 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md): Formal trade-off records settling foundational debates (`pgvector` vs Qdrant, Model Context Protocol vs REST, System 2 reasoning vs SLMs, RadixAttention vs external memory).
-* 🚨 [**Production Post-Mortems & Failure Compendium**](./architecture/post-mortems/README.md): Detailed SRE root-cause analyses (RCAs) of catastrophic production outages, cascading KV-cache stampedes, silent feature leakage, and cyclic agent deadlocks.
-* 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Strategic roadmap covering test-time compute, Model Context Protocol (MCP), MicroVM sandboxing, RadixAttention KV-caching, GraphRAG, and ISO 42001 governance.
-* 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): Battle-tested guide for Senior, Staff, and AI Engineers tackling crisis leadership, cascading production outages, silent ML data leakage, and the CARL+S framework.
-* 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic anti-patterns (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools, vibe checks) with 2:00 AM war stories, ELI10 analogies, and concrete code fixes.
-* ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act enforcement, 4-tier risk classification, GPAI model rules, NIST AI RMF, and GDPR Article 17 crypto-shredding.
-* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): Complete end-to-end system design blueprints (Problem Statement, Architectural Approach, Mermaid Diagrams, and Architect Notes) for 11 core enterprise patterns, including the Autonomous Sourcing & Procurement Mesh with Shared Semantic Layer.
-* 🔌 [**Enterprise Use Case 07: Copilot Studio & Enterprise PaaS MCP Bridge**](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md): Architectural blueprint connecting low-code Copilot Studio to cloud PaaS microservices via Streamable HTTP MCP and Entra ID.
-* ⚖️ [**Lab 07: Hybrid ML Fairness & Explainability**](./labs/lab-07-hybrid-ml-fairness-and-explainability.md): Regulated credit/procurement pipeline with tabular ML, Fairlearn bias audit (80% rule), SHAP attributions, and grounded LLM adverse action notice generator.
-* 🎯 [**80/20 AI System Design Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md): Master cheat sheet for Senior & Staff AI Engineer interviews, covering 5 master system designs, 25 architect Q&As, and tradeoff matrices.
-* 🎙️ [**The AI Platform Engineer Interview Handbook**](./interview/ai-platform-engineer-handbook.md): The specialized technical interview guide for Senior/Staff AI Platform roles, featuring back-of-the-envelope capacity math (KV-cache VRAM, 1B vector sizing), vector storage internals (HNSW tombstoning, ACORN predicate search), 45-minute live coding challenges, and SRE incident war stories.
-* 📘 [**The Senior AI Engineer & Architect Transition Guide**](./senior-transition-guide.md): The definitive guide for Senior Software Engineers transitioning from Software 1.0/2.0 to AI-Native Engineering, featuring a 90-day execution roadmap.
+### 1. 🎯 Technical Interview & Career Transition Mastery
+*Target: Senior Developers, Tech Leads, and AI Architects preparing for high-stakes system design, technical architecture, and behavioral interviews.*
+
+| Guide / Playbook | Artifact Type | Primary Usefulness & Target Objective |
+| :--- | :--- | :--- |
+| 📖 [**Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) | **Glossary & Decision Matrix** | Rapid-recall 1–2 sentence explanations across 21 core practices, high-value trade-off rules, and senior architectural defense question trees. |
+| 🎯 [**80/20 AI System Design Interview Prep Sheet**](./interview/80-20-ai-interview-prep-sheet.md) | **System Design Cheat Sheet** | Master 5 end-to-end enterprise blueprints, 25 architect Q&As, and tradeoff matrices (ReAct vs. DAG, Vector DB vs. relational, MCP vs. REST). |
+| 🎙️ [**AI Platform Engineer Interview Handbook**](./interview/ai-platform-engineer-handbook.md) | **Platform & Infra Guide** | Hardware capacity math (KV-cache VRAM, 1B vector sizing), storage engine internals (HNSW tombstoning, ACORN), and 45-min live coding challenges. |
+| 🎯 [**High-Stakes Behavioral & Scenario Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md) | **Crisis Leadership Playbook** | The CARL+S framework for navigating cascading production outages, silent ML data leakage, and cross-functional engineering conflict. |
+| 📘 [**The Senior Transition Guide**](./senior-transition-guide.md) | **90-Day Execution Roadmap** | Step-by-step roadmap for Senior .NET/Cloud Engineers bridging traditional Software 1.0 patterns into autonomous, agentic systems engineering. |
+
+### 2. 🏛️ Enterprise Architecture, Platform Core & System Design
+*Target: System architects, tech leads, and platform teams designing enterprise AI backbones and platform harnesses.*
+
+| Guide / Blueprint | Artifact Type | Primary Usefulness & Target Objective |
+| :--- | :--- | :--- |
+| ⚒️ [**AgentForge Reference Platform Core**](./agent-forge/README.md) | **Runnable Platform Core** | Complete production reference implementation featuring hybrid search (BM25 + Dense + RRF), MCP 2026, WAL crash rehydration, and automated eval gates. |
+| 🏗️ [**Senior AI Platform & Agent Infra Roadmap**](./ai-platform-and-agent-infrastructure-roadmap.md) | **Platform Systems Syllabus** | Comprehensive architecture for building zero-trust agent execution engines, enterprise vector platforms, and OpenTelemetry GenAI observability. |
+| 🏗️ [**11 Enterprise AI System Designs**](#-dedicated-architectural-blueprints--system-designs) | **System Design Blueprints** | Production blueprints across 11 core archetypes (e.g., Autonomous Sourcing Mesh, Shared Semantic Layers) with sequence diagrams and architect notes. |
+| 🔌 [**Enterprise PaaS & Copilot Studio MCP Bridge**](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md) | **Hybrid Integration Guide** | Concrete architecture connecting low-code Copilot Studio to cloud PaaS microservices via Streamable HTTP MCP and Microsoft Entra ID. |
+| 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md) | **Formal Decision Records** | Defensible enterprise trade-off documentation settling pgvector vs. Qdrant, MCP vs. REST, System 2 reasoning models, and RadixAttention. |
+
+### 3. 🛡️ Production SRE, Failure Defenses & Audit Gates
+*Target: Tech leads and platform engineers taking AI systems to production with zero regressions and high availability.*
+
+| Guide / Playbook | Artifact Type | Primary Usefulness & Target Objective |
+| :--- | :--- | :--- |
+| 🛡️ [**AI Production Readiness Review (PRR)**](./architecture/production-readiness-review.md) | **Enterprise Audit Gate** | 50-point go-live checklist verifying availability, hard token budgets, process sandboxing, state durability, and EU AI Act compliance before release. |
+| 🚨 [**Production Post-Mortems & Failure Compendium**](./architecture/post-mortems/README.md) | **Blameless Incident RCAs** | Deep SRE post-mortems analyzing catastrophic real-world outages: cascading KV-cache stampedes, silent feature leakage, and cyclic agent deadlocks. |
+| 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md) | **Defensive Anti-Pattern Guide** | 15 catastrophic AI traps (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools) with 2:00 AM war stories and concrete code fixes. |
+
+### 4. ⚖️ Strategic Roadmaps, Governance & Regulated Systems
+*Target: Engineering leaders and architects ensuring regulatory compliance and long-term tech stack alignment.*
+
+| Guide / Framework | Artifact Type | Primary Usefulness & Target Objective |
+| :--- | :--- | :--- |
+| 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md) | **Strategic Horizon Scan** | 12-month adoption timeline covering test-time compute, Model Context Protocol (MCP), MicroVM sandboxing, RadixAttention, and GraphRAG. |
+| ⚖️ [**AI Governance, Compliance & EU AI Act Guide**](./resources/ai-governance-and-compliance-guide.md) | **Compliance Checklist** | Practical engineering blueprint for EU AI Act 4-tier risk classification, GPAI transparency rules, NIST AI RMF, and GDPR crypto-shredding. |
+| 📑 [**Comprehensive Curriculum & Phase Resource Map**](./resources/topics-and-resource-map.md) | **Curriculum Taxonomy** | Complete phase-by-phase reference map of official SDK docs, research papers, and standards across 24 phases. |
+| 🛠️ [**Master Resource Index**](./resources/resource-index.md) | **Curated Tool Directory** | Centralized directory of enterprise LLMOps tools, benchmark suites, and vector database engines. |
 
 ---
 
@@ -265,19 +299,12 @@ Every topic across the curriculum is classified using a pragmatic 3-tier taxonom
 
 ---
 
-## ⚡ Quick Navigation & Reference Hub
+## ⚡ Quick Navigation & Master Hub
 
-* 🛡️ [**AI Production Readiness Review (PRR)**](./architecture/production-readiness-review.md): 50-point enterprise go-live audit gate (availability, token caps, sandboxing, evals).
-* 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md): Battle-tested decisions on vector DBs, MCP, reasoning models, and KV caching.
-* 🚨 [**Production Post-Mortems Compendium**](./architecture/post-mortems/README.md): Detailed blameless RCAs on cache stampedes, feature leakage, and agent loops.
-* 🗺️ [**Emerging AI Technology Roadmap (2025–2026)**](./ai-technology-roadmap-2025-2026.md): Test-time compute, MCP, MicroVM sandboxing, RadixAttention KV caching, GraphRAG, and 12-month adoption timeline.
-* 🎯 [**High-Stakes Behavioral & Scenario Interview Guide**](./interview/high-stakes-behavioral-and-scenario-guide.md): The CARL+S framework, 6 crisis archetypes, production outage scripts, and silent ML drift post-mortems.
-* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): End-to-end architectures (Problem, Approach, Block Diagram, Architect Notes) across 11 core patterns including Autonomous Procurement Mesh & Semantic Layer.
-* 🔌 [**Enterprise Use Case 07: Copilot Studio & Enterprise PaaS MCP Bridge**](./use-cases/use-case-07-copilot-studio-and-paas-mcp-bridge.md): Architectural blueprint connecting low-code Copilot Studio to cloud PaaS microservices via Streamable HTTP MCP and Entra ID.
-* ⚖️ [**Lab 07: Hybrid ML Fairness & Explainability**](./labs/lab-07-hybrid-ml-fairness-and-explainability.md): Regulated tabular ML risk scoring + Fairlearn bias audit (80% rule) + SHAP attributions + guarded LLM adverse action notice generator.
-* 🚨 [**Top 15 Beginner Mistakes Cheatsheet**](./resources/beginner-mistakes-cheatsheet.md): 15 catastrophic AI anti-patterns, production war stories, and architectural remedies.
-* ⚖️ [**AI Governance & Compliance Guide**](./resources/ai-governance-and-compliance-guide.md): Practical engineering checklist for EU AI Act, NIST RMF, and GDPR crypto-shredding.
-* 📘 [**The Senior Transition Guide**](./senior-transition-guide.md): The Software 1.0 → 3.0 shift, polyglot matrix, and 90-day execution plan.
-* 🎯 [**80/20 System Design Interview Prep**](./interview/80-20-ai-interview-prep-sheet.md): 5 master blueprints, 25 architect Q&As, and tradeoff cheat sheets.
-* 📑 [**Comprehensive Resource Map**](./resources/topics-and-resource-map.md): Direct links to official provider docs, SDKs, and courses across 24 phases.
-* 🛠️ [**Master Resource Index**](./resources/resource-index.md): Curated documentation, seminal papers, and enterprise frameworks.
+Navigate directly to the core curriculum tracks, lab directories, and curated catalogs across the repository:
+
+* 🗺️ [**Master Curriculum Syllabus (Phases 00–08)**](#-master-curriculum-syllabus): Progressive 9-phase systems engineering syllabus from hardware inference to SDLC leadership.
+* 🧪 [**Hands-On Practice Labs Showcase**](#-hands-on-practice-labs-showcase): 7 runnable enterprise labs (Python/Pydantic & .NET 9) covering stateful agents, MCP, and SAGAs.
+* 🌟 [**The Premier Standalone Engineering Guides**](#-the-premier-standalone-engineering-guides): 16 specialized playbooks organized across Interview, Architecture, SRE, and Governance tracks.
+* 🏢 [**Enterprise Architecture Blueprints**](#-enterprise-architecture-blueprints): The 7 core enterprise AI archetypes and system design specifications.
+* 🎯 [**Architectural Mastery Tiers**](#-architectural-mastery-tiers): Taxonomy classification ([MUST-HAVE], [GOOD-TO-KNOW], [KNOWLEDGE-BASE]).
