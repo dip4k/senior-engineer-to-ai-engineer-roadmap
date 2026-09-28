@@ -264,10 +264,19 @@ HNSW is the gold standard for high-recall, low-latency ANN search:
   - `efConstruction` (Exploration factor during build, typically 100–400): Controls index build accuracy.
   - `efSearch` (Exploration factor during query, typically 32–128): Configurable query-time trade-off between QPS and recall.
 
-#### Quantization Strategies (Memory Optimization)
-- **Scalar Quantization (SQ8)**: Maps 32-bit floating point numbers (FP32) to 8-bit integers (INT8). Reduces index RAM footprint by 75% with less than 1% drop in recall.
-- **Product Quantization (PQ)**: Decomposes high-dimensional vectors into $M$ sub-vectors, quantizing each into an assigned centroid cluster (codebook). Reduces RAM by 85%–95%, enabling tens of millions of vectors on a single node.
-- **Binary Quantization (BQ)**: Quantizes values strictly into 1 bit ($>0 \to 1, \le 0 \to 0$). Enables blazing fast XOR / POPCNT CPU instructions with 32x RAM reduction, typically used as an initial fast filter followed by full rescoring.
+#### Filtered Vector Search & The ACORN Paradigm (2026 Industry Standard)
+In real-world enterprise RAG, pure vector searches rarely occur; queries are coupled with strict metadata predicates (`tenant_id = 'corp_42' AND department = 'finance'`).
+- **The Classical Dilemma**:
+  - **Naive Post-Filtering**: Runs unconstrained HNSW search for top 100 vectors, then discards non-matching nodes. Highly selective filters (e.g. 1% match rate) cause **Filter Starvation** (top-K returns empty or underfilled).
+  - **Naive Pre-Filtering**: Restricts the graph to matching documents *before* traversal. Because valid nodes are sparse, the surviving graph fractures into isolated islands (**Graph Disconnection**), causing early search termination and catastrophic recall drops.
+- **The Modern Solution: ACORN (SIGMOD 2024 / Production Standard)**:
+  - **ACORN-1**: Uses a *neighbors-of-neighbors* approach at search time. When an immediate neighbor violates the filter predicate, the traversal algorithm explores the 2-hop neighborhood dynamically to maintain connectivity without modifying the core index structure (adopted across Qdrant, Apache Lucene, and Elasticsearch).
+  - **ACORN-$\gamma$**: Densifies the graph by maintaining up to $\gamma \cdot M$ edges per node at construction time, guaranteeing that the predicate subgraph remains topologically connected under strict filtering.
+
+#### Disk-Backed Vector Search (DiskANN)
+When vector collections exceed hundreds of millions of embeddings, storing uncompressed FP32 HNSW graphs in RAM becomes economically prohibitive:
+- **DiskANN (Vamana Graph)**: Stores the high-degree graph index and full vectors on fast NVMe SSDs while keeping compressed (PQ/SQ) representations in RAM.
+- Employs parallel asynchronous I/O requests (`io_uring`) to achieve sub-10ms P99 latencies at a fraction of the DRAM cost, serving as the foundational vector engine for Azure Cosmos DB and large-scale cloud indexes.
 
 ---
 

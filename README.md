@@ -100,13 +100,13 @@ flowchart TD
 | Phase | Module Name | Core Architectural Deliverables | Duration | Target Level |
 |:---:|:---|:---|:---:|:---:|
 | **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth, prefill vs decode, reasoning models (test-time compute), thinking token economics, and SLMs (Phi-4, Gemma 2). | 1 Week | Senior |
-| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, MECW context rot, dynamic tool loadout pruning, and LLMLingua-2. | 1 Week | Senior |
-| **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), Cross-Encoder rerankers, and GraphRAG. | 2 Weeks | Lead |
-| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), streamable HTTP transports, Tasks extension for async jobs, tool schema caching, and Docker/gVisor sandboxing. | 1 Week | Lead |
-| **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Loop Engineering (action hashing, budget decay), CodeAct vs JSON, durable state checkpointing, Microsoft Agent Framework (MAF 1.0 GA), Google ADK GA, and the Tri-Protocol stack. | 2 Weeks | Staff |
+| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, Prefix & Context Caching optimization, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, and MECW context rot. | 1 Week | Senior |
+| **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), ACORN predicate-filtered search, DiskANN, and GraphRAG. | 2 Weeks | Lead |
+| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), Streamable HTTP/SSE, Zero-Trust Tool Sandboxes (MicroVMs), financial idempotency keys, and tool schema caching. | 1 Week | Lead |
+| **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Event-Sourced Write-Ahead Log (WAL), crash rehydration, Loop Engineering (action hashing, budget decay), Microsoft Agent Framework (MAF GA), and the Tri-Protocol stack. | 2 Weeks | Staff |
 | **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and egress filtering. | 1 Week | Lead |
-| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, discrete binary LLM-as-a-judge rubrics, golden test datasets, CI/CD regression gates, and OpenTelemetry GenAI semantic conventions. | 1 Week | Lead |
-| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Batch APIs (50% red-eye discount), 2026 model pricing spread (\$0.075 to \$75/M), dual-tier caching (SHA-256 + Vector), and Edge AI deployment. | 2 Weeks | Lead/Ops |
+| **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, multi-turn tool trajectory FSM validation, groundedness judges, and the dedicated OpenTelemetry `semantic-conventions-genai` repo standards. | 1 Week | Lead |
+| **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Token-Bucket TPM/RPM throttling, vector semantic caching, Batch APIs (50% discount), and Edge AI deployment. | 2 Weeks | Lead/Ops |
 | **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | The Big Seven agentic coding tools (Claude Code, Cursor, Windsurf), The Trust Gap (90% usage vs 29% trust), Verified Agentic Engineering, and machine-readable `AGENT.md` contracts. | Ongoing | Executive |
 
 ---
@@ -117,9 +117,10 @@ Choose the track tailored to your current focus and engineering background:
 
 | Track | Objective | Target Modules | Primary Outcome |
 |:---|:---|:---|:---|
-| **Track 1: Precision Core & RAG** | Master retrieval and grounding | Phases 00 → 01 → 02 → 06 | Production-grade grounded search with Late Chunking, GraphRAG, cross-encoder rerankers, and continuous evaluation gates. |
+| **Track 1: Precision Core & RAG** | Master retrieval and grounding | Phases 00 → 01 → 02 → 06 | Production-grade grounded search with Late Chunking, ACORN predicate search, GraphRAG, cross-encoder rerankers, and continuous evaluation gates. |
 | **Track 2: Autonomous Agent Architect** | Build resilient tool-using swarms | Phases 01 → 03 → 04 → 05 | Stateful agents with strict JSON schemas, Stateless MCP servers, Google A2A protocol, loop engineering, and dual-LLM quarantine. |
 | **Track 3: Production LLMOps & Leadership** | Enterprise infrastructure & governance | Phases 06 → 07 → 08 → Master Guides | Resilient multi-provider gateways, Batch API processing, OpenTelemetry tracing, `AGENT.md` codebase contracts, and EU AI Act compliance. |
+| **Track 4: Senior AI Platform & Agent Infrastructure** | Master the unified agent harness & vector platform | Phases 01 → 02 → 03 → 04 → 06 → 07 → [AgentForge](./agent-forge) | Production AI platform core: cache-aware gateway, durable WAL agent loop, MCP zero-trust execution, ACORN predicate-filtered search, and OTel GenAI telemetry. |
 
 ---
 
@@ -135,6 +136,7 @@ Master production patterns through runnable, verified implementations in Python 
 | **04** | **Distributed Agent Saga Pattern** | Two-phase tool commits with forward actions and compensating rollback tools for failed external operations. | [`lab4-saga-pattern.md`](./04-agentic-systems-and-orchestration/labs/lab4-saga-pattern.md) |
 | **05** | **Agent Memory & State Management** | 4-tier memory taxonomy (Working, Short-Term, Long-Term Semantic/Episodic), Ebbinghaus decay, MaaS, and GDPR crypto-shredding. | [`lab5-agent-memory-system.md`](./04-agentic-systems-and-orchestration/labs/lab5-agent-memory-system.md) |
 | **06** | **Multimodal Vision & Document Agent** | High-resolution document tiling math, white-text visual injection quarantine, and schema-grounded financial invoice extraction. | [`lab6-multimodal-agent.md`](./04-agentic-systems-and-orchestration/labs/lab6-multimodal-agent.md) |
+| **07** | **Enterprise Platform Core (`agent-forge`)** | Production reference implementation combining AI gateway, WAL crash rehydration, MCP 2026, ACORN/RRF hybrid retrieval, and OTel GenAI tracing. | [`agent-forge/`](./agent-forge/README.md) |
 
 *For end-to-end module capstones (Token Economics Analyzer, Context Pipeline, Enterprise RAG Pipeline, MCP Server, Security Guardrails, and CI/CD Eval Gate), see each phase's `labs/` directory.*
 
@@ -144,6 +146,8 @@ Master production patterns through runnable, verified implementations in Python 
 
 In addition to the 9 curriculum phases, this repository provides authoritative enterprise reference playbooks, audit gates, and architectural records:
 
+* 🏗️ [**Senior AI Platform & Agent Infrastructure Roadmap**](./ai-platform-and-agent-infrastructure-roadmap.md): The unified preparation curriculum and systems guide for Agent Harness Platform Engineers and Vector/RAG Platform Architects, featuring zero-trust tool execution, durable event loops, and OpenTelemetry GenAI observability.
+* ⚒️ [**AgentForge Reference Platform (MVP / POC)**](./agent-forge/README.md): Complete, runnable reference implementation of an enterprise AI platform core with hybrid retrieval (BM25 + Dense + RRF), Model Context Protocol (MCP 2026), Write-Ahead Log (WAL) crash resilience, and automated CI/CD quality gates.
 * 🛡️ [**The AI Production Readiness Review (PRR) Audit Gate**](./architecture/production-readiness-review.md): The 50-point enterprise go-live audit checklist across availability, token budgets, sandboxing, durability, OpenTelemetry, and EU AI Act compliance.
 * 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md): Formal trade-off records settling foundational debates (`pgvector` vs Qdrant, Model Context Protocol vs REST, System 2 reasoning vs SLMs, RadixAttention vs external memory).
 * 🚨 [**Production Post-Mortems & Failure Compendium**](./architecture/post-mortems/README.md): Detailed SRE root-cause analyses (RCAs) of catastrophic production outages, cascading KV-cache stampedes, silent feature leakage, and cyclic agent deadlocks.

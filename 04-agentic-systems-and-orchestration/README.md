@@ -1826,6 +1826,24 @@ def get_account_balance(ctx: RunContext[DatabaseService], user_id: str) -> str:
 
 ---
 
+### Python: Full Enterprise Platform Core & Crash Rehydration (AgentForge) [MUST-HAVE] 🔴
+> **Implementation**: [`agent-forge/`](../agent-forge/README.md)
+
+Complete, self-contained reference implementation of an enterprise AI platform runtime. Demonstrates an event-sourced Write-Ahead Log (WAL), deterministic session crash rehydration, Model Context Protocol (MCP 2026), zero-trust policy engine, tool idempotency keys, and automated CI/CD evaluation scorecards.
+
+```python
+# Event-sourced WAL appending and checkpointing from agent-forge/agent_forge/runtime/orchestrator.py
+self.event_store.append(AgentEvent(
+    session_id=session.session_id,
+    turn_index=turn,
+    event_type="tool_executing",
+    payload={"tool": tool_call.name, "arguments": tool_call.arguments}
+))
+self.event_store.save_checkpoint(session)
+```
+
+---
+
 ### C# / .NET 9: Enterprise Multi-Agent Pipeline with Semantic Kernel & Custom Plugins [GOOD-TO-HAVE] 🟡
 > **Implementation**: [`examples/MultiAgentPipeline.cs`](./examples/MultiAgentPipeline.cs)
 
