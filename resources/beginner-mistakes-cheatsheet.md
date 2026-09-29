@@ -9,7 +9,7 @@ flowchart TD
     subgraph PrototypePit["THE PROTOTYPE PIT (Where 85% of AI Projects Die)"]
         direction TB
         P1["Unbounded ReAct Agent Loops"]
-        P2["Uncached $30k Monthly Token Invoices"]
+        P2["Uncached 30k USD Monthly Token Invoices"]
         P3["Free-form SQL Prompt Injection"]
         P4["'Vibe Check' Deployments to Production"]
     end
@@ -30,21 +30,21 @@ flowchart TD
 ## 📑 Table of Contents
 
 - [Introduction: The Honeymoon is Over](#introduction-the-honeymoon-is-over)
-- [1. Building an Agent When a DAG Works](#1-building-an-agent-when-a-dag-works-must-have-)
-- [2. Not Caching the System Prompt](#2-not-caching-the-system-prompt-must-have-)
-- [3. Dynamic Data at the Top of Prompt (Prefix Taint)](#3-dynamic-data-at-the-top-of-prompt-prefix-taint-must-have-)
-- [4. No Loop Limits (The $500 Runaway at 2 AM)](#4-no-loop-limits-the-500-runaway-at-2-am-must-have-)
-- [5. Free-Form SQL Tools (Prompt Injection to DROP TABLE)](#5-free-form-sql-tools-prompt-injection-to-drop-table-must-have-)
-- [6. Skipping Evals (The "Vibe Check" Trap)](#6-skipping-evals-the-vibe-check-trap-must-have-)
-- [7. Single-Provider API Dependency](#7-single-provider-api-dependency-must-have-)
-- [8. Not Streaming (The 15-Second Blank Screen)](#8-not-streaming-the-15-second-blank-screen-must-have-)
-- [9. Lost-in-the-Middle (The U-Shaped Attention Trap)](#9-lost-in-the-middle-the-u-shaped-attention-trap-must-have-)
-- [10. Fine-Tuning When RAG Works](#10-fine-tuning-when-rag-works-must-have-)
-- [11. No Semantic Caching (Paying for Identical Answers)](#11-no-semantic-caching-paying-for-identical-answers-good-to-have-)
-- [12. Dumping 100+ Tools on a Single Agent](#12-dumping-100-tools-on-a-single-agent-must-have-)
-- [13. No Context Budgeting (Context Window Overflow)](#13-no-context-budgeting-context-window-overflow-must-have-)
-- [14. Ignoring GDPR for Agent Memory (Crypto-Shredding)](#14-ignoring-gdpr-for-agent-memory-crypto-shredding-good-to-have-)
-- [15. Treating the LLM as a Reliable Microservice](#15-treating-the-llm-as-a-reliable-microservice-must-have-)
+- [1. Building an Agent When a DAG Works](#1-building-an-agent-when-a-dag-works-must-have)
+- [2. Not Caching the System Prompt](#2-not-caching-the-system-prompt-must-have)
+- [3. Dynamic Data at the Top of Prompt (Prefix Taint)](#3-dynamic-data-at-the-top-of-prompt-prefix-taint-must-have)
+- [4. No Loop Limits (The $500 Runaway at 2 AM)](#4-no-loop-limits-the-500-runaway-at-2-am-must-have)
+- [5. Free-Form SQL Tools (Prompt Injection to DROP TABLE)](#5-free-form-sql-tools-prompt-injection-to-drop-table-must-have)
+- [6. Skipping Evals (The "Vibe Check" Trap)](#6-skipping-evals-the-vibe-check-trap-must-have)
+- [7. Single-Provider API Dependency](#7-single-provider-api-dependency-must-have)
+- [8. Not Streaming (The 15-Second Blank Screen)](#8-not-streaming-the-15-second-blank-screen-must-have)
+- [9. Lost-in-the-Middle (The U-Shaped Attention Trap)](#9-lost-in-the-middle-the-u-shaped-attention-trap-must-have)
+- [10. Fine-Tuning When RAG Works](#10-fine-tuning-when-rag-works-must-have)
+- [11. No Semantic Caching (Paying for Identical Answers)](#11-no-semantic-caching-paying-for-identical-answers-good-to-have)
+- [12. Dumping 100+ Tools on a Single Agent](#12-dumping-100-tools-on-a-single-agent-must-have)
+- [13. No Context Budgeting (Context Window Overflow)](#13-no-context-budgeting-context-window-overflow-must-have)
+- [14. Ignoring GDPR for Agent Memory (Crypto-Shredding)](#14-ignoring-gdpr-for-agent-memory-crypto-shredding-good-to-have)
+- [15. Treating the LLM as a Reliable Microservice](#15-treating-the-llm-as-a-reliable-microservice-must-have)
 - [Quick Reference Summary Matrix](#quick-reference-summary-matrix)
 - [Production Readiness Audit Checklist](#production-readiness-audit-checklist)
 
@@ -318,10 +318,10 @@ Imagine you tell a vacuum cleaning robot: *"Keep vacuuming until you find my los
 
 ### ❌ The Anti-Pattern: Unbounded While Loops & Compounding Errors
 Beginners assume agents will eventually succeed. But probability works against you!
-If an LLM has a **95% success rate** at each individual step ($p = 0.95$):
-- After 3 steps: $0.95^3 \approx 85.7\%$
-- After 10 steps: $0.95^{10} \approx \mathbf{59.9\%}$
-- After 20 steps: $0.95^{20} \approx \mathbf{35.8\%}$
+If an LLM has a **95% success rate** at each individual step (`p = 0.95`):
+- After 3 steps: `0.95^3 ≈ 85.7%`
+- After 10 steps: `0.95^10 ≈ 59.9%`
+- After 20 steps: `0.95^20 ≈ 35.8%`
 
 By step 15, your agent is almost guaranteed to be hallucinating in circles.
 
@@ -490,7 +490,7 @@ Imagine you are building a bridge for cars. To test if the bridge is safe, the b
 flowchart TD
     subgraph EvalPyramid["The Production Evaluation Pyramid"]
         direction TB
-        E1["Tier 1: Deterministic Assertions (Fast, $0, 100% Deterministic)\nSchema validation, regex, latency < 800ms, token limits, banned words"]
+        E1["Tier 1: Deterministic Assertions (Fast, 0 USD, 100% Deterministic)\nSchema validation, regex, latency < 800ms, token limits, banned words"]
         E2["Tier 2: Model-Graded Evals (LLM-as-a-Judge)\nG-Eval rubrics, answer relevance, hallucination detection, citation faithfulness"]
         E3["Tier 3: Production Telemetry & Human-in-the-Loop\nUser thumbs up/down, retry rates, latency P99, CSAT correlation"]
     end
@@ -829,13 +829,13 @@ def get_answer(query: str):
 ### ✅ The Production Fix: Semantic Vector Caching
 1. Convert user query into an embedding vector using a cheap, ultra-fast embedding model (`text-embedding-3-small` or local ONNX MiniLM).
 2. Query an in-memory vector cache (Redis VSS or Qdrant) using Cosine Similarity.
-3. If similarity exceeds a strict threshold (e.g., **$\ge 0.94$**), return the cached answer in **12 milliseconds** at zero LLM generation cost!
+3. If similarity exceeds a strict threshold (e.g., **≥ 0.94**), return the cached answer in **12 milliseconds** at zero LLM generation cost!
 
 ```mermaid
 flowchart TD
     UserQuery["User Query\n'How do I change my password?'"] --> Embed["Fast Embedding Model (5ms)"]
     Embed --> VectorCache[("Redis Vector Semantic Cache")]
-    VectorCache -- "Cosine Similarity >= 0.94 (CACHE HIT)" --> ReturnCached["⚡ Return Cached Answer\n(12ms latency, $0 token cost)"]
+    VectorCache -- "Cosine Similarity >= 0.94 (CACHE HIT)" --> ReturnCached["⚡ Return Cached Answer\n(12ms latency, 0 USD token cost)"]
     VectorCache -- "Cosine Similarity < 0.94 (CACHE MISS)" --> CallLLM["Call Upstream LLM (1,500ms)"]
     CallLLM --> SaveCache["Write Response to Semantic Cache (TTL: 24h)"]
     SaveCache --> ReturnFresh["Return Fresh Answer to User"]
@@ -1101,7 +1101,9 @@ def call_llm(prompt: str):
 ### ✅ The Production Fix: Circuit Breakers & Jittered Exponential Backoff
 All production AI integrations must implement:
 1. **Exponential Backoff with Full Jitter**:
-   $$\text{Delay} = \text{random}(0, \min(M, B \times 2^{\text{attempt}}))$$
+   ```text
+   Delay = random(0, min(M, B · 2^attempt))
+   ```
 2. **Circuit Breakers**: When error rates exceed 50% in a 10-second window, trip the circuit to **OPEN**. Immediately fail fast or serve fallback cached responses without touching the upstream provider.
 
 ```mermaid
@@ -1171,14 +1173,14 @@ var result = await resiliencePipeline.ExecuteAsync(async token =>
 | **1** | **Building an Agent when a DAG Works** | $3,400 runaway invoice parser debating ethics | Over-engineering autonomous ReAct loops for fixed workflows | Anthropic's 5 Patterns: Deterministic DAGs & State Machines | *If you can draw your business process as a flowchart, use a DAG.* |
 | **2** | **Not Caching System Prompt** | $31,500 monthly bill on repetitive 35k system prompts | Re-paying 100% prefill price on static tokens every call | Anthropic cache breakpoints (`cache_control: ephemeral`) | *Paying full price for static prompts is a volunteer tax on developers.* |
 | **3** | **Dynamic Data at Top of Prompt** | 0% cache hit rate due to line-1 timestamp | Prefix Taint: KV-cache matches from left-to-right | "Static Prefix First, Dynamic Suffix Last" architecture | *Put one volatile variable at the top, and your cache is on fire.* |
-| **4** | **No Loop Limits** | $485 runaway on a single 10-line CSV at 2 AM | Unbounded `while not done:` loops; compounding errors ($0.95^{10} \approx 60\%$) | 4-Tier Governor: `max_steps`, token budget, timeout, circuit breaker | *Never write `while True` around an LLM unless you have infinite cash.* |
+| **4** | **No Loop Limits** | $485 runaway on a single 10-line CSV at 2 AM | Unbounded `while not done:` loops; compounding errors (0.95^10 ≈ 60%) | 4-Tier Governor: `max_steps`, token budget, timeout, circuit breaker | *Never write `while True` around an LLM unless you have infinite cash.* |
 | **5** | **Free-Form SQL Tools** | Staging database deleted via prompt injection | Passing raw LLM text to write-permission DB engine | AST validation (`sqlglot`) + physical read-only replica | *If your LLM can execute `DROP TABLE`, you built an RCE backdoor.* |
 | **6** | **Skipping Evals** | Weekend outage after "good vibes" prompt change | Relying on playground checks instead of regression suites | 3-Tier Eval Pyramid (Deterministic asserts, LLM-as-a-Judge, CI/CD) | *If you don't have evals in CI/CD, your users are your QA team.* |
-| **7** | **Single-Provider API** | $180k Cyber Monday loss during 87-min vendor outage | Hardcoded single vendor client in business logic | Multi-provider fallback gateway (OpenAI $\to$ Claude $\to$ Gemini) | *A single LLM provider is a single point of failure; redundancy is survival.* |
+| **7** | **Single-Provider API** | $180k Cyber Monday loss during 87-min vendor outage | Hardcoded single vendor client in business logic | Multi-provider fallback gateway (OpenAI → Claude → Gemini) | *A single LLM provider is a single point of failure; redundancy is survival.* |
 | **8** | **Not Streaming** | Users rage-clicking refresh on 15s blank screen | Blocking HTTP requests awaiting full generation | Server-Sent Events (SSE) streaming (TTFT < 400ms) | *Perceived latency is all users care about; stream your tokens.* |
 | **9** | **Lost-in-the-Middle** | LLM misses critical clause at token 45k of 100k | U-shaped attention curve: degradation in middle 60% | Cross-encoder reranking + "Sandwich" context placement | *Stashing critical docs in the middle makes your LLM blind.* |
 | **10** | **Fine-Tuning when RAG Works** | $45k GPU bill on outdated company wiki weights | Confusing parametric memory (style) with retrieval (facts) | Modern RAG with hybrid search, metadata filters, and citations | *Fine-tuning is for teaching skills; RAG is for giving facts.* |
-| **11** | **No Semantic Caching** | $8,200/mo spent answering identical FAQ queries | Exact-match hashing fails on natural language variations | Vector Semantic Cache (Redis VSS, Cosine Similarity $\ge 0.94$) | *Semantic caching saves thousands before queries even touch an LLM.* |
+| **11** | **No Semantic Caching** | $8,200/mo spent answering identical FAQ queries | Exact-match hashing fails on natural language variations | Vector Semantic Cache (Redis VSS, Cosine Similarity ≥ 0.94) | *Semantic caching saves thousands before queries even touch an LLM.* |
 | **12** | **Dumping 100+ Tools** | 18k prefill token waste and wrong endpoint called | Tool saturation: LLM selection accuracy tanks past 15 tools | Tool-RAG (retrieve top 3 tools) or Hierarchical Routers | *Give an agent 5 tools it's an expert; give it 100 it's a confused intern.* |
 | **13** | **No Context Budgeting** | Crash on turn 29 during live customer support dispute | Unbounded message appending until 128k limit exceeded | Strict context budgeting (15% Sys, 45% RAG, 25% Hist, 15% Out) | *An unbudgeted context window is a ticking time bomb.* |
 | **14** | **Ignoring GDPR for Memory** | €20M fine panic on vector memory erasure request | Vector index deletion doesn't erase embedded data | Crypto-Shredding: Encrypt with user DEK; destroy key on forget | *If you can't shred memory with one key deletion, GDPR will shred you.* |

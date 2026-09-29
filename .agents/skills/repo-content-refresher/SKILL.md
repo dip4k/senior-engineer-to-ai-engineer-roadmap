@@ -50,7 +50,7 @@ Compare the web findings against current repository contents:
 - **Does it require code changes in `agent-forge/`?** (e.g. Adding support for a new MCP tool format).
 
 ### Step 5: Draft Enhancements & Updates
-1. **Glossary Update**: Add the new term and 1–2 sentence explanation into [ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).
+1. **Glossary Update**: Add the new term and 1–2 sentence explanation into [ai-engineering-glossary-by-practice.md](../../../ai-engineering-glossary-by-practice.md).
 2. **Module Deep-Dive**: Update the relevant phase README (`00` to `08`) with architectural trade-offs, Mermaid diagrams, and code snippets.
-3. **Roadmap Sync**: Keep [ai-technology-roadmap-2025-2026.md](file:///c:/Repos/Ai_Native_Engineer/ai-technology-roadmap-2025-2026.md) aligned.
+3. **Roadmap Sync**: Keep [ai-technology-roadmap-2025-2026.md](../../../ai-technology-roadmap-2025-2026.md) aligned.
 4. **Verification**: Run `python scripts/verify_lab.py --all` to ensure no existing tests are broken.

@@ -72,7 +72,7 @@ flowchart TD
 * **Roadmap Recommendation:** Implement intelligent task routing. Direct high-velocity queries to fast-path SLMs; route complex mathematical, architectural, and multi-step debugging tasks to reasoning models with defined token budget caps.
 
 ### 2.2 Speculative Decoding (EAGLE-3 & P-EAGLE)
-* **The Memory-Bandwidth Bottleneck:** Autoregressive decoding is severely memory-bandwidth bound. Speculative decoding uses a lightweight draft mechanism to generate $K$ candidate tokens verified in a single parallel forward pass by the target model.
+* **The Memory-Bandwidth Bottleneck:** Autoregressive decoding is severely memory-bandwidth bound. Speculative decoding uses a lightweight draft mechanism to generate K candidate tokens verified in a single parallel forward pass by the target model.
 * **Modern Approaches:**
   - **EAGLE-3:** State-of-the-art drafter operating on the top-layer hidden states of the target model with multi-layer feature fusion, closing distribution mismatch and achieving >80% acceptance rates.
   - **P-EAGLE:** Parallel drafting that outputs draft tokens in one step, optimized for NVIDIA Hopper and Blackwell architectures.
@@ -121,7 +121,7 @@ flowchart LR
 
 ### 4.2 Quantization & Local Execution Runtimes
 * **Quantization Innovations:**
-  - **BitNet 1.58-Bit (Ternary Weights $\{-1, 0, 1\}$):** Replaces matrix multiplications with integer additions, slashing compute energy by 70% and memory footprint by 80%. Supported via `bitnet.cpp`.
+  - **BitNet 1.58-Bit (Ternary Weights {-1, 0, 1}):** Replaces matrix multiplications with integer additions, slashing compute energy by 70% and memory footprint by 80%. Supported via `bitnet.cpp`.
   - **AWQ, EXL2, GGUF:** Preserves salient weights, allowing 14B models to run comfortably within 8–10 GB of VRAM.
 * **Edge Runtimes:**
   - **Apple MLX:** Optimized for Apple Silicon Unified Memory Architecture.

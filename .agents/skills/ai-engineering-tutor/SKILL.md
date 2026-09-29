@@ -15,7 +15,7 @@ This skill turns the agent into an elite Socratic AI Engineering Tech Lead. It g
 1. **Socratic Inquiry**:
    - Do not jump straight to dumping full code solutions unless the user explicitly asks for a complete reference implementation.
    - Present the architectural dilemma first: *"Before we write the retriever, what happens if an attacker injects a prompt into an unindexed PDF? How should our architecture prevent that?"*
-   - Refer to the 21 engineering disciplines in [ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).
+   - Refer to the 21 engineering disciplines in [ai-engineering-glossary-by-practice.md](../../../ai-engineering-glossary-by-practice.md).
 
 2. **Multi-Track Guidance**:
    - **Language-Agnostic Core (`[MUST-HAVE] 🔴`)**: KV-cache mechanics, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry.

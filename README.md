@@ -40,10 +40,10 @@ This repository is not a collection of surface-level tutorials or marketing buzz
 3. [Recommended Learning Paths](#recommended-learning-paths)
 4. [Hands-On Practice Labs Showcase](#hands-on-practice-labs-showcase)
 5. [The Premier Standalone Engineering Guides](#the-premier-standalone-engineering-guides)
-   * [5.1 🎯 Technical Interview & Career Transition Mastery](#1-technical-interview-career-transition-mastery)
-   * [5.2 🏛️ Enterprise Architecture, Platform Core & System Design](#2-enterprise-architecture-platform-core-system-design)
-   * [5.3 🛡️ Production SRE, Failure Defenses & Audit Gates](#3-production-sre-failure-defenses-audit-gates)
-   * [5.4 ⚖️ Strategic Roadmaps, Governance & Regulated Systems](#4-strategic-roadmaps-governance-regulated-systems)
+   * [5.1 🎯 Technical Interview & Career Transition Mastery](#technical-interview-career-transition-mastery)
+   * [5.2 🏛️ Enterprise Architecture, Platform Core & System Design](#enterprise-architecture-platform-core-system-design)
+   * [5.3 🛡️ Production SRE, Failure Defenses & Audit Gates](#production-sre-failure-defenses-audit-gates)
+   * [5.4 ⚖️ Strategic Roadmaps, Governance & Regulated Systems](#strategic-roadmaps-governance-regulated-systems)
 6. [Enterprise Architecture Blueprints](#enterprise-architecture-blueprints)
 7. [Enterprise Protocols & Ecosystem Alignment](#enterprise-protocols-ecosystem-alignment)
 8. [Architectural Mastery Tiers](#architectural-mastery-tiers)
@@ -168,6 +168,7 @@ Master production patterns through runnable, verified implementations in Python 
 In addition to the 9 curriculum phases, this repository provides battle-tested enterprise reference playbooks, runnable platform cores, SRE failure compendiums, and interview preparation guides—organized below by their engineering focus and operational usefulness:
 
 ### 1. 🎯 Technical Interview & Career Transition Mastery
+<a id="technical-interview-career-transition-mastery"></a>
 *Target: Senior Developers, Tech Leads, and AI Architects preparing for high-stakes system design, technical architecture, and behavioral interviews.*
 
 | Guide / Playbook | Artifact Type | Primary Usefulness & Target Objective |
@@ -179,6 +180,7 @@ In addition to the 9 curriculum phases, this repository provides battle-tested e
 | 📘 [**The Senior Transition Guide**](./senior-transition-guide.md) | **90-Day Execution Roadmap** | Step-by-step roadmap for Senior .NET/Cloud Engineers bridging traditional Software 1.0 patterns into autonomous, agentic systems engineering. |
 
 ### 2. 🏛️ Enterprise Architecture, Platform Core & System Design
+<a id="enterprise-architecture-platform-core-system-design"></a>
 *Target: System architects, tech leads, and platform teams designing enterprise AI backbones and platform harnesses.*
 
 | Guide / Blueprint | Artifact Type | Primary Usefulness & Target Objective |
@@ -190,6 +192,7 @@ In addition to the 9 curriculum phases, this repository provides battle-tested e
 | 🏛️ [**AI Architecture Decision Records (ADRs)**](./architecture/adrs/README.md) | **Formal Decision Records** | Defensible enterprise trade-off documentation settling pgvector vs. Qdrant, MCP vs. REST, System 2 reasoning models, and RadixAttention. |
 
 ### 3. 🛡️ Production SRE, Failure Defenses & Audit Gates
+<a id="production-sre-failure-defenses-audit-gates"></a>
 *Target: Tech leads and platform engineers taking AI systems to production with zero regressions and high availability.*
 
 | Guide / Playbook | Artifact Type | Primary Usefulness & Target Objective |
@@ -199,6 +202,7 @@ In addition to the 9 curriculum phases, this repository provides battle-tested e
 | 🚨 [**Top 15 Beginner Mistakes in AI Engineering**](./resources/beginner-mistakes-cheatsheet.md) | **Defensive Anti-Pattern Guide** | 15 catastrophic AI traps (prompt begging, runaway loops, prefix taint, unsandboxed SQL tools) with 2:00 AM war stories and concrete code fixes. |
 
 ### 4. ⚖️ Strategic Roadmaps, Governance & Regulated Systems
+<a id="strategic-roadmaps-governance-regulated-systems"></a>
 *Target: Engineering leaders and architects ensuring regulatory compliance and long-term tech stack alignment.*
 
 | Guide / Framework | Artifact Type | Primary Usefulness & Target Objective |
@@ -211,6 +215,7 @@ In addition to the 9 curriculum phases, this repository provides battle-tested e
 ---
 
 ## 🏢 Enterprise Architecture Blueprints
+<a id="enterprise-architecture-blueprints"></a>
 
 The curriculum maps directly to the seven primary enterprise AI architectural archetypes, supported by comprehensive system designs and deep-dive use case blueprints:
 
@@ -248,6 +253,7 @@ flowchart LR
 ```
 
 ### 🏛️ Dedicated Architectural Blueprints & System Designs
+<a id="dedicated-architectural-blueprints-system-designs"></a>
 
 * 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): 11 complete end-to-end architectures (Problem Statement, Approach, Block Diagram, Senior/Architect Notes) including:
   - Financial Reconciliation & Exception Management Engine (Saga Pattern)
@@ -266,6 +272,7 @@ flowchart LR
 ---
 
 ## 🏛️ Enterprise Protocols & Ecosystem Alignment
+<a id="enterprise-protocols-ecosystem-alignment"></a>
 
 Modern AI systems engineering relies on open, standardized protocols rather than proprietary walled gardens:
 
@@ -292,16 +299,19 @@ flowchart LR
 ---
 
 ## 🎯 Architectural Mastery Tiers
+<a id="architectural-mastery-tiers"></a>
 
-Every topic across the curriculum is classified using a pragmatic 3-tier taxonomy so you can prioritize your study time:
+Every topic and lesson across the curriculum is classified using the **4-Tier Lesson Depth Model** so you can calibrate depth, prerequisites, and pacing:
 
-* **[MUST-HAVE] 🔴 (Core Agnostic Systems Principles)**: Non-negotiable, language- and platform-agnostic primitives, production failure modes, and architectural standards required to build systems that survive in production without crashing or overspending.
-* **[GOOD-TO-KNOW] 🟡 (Platform-Specific & Framework Implementations)**: Cloud-specific services (Azure AI Search, Microsoft Copilot Studio, AWS Bedrock, GCP Vertex), framework-specific bindings, and niche edge-case optimizations. Learn these if relevant to your current technology stack or enterprise target.
-* **[KNOWLEDGE-BASE] 🔵 (Foundational Theory & Deep Science)**: Historical context, hardware physics, and foundational research papers for comprehensive theoretical mastery.
+* **Tier 1: 🟢 Core**: Non-negotiable foundation every engineer must master. Establishes primary mental models, basic mechanics, failure modes of the naive approach, and working reference implementations (~800–1,500 words).
+* **Tier 2: 🟡 Engineering Depth**: Production systems engineering. Covers edge cases, concurrency, failure modes, memory budgeting, latency limits, and OpenTelemetry instrumentation (~1,200–2,500 words).
+* **Tier 3: 🔵 Advanced**: High-scale distributed patterns, specialized enterprise extensions (e.g., GraphRAG, multi-agent sagas, speculative decoding, custom kernel optimizations) (~1,500–3,000 words).
+* **Tier 4: ⚫ Deep Dive**: Zero-abstraction systems internals, mathematical proofs, hardware physics, wire protocol specifications, and memory layouts (e.g., PagedAttention block tables, BPE merge trees, RRF harmonic rank distributions) (~1,500–3,000 words).
 
 ---
 
 ## ⚡ Quick Navigation & Master Hub
+<a id="quick-navigation-master-hub"></a>
 
 Navigate directly to the core curriculum tracks, lab directories, and curated catalogs across the repository:
 
@@ -309,4 +319,4 @@ Navigate directly to the core curriculum tracks, lab directories, and curated ca
 * 🧪 [**Hands-On Practice Labs Showcase**](#hands-on-practice-labs-showcase): 7 runnable enterprise labs (Python/Pydantic & .NET 9) covering stateful agents, MCP, and SAGAs.
 * 🌟 [**The Premier Standalone Engineering Guides**](#the-premier-standalone-engineering-guides): 16 specialized playbooks organized across Interview, Architecture, SRE, and Governance tracks.
 * 🏢 [**Enterprise Architecture Blueprints**](#enterprise-architecture-blueprints): The 7 core enterprise AI archetypes and system design specifications.
-* 🎯 [**Architectural Mastery Tiers**](#architectural-mastery-tiers): Taxonomy classification ([MUST-HAVE], [GOOD-TO-KNOW], [KNOWLEDGE-BASE]).
+* 🎯 [**Architectural Mastery Tiers**](#architectural-mastery-tiers): Taxonomy classification (🟢 Core, 🟡 Engineering Depth, 🔵 Advanced, ⚫ Deep Dive).

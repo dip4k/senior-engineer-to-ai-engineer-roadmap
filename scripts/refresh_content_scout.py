@@ -268,7 +268,7 @@ def generate_markdown_report(repo_root: Path, analysis: Dict[str, Dict]) -> str:
         "1. **Execute Web Searches**: Run the high-priority queries above using the agent's web search capability.",
         "2. **Cross-Check Specs**: Compare latest official docs (Anthropic MCP docs, Linux Foundation A2A, OpenAI o3/o4 API guides, OpenTelemetry GenAI semantic conventions).",
         "3. **Update Core Files**:",
-        "   - Add new terminology to [ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).",
+        "   - Add new terminology to [ai-engineering-glossary-by-practice.md](./ai-engineering-glossary-by-practice.md).",
         "   - Expand relevant phase READMEs (e.g. `03-tools-and-model-context-protocol` or `04-agentic-systems-and-orchestration`).",
         "   - Update or add code examples in `agent-forge/` or `labs/`.",
         "4. **Run Verification**: Ensure all agent forge tests continue to pass (`python -m unittest agent-forge/tests/test_all.py`).",

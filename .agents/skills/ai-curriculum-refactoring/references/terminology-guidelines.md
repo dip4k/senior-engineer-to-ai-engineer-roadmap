@@ -68,4 +68,4 @@ Remove generic marketing language that conveys zero engineering meaning:
 ## 5. Glossary Synchronization
 
 When defining or refining critical terms, maintain alignment with the repository's master reference:
-[ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).
+[ai-engineering-glossary-by-practice.md](../../../../ai-engineering-glossary-by-practice.md).

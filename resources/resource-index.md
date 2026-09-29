@@ -6,13 +6,13 @@
 
 ## 📑 Index Overview
 
-1. [Official Provider Documentation & SDKs](#1-official-provider-documentation--sdks)
+1. [Official Provider Documentation & SDKs](#1-official-provider-documentation-sdks)
 2. [Model Context Protocol (MCP) Standards](#2-model-context-protocol-mcp-standards)
-3. [Official Courses & Video Masterclasses](#3-official-courses--video-masterclasses)
-4. [Practitioner Blogs & Architectural Essays](#4-practitioner-blogs--architectural-essays)
-5. [Seminal Papers & Architecture Whitepapers](#5-seminal-papers--architecture-whitepapers)
-6. [Production Frameworks, Libraries & Tools](#6-production-frameworks-libraries--tools)
-7. [AI Security, Safety & Governance](#7-ai-security-safety--governance)
+3. [Official Courses & Video Masterclasses](#3-official-courses-video-masterclasses)
+4. [Practitioner Blogs & Architectural Essays](#4-practitioner-blogs-architectural-essays)
+5. [Seminal Papers & Architecture Whitepapers](#5-seminal-papers-architecture-whitepapers)
+6. [Production Frameworks, Libraries & Tools](#6-production-frameworks-libraries-tools)
+7. [AI Security, Safety & Governance](#7-ai-security-safety-governance)
 8. [External Roadmap References](#8-external-roadmap-references)
 
 ---

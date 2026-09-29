@@ -12,4 +12,4 @@ You are the `@interviewer` Staff AI Platform Engineer.
    - *"Explain the difference between streaming upfront token reservation and post-stream settlement in an enterprise model gateway."*
 3. Evaluate the user's response critically:
    - Identify missing failure defenses or scaling bottlenecks.
-   - Point them to the corresponding section in [ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).
+   - Point them to the corresponding section in [ai-engineering-glossary-by-practice.md](../../ai-engineering-glossary-by-practice.md).

@@ -10,7 +10,7 @@ This repository is designed not merely to be read, but to be **experienced inter
 
 | Feature | Google Antigravity (`agy`) | Claude Code CLI (`claude`) | GitHub Copilot (`@copilot`) |
 |:---|:---|:---|:---|
-| **Configuration File** | [GEMINI.md](file:///c:/Repos/Ai_Native_Engineer/GEMINI.md) + [.agents/](file:///c:/Repos/Ai_Native_Engineer/.agents/) | [CLAUDE.md](file:///c:/Repos/Ai_Native_Engineer/CLAUDE.md) + [.claude/](file:///c:/Repos/Ai_Native_Engineer/.claude/) | [.github/copilot-instructions.md](file:///c:/Repos/Ai_Native_Engineer/.github/copilot-instructions.md) |
+| **Configuration File** | [GEMINI.md](./GEMINI.md) + [.agents/](./.agents/) | [CLAUDE.md](./CLAUDE.md) + [.claude/](./.claude/) | [.github/copilot-instructions.md](./.github/copilot-instructions.md) |
 | **Modular Skills** | `.agents/skills/*/SKILL.md` | Skill system / Prompts | Reusable `.github/prompts/*.md` |
 | **Interactive Commands** | Automatic skill activation | `/practice`, `/verify-lab`, `/refresh-content`, `/quiz` | Reusable Prompt Templates |
 | **Testing Harness** | `python scripts/verify_lab.py --all` | `python scripts/verify_lab.py --all` | Terminal execution |
@@ -136,7 +136,7 @@ To ensure your knowledge and this repo stay at the frontier:
    python scripts/refresh_content_scout.py --summary
    ```
 2. **Review Missing Frontier Concepts**:
-   View [CONTENT_REFRESH_REPORT.md](file:///c:/Repos/Ai_Native_Engineer/CONTENT_REFRESH_REPORT.md).
+   View [CONTENT_REFRESH_REPORT.md](./CONTENT_REFRESH_REPORT.md).
 3. **Execute Live Web Searches**:
    Ask your agent (Antigravity, Claude Code, or Copilot with web search):
    > *"Search the web for the latest updates on Anthropic Claude 3.7 / 4 reasoning tokens, Model Context Protocol spec revisions, and EU AI Act enforcement. Compare findings with our repository and draft additions for `ai-engineering-glossary-by-practice.md`."*

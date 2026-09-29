@@ -11,21 +11,21 @@
 
 ## 🧭 Table of Contents
 
-1. [The Big Picture: Two Roles, One Architecture](#-the-big-picture-two-roles-one-architecture)
-2. [The Paradigm Shift: From Framework-First to Systems-First](#-the-paradigm-shift-from-framework-first-to-systems-first)
-3. [The 9-Phase Master Curriculum](#-the-9-phase-master-curriculum)
-   - [Phase 1: LLM Fundamentals & Cache-Aware Gateways](#phase-1-llm-fundamentals--cache-aware-gateways)
+1. [The Big Picture: Two Roles, One Architecture](#the-big-picture-two-roles-one-architecture)
+2. [The Paradigm Shift: From Framework-First to Systems-First](#the-paradigm-shift-from-framework-first-to-systems-first)
+3. [The 9-Phase Master Curriculum](#the-9-phase-master-curriculum)
+   - [Phase 1: LLM Fundamentals & Cache-Aware Gateways](#phase-1-llm-fundamentals-cache-aware-gateways)
    - [Phase 2: Building a Crash-Resilient Agent Runtime](#phase-2-building-a-crash-resilient-agent-runtime)
-   - [Phase 3: Deep Model Context Protocol (MCP 2026) & Zero-Trust Sandboxing](#phase-3-deep-model-context-protocol-mcp-2026--zero-trust-sandboxing)
-   - [Phase 4: Context Management & The 4-Tier Memory Hierarchy](#phase-4-context-management--the-4-tier-memory-hierarchy)
+   - [Phase 3: Deep Model Context Protocol (MCP 2026) & Zero-Trust Sandboxing](#phase-3-deep-model-context-protocol-mcp-2026-zero-trust-sandboxing)
+   - [Phase 4: Context Management & The 4-Tier Memory Hierarchy](#phase-4-context-management-the-4-tier-memory-hierarchy)
    - [Phase 5: Vector Search Internals (From Brute Force to ACORN)](#phase-5-vector-search-internals-from-brute-force-to-acorn)
-   - [Phase 6: Advanced Hybrid Retrieval & Reranking Realities](#phase-6-advanced-hybrid-retrieval--reranking-realities)
-   - [Phase 7: End-to-End Enterprise Scenario (Order & Dispute Platform)](#phase-7-end-to-end-enterprise-scenario-order--dispute-platform)
-   - [Phase 8: Evaluation Platforms & Automated CI Quality Gates](#phase-8-evaluation-platforms--automated-ci-quality-gates)
-   - [Phase 9: OpenTelemetry GenAI Observability & Cost Attribution](#phase-9-opentelemetry-genai-observability--cost-attribution)
-4. [Your Systems Advantage: Bridging .NET/Azure & Distributed Systems](#-your-systems-advantage-bridging-netazure--distributed-systems)
-5. [The Hands-On Portfolio: AgentForge Architecture](#-the-hands-on-portfolio-agentforge-architecture)
-6. [Whiteboard Interview Battlecards](#-whiteboard-interview-battlecards)
+   - [Phase 6: Advanced Hybrid Retrieval & Reranking Realities](#phase-6-advanced-hybrid-retrieval-reranking-realities)
+   - [Phase 7: End-to-End Enterprise Scenario (Order & Dispute Platform)](#phase-7-end-to-end-enterprise-scenario-order-dispute-platform)
+   - [Phase 8: Evaluation Platforms & Automated CI Quality Gates](#phase-8-evaluation-platforms-automated-ci-quality-gates)
+   - [Phase 9: OpenTelemetry GenAI Observability & Cost Attribution](#phase-9-opentelemetry-genai-observability-cost-attribution)
+4. [Your Systems Advantage: Bridging .NET/Azure & Distributed Systems](#your-systems-advantage-bridging-netazure-distributed-systems)
+5. [The Hands-On Portfolio: AgentForge Architecture](#the-hands-on-portfolio-agentforge-architecture)
+6. [Whiteboard Interview Battlecards](#whiteboard-interview-battlecards)
 
 ---
 
@@ -69,9 +69,12 @@ flowchart TD
 ## 💡 The Paradigm Shift: From Framework-First to Systems-First
 
 Most developers approach AI engineering backward:
-$$\text{LangChain} \longrightarrow \text{LangGraph} \longrightarrow \text{CrewAI} \longrightarrow \text{Tutorial Fatigue}$$
 
-This produces surface-level familiarity with ephemeral APIs, but it leaves engineers completely unprepared for production outages. When an agent enters an infinite loop, leaks API keys via prompt injection, or burns \$5,000 in OpenAI credits in 30 minutes, frameworks won't save you.
+```text
+LangChain ──> LangGraph ──> CrewAI ──> Tutorial Fatigue
+```
+
+This produces surface-level familiarity with ephemeral APIs, but it leaves engineers completely unprepared for production outages. When an agent enters an infinite loop, leaks API keys via prompt injection, or burns $5,000 in OpenAI credits in 30 minutes, frameworks won't save you.
 
 The senior engineering path reverses this pyramid:
 
@@ -90,6 +93,16 @@ When you understand how to build the primitives yourself, you can confidently ex
 ---
 
 ## 🗺️ The 9-Phase Master Curriculum
+
+> [!NOTE]
+> **Platform Roadmap to Curriculum Alignment**: This roadmap specifically details the **platform systems execution plane** (gateways, runtimes, storage engines, OTel conventions). It maps directly to the repository's foundational 9-phase curriculum ([Phases 00–08](./README.md#master-curriculum-syllabus)):
+> - **Roadmap Phase 1** (Gateways & Tokens) ⟷ **Phase 00** (Foundations) & **Phase 07** (Serving/Gateways)
+> - **Roadmap Phase 2** (Durable Runtime & WAL) ⟷ **Phase 04** (Stateful Agent Orchestration)
+> - **Roadmap Phase 3** (MCP & Sandboxing) ⟷ **Phase 03** (Tools & MCP) & **Phase 05** (Security)
+> - **Roadmap Phase 4** (Context AST & Memory) ⟷ **Phase 01** (Context Engineering) & **Phase 04** (Memory)
+> - **Roadmap Phases 5 & 6** (Vector Search & Hybrid RAG) ⟷ **Phase 02** (Enterprise Retrieval & RAG)
+> - **Roadmap Phase 7** (Enterprise Scenario) ⟷ **Enterprise Blueprints & Labs 01–07**
+> - **Roadmap Phases 8 & 9** (Evals & OTel Observability) ⟷ **Phase 06** (GenAI Evals & Observability)
 
 ```mermaid
 flowchart LR
@@ -129,7 +142,7 @@ Build a proxy service that sits between your applications and upstream LLM provi
 * **Common Envelope:** Normalizes requests and streaming responses across Gemini, Claude, and OpenAI.
 * **Token-Bucket Throttler:** Enforces Tenant-level Tokens-Per-Minute (TPM) and Requests-Per-Minute (RPM).
 * **Semantic Cache:** Uses a fast in-memory embedding comparison to serve cached answers for semantically identical questions.
-* **Smart Circuit Breaker:** Detects provider 429/503 errors and instantly fails over from primary to secondary models (e.g., Claude 3.5 Sonnet $\rightarrow$ Gemini 1.5 Pro).
+* **Smart Circuit Breaker:** Detects provider 429/503 errors and instantly fails over from primary to secondary models (e.g., Claude 3.5 Sonnet → Gemini 1.5 Pro).
 
 ---
 
@@ -145,7 +158,7 @@ while model_wants_tools:
 ```
 **Why this fails in enterprise production:**
 1. **Container Restarts:** If the pod running your agent restarts during a 90-second workflow, the session state is lost forever.
-2. **Human-in-the-Loop (HITL):** If a tool requires human managerial approval (e.g., approving a \$500 refund), the process cannot hang open in a thread for 4 hours.
+2. **Human-in-the-Loop (HITL):** If a tool requires human managerial approval (e.g., approving a $500 refund), the process cannot hang open in a thread for 4 hours.
 3. **Duplicate Side Effects:** If an upstream network glitch causes a retry, your agent might execute `charge_credit_card()` twice.
 
 #### The Architecture: Event Sourcing & Durable Execution
@@ -170,9 +183,9 @@ flowchart TD
 ```
 
 * **Idempotency Keys:** Every tool execution carries a deterministic hash:
-  \[
-  \text{Key} = \text{SHA256}(\text{SessionID} + \text{TurnIndex} + \text{ToolName} + \text{ArgsHash})
-  \]
+  ```text
+  Key = SHA256(SessionID + TurnIndex + ToolName + ArgsHash)
+  ```
   If a tool step retries, the tool server recognizes the key and returns the previous output without re-running the operation.
 * **Checkpoints:** State is externalized to durable storage (PostgreSQL, Cosmos DB, or Redis) after every tool completion.
 * **Tool Call Repair:** If a model returns a malformed JSON argument, pass the raw string and schema error back to the model with an explicit corrective instruction: *"Schema validation failed for argument 'amount'. Expected float, received string. Correct the JSON."*
@@ -266,20 +279,20 @@ Implement a deterministic **Context Budget Governor**:
 Vector search is simply finding the nearest data points in a high-dimensional mathematical space. 
 
 * **Cosine Similarity:** Measures the angle between two vectors:
-  \[
-  \text{Cosine}(\mathbf{u}, \mathbf{v}) = \frac{\mathbf{u} \cdot \mathbf{v}}{\|\mathbf{u}\| \|\mathbf{v}\|}
-  \]
-* **Exact (Flat) Search:** Compares the query vector against every single vector in the database ($O(N \cdot D)$ complexity). Perfectly accurate, but computationally impossible at scale: searching 10 million 1536-dimensional vectors requires over 60 billion floating-point calculations per query.
+  ```text
+  Cosine(u, v) = (u · v) / (||u|| ||v||)
+  ```
+* **Exact (Flat) Search:** Compares the query vector against every single vector in the database (O(N · D) complexity). Perfectly accurate, but computationally impossible at scale: searching 10 million 1536-dimensional vectors requires over 60 billion floating-point calculations per query.
 
 #### Approximate Nearest Neighbor (ANN) Algorithms
 To achieve sub-50ms latency across millions of vectors, we trade a tiny fraction of accuracy (recall) for massive speedups:
 
 1. **Inverted File Index (IVF):**
-   * Clusters vectors into $K$ centroids using k-means.
-   * At query time, finds the $n_{\text{probe}}$ nearest centroids and searches only the vectors assigned to those clusters.
+   * Clusters vectors into K centroids using k-means.
+   * At query time, finds the n_probe nearest centroids and searches only the vectors assigned to those clusters.
 2. **Hierarchical Navigable Small World (HNSW):**
    * Builds a multi-layer graph where upper layers have long-range highway edges (fast traversal) and bottom layers have dense local edges (precise navigation).
-   * **Key Parameters:** $M$ (max connections per node), $\text{efConstruction}$ (index build search depth), $\text{efSearch}$ (query search depth).
+   * **Key Parameters:** M (max connections per node), efConstruction (index build search depth), efSearch (query search depth).
 3. **Vector Quantization:**
    * **Scalar Quantization (SQ8):** Compresses 32-bit floats into 8-bit integers, slashing RAM consumption by 75% with negligible recall loss.
    * **Product Quantization (PQ):** Splits vectors into sub-vectors and maps each to cluster codebooks, compressing embeddings by up to 90%.
@@ -343,18 +356,18 @@ flowchart LR
 How do you merge a BM25 score (ranging from 0 to 45+) with a Cosine Similarity score (ranging from 0.0 to 1.0) without arbitrary weighting hacks?
 
 You use **Reciprocal Rank Fusion (RRF)**, which relies purely on the rank position:
-\[
-\text{RRF\_Score}(d) = \sum_{m \in M} \frac{1}{k + r_m(d)}
-\]
-* Where $M$ represents the search engines (Dense and Sparse).
-* $r_m(d)$ is the 1-based rank position of document $d$ in system $m$.
-* $k$ is a smoothing constant (standard default is 60).
+```text
+RRF_Score(d) = Σ [ 1 / (k + r_m(d)) ]  for each ranking system m in M
+```
+* Where M represents the search systems (Dense and Sparse).
+* r_m(d) is the 1-based rank position of document d in system m.
+* k is a smoothing constant (standard default is 60).
 
 #### Cross-Encoder Reranking
 Bi-encoder embedding models score query and document independently:
-\[
-\text{Score} = \mathbf{e}_{\text{query}} \cdot \mathbf{e}_{\text{doc}}
-\]
+```text
+Score = e_query · e_doc
+```
 A **Cross-Encoder** takes the query and document together: `[CLS] Query [SEP] Document [SEP]`, allowing full cross-attention across all tokens. Because cross-encoders are computationally expensive, use a two-stage funnel:
 1. Fast retrieval (BM25 + HNSW + RRF) retrieves the top 50 candidates.
 2. Cross-encoder scores and reranks those 50 candidates down to the top 5 pristine passages passed to the LLM.
@@ -387,12 +400,12 @@ sequenceDiagram
     
     Note over Agent,MCP: Step 2: Query Transactions
     Agent->>MCP: order_mcp.get_order(order_id="9182")
-    MCP-->>Agent: Order details: Total $49.00, Status: Completed
+    MCP-->>Agent: Order details: Total 49.00 USD, Status: Completed
     Agent->>MCP: payment_mcp.get_transactions(order_id="9182")
-    MCP-->>Agent: 2 transactions found: tx_1 ($49), tx_2 ($49)
+    MCP-->>Agent: 2 transactions found: tx_1 (49.00 USD), tx_2 (49.00 USD)
     
     Note over Agent,MCP: Step 3: Execute Refund
-    Agent->>Agent: Evaluate Policy: $49 < $100 -> Eligible for auto-refund
+    Agent->>Agent: Evaluate Policy: Amount < 100 USD -> Eligible for auto-refund
     Agent->>MCP: payment_mcp.issue_refund(tx_id="tx_2", key="idempotent_9182_refund")
     MCP-->>Agent: Refund confirmed (ref_98231)
     

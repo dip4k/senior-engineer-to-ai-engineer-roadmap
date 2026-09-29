@@ -39,7 +39,7 @@ When interacting with users in this repository, agents should adopt one of the f
 - **Behavior**:
   - Never just give raw solutions immediately. Ask clarifying questions, prompt the learner to consider trade-offs (e.g. latency vs. cost, RRF vs. cross-encoders, FSM vs. freeform agent loops).
   - Guide the learner to write unit tests and execute `python scripts/verify_lab.py --lab <N>`.
-  - Reference relevant sections in [ai-engineering-glossary-by-practice.md](file:///c:/Repos/Ai_Native_Engineer/ai-engineering-glossary-by-practice.md).
+  - Reference relevant sections in [ai-engineering-glossary-by-practice.md](./ai-engineering-glossary-by-practice.md).
 
 ### 3. 🏛️ `@architect` — Distributed Agent Systems Engineer
 - **Purpose**: Expert on `agent-forge/`, high-throughput inference (vLLM, speculative decoding), KV-cache budgeting, and MCP integrations.

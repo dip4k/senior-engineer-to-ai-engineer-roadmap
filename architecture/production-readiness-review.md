@@ -49,7 +49,7 @@ This PRR establishes **50 concrete, verifiable criteria across 6 core operationa
 
 | # | Priority | Audit Check Item | Verification Standard |
 | :---: | :---: | :--- | :--- |
-| **1.1** | **P0** | **Deterministic Fallback Routing** | If upstream LLM latency exceeds SLA (e.g., >3,500ms) or returns `5xx/429`, the system fails over to a secondary provider (e.g., Azure OpenAI $\to$ Anthropic $\to$ local SLM) or serves a deterministic cached response. |
+| **1.1** | **P0** | **Deterministic Fallback Routing** | If upstream LLM latency exceeds SLA (e.g., >3,500ms) or returns `5xx/429`, the system fails over to a secondary provider (e.g., Azure OpenAI → Anthropic → local SLM) or serves a deterministic cached response. |
 | **1.2** | **P0** | **Adaptive Outlier Circuit Breakers** | Envoy/Reverse Proxy circuit breaker trips when provider error rate exceeds 5% over a 30-second sliding window, isolating downstream workers from cascading thread exhaustion. |
 | **1.3** | **P0** | **Cold-Cache Stampede Protection** | Embedding and prompt lookup caches implement **mutualized single-flight locking** (`singleflight` pattern) and **probabilistic early expiration (XFetch)** so expiring keys never trigger thousands of redundant LLM generation calls. |
 | **1.4** | **P1** | **Prefill vs. Decode Latency Budgeting** | Time to First Token (TTFT) and Tokens Per Second (TPS) are tracked as independent metrics. P99 TTFT must remain under 800ms for conversational UI interfaces. |
@@ -64,14 +64,14 @@ This PRR establishes **50 concrete, verifiable criteria across 6 core operationa
 
 | # | Priority | Audit Check Item | Verification Standard |
 | :---: | :---: | :--- | :--- |
-| **2.1** | **P0** | **Hard Session Token Budget Caps** | Every user conversation and agent invocation has a hard ceiling (e.g., max 40,000 tokens or \$0.50 per interaction). When exceeded, the agent terminates gracefully with a user-facing explanation rather than looping. |
-| **2.2** | **P0** | **Cryptographic Loop & Deadlock Detection** | The orchestration engine hashes every tool call payload `SHA-256(tool_name + canonical_json_args)` into a bounded ring buffer (depth 10). If the same hash appears $\ge 3$ times, execution terminates immediately. |
+| **2.1** | **P0** | **Hard Session Token Budget Caps** | Every user conversation and agent invocation has a hard ceiling (e.g., max 40,000 tokens or $0.50 per interaction). When exceeded, the agent terminates gracefully with a user-facing explanation rather than looping. |
+| **2.2** | **P0** | **Cryptographic Loop & Deadlock Detection** | The orchestration engine hashes every tool call payload `SHA-256(tool_name + canonical_json_args)` into a bounded ring buffer (depth 10). If the same hash appears ≥ 3 times, execution terminates immediately. |
 | **2.3** | **P0** | **Progressive Budget Decay** | As an agent session approaches its iteration limit (e.g., turn 8 of 10), reasoning budgets are systematically compressed, and the agent is instructed to emit final synthesis rather than initiating new tool searches. |
 | **2.4** | **P1** | **Tenant-Level Distributed Rate Limiting** | Redis token-bucket governors enforce strict per-minute and per-day spend limits per customer organization, preventing a compromised API key from causing billing spikes. |
 | **2.5** | **P1** | **Tool Schema Pruning (Context Compaction)** | Tools not relevant to the current user intent are dynamically masked out of the prompt schema, keeping tool definition overhead below 2,000 tokens per call. |
 | **2.6** | **P1** | **Real-Time Cost Anomaly Alerts** | Cloud cost telemetry (Datadog / Prometheus) triggers PagerDuty alerts if hourly spend exceeds 150% of the 7-day rolling median for two consecutive hours. |
 | **2.7** | **P2** | **Thinking Token Expenditure Caps** | On reasoning models (o1/o3, DeepSeek-R1), maximum thinking/reasoning token ceilings are enforced explicitly in API request parameters. |
-| **2.8** | **P2** | **Unit Economics Dashboard** | Gross margin per AI operation is calculated and published in a live business dashboard: $$\text{Unit Margin} = \text{Revenue per Task} - (\text{LLM Token Cost} + \text{Vector DB Cost} + \text{MicroVM Cost})$$ |
+| **2.8** | **P2** | **Unit Economics Dashboard** | Gross margin per AI operation is calculated and published in a live business dashboard: `Unit Margin = Revenue per Task - (LLM Token Cost + Vector DB Cost + MicroVM Cost)` |
 
 ---
 
@@ -97,9 +97,9 @@ This PRR establishes **50 concrete, verifiable criteria across 6 core operationa
 | :---: | :---: | :--- | :--- |
 | **4.1** | **P0** | **Pre-Mutation State Checkpointing** | Before executing any state-mutating external action (database write, Stripe refund, email dispatch), the complete agent state graph is serialized to durable storage (PostgreSQL / Redis / S3). |
 | **4.2** | **P0** | **Idempotent Tool Execution** | Every external tool invocation includes an **Idempotency Key** generated as `UUIDv5(session_id, action_step_number)`. Upstream APIs verify that replaying the same step does not duplicate transactions. |
-| **4.3** | **P0** | **Human-in-the-Loop (HITL) Gate for High-Risk Actions** | High-consequence mutations (financial transfers >\$500, user deletion, code deployment to production) trigger an execution suspension (`AWAITING_APPROVAL`). Execution resumes only upon receiving a cryptographically signed HMAC token from a verified human reviewer. |
-| **4.4** | **P1** | **Distributed Saga Compensating Actions** | Multi-step agent workflows define compensating rollback tools for every forward action (e.g., `reserve_inventory` $\leftrightarrow$ `release_inventory`; `charge_card` $\leftrightarrow$ `refund_card`). If Step 3 fails, Steps 1 and 2 roll back automatically. |
-| **4.5** | **P1** | **Time-Travel Replay & State Forking** | In-flight execution graphs support time-travel debugging: SREs can inspect the historical state snapshot at Step $N-2$, modify the conversation context, and fork execution along a new branch. |
+| **4.3** | **P0** | **Human-in-the-Loop (HITL) Gate for High-Risk Actions** | High-consequence mutations (financial transfers > $500, user deletion, code deployment to production) trigger an execution suspension (`AWAITING_APPROVAL`). Execution resumes only upon receiving a cryptographically signed HMAC token from a verified human reviewer. |
+| **4.4** | **P1** | **Distributed Saga Compensating Actions** | Multi-step agent workflows define compensating rollback tools for every forward action (e.g., `reserve_inventory` ⟷ `release_inventory`; `charge_card` ⟷ `refund_card`). If Step 3 fails, Steps 1 and 2 roll back automatically. |
+| **4.5** | **P1** | **Time-Travel Replay & State Forking** | In-flight execution graphs support time-travel debugging: SREs can inspect the historical state snapshot at Step N - 2, modify the conversation context, and fork execution along a new branch. |
 | **4.6** | **P1** | **Zombie Execution Reaper** | Background worker daemons automatically reap agent sessions that have been orphaned or unresponsive for >15 minutes, transitioning state to `TIMEOUT_FAILED` and notifying the user. |
 | **4.7** | **P2** | **Schema Evolution Compatibility** | Agent state schemas (Pydantic / Protobuf) maintain backward compatibility so that deploying a new model prompt version does not corrupt or invalidate in-flight session checkpoints. |
 

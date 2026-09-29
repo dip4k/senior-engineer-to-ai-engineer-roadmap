@@ -270,10 +270,12 @@ flowchart TD
     Lab --> API --> Downstream
 ```
 
-### The Systemic Risk Compute Threshold: $10^{25}$ FLOPs
+### The Systemic Risk Compute Threshold: 10^25 FLOPs
 
 The EU AI Act sets an objective mathematical benchmark for identifying frontier models that possess **systemic risk**:
-$$\text{Cumulative Training Compute} > 10^{25} \text{ FLOPs (Floating Point Operations)}$$
+```text
+Cumulative Training Compute > 10^25 FLOPs (Floating Point Operations)
+```
 
 Any model trained using more compute than this threshold (which includes GPT-4, Gemini 1.5/2.0 Pro, Claude 3.5/3.7 Sonnet, and Llama 3.1 405B) automatically triggers Tier 2 GPAI systemic risk obligations:
 * **Model Red-Teaming:** Mandatory adversarial penetration testing conducted with external safety bodies.

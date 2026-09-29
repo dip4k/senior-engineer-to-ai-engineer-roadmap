@@ -8,17 +8,17 @@
 
 ## 📑 System Design Index
 
-1. [Autonomous Financial Reconciliation & Exception Management Engine](#1-autonomous-financial-reconciliation--exception-management-engine)
-2. [Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning (GraphRAG + RBAC)](#2-enterprise-multi-tenant-hybrid-rag-with-graph-reasoning-graphrag--rbac)
-3. [Autonomous Cloud Infrastructure SRE & Incident Remediation Agent](#3-autonomous-cloud-infrastructure-sre--incident-remediation-agent)
-4. [Autonomous AI Coding & Pull Request Verification Bot (Software 3.0 SDLC)](#4-autonomous-ai-coding--pull-request-verification-bot-software-30-sdlc)
-5. [Omnichannel Customer Operations Triage & Peer Swarm (A2A + MCP)](#5-omnichannel-customer-operations-triage--peer-swarm-a2a--mcp)
-6. [Enterprise Dual-Tier AI Gateway with Cost Governor & Semantic Caching](#6-enterprise-dual-tier-ai-gateway-with-cost-governor--semantic-caching)
-7. [Continuous Automated LLM Evaluation & Regression Gate (Hamel 3-Level Evals)](#7-continuous-automated-llm-evaluation--regression-gate-hamel-3-level-evals)
+1. [Autonomous Financial Reconciliation & Exception Management Engine](#1-autonomous-financial-reconciliation-exception-management-engine)
+2. [Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning (GraphRAG + RBAC)](#2-enterprise-multi-tenant-hybrid-rag-with-graph-reasoning-graphrag-rbac)
+3. [Autonomous Cloud Infrastructure SRE & Incident Remediation Agent](#3-autonomous-cloud-infrastructure-sre-incident-remediation-agent)
+4. [Autonomous AI Coding & Pull Request Verification Bot (Software 3.0 SDLC)](#4-autonomous-ai-coding-pull-request-verification-bot-software-30-sdlc)
+5. [Omnichannel Customer Operations Triage & Peer Swarm (A2A + MCP)](#5-omnichannel-customer-operations-triage-peer-swarm-a2a-mcp)
+6. [Enterprise Dual-Tier AI Gateway with Cost Governor & Semantic Caching](#6-enterprise-dual-tier-ai-gateway-with-cost-governor-semantic-caching)
+7. [Continuous Automated LLM Evaluation & Regression Gate (Hamel 3-Level Evals)](#7-continuous-automated-llm-evaluation-regression-gate-hamel-3-level-evals)
 8. [Dual-LLM Privilege Quarantine Architecture for Untrusted Ingestion](#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion)
 9. [Autonomous Supply Chain Predictive Inventory Rebalancing Mesh](#9-autonomous-supply-chain-predictive-inventory-rebalancing-mesh)
-10. [Enterprise HR & Corporate Policy Compliance Agent with PII Vault](#10-enterprise-hr--corporate-policy-compliance-agent-with-pii-vault)
-11. [Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer](#11-autonomous-enterprise-sourcing--procurement-mesh-with-shared-semantic-layer)
+10. [Enterprise HR & Corporate Policy Compliance Agent with PII Vault](#10-enterprise-hr-corporate-policy-compliance-agent-with-pii-vault)
+11. [Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer](#11-autonomous-enterprise-sourcing-procurement-mesh-with-shared-semantic-layer)
 
 ---
 
@@ -28,13 +28,13 @@
 Global enterprises process hundreds of thousands of vendor invoices, bank settlement feeds, and purchase orders (POs) monthly across heterogeneous ERPs (SAP, NetSuite, Oracle). Manual reconciliation is slow, error-prone, and struggles with partial payments, currency fluctuations, and line-item mismatches. Naive LLM pipelines hallucinate credit balances and lack transaction rollback capabilities.
 
 ### 1.2 Summary Solution
-An autonomous multi-step reconciliation engine combining deterministic schema validation, SQL tool execution via Model Context Protocol (MCP 2026), Human-in-the-Loop (HITL) step-up approval for high-value anomalies (>\$5,000), and a distributed **Saga Pattern** with compensating actions for ledger mutations.
+An autonomous multi-step reconciliation engine combining deterministic schema validation, SQL tool execution via Model Context Protocol (MCP 2026), Human-in-the-Loop (HITL) step-up approval for high-value anomalies (> $5,000), and a distributed **Saga Pattern** with compensating actions for ledger mutations.
 
 ### 1.3 Approach
 1. **Batch Ingestion**: Bank settlement webhook triggers message publication to a partitioned Kafka topic.
 2. **Deterministic Extraction**: Layout-aware parser extracts tabular invoice line items into typed Pydantic DTOs.
 3. **Automated Matching**: Read-only SQL queries correlate PO numbers, tax IDs, and billed totals against ERP records.
-4. **Discrepancy Triage**: If delta is within tolerance (<\$2.00 currency roundoff), auto-adjust; if delta > \$5,000, generate an HMAC-signed approval ticket and suspend state graph.
+4. **Discrepancy Triage**: If delta is within tolerance (< $2.00 currency roundoff), auto-adjust; if delta > $5,000, generate an HMAC-signed approval ticket and suspend state graph.
 5. **Two-Phase Commit / Saga Execution**: Ledger adjustments execute with registered compensating rollback tools (`reverse_ledger_entry`).
 
 ### 1.4 Architecture Block Diagram
@@ -45,7 +45,7 @@ flowchart TD
     Ingest --> Agent["Reconciliation Agent (Claude 3.7 / MAF 1.0)"]
     
     Agent --> MCP_DB["Stateless MCP: ERP & SQL Database"]
-    MCP_DB --> MatchCheck{"Discrepancy > \$5,000?"}
+    MCP_DB --> MatchCheck{"Discrepancy > $5,000?"}
     
     MatchCheck -- "No" --> AutoBook["Execute Ledger Entry via MCP"]
     MatchCheck -- "Yes" --> HITL["Suspend Graph: HMAC Approval Nonce"]
@@ -56,8 +56,14 @@ flowchart TD
     AutoBook --> SagaCheck{"Commit Succeeded?"}
     SagaCheck -- "Yes" --> Audit[("Immutable ERP Journal")]
     SagaCheck -- "No" --> Compensate["Saga Rollback: Reverse Ledger Entry"]
-
 ```
+
+#### Architectural Walkthrough:
+1. **Ingestion & Parsing**: Bank webhook and invoice PDF feeds enter the deterministic layout parser, emitting typed transaction DTOs.
+2. **ERP Matching via MCP**: The Reconciliation Agent queries ERP and ledger databases via Stateless MCP tools to match line items against open purchase orders.
+3. **Threshold Check**: If discrepancy is under $5,000 and within variance policy, the agent automatically executes the ledger mutation. If over $5,000, the workflow suspends execution, issuing an HMAC-signed approval token for human sign-off.
+4. **Human-in-the-Loop Gate**: The Finance Controller approves or rejects the reconciliation ticket; approval re-activates the state graph to execute the ledger booking.
+5. **Saga Verification & Rollback**: The transaction verifies commit success. On failure, the orchestrator executes registered compensating rollback tools (`reverse_ledger_entry`) to maintain zero-loss ledger consistency.
 
 ### 1.5 Senior / Architect Notes
 - **Transaction Safety**: Never allow an autonomous model direct unconstrained `UPDATE` access to general ledger tables. Wrap all mutations inside stored procedures with idempotency keys.
@@ -101,8 +107,8 @@ flowchart TD
 ```
 
 ### 2.5 Senior / Architect Notes
-- **Tenancy Invariant**: Never filter multi-tenant data post-retrieval in application code. Post-filtering leaks metadata and degrades $K$-recall. Always enforce metadata pre-filtering at the database index layer.
-- **Reranker Latency**: Cross-encoders add 80–150ms of CPU/GPU latency. Bound reranker candidate pools to $N=50$ candidates maximum.
+- **Tenancy Invariant**: Never filter multi-tenant data post-retrieval in application code. Post-filtering leaks metadata and degrades top-K recall. Always enforce metadata pre-filtering at the database index layer.
+- **Reranker Latency**: Cross-encoders add 80–150ms of CPU/GPU latency. Bound reranker candidate pools to N = 50 candidates maximum.
 
 ---
 
@@ -250,7 +256,7 @@ A unified enterprise AI Gateway providing dual-tier caching (L1 SHA-256 exact ha
 1. **Client Ingress**: Enterprise services submit requests via standard OpenAI-compatible API schemas with tenant JWTs.
 2. **Hierarchical Quota Enforcement**: Redis token bucket verifies department and team spend against monthly allocations before dispatching inference.
 3. **L1 Exact Cache Lookup**: Computes SHA-256 hash of system prompt + messages. Returns cached response in <2ms on hit (100% savings).
-4. **L2 Semantic Cache Lookup**: If L1 misses, computes text embedding and queries vector cache. If cosine similarity $\ge 0.92$, returns response in <25ms (95% savings).
+4. **L2 Semantic Cache Lookup**: If L1 misses, computes text embedding and queries vector cache. If cosine similarity ≥ 0.92, returns response in <25ms (95% savings).
 5. **Multi-Provider Fallback Cascade**: Dispatches request to Primary Provider (Claude 3.7 Sonnet / GPT-4.5); if provider trips circuit breaker (HTTP 429 / 5xx), seamlessly fails over to Secondary Provider (Gemini 2.5 Pro) with zero client downtime.
 
 ### 6.4 Architecture Block Diagram
@@ -300,7 +306,7 @@ A CI/CD quality gate implementing the Hamel Husain 3-level evaluation methodolog
 ### 7.3 Approach
 1. **Level 1 (Deterministic Unit Tests)**: Fast Python/C# assertions checking output JSON schema validity, non-empty fields, forbidden keyword absence, and latency thresholds (<1ms).
 2. **Level 2 (Binary LLM-as-a-Judge Rubrics)**: Runs candidate prompts against a version-controlled golden test set (200 curated edge cases). A stronger evaluator model (Claude 3.7 Sonnet) evaluates specific binary pass/fail assertions with chain-of-thought rationale.
-3. **CI/CD Threshold Gate**: Pull request must achieve $\ge 98\%$ binary pass rate with zero safety violations to permit deployment.
+3. **CI/CD Threshold Gate**: Pull request must achieve ≥ 98% binary pass rate with zero safety violations to permit deployment.
 4. **Level 3 (Online Production Monitoring)**: Samples 5% of live production traces; logs token spend, latency, and user feedback tags into Langfuse / Arize Phoenix.
 
 ### 7.4 Architecture Block Diagram
@@ -410,7 +416,7 @@ flowchart TD
     WarehouseAgent --> Arbiter
     
     Arbiter --> Proposal["Formulate Transfer Proposal"]
-    Proposal --> BudgetCheck{"Transfer Cost < \$25,000 & ROI > 3.0?"}
+    Proposal --> BudgetCheck{"Transfer Cost < $25,000 & ROI > 3.0?"}
     
     BudgetCheck -- "Yes" --> ERP_Commit["Commit Rebalance in ERP via MCP"]
     BudgetCheck -- "No" --> HumanReview["Escalate to Supply Chain Director"]
@@ -492,20 +498,22 @@ All mutations to transactional ERPs are strictly mediated via the **Model Contex
    - The Intake Agent extracts structured parameters into Pydantic DTOs (item description, quantity, requested delivery date, cost center, business justification).
 2. **Semantic Taxonomy Harmonization**:
    - The Intake Agent queries the Semantic Layer's Taxonomy Service using dual-encoder embeddings to map free-text items onto canonical enterprise catalog items and UNSPSC categories.
-   - If match confidence $< 0.85$, the agent prompts the requester for clarification with disambiguation options before proceeding.
+   - If match confidence < 0.85, the agent prompts the requester for clarification with disambiguation options before proceeding.
 3. **Shared Semantic Layer Metric Execution**:
    - All financial and operational calculations (*year-to-date department spend*, *remaining budget*, *contracted discount tiers*, *vendor historical SLA breach rate*) are fetched by querying the **Shared Semantic Layer** using high-level semantic queries (measures, dimensions, filters), rather than raw SQL.
    - The Semantic Layer enforces row-level security (RLS), tenant isolation, and metric calculation consistency across all downstream agents.
 4. **Compare Engine (Supplier RFP & Bid Evaluation)**:
-   - When requisitions require competitive sourcing (e.g., spend $>\$25,000$), the Compare Agent retrieves candidate supplier contracts and past performance histories via Hybrid GraphRAG.
+   - When requisitions require competitive sourcing (e.g., spend > $25,000), the Compare Agent retrieves candidate supplier contracts and past performance histories via Hybrid GraphRAG.
    - Normalizes pricing models (fixed-fee vs. time-and-materials vs. volume tiered) and calculates a composite vendor utility score:
-     $$\text{Utility} = w_1 \cdot \text{CostEfficiency} + w_2 \cdot \text{SLA\_Reliability} + w_3 \cdot \text{ComplianceScore} - w_4 \cdot \text{RiskPenalty}$$
+     ```text
+     Utility = w1 · CostEfficiency + w2 · SLA_Reliability + w3 · ComplianceScore - w4 · RiskPenalty
+     ```
    - Generates an auditable trade-off matrix highlighting the Pareto-optimal supplier recommendation.
 5. **SourceIQ Background Spend Intelligence**:
    - Stream worker listens to Kafka/Event Hub invoice publication events.
-   - SourceIQ continuously recalculates cross-organization spend metrics via the Semantic Layer, alerting procurement category managers when identical SaaS licenses or hardware items differ by $>5\%$ across subsidiaries, or when aggregated volume crosses the threshold for enterprise discount renegotiation.
+   - SourceIQ continuously recalculates cross-organization spend metrics via the Semantic Layer, alerting procurement category managers when identical SaaS licenses or hardware items differ by > 5% across subsidiaries, or when aggregated volume crosses the threshold for enterprise discount renegotiation.
 6. **HITL Step-Up & Two-Phase Saga Commit**:
-   - Low-risk, catalog-backed requisitions under policy threshold ($<\$2,500$) auto-approve.
+   - Low-risk, catalog-backed requisitions under policy threshold (< $2,500) auto-approve.
    - High-value or anomalous requests generate a cryptographically signed approval token dispatched to the designated cost center owner and procurement officer.
    - Upon dual-key cryptographic signature, the ERP Execution Agent invokes Stateless MCP tools (`create_purchase_order`, `encumber_budget`) with idempotency keys and registered compensating rollback actions (`cancel_purchase_order`, `release_budget_hold`).
    - Immutable audit envelopes (reasoning chain, tool inputs/outputs, human signature) are archived to WORM storage.
@@ -537,7 +545,7 @@ flowchart TD
     end
 
     subgraph ExecutionPlane["Governance & Execution Plane"]
-        HITL{"Policy & Spend Threshold<br>(Spend > \$10k or Risk > 0.4?)"}
+        HITL{"Policy & Spend Threshold<br>(Spend > $10k or Risk > 0.4?)"}
         SignOff["Procurement & Budget Owner<br>(HMAC Nonce Approval)"]
         MCP_Gateway["Stateless MCP Gateway<br>(Idempotent ERP Mutation Tools)"]
         AuditLog[("WORM Immutable Audit Vault<br>(SOX / ISO 42001 Compliance)")]
