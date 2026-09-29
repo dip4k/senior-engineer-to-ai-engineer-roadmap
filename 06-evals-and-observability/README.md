@@ -4,16 +4,14 @@
 
 ---
 
-> [!NOTE]
-> **Learner-Friendly Guidance: Focus on What You Need**
-> This phase covers evaluation methodologies, telemetry, and observability. **Not all sections are mandatory for every engineer.**
-> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal evaluation hierarchy (Hamel Husain's 3-level evals), deterministic assertion tests, LLM-as-a-judge scorers for groundedness and relevance, curated golden datasets, OpenTelemetry GenAI semantic conventions, and multi-turn trajectory validation.
-> - **Specialized Monitoring & Drift Analytics (`[MUST-HAVE] 🔴` for MLOps/Lead Roles; `[GOOD-TO-KNOW] 🟡` for App Devs)**: Tri-partite drift monitoring (Data Drift via PSI, Concept Drift, Prompt Drift), unifying offline MLflow tracking with online OTel GenAI spans.
-> - **Foundational Theory & Benchmarking Papers (`[KNOWLEDGE-BASE] 🔵`)**: Academic evaluation benchmarks (MMLU, GSM8K, HumanEval) and judge calibration mathematics.
->
-> Refer to the **[Recommended Learning Paths](../README.md#-recommended-learning-paths)** to prioritize what matters for your role.
+## 🏛️ Executive Summary & Lead Mental Model
 
----
+Enterprise software teams never merge code without automated tests, benchmarks, and Application Performance Monitoring (APM) instrumentation. Yet generative AI systems are frequently updated based on manual **"vibe checks"**—testing arbitrary prompts in a playground and declaring output acceptable.
+
+This causes three catastrophic failure modes in production:
+* **Silent Schema Breakages**: A prompt edit to adjust tone silently breaks downstream JSON formatting for international users.
+* **Tool Calling Hallucinations**: Model upgrades induce parameter hallucinations on nested API payloads.
+* **Uncontrolled Cost Inflation**: Jailbreak patches double context lengths across live conversations, quietly inflating monthly cloud costs.
 
 ```mermaid
 flowchart TD
@@ -26,852 +24,165 @@ flowchart TD
     C --> D
 ```
 
----
-
-## 📑 Table of Contents
-
-1. [Executive Summary & Lead Mental Model [MUST-HAVE] 🔴](#-executive-summary--lead-mental-model-must-have-)
-2. [Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴](#️-why-this-matters-for-senior--lead-developers-must-have-)
-3. [The Three Levels of Evals (The Hamel Husain Framework) [MUST-HAVE] 🔴](#-the-three-levels-of-evals-the-hamel-husain-framework-must-have-)
-4. [Agent & Trajectory Evaluation [MUST-HAVE] 🔴](#-agent--trajectory-evaluation-must-have-)
-5. [Curation of Evaluation Datasets [MUST-HAVE] 🔴](#-curation-of-evaluation-datasets-must-have-)
-6. [Observability, Distributed Tracing & OpenTelemetry [MUST-HAVE] 🔴](#-observability-distributed-tracing--opentelemetry-must-have-)
-7. [Key Telemetry & Performance Metrics [MUST-HAVE] 🔴](#-key-telemetry--performance-metrics-must-have-)
-8. [Hybrid ML + GenAI Continuous Monitoring & Drift Detection [MUST-HAVE] 🔴](#-hybrid-ml--genai-continuous-monitoring--drift-detection-must-have-)
-9. [Evaluation Methodologies Comparison [MUST-HAVE] 🔴](#️-evaluation-methodologies-comparison-must-have-)
-10. [Production Failure Modes, Biases & Anti-Patterns [MUST-HAVE] 🔴](#️-production-failure-modes-biases--anti-patterns-must-have-)
-11. [Production-Grade Code Implementations [MUST-HAVE] 🔴](#-production-grade-code-implementations-must-have-)
-12. [Curated Verified Resources & Seminal Reading [KNOWLEDGE-BASE] 🔵](#-curated-verified-resources--seminal-reading-knowledge-base-)
-13. [Capstone Challenge: Automated CI/CD Evaluation Pipeline [MUST-HAVE] 🔴](#-capstone-challenge-automated-cicd-evaluation-pipeline-must-have-)
+### Step-by-Step Architectural Walkthrough
+1. **The Continuous Evaluation Flywheel**: Ingests production trace anomalies, failure logs, and user feedback, packaging them into version-controlled golden datasets.
+2. **Observability Plane**: Instruments the runtime using OpenTelemetry GenAI semantic conventions, tracking TTFT, token generation rates, and prefix cache hits.
+3. **Evaluation Plane**: Executes hierarchical testing across Level 1 unit assertions, Level 2 model-based judges, and multi-turn agent trajectory audits.
+4. **Deterministic Production Confidence**: Replaces subjective manual QA with automated pull request status checks enforcing strict cost and accuracy regression thresholds.
 
 ---
-
-## 🎯 Executive Summary & Lead Mental Model [MUST-HAVE] 🔴
-
-Enterprise software teams never merge code without automated tests, benchmarks, and APM instrumentation. Yet generative AI systems are frequently updated based on manual **"vibe checks"**—testing arbitrary prompts in a playground and declaring output acceptable.
-
-This causes three catastrophic failure modes in production:
-* **Silent Schema Breakages**: A prompt edit to adjust tone silently breaks downstream JSON formatting for international users.
-* **Tool Calling Hallucinations**: Model upgrades induce parameter hallucinations on nested API payloads.
-* **Uncontrolled Cost Inflation**: Jailbreak patches double context lengths across live conversations, quietly inflating monthly cloud costs.
-
-```mermaid
-flowchart LR
-    subgraph Probabilistic["PROBABILISTIC ENGINE"]
-        A["Stochastic Neural Net<br/>• Temperature sampling<br/>• Shifting token distributions<br/>• Latent reasoning paths"]
-    end
-    
-    subgraph Deterministic["DETERMINISTIC SOFTWARE"]
-        B["Deterministic Harness<br/>• Automated JSON Assertions<br/>• Binary Rubric Judges<br/>• Distributed Span Traces"]
-    end
-    
-    A --> B
-    B -- "Continuous Feedback" --> A
-```
 
 ### The Core Architectural Tenet
 
-> **Probabilistic components require deterministic harnesses.** You cannot control the stochastic behavior of neural nets through prompt optimism. You control it through continuous regression matrices, golden datasets harvested from production anomalies, and distributed OpenTelemetry tracing with strict latency and cost SLAs.
+```text
+Stochastic Neural Networks REQUIRE Deterministic Software Harnesses.
+```
+
+> You cannot control the non-deterministic output of neural networks through prompt optimism. You control it through continuous regression matrices, golden datasets harvested from production anomalies, and distributed OpenTelemetry tracing with strict latency and cost SLAs.
 
 ---
 
-## 🏗️ Why This Matters for Senior & Lead Developers [MUST-HAVE] 🔴
+## 🏗️ Why This Matters for Senior & Lead Developers
 
 Tech leads and architects are accountable for system stability, cost envelopes, and architectural governance. Non-deterministic LLM failure surfaces demand rigorous evaluation discipline:
 
-* **Eliminating the Silent Blast Radius**: Unlike typed code where breaking changes trigger compilation or test errors, LLM regressions fail silently. Automated harnesses allow teams to refactor prompts, switch model providers (OpenAI ➔ Claude ➔ Gemini), and expand MCP tools without breaking existing production behavior.
+* **Eliminating the Silent Blast Radius**: Unlike typed code where breaking changes trigger compilation or test errors, LLM regressions fail silently. Automated harnesses allow teams to refactor prompts, switch model providers (OpenAI → Claude → Gemini), and expand Model Context Protocol (MCP) tools without breaking existing production behavior.
 * **Guarding the Economic & Latency Envelope**: Token usage directly translates to dollar cost and hardware inference latency. Observability metrics establish operational budgets and reject PRs exceeding token or TTFT thresholds.
 * **Engineering Velocity & Psychological Safety**: A reliable 200+ test continuous evaluation suite frees teams from manual QA bottlenecking, enabling rapid model distillation, quantization, and daily production deployments.
 
 ---
 
-## 🔬 The Three Levels of Evals (The Hamel Husain Framework) [MUST-HAVE] 🔴
+## 🧭 Master Lesson Navigation Table
 
-Pioneered by Hamel Husain and adopted across top-tier AI engineering organizations, effective evaluation follows a hierarchical pyramid of speed, cost, and diagnostic resolution:
-
-```mermaid
-flowchart TD
-    L3["Level 3: Online Human & Production Telemetry<br/>Implicit signals, A/B traffic splits, shadow deployment metrics"]
-    L2["Level 2: Model-Based Evals (LLM-as-a-Judge)<br/>Binary rubrics, ground-truth reference scoring, G-Eval reasoning chains"]
-    L1["Level 1: Deterministic Code & Unit Tests<br/>JSON schema validation, regex syntax, exact substring, latency/token bounds"]
-    
-    L3 --- L2 --- L1
-```
-
----
-
-### Level 1: Deterministic Code & Unit Tests [MUST-HAVE] 🔴
-
-The foundation of every production AI CI/CD pipeline consists of instantaneous, cost-free deterministic code checks. If an agent's output fails Level 1, it should never be sent to an expensive LLM judge.
-
-#### Core Verification Mechanics:
-1. **JSON / Pydantic Schema Adherence**: Verifies that structured outputs parse into strongly typed models without missing fields, invalid types, or malformed JSON envelopes.
-2. **Regex & Substring Assertions**: Confirms presence of mandatory disclaimers, required protocol prefixes, or strictly forbids sensitive keywords, API keys, or banned phrases.
-3. **Deterministic Operational Thresholds**:
-   * Token budget limits: `actual_input_tokens <= max_allowed_tokens`.
-   * Execution latency ceilings: `generation_latency_ms < 1500`.
-   * Tool invocation constraints: Asserting that tool arguments contain valid UUIDs or properly formatted ISO 8601 timestamps.
-4. **Structural & AST Validation**: If the model generates SQL, Cypher, or Python code, validating that the code parses successfully into an Abstract Syntax Tree (AST) before execution.
-
-```python
-# Conceptual Level 1 Assertion Gate
-def evaluate_level_1(response: AgentResponse) -> EvalResult:
-    # 1. Structural schema validation
-    try:
-        parsed_payload = ToolCallPayload.model_validate_json(response.raw_text)
-    except ValidationError as err:
-        return EvalResult(passed=False, score=0.0, reason=f"Schema violation: {err}")
-
-    # 2. Deterministic operational thresholds
-    if response.latency_ms > 2500:
-        return EvalResult(passed=False, score=0.0, reason="Latency SLA breach (>2500ms)")
-
-    if response.usage.completion_tokens > 450:
-        return EvalResult(passed=False, score=0.0, reason="Token budget overflow (>450 tokens)")
-
-    # 3. Deterministic regex constraint
-    if not re.search(r"TICKET-[0-9]{4,6}", parsed_payload.ticket_reference):
-        return EvalResult(passed=False, score=0.0, reason="Invalid ticket format regex")
-
-    return EvalResult(passed=True, score=1.0, reason="All Level 1 deterministic checks passed")
-```
+| # | Lesson Title | Depth Tier | Est. Time | Core Systems & AI Engineering Concepts |
+|---|---|:---:|:---:|---|
+| **01** | **[Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)** | `🟢 Tier 1: Core` | 40–50 min | The Hamel Husain 3-level evaluation hierarchy; Level 1 deterministic code assertions (Pydantic v2 schemas, regex bounds, latency/token ceilings, AST parsing for code/SQL); DeepEval pytest integration; Production failure mode: Silent schema breakages. |
+| **02** | **[Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)** | `🟡 Tier 2: Depth` | 50–60 min | The failure of 1-to-5 Likert scales; Discrete binary pass/fail rubrics; G-Eval Chain-of-Thought (CoT) reasoning; Reference-based vs. Reference-free scoring (RAGAS triad); Position and verbosity bias mitigations; Chance-adjusted statistical calibration (**Cohen's Kappa** $\ge 0.8$, **Krippendorff's Alpha**); Specialized open-weight judges (**Prometheus-2**). |
+| **03** | **[Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)** | `🟡 Tier 2: Depth` | 50–60 min | Why single-turn grading fails on autonomous agents; Trajectory evaluation dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, loop/thrashing detection; Physical environment state mutation verification; Modern agent benchmarks: **SWE-bench Verified**, **TAU-bench**, **GAIA**, and **UK AISI Inspect AI**. |
+| **04** | **[Evaluation Datasets & Synthetic Data Curation](./04-evaluation-datasets-and-synthetic-data-curation.md)** | `🟡 Tier 2: Depth` | 45–55 min | Anatomy of an Enterprise Golden Dataset: 50/25/15/10 operational quadrant distribution (Happy Path, Edge Cases, Adversarial, Production Regressions); Automated anomaly harvesting flywheel; Synthetic generation using teacher models via **Evol-Instruct**; Defending against Goodhart's Law; Test set contamination prevention and **Canary Strings**; Train/Dev vs. Held-Out test splits. |
+| **05** | **[OpenTelemetry Distributed Tracing & Agent Spans](./05-opentelemetry-distributed-tracing-and-agent-spans.md)** | `🟡 Tier 2: Depth` | 50–60 min | Distributed tracing fundamentals for AI systems; OpenTelemetry mid-2026 dedicated registry (`semantic-conventions-genai` v1.42.0+); Standardized `gen_ai.*` attributes; Official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`); Multi-step agent trace span hierarchy; Context propagation via W3C `traceparent` across HTTP, message queues, and Model Context Protocol (MCP) channels; Observability platforms compared (**Langfuse**, **Arize Phoenix**, **LangSmith**, **Cloud APM**). |
+| **06** | **[Telemetry Metrics, Cost Governance & Golden Signals](./06-telemetry-metrics-cost-governance-and-golden-signals.md)** | `🟡 Tier 2: Depth` | 45–55 min | The Six Golden Signals of GenAI Systems: Time To First Token (TTFT), Tokens Per Second (TPS), Prompt vs Completion Token Ratio, Prompt Cache Hit Ratio, Model Fallback Rate, Fully Burdened Cost Per Task; Streaming latency dynamics: Inter-Token Latency (ITL) variance, TTFC vs TTFT; Prefix caching economics (75–90% cost savings); Production cost governance SLAs. |
+| **07** | **[Continuous Monitoring, Drift Detection & Canaries](./07-continuous-monitoring-drift-detection-and-canaries.md)** | `🔵 Tier 3: Advanced` | 55–65 min | Disentangling Tri-Partite Drift: Data Drift ($P(X)$), Concept Drift ($P(Y \mid X)$), and Prompt/Vendor Drift ($P(\text{Tokens} \mid \text{Prompt})$); Tabular Population Stability Index (PSI) formula and thresholds; Embedding centroid drift via Maximum Mean Discrepancy (MMD); Delayed ground-truth feedback loops; The silent provider upgrade trap; Automated hourly LLM canary probes; Unifying classical ML (**MLflow**) with GenAI distributed traces (**OpenTelemetry** bridge). |
+| **CAP** | **[Capstone Challenge: CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)** | `🟡 Capstone Lab` | 60–90 min | Build and execute an enterprise-grade CI/CD evaluation gate inside GitHub Actions running a 50-test benchmark across core, edge, and adversarial cases; Level 1 schema and latency assertions; Level 2 LLM-as-a-judge scoring with binary rubrics; Aggregate pass-rate and cost regression gating; Modernized to Python 3.12+ and clean async execution. |
 
 ---
 
-### Level 2: Model-Based Evaluation (LLM-as-a-Judge) [MUST-HAVE] 🔴
+## 🗂️ Direct Chapter & Lesson Directory
 
-When testing semantic correctness, conversational nuance, tone alignment, faithfulness against retrieved RAG contexts, or domain-specific reasoning, deterministic code cannot capture the full picture. Here, a stronger, highly capable model (e.g., Claude 3.7 Sonnet, GPT-4o) evaluates the target system's outputs.
+### [Lesson 01: Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)
+* **Tier**: `🟢 Core`
+* **Focus**: Establishes the foundational Hamel Husain 3-level evaluation hierarchy. Details Level 1 deterministic code assertions that execute on CPU in under 1ms with zero API cost: Pydantic v2 JSON Schema adherence, regex syntax bounds, operational latency and token ceilings, and Abstract Syntax Tree (AST) validation for generated code and SQL. Introduces DeepEval pytest integration for developer-first workflows.
 
-#### 1. The Failure of 1-to-5 Likert Scales
-> [!CAUTION]
-> Never prompt an LLM judge with: *"Rate this response on a scale of 1 to 5 for helpfulness."*
-> 
-> Continuous Likert scales produce severe drift:
-> * A score of "3" from GPT-4o today may equal a "4" tomorrow due to non-deterministic sampling.
-> * LLMs exhibit heavy clustering around 4 and 5, avoiding 1 and 2 unless the response is complete gibberish.
-> * Different judge models assign vastly different subjective thresholds to "3 vs 4".
+### [Lesson 02: Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)
+* **Tier**: `🟡 Engineering Depth`
+* **Focus**: Deconstructs why continuous 1-to-5 Likert scales fail in production. Establishes discrete binary pass/fail rubrics and the G-Eval Chain-of-Thought (CoT) framework. Explains reference-based vs. reference-free evaluation (the RAGAS triad: Faithfulness, Answer Relevance, Context Precision). Covers systematic judge bias mitigations (position swapping and verbosity penalties), chance-adjusted statistical calibration (**Cohen's Kappa** $\ge 0.8$, **Krippendorff's Alpha**), and specialized open-weight judge models (**Prometheus-2**).
 
-#### 2. The Solution: Discrete Binary Pass/Fail Rubrics
-Senior architects design evaluations around **Binary Pass/Fail Rubrics** equipped with explicit, unambiguous failure criteria and Chain-of-Thought reasoning steps:
+### [Lesson 03: Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)
+* **Tier**: `🟡 Engineering Depth`
+* **Focus**: Shifting evaluation from single-turn response grading to multi-turn intermediate trajectory analysis. Explains the 4 core trajectory dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, and loop/thrashing detection. Details environment-state mutation verification (checking database rows, git diffs, and API responses). Introduces modern 2026 benchmarks: **SWE-bench Verified**, **TAU-bench**, **GAIA**, and the **UK AISI Inspect AI** framework.
 
-```markdown
-### BINARY EVALUATION RUBRIC
+### [Lesson 04: Evaluation Datasets & Synthetic Data Curation](./04-evaluation-datasets-and-synthetic-data-curation.md)
+* **Tier**: `🟡 Engineering Depth`
+* **Focus**: Structuring an enterprise Golden Evaluation Dataset across the 50/25/15/10 operational quadrants (Core Happy Path, Edge Cases, Adversarial Attacks, and Production Regressions). Covers the automated data quality flywheel harvesting real production anomalies into permanent regression tests. Explains teacher-model synthetic generation via **Evol-Instruct** (in-depth and in-breadth mutation), defending against Goodhart's Law, test set contamination prevention, and **Canary String** insertion.
 
-| Criteria: Grounded Faithfulness | Description |
-|---------------------------------|-------------|
-| **PASS (1)** | Every factual assertion in the Generated Response can be directly derived from the provided Context Documents. No extraneous claims. |
-| **FAIL (0)** | The Generated Response contains at least one claim, figure, date, or assumption not present in or strictly deducible from Context. |
+### [Lesson 05: OpenTelemetry Distributed Tracing & Agent Spans](./05-opentelemetry-distributed-tracing-and-agent-spans.md)
+* **Tier**: `🟡 Engineering Depth`
+* **Focus**: Upgrading distributed systems APM to generative AI architectures. Implements the mid-2026 dedicated **`semantic-conventions-genai`** (v1.42.0+) specification and official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`). Maps the multi-step agent trace span hierarchy and context propagation via W3C `traceparent` across HTTP, asynchronous message brokers (Redis/Celery), and Model Context Protocol (MCP) stdio/SSE channels. Compares leading observability engines (**Langfuse**, **Arize Phoenix**, **LangSmith**, and **Cloud-Native APMs**).
 
-**Evaluation Protocol:**
-1. Extract all atomic factual assertions from the Candidate Response.
-2. Cross-reference each assertion against the provided Reference Context.
-3. If any assertion lacks direct grounding, assign FAIL with exact citation.
-4. Output strictly structured JSON: `{"reasoning": "...", "verdict": 0 | 1}`
-```
+### [Lesson 06: Telemetry Metrics, Cost Governance & Golden Signals](./06-telemetry-metrics-cost-governance-and-golden-signals.md)
+* **Tier**: `🟡 Engineering Depth`
+* **Focus**: The Six Golden Signals of GenAI Systems: Time To First Token (TTFT), Tokens Per Second (TPS), Prompt vs Completion Token Ratio, Prompt Cache Hit Ratio, Model Fallback Rate, and Fully Burdened Cost Per Task. Explores streaming latency dynamics, Inter-Token Latency (ITL) variance, and TTFC vs TTFT behind reverse proxies. Analyzes prefix prompt caching economics (75–90% cost savings on Anthropic, OpenAI, Gemini) and operational cost governance SLAs.
 
-#### 3. Core Evaluation Paradigms:
-* **G-Eval (Framework for NLG Evaluation using LLMs)**: Uses Chain-of-Thought (CoT) to generate step-by-step reasoning before outputting discrete probabilities or binary verdicts, significantly improving correlation with human expert consensus.
-* **Reference-Based vs Reference-Free**:
-  * *Reference-Based*: The judge evaluates the model output against a known human-curated ground truth answer. Ideal for factual Q&A, data extraction, and tool selection.
-  * *Reference-Free*: The judge evaluates the model output solely against the user prompt and retrieved RAG context (measuring Faithfulness, Answer Relevance, and Toxicity).
-* **Pairwise Comparison (A/B Arena Style)**: Two candidate responses (Model A vs Model B) are presented to the judge simultaneously. The judge determines which response is superior based on a rubric.
-  * *Mitigating Position Bias*: Models naturally favor Option A over Option B (or vice versa). Production pipelines run two inferences per pair, swapping the positions: `(A, B)` and `(B, A)`. If the judge flips its decision, the result is marked as a tie or discarded.
-  * *Mitigating Verbosity Bias*: Models heavily equate length with quality. Prompts must explicitly instruct the judge: *"Penalize redundant verbosity; prioritize concise, direct answers."*
+### [Lesson 07: Continuous Monitoring, Drift Detection & Canaries](./07-continuous-monitoring-drift-detection-and-canaries.md)
+* **Tier**: `🔵 Advanced`
+* **Focus**: Disentangling the Tri-Partite Drift model in production: Data Drift ($P(X)$), Concept Drift ($P(Y \mid X)$), and Prompt/Vendor Drift ($P(\text{Tokens} \mid \text{Prompt})$). Explains Population Stability Index (PSI) math and embedding centroid drift via Maximum Mean Discrepancy (MMD). Covers delayed ground-truth feedback loops and defense against the silent cloud provider update trap using **Automated Hourly Canary Probes**. Integrates classical MLflow model tracking with online OpenTelemetry GenAI traces.
 
 ---
 
-### Level 3: Online Human & Production Telemetry [GOOD-TO-KNOW] 🟡
+## 💻 Enterprise Reference Implementations
 
-While Levels 1 and 2 run offline before deployment, Level 3 operates continuously on live production traffic, capturing the ultimate ground truth: real human interaction and system telemetry.
+Runnable production evaluation runners and automated test suites are available in the [`examples/`](./examples/) directory:
 
-```mermaid
-flowchart TD
-    A["PRODUCTION USER INTERACTION"]
-    A --> B["EXPLICIT SIGNALS<br/>• Thumbs Up / Down<br/>• 5-Star Ratings<br/>• User Feedback Modal<br/>• Inline Text Edits"]
-    A --> C["IMPLICIT SIGNALS<br/>• Copy-to-Clipboard<br/>• Regeneration / Retry<br/>• Dwell Time on Output<br/>• Follow-up Clarifying"]
-    B --> D["ANOMALY EXTRACTION PIPELINE<br/>(Flagged for Golden Dataset)"]
-    C --> D
-```
-
-#### Explicit Signals:
-* **Thumbs Up / Down**: Binary rating widget adjacent to every generation.
-* **User Corrections / Edits**: In collaborative tools (e.g., code editors, document writers), measuring the Levenshtein distance between the agent's suggestion and the user's final accepted text.
-* **Flag / Report**: User reporting offensive content, hallucinations, or broken instructions.
-
-#### Implicit Signals (Zero Friction, Massive Volume):
-* **Copy-to-Clipboard Event**: Strong positive indicator of response utility.
-* **Immediate Retry / Regeneration**: Strong negative signal indicating the first attempt failed to satisfy user intent.
-* **Follow-up Clarifications**: If a user immediately prompts *"No, that's not what I meant, I asked for X"*, the prior turn is automatically flagged as a semantic failure.
-* **Dwell Time & Task Abandonment**: Tracking whether the user completed their intended workflow or abruptly terminated the session.
-
-#### Production Deployment Verification Strategies:
-* **Shadow Deployments (Dark Traffic)**: Duplicating live customer requests to both the production model and a candidate model. The candidate's outputs are evaluated via Level 1 and Level 2 evals without affecting the user.
-* **Canary Splits**: Routing 2% of live traffic to the candidate prompt/model, monitoring automated telemetry (error rates, fallback triggers, negative feedback spikes) before progressing to 10%, 50%, and 100%.
+| Implementation | Framework & Language | Core Architecture & Engineering Highlights |
+|---|---|---|
+| **[`production_eval_runner.py`](./examples/production_eval_runner.py)** | Python 3.12+ / Pydantic v2 / Langfuse | Production Level 2 LLM-as-a-Judge test runner implementing G-Eval binary pass/fail rubrics, Pydantic structured output enforcement, and full OpenTelemetry instrumentation via Langfuse. |
+| **[`EvalHarnessTests.cs`](./examples/EvalHarnessTests.cs)** | C# / .NET 9 / xUnit / Semantic Kernel | Enterprise automated xUnit evaluation suite executing Level 1 deterministic schema checks and Level 2 semantic embedding similarity assertions as a mandatory gate in CI/CD pipelines. |
 
 ---
 
-## 🤖 Agent & Trajectory Evaluation [MUST-HAVE] 🔴
-
-Evaluating a multi-step autonomous agent is fundamentally different from evaluating a single-turn chatbot. A single turn produces text; an agent executes a **state trajectory** consisting of observations, reasoning thoughts, tool calls, environment responses, and state mutations.
-
-```mermaid
-flowchart LR
-    A["Turn 1:<br/>USER REQUEST"] --> B["Plan"] --> C["Tool Call:<br/>search_customer(id='C-104')"]
-    C --> D["Turn 2:<br/>TOOL RESULT"] --> E["Reflect"] --> F["Tool Call:<br/>fetch_invoices(cust='C-104')"]
-    F --> G["Turn 3:<br/>TOOL RESULT"] --> H["Synthesize"] --> I["FINAL ANSWER"]
-```
-
-A final response can appear perfectly well-written even if the agent executed 14 unnecessary database queries, invoked deprecated tools, leaked private metadata, and incurred \$1.20 in compute cost for a 5-cent task.
-
-### Key Trajectory Evaluation Dimensions
-
-```mermaid
-flowchart LR
-    A["Agent Trajectory Evaluation"] --> B["Tool Selection Precision"]
-    A --> C["Argument Correctness"]
-    A --> D["Trajectory Efficiency"]
-    A --> E["Goal State Achievement"]
-
-    B --> B1["Did it choose the optimal tool?"]
-    B --> B2["Penalize hallucinations & deprecated tools"]
-
-    C --> C1["Strict schema parameter match"]
-    C --> C2["Correct entity extraction & type safety"]
-
-    D --> D1["Step count vs optimal path"]
-    D --> D2["Loop detection & thrashing checks"]
-    D --> D3["Cumulative token cost"]
-
-    E --> E1["Deterministic environment verification"]
-    E --> E2["Database, file, or state mutation verified"]
-```
-
-#### 1. Tool Selection Precision & Recall
-* **Tool Precision**: Of the tools invoked by the agent, what fraction were genuinely necessary to satisfy the prompt?
-* **Tool Recall**: Did the agent invoke all mandatory tools required for the task (e.g., invoking `verify_identity` prior to `transfer_funds`)?
-* **Hallucinated Tools**: Did the agent attempt to call a function name that does not exist in its registered schema?
-
-#### 2. Tool Argument Correctness
-* Does the argument payload conform strictly to the tool's JSON schema?
-* Did the agent correctly extract and pass context variables (e.g., passing `"order_id": "ORD-9912"` rather than `"order_id": "null"` or guessing a customer ID)?
-
-#### 3. Trajectory Efficiency & Loop Detection
-* **Step Count Efficiency ($E_{steps}$)**:
-  $$\text{Efficiency} = \frac{\text{Optimal Steps}}{\text{Actual Steps}}$$
-  If a task requires 3 steps and the agent takes 12 steps due to stumbling through incorrect tool searches, efficiency is $0.25$.
-* **Loop / Thrashing Detection**: Detecting cyclical tool executions where an agent repeats `search(query="X") -> null -> search(query="X")` without adjusting parameters, burning through max-step limits.
-
-#### 4. Goal Achievement & State Mutation
-The gold standard of agent evaluation: **Did the real world change as requested?**
-Rather than grading the agent's final text summary, the test harness inspects the environment:
-* In a database agent: Did the row insert into PostgreSQL with the correct foreign keys?
-* In a coding agent: Did the code compile, pass all unit tests, and generate a clean git diff?
-* In an API agent: Did the HTTP POST endpoint receive the expected payload with a 201 Created status code?
-
----
-
-## 📦 Curation of Evaluation Datasets [MUST-HAVE] 🔴
-
-An evaluation suite is only as trustworthy as the dataset powering it. Benchmarks like MMLU or HumanEval measure generalized academic capabilities; they tell you nothing about how your system performs against your enterprise schemas, proprietary APIs, and messy real-world users.
-
-### The Anatomy of an Enterprise "Golden Dataset" [MUST-HAVE] 🔴
-
-A production-grade golden dataset should comprise at least 100 to 500 carefully curated test cases categorized across four operational quadrants:
-
-| Category | Proportion | Purpose | Example |
-|---|---|---|---|
-| **Core Happy Path** | 50% | Validates core business SLAs and routine queries | Standard customer lookup, standard FAQ answering, clean tool calls |
-| **Edge & Boundary Cases** | 25% | Tests handling of unusual, malformed, or ambiguous inputs | Multi-intent requests, empty search returns, international date formats |
-| **Adversarial & Jailbreak** | 15% | Validates defense against prompt injections and jailbreaks | Indirect prompt injection in email body, system prompt extraction |
-| **Known Production Failures** | 10% | Regression anchors extracted from real user complaints | Production incident #4102 where agent miscalculated discount tax |
-
----
-
-### Automated Sourcing from Production Edge Cases
-
-Every production failure must become a permanent test case in your golden dataset. This creates an **Automated Data Quality Flywheel**:
-
-```mermaid
-flowchart TD
-    A["Live Production Traffic"] --> B["Observability Engine (Traces)"]
-    B --> C{"Failure Extraction Filters"}
-    C -->|"Level 1 Failure (Schema/Latency)"| D["Log & Isolate Trace"]
-    C -->|"User Negative Feedback (Thumbs Down)"| D
-    C -->|"Agent Loop / Max Steps Exceeded"| D
-    C -->|"Guardrail / Injection Triggered"| D
-
-    D --> E["Data Cleaning & PII Redaction"]
-    E --> F["Human / Lead Engineer Verification"]
-    F --> G["Add to Versioned Golden Dataset (Git / Langfuse)"]
-    G --> H["Automated CI/CD Regression Suite"]
-    H --> I["Prevent Recurrence in Future Deploys"]
-```
-
----
-
-### Synthetic Data Generation with Stronger Teacher Models
-
-Manually writing 500 comprehensive test cases with full ground truth references is prohibitively expensive. Leading organizations use frontier models (Claude 3.7 Sonnet, GPT-4o) as **Teacher Generators** using the **Evol-Instruct** methodology:
-
-```mermaid
-flowchart TD
-    Seed["<b>SEED PRODUCTION PROMPT</b><br/>&quot;Check status of my order&quot;"]
-    
-    InDepth["<b>IN-DEPTH EVOLUTION</b><br/><i>(Add constraints, complexity)</i>"]
-    InBreadth["<b>IN-BREADTH EVOLUTION</b><br/><i>(Domain mutation, slang)</i>"]
-    
-    ExDepth["&quot;Check status of order #991,<br/>and if it's delayed, cancel it<br/>and issue refund to Apple Pay&quot;"]
-    ExBreadth["&quot;Yo, where's my package at?<br/>Ordered last Friday to London,<br/>haven't got tracking yet&quot;"]
-    
-    Seed --> InDepth --> ExDepth
-    Seed --> InBreadth --> ExBreadth
-```
-
-#### Rules for High-Fidelity Synthetic Curation:
-1. **Never use the same model family for generation and evaluation**: If your production agent uses GPT-4o-mini, generate synthetic test suites using Claude 3.7 Sonnet or o1. Avoid shared blind spots and family biases.
-2. **Filter Synthetic Artifacts**: Teacher models tend to generate overly polite, grammatically pristine prompts. Inject programmatic noise: deliberate typos, punctuation omissions, fragmented sentences, and ambiguous abbreviations to mimic real users.
-3. **Automated Ground Truth Synthesis**: Have the teacher model output both the prompt and the expected step-by-step reasoning trajectory, expected tool invocation sequence, and final assertion criteria.
-
----
-
-## 🔍 Observability, Distributed Tracing & OpenTelemetry [MUST-HAVE] 🔴
-
-You cannot evaluate or debug what you cannot see. When an autonomous agent fails, a simple error log stating `InternalServerError: Agent failed after 30s` is useless. You must know:
-* Which specific tool call timed out?
-* What exact prompt was passed into the sub-agent at step 4?
-* How many input and completion tokens were consumed by intermediate reasoning steps?
-* What was the parent-child span hierarchy across asynchronous boundaries?
-
----
-
-### OpenTelemetry GenAI Semantic Conventions [MUST-HAVE] 🔴
-
-The industry has converged on the **OpenTelemetry (OTel) Generative AI Semantic Conventions**, ensuring consistent span attributes across languages, frameworks, and APM tools:
-
-| Span Attribute | Type | Description | Example |
-|---|---|---|---|
-| `gen_ai.system` | string | Target provider / platform | `openai`, `anthropic`, `gemini`, `vertex_ai` |
-| `gen_ai.request.model` | string | Model name requested | `claude-3-7-sonnet-20250219`, `gpt-4o` |
-| `gen_ai.response.model` | string | Actual model that served request | `gpt-4o-2024-08-06` |
-| `gen_ai.request.temperature` | double | Temperature sampling parameter | `0.2` |
-| `gen_ai.usage.input_tokens` | int | Number of prompt/context tokens | `1420` |
-| `gen_ai.usage.output_tokens`| int | Number of generated completion tokens | `280` |
-| `gen_ai.prompt` | string | Formatted prompt content (or span event) | `System: You are an agent...` |
-| `gen_ai.completion` | string | Model output response string | `Tool Call: get_weather(...)` |
-
----
-
-### OpenTelemetry Distributed Trace Span Hierarchy for Multi-Step Agents [MUST-HAVE] 🔴
-
-In an agentic workflow, a single root user request spawns a tree of nested spans representing planners, routers, tool calls, and sub-agents:
-
-```mermaid
-flowchart TD
-    Root["Root Trace: POST /api/v1/agent/execute [Span: agent_orchestrator]"]
-    
-    Root --> Router["Span: intent_router [gen_ai.system: anthropic]"]
-    Router --> Plan["Span: planning_decomposition"]
-    
-    Root --> Step1["Span: agent_step_1 [Turn 1]"]
-    Step1 --> LLM1["Span: chat_completion [claude-3-7-sonnet]"]
-    Step1 --> Tool1["Span: tool_execution [db_query_customers]"]
-    
-    Root --> Step2["Span: agent_step_2 [Turn 2]"]
-    Step2 --> LLM2["Span: chat_completion [claude-3-7-sonnet]"]
-    Step2 --> SubAgent["Span: sub_agent_dispatch [FinancialAnalysisAgent]"]
-    SubAgent --> SubLLM["Span: chat_completion [gpt-4o-mini]"]
-    SubAgent --> Tool2["Span: tool_execution [calculate_depreciation]"]
-    
-    Root --> Synthesize["Span: final_synthesis [gen_ai.system: anthropic]"]
-    
-    classDef rootStyle fill:#2d3748,stroke:#4a5568,color:#fff,stroke-width:2px;
-    classDef spanStyle fill:#1a365d,stroke:#2b6cb0,color:#fff;
-    classDef toolStyle fill:#234e52,stroke:#319795,color:#fff;
-    classDef llmStyle fill:#44337a,stroke:#6b46c1,color:#fff;
-    
-    class Root rootStyle;
-    class Router,Plan,Step1,Step2,Synthesize spanStyle;
-    class Tool1,Tool2 toolStyle;
-    class LLM1,LLM2,SubAgent,SubLLM llmStyle;
-```
-
-#### Context Propagation:
-Distributed tracing requires passing the W3C `traceparent` header across every boundary:
-* Across HTTP REST or gRPC service calls.
-* Through Redis / RabbitMQ message queues for asynchronous background tasks.
-* Across Model Context Protocol (MCP) JSON-RPC standard I/O pipes.
-
----
-
-### Modern AI Observability Platforms Compared
-
-| Dimension | Langfuse | Arize Phoenix | LangSmith | Native Cloud (GCP Trace / Azure AppInsights) |
-|---|---|---|---|---|
-| **Architecture** | Open source (Postgres + ClickHouse backend) | Open source (OTel native, In-memory / DuckDB / ClickHouse) | Closed-source SaaS (On-prem enterprise available) | Enterprise cloud-native APM |
-| **OTel Compliance** | Full OpenTelemetry ingest API | 100% Native OpenTelemetry collector | Proprietary RunTree format (OTel bridge available) | Fully standard W3C / OTel native |
-| **Key Strengths** | Prompt versioning, integrated evals, cost tracking, clean UI | Deep vector retrieval visualization, clustering, drift detection | Tightest integration with LangChain & LangGraph ecosystem | Single pane of glass with infrastructure (VMs, DBs, K8s) |
-| **Agent Trajectories** | Visual span tree with tool inputs & outputs | Full span timeline with latency waterfall analysis | Detailed state inspection for graph nodes | Distributed waterfall, but lacks LLM-specific playground |
-| **Self-Hostable** | Yes (Docker, Helm chart, single-binary) | Yes (Python library, Docker, local Jupyter) | No (Cloud SaaS primary, complex enterprise license) | Cloud-managed only |
-| **Best For** | Enterprise production LLMOps & prompt management | Deep RAG diagnostics, research, and embedding analysis | Rapid prototyping within LangChain/LangGraph | Cloud architects standardizing on GCP/Azure compliance |
-
----
-
-## 📊 Key Telemetry & Performance Metrics [MUST-HAVE] 🔴
-
-Senior engineers do not just track generic server CPU and memory; they monitor the **Six Golden Signals of LLM Systems**:
-
-```mermaid
-flowchart TD
-    Root["<b>THE SIX GOLDEN SIGNALS</b>"]
-    
-    Root --> S1["<b>TTFT</b><br/>Time To First Token"]
-    Root --> S2["<b>TPS</b><br/>Tokens Per Second"]
-    Root --> S3["<b>CACHE HIT</b><br/>Prefix Cache Efficiency"]
-    Root --> S4["<b>TOKEN RATIO</b><br/>Input vs Output Inflation"]
-    Root --> S5["<b>FALLBACK RATE</b><br/>Provider 429 Failovers"]
-    Root --> S6["<b>COST</b><br/>Amortized Per Task"]
-```
-
-### 1. Time To First Token (TTFT)
-* **Definition**: The wall-clock duration from the client sending the request to the client receiving the first streamed token.
-* **Why it matters**: Governs perceived human latency. If TTFT exceeds 1.5 seconds, users perceive the interface as sluggish, regardless of how fast subsequent tokens stream.
-* **Architectural Levers**: Prompt caching, model selection (smaller models have lower TTFT), minimizing excessive pre-fill system instructions.
-
-### 2. Tokens Per Second (TPS) / Generation Velocity
-* **Definition**: Output tokens divided by time elapsed after the first token arrives:
-  $$\text{TPS} = \frac{N_{\text{output\_tokens}}}{T_{\text{total}} - \text{TTFT}}$$
-* **Target**: Standard human reading speed is 5–8 tokens/second. Enterprise interactive agents should deliver >= 30 - 60 TPS.
-
-### 3. Prompt vs. Completion Token Ratio
-* **Definition**: The ratio of prompt tokens sent to output tokens generated.
-* **Risk Indicator**: A ratio of 50:1 (e.g., sending 10,000 tokens of context to retrieve a 20-token answer) indicates inefficient RAG chunking or bloated conversation history that needs compaction.
-
-### 4. Prompt Cache Hit Ratio ($R_{cache}$)
-* **Definition**: The percentage of prompt tokens read from memory cache (Anthropic Prompt Caching, Gemini Context Caching, OpenAI Prefix Caching):
-  $$R_{cache} = \frac{\text{Tokens}_{\text{cached}}}{\text{Tokens}_{\text{total\_prompt}}} \times 100\%$$
-* **Cost Impact**: Cache hits reduce input token costs by up to 75% to 90% and reduce TTFT by up to 80%. An optimal architecture maintains R_cache >= 65% for multi-turn chats.
-
-### 5. Model Fallback & Retry Rate
-* **Definition**: Frequency of calls that encounter rate limits (HTTP 429), provider timeouts (504), or internal errors (500) and trigger automated fallback cascades (e.g., Claude 3.7 → GPT-4o → Gemini 2.5 Flash).
-* **Alert Threshold**: Any sustained fallback rate > 2% indicates impending quota exhaustion or upstream service degradation.
-
-### 6. Fully Burdened Cost Per Task / Conversation
-* **Formula**:
-  $$\text{Cost} = \sum (\text{Input Tokens} \times P_{in}) + \sum (\text{Output Tokens} \times P_{out}) + \text{Tool Compute Cost}$$
-* **Why it matters**: Allows engineering to establish unit economics: *"An automated customer support resolution costs \$0.042, whereas a manual agent costs \$4.50."*
-
----
-
-## 🔄 Hybrid ML + GenAI Continuous Monitoring & Drift Detection [MUST-HAVE] 🔴
-
-In modern enterprise architectures, generative AI does not exist in a vacuum. Production systems are almost universally **Hybrid AI Systems**:
-* A **classical tabular model** (e.g., XGBoost, LightGBM, scikit-learn) scores credit default, predicts fraud risk, or ranks recommendation candidates in sub-10ms latencies.
-* An **autonomous GenAI agent** ingests that statistical score, queries enterprise knowledge via RAG, evaluates business policies, and orchestrates remediation workflows or generates customer communications.
-
-Operating these hybrid architectures creates a severe operational challenge: **Tooling and telemetry fragmentation**. Data Science teams monitor offline experiment registries in **MLflow** or **Weights & Biases (W&B)**, while Software and AI Platform teams monitor online distributed traces in **OpenTelemetry (OTel)**, Datadog, or Langfuse.
-
-```mermaid
-flowchart TD
-    subgraph Ingress["PRODUCTION INGRESS"]
-        Trans["User Transaction / Event X"]
-    end
-
-    subgraph ClassicalPlane["CLASSICAL ML LAYER (MLflow / W&B)"]
-        Scorer["XGBoost Fraud Scorer<br/>(Logged via MLflow Model Registry)"]
-        MLMeta["MLflow Run ID: #run-8812<br/>Model: fraud-xgb:v4.2"]
-    end
-
-    subgraph OTelBridge["TELEMETRY BRIDGE & CONTEXT PROPAGATION"]
-        Carrier["W3C traceparent carrier<br/>Attributes: ml.model.version, ml.score"]
-    end
-
-    subgraph GenAIPlane["GENAI ORCHESTRATION LAYER (OpenTelemetry)"]
-        Agent["Autonomous Fraud Investigation Agent<br/>(OTel Root Span: agent_investigation)"]
-        Tools["Tool Calls: freeze_card, alert_user<br/>(OTel Child Spans)"]
-        LLM["Claude 3.7 / GPT-4o Triage<br/>(OTel Child Span: chat_completion)"]
-    end
-
-    subgraph DriftEngine["TRI-PARTITE DRIFT MONITORING ENGINE"]
-        D1["<b>1. DATA DRIFT (P(X))</b><br/>• PSI on tabular features<br/>• Embedding centroid shift"]
-        D2["<b>2. CONCEPT DRIFT (P(Y|X))</b><br/>• Ground-truth chargeback logs<br/>• Rolling ROC-AUC degradation"]
-        D3["<b>3. PROMPT DRIFT (P(Tokens|Prompt))</b><br/>• Vendor API silent updates<br/>• Automated hourly canary probes"]
-    end
-
-    Trans --> Scorer
-    Scorer -.-> MLMeta
-    Scorer --> Carrier
-    Carrier --> Agent
-    Agent --> Tools & LLM
-    Carrier -.-> DriftEngine
-    Tools -.-> DriftEngine
-```
-
----
-
-### Unifying Classical ML Tracking with OpenTelemetry GenAI Spans [MUST-HAVE] 🔴
-
-When a production incident occurs (e.g., an agent suddenly begins freezing legitimate customer accounts), engineers must trace the failure across the entire hybrid pipeline without toggling between disconnected dashboards.
-
-#### 1. W3C TraceContext Propagation Across Model Boundaries
-The tabular inference step must initialize or extend the W3C `traceparent` context header. The ML scoring span injects its model provenance directly into the distributed trace:
-* `ml.model.name`: `fraud_classifier_xgboost`
-* `ml.model.version`: `v4.2.1`
-* `ml.experiment.id`: `mlflow_exp_9910`
-* `ml.run.id`: `4b88fa8192ce412`
-* `ml.prediction.score`: `0.842`
-* `ml.prediction.threshold`: `0.750`
-
-When the GenAI orchestrator receives the prediction, it extracts the W3C trace context, ensuring the LLM reasoning spans and tool execution spans appear as direct child nodes in a single, unified waterfall trace.
-
-#### 2. Hybrid Telemetry Correlation Pipeline (Python)
-
-```python
-"""
-hybrid_telemetry_bridge.py
-Unifies MLflow model tracking with OpenTelemetry GenAI distributed tracing.
-"""
-
-from typing import Dict, Any
-import mlflow
-from opentelemetry import trace
-from opentelemetry.trace import Status, StatusCode
-import numpy as np
-
-tracer = trace.get_tracer("enterprise.hybrid_ai")
-
-class HybridScoringService:
-    def __init__(self, mlflow_model_uri: str, model_version: str):
-        self.model_uri = mlflow_model_uri
-        self.model_version = model_version
-        # Load registered model from MLflow
-        self.model = mlflow.pyfunc.load_model(mlflow_model_uri)
-
-    def predict_and_trace(self, features: Dict[str, float], parent_context=None) -> Dict[str, Any]:
-        """Executes tabular prediction within an OpenTelemetry span containing MLflow metadata."""
-        with tracer.start_as_current_span("classical_ml_inference", context=parent_context) as span:
-            # 1. Enrich OpenTelemetry span with MLflow metadata
-            span.set_attribute("ml.system", "mlflow")
-            span.set_attribute("ml.model.uri", self.model_uri)
-            span.set_attribute("ml.model.version", self.model_version)
-            
-            # 2. Execute inference
-            feature_array = np.array(list(features.values())).reshape(1, -1)
-            raw_score = float(self.model.predict(feature_array)[0])
-            is_anomaly = raw_score > 0.80
-            
-            span.set_attribute("ml.inference.score", raw_score)
-            span.set_attribute("ml.inference.decision", "FLAG_FRAUD" if is_anomaly else "APPROVE")
-            span.set_status(Status(StatusCode.OK))
-            
-            return {
-                "score": raw_score,
-                "is_anomaly": is_anomaly,
-                # Export active traceparent for downstream GenAI agents
-                "trace_id": format(span.get_span_context().trace_id, "032x"),
-                "span_id": format(span.get_span_context().span_id, "016x")
-            }
-```
-
----
-
-### Tri-Partite Drift Monitoring: Disentangling Data, Concept & Prompt Drift [MUST-HAVE] 🔴
-
-When performance degrades in a hybrid AI system, diagnosing the root cause requires isolating which component of the probability space has shifted:
-
-```mermaid
-flowchart LR
-    subgraph DataDrift["1. DATA DRIFT: P(X) Shifts"]
-        X1["Input Features / Prompts Change<br/>• Users submit new slang/formats<br/>• Sensor/feature distributions shift"]
-    end
-    
-    subgraph ConceptDrift["2. CONCEPT DRIFT: P(Y|X) Shifts"]
-        X2["World Truth Changes<br/>• Fraud tactics evolve<br/>• Same input leads to new outcome"]
-    end
-    
-    subgraph PromptDrift["3. PROMPT DRIFT: P(Tokens|Prompt) Shifts"]
-        X3["LLM Behavior Degrades<br/>• Vendor updates weights silently<br/>• Formatting compliance breaks"]
-    end
-```
-
-#### 1. Data Drift (Covariate Shift - $P(X)$ Shifts)
-* **What it is**: The probability distribution of incoming input features or user prompts changes relative to the baseline training/validation distribution, while the conditional truth remains unchanged.
-* **Classical Metrics**:
-  - **Population Stability Index (PSI)**:
-    $$\text{PSI} = \sum_{k=1}^K \left( \text{Actual}_k - \text{Expected}_k \right) \times \ln\left(\frac{\text{Actual}_k}{\text{Expected}_k}\right)$$
-    - $\text{PSI} < 0.10$: No significant shift.
-    - $0.10 \le \text{PSI} \le 0.20$: Moderate drift; warning triggered.
-    - $\text{PSI} > 0.20$: Severe drift; model retraining mandated.
-  - **Two-Sample Kolmogorov-Smirnov (K-S) Test** and **Wasserstein Distance** for continuous features.
-* **GenAI Metrics**:
-  - **Embedding Centroid Drift**: Measuring the shift in cosine similarity distributions of incoming user prompt embeddings against a frozen reference centroid using **Maximum Mean Discrepancy (MMD)**.
-  - Token length inflation and vocabulary entropy divergence.
-
-#### 2. Concept Drift (Conditional Shift - $P(Y \mid X)$ Shifts)
-* **What it is**: The underlying statistical relationship between features/prompts and real-world ground truth changes. Even if the inputs look identical, historical labels no longer apply.
-* **Real-World Example**: A credit applicant with a 680 credit score had a 95% repayment probability in 2024; during an unexpected economic shock in 2026, the repayment probability drops to 78%.
-* **Detection Mechanics**:
-  - Requires **Delayed Ground Truth Feedback Loops** (e.g., 30-day default chargebacks, human auditor dispute logs, user thumbs-down overrides).
-  - Track rolling window **ROC-AUC decay**, **Precision-Recall degradation**, and **Brier Score calibration drift**.
-
-#### 3. Prompt Drift & Vendor Behavioral Drift ($P(\text{Tokens} \mid \text{Prompt})$ Shifts)
-* **What it is**: The conditional distribution of generated tokens given an immutable prompt shifts over time. This is unique to cloud LLM APIs.
-* **The Silent Upgrade Trap**: Cloud LLM vendors (OpenAI, Anthropic, Google) periodically update model weights, apply RLHF safety fine-tunes, or alter quantization kernels without bumping API version strings.
-* **Symptoms**:
-  - A prompt that had a 99.8% valid JSON output rate suddenly drops to 92.4%.
-  - Refusal rates spike on benign business prompts due to aggressive vendor safety filters.
-  - Reasoning chain lengths contract by 40%, degrading multi-step math or coding accuracy.
-* **Detection Mechanics**:
-  - **Automated Hourly Canary Probes**: A background worker dispatches 20 deterministic "golden probe" prompts to live model endpoints every 60 minutes.
-  - Evaluates exact JSON schema compliance, token generation counts, and embedding distance from golden reference outputs. If canary variance exceeds 3 standard deviations, alerts sound before end-users notice.
-
----
-
-### Drift Diagnostics & Incident Triage Matrix [MUST-HAVE] 🔴
-
-| Observed Symptom | Primary Drift Archetype | Diagnostic Investigation Steps | Corrective Engineering Action |
-|---|---|---|---|
-| Tabular risk model accuracy drops; feature distributions are identical to baseline. | **Concept Drift** ($P(Y \mid X)$) | Compare historical target correlation ($r_{xy}$) against recent ground-truth labels. | Retrain model on recent time-sliced data; recalibrate decision thresholds. |
-| Classical model outputs aberrant scores; PSI on key feature exceeds $0.25$. | **Data Drift** ($P(X)$) | Inspect upstream data pipeline; check for missing values, unit conversion bugs, or seasonal shifts. | Patch upstream data feed; retrain model with updated feature weights; update imputation. |
-| Agent tool calling begins failing with `JSONDecodeError` on an untouched prompt. | **Prompt Drift** ($P(\text{Tokens} \mid \text{Prompt})$) | Compare raw model responses against golden snapshots from 48 hours ago; check provider status logs. | Pin model to an explicit dated snapshot (e.g., `gpt-4o-2024-08-06` vs `gpt-4o`); add few-shot schema repair. |
-| User satisfaction drops; prompt embeddings cluster far from historical centroid. | **Data Drift (Prompt Level)** | Compute semantic clustering on recent prompt embeddings; identify emerging user intents. | Update RAG knowledge base; introduce new specialized router paths for emerging intents. |
-
----
-
-### Production Implementation: Continuous Drift Detection & Canary Monitor (Python)
-
-```python
-"""
-drift_monitor.py
-Automated Tri-Partite Drift Monitor:
-Calculates tabular Population Stability Index (PSI) and executes hourly LLM Canary Probes.
-"""
-
-import numpy as np
-import json
-import logging
-from typing import List, Dict, Any
-
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("DriftMonitor")
-
-class DriftMonitoringEngine:
-    @staticmethod
-    def calculate_psi(expected: np.ndarray, actual: np.ndarray, num_buckets: int = 10) -> float:
-        """
-        Calculates the Population Stability Index (PSI) between baseline and production feature slices.
-        """
-        # Define quantile bucket boundaries based on expected distribution
-        percentiles = np.linspace(0, 100, num_buckets + 1)
-        buckets = np.percentile(expected, percentiles)
-        buckets[0] -= 1e-5
-        buckets[-1] += 1e-5
-
-        expected_counts, _ = np.histogram(expected, bins=buckets)
-        actual_counts, _ = np.histogram(actual, bins=buckets)
-
-        expected_pct = expected_counts / len(expected)
-        actual_pct = actual_counts / len(actual)
-
-        # Handle zero counts using epsilon smoothing
-        eps = 1e-4
-        expected_pct = np.where(expected_pct == 0, eps, expected_pct)
-        actual_pct = np.where(actual_pct == 0, eps, actual_pct)
-
-        psi_val = np.sum((actual_pct - expected_pct) * np.log(actual_pct / expected_pct))
-        return float(psi_val)
-
-    @staticmethod
-    def execute_llm_canary_probe(client, model_name: str, golden_prompt: str, expected_schema_keys: List[str]) -> Dict[str, Any]:
-        """
-        Executes a deterministic canary probe against a cloud LLM to detect Prompt/Vendor Drift.
-        """
-        logger.info(f"Executing Canary Probe on {model_name}...")
-        
-        # Synthetic simulation of LLM API call
-        # In production: response = client.chat.completions.create(model=model_name, messages=..., temperature=0.0)
-        simulated_response = '{"order_id": "ORD-1092", "status": "SHIPPED", "tracking_num": "TRK-991"}'
-        
-        try:
-            parsed = json.loads(simulated_response)
-            missing_keys = [k for k in expected_schema_keys if k not in parsed]
-            schema_valid = len(missing_keys) == 0
-            
-            return {
-                "model": model_name,
-                "schema_valid": schema_valid,
-                "missing_keys": missing_keys,
-                "drift_detected": not schema_valid
-            }
-        except json.JSONDecodeError as ex:
-            logger.error(f"🚨 CRITICAL PROMPT DRIFT DETECTED: Model output malformed JSON ({ex})")
-            return {
-                "model": model_name,
-                "schema_valid": False,
-                "error": str(ex),
-                "drift_detected": True
-            }
-
-if __name__ == "__main__":
-    # 1. Audit Tabular Data Drift (PSI)
-    np.random.seed(42)
-    baseline_features = np.random.normal(50, 10, 1000)
-    current_features = np.random.normal(56, 12, 1000) # Injected distribution shift
-    
-    psi_metric = DriftMonitoringEngine.calculate_psi(baseline_features, current_features)
-    print(f"\n[Telemetry Audit] Feature PSI: {psi_metric:.4f}")
-    if psi_metric > 0.20:
-        print("⚠️ ALERT: Severe Data Drift detected (PSI > 0.20). Triggering retraining pipeline!")
-    
-    # 2. Audit LLM Canary Drift
-    canary_result = DriftMonitoringEngine.execute_llm_canary_probe(
-        client=None,
-        model_name="claude-3-7-sonnet",
-        golden_prompt="Extract order JSON",
-        expected_schema_keys=["order_id", "status", "tracking_num"]
-    )
-    print(f"[Telemetry Audit] LLM Canary Probe Result: {canary_result}")
-```
-
----
-
-## ⚖️ Evaluation Methodologies Comparison [MUST-HAVE] 🔴
-
-| Metric / Dimension | Exact Match / Substring | Semantic Similarity (Embeddings) | LLM-as-a-Judge (Binary Rubric) | Human Expert Review |
-|---|---|---|---|---|
-| **Marginal Cost** | $0.00 (Pure CPU) | ~$0.00002 / call | ~$0.002 - $0.03 / call | $2.00 - $25.00 / review |
-| **Latency** | < 1 millisecond | 10 - 50 milliseconds | 800 - 3,000 milliseconds | Hours to Days |
-| **Scalability** | Infinite (Millions/sec) | Massive (Thousands/sec) | High (Bounded by API rate limits) | Low (Bounded by human staffing) |
-| **Consistency / Determinism** | 100% Deterministic | Deterministic for fixed model | High (> 95% with binary CoT rubrics) | Moderate (Inter-annotator variance: 60-80%) |
-| **Context Understanding** | Zero | Surface semantic distance | Deep reasoning, nuance, and logic | Highest possible domain nuance |
-| **Diagnostic Actionability** | High (exact mismatch location) | Low (opaque cosine scalar score) | High (returns explicit rationale text) | High (detailed qualitative notes) |
-| **Best Used For** | Level 1 unit tests, schema, regex | RAG retrieval relevance filtering | Level 2 automated regression CI/CD | Golden dataset calibration & audits |
-
----
-
-## ⚠️ Production Failure Modes, Biases & Anti-Patterns [MUST-HAVE] 🔴
-
-### Anti-Pattern 1: The Subjective 1-to-5 Likert Scale Trap
-* **The Pathology**: Prompts asking the judge: *"Rate from 1 to 5 on clarity."*
-* **The Consequence**: Model ratings oscillate randomly over time. A prompt change that appears to raise average score from 4.1 to 4.3 is often pure statistical noise from temperature sampling.
-* **The Remedy**: Deconstruct subjective qualities into an atomic checklist of binary assertions:
-  1. Did the response answer the primary question? (0 or 1)
-  2. Did it contain an actionable code snippet? (0 or 1)
-  3. Was it free of deprecated API calls? (0 or 1)
-  The final score is the fraction of passed binary criteria: Score in {0.0, 0.33, 0.66, 1.0}.
-
----
-
-### Anti-Pattern 2: Position Bias & Verbosity Bias in Pairwise Evaluation
-* **Position Bias**: LLM judges systematically favor the candidate presented in position `Option A` over `Option B` (up to 65% win-rate bias regardless of content).
-* **Verbosity Bias**: A candidate that produces 600 words of superficial, verbose explanations regularly beats a crisp, accurate 50-word answer when judged by standard models.
-* **The Remedy**:
-  * Implement symmetric pairwise swapping: run both `(Candidate_1, Candidate_2)` and `(Candidate_2, Candidate_1)`. Only declare a win if the candidate wins both configurations.
-  * Explicitly penalize verbosity in judge instructions: *"If Candidate A and Candidate B provide the same factual truth, always award the win to the more concise response."*
-
----
-
-### Anti-Pattern 3: "Vibe Deployment" (Un-Gated Prompt Edits)
-* **The Pathology**: A developer edits the system prompt directly in the production configuration repository to fix a single customer ticket, without running an offline test suite.
-* **The Consequence**: The prompt modification inadvertently degrades performance across a dozen other previously solved edge cases, triggering a cascade of customer-facing bugs.
-* **The Remedy**: Enforce automated pull request status checks via GitHub Actions. A PR cannot merge unless the evaluation test suite executes against the candidate prompt and passes predefined accuracy and cost regression gates.
-
----
-
-### Anti-Pattern 4: The Blind Agent Trap (Zero Trajectory Visibility)
-* **The Pathology**: The application logs only the user's initial input string and the final generated output string.
-* **The Consequence**: When the agent enters a circular loop, hallucinates tool parameters, or fails silently, engineering has zero visibility into the intermediate reasoning steps or tool outputs that caused the breakdown.
-* **The Remedy**: Instrument the agent with OpenTelemetry spans at every lifecycle hook: step initialization, LLM completion, tool call serialization, tool execution, and reflection.
-
----
-
-### Anti-Pattern 5: Test Set Contamination & Metric Goodharting
-* **The Pathology**: Developers inspect failed evaluation cases, then hardcode specific prompt instructions or few-shot examples that directly address those exact inputs.
-* **The Consequence**: The system overfits to the evaluation dataset. Goodhart's Law takes effect: *"When a measure becomes a target, it ceases to be a good measure."* Overall generalization in production crashes.
-* **The Remedy**: Split evaluation datasets into **Train/Dev** (used for prompt iteration) and **Held-Out Test** (used strictly for release gating, never inspected by developers during prompt authoring).
-
----
-
-## 💻 Production-Grade Code Implementations [MUST-HAVE] 🔴
-
-Complete, runnable evaluation harnesses and observability test suites are available in the [`examples/`](./examples/) directory.
-
-### Implementation 1: Python LLM-as-a-Judge with Binary Rubrics & OpenTelemetry
-> **Implementation**: [`examples/production_eval_runner.py`](./examples/production_eval_runner.py)
-
-Production Level 2 LLM-as-a-Judge test runner implementing G-Eval binary pass/fail rubrics, Pydantic structured output enforcement, and full OpenTelemetry instrumentation via Langfuse.
-
-```python
-# Binary evaluation rubric execution from examples/production_eval_runner.py
-class EvaluationResult(BaseModel):
-    is_pass: bool = Field(description="Strict boolean verdict based on the rubric")
-    score: float = Field(ge=0.0, le=1.0)
-    reasoning: str = Field(description="Chain-of-thought rationale supporting the score")
-
-def evaluate_response(query: str, ground_truth: str, generated: str) -> EvaluationResult:
-    trace = langfuse.trace(name="eval_llm_judge")
-    ...
-```
-
----
-
-### Implementation 2: C# / .NET 9 Automated Evaluation Harness in xUnit
-> **Implementation**: [`examples/EvalHarnessTests.cs`](./examples/EvalHarnessTests.cs)
-
-Automated xUnit evaluation suite that executes deterministic assertions and model-graded evaluations as a mandatory gate in enterprise CI/CD pipelines.
-
-```csharp
-// CI/CD evaluation test method from examples/EvalHarnessTests.cs
-[Theory]
-[MemberData(nameof(GoldenDataset))]
-public async Task EvaluateAgent_MeetsFactualAccuracyThreshold(EvalTestCase testCase)
-{
-    var response = await _agent.ExecuteAsync(testCase.InputPrompt);
-    var evalResult = await _judge.ScoreAccuracyAsync(testCase.ReferenceAnswer, response);
-    
-    Assert.True(evalResult.Score >= 0.85, $"Eval failed for '{testCase.Id}': {evalResult.Reasoning}");
-}
-```
-
-## 📚 Curated Verified Resources & Seminal Reading [KNOWLEDGE-BASE] 🔵
-
-Every Senior AI Engineer and Architect must study these foundational sources:
-
-### 1. The Definitive Evals Guides
-* **Hamel Husain**: [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — *The seminal treatise explaining why offline evals are the dividing line between toy prototypes and durable software products.*
-* **Hamel Husain**: [LLM Evals FAQ](https://hamel.dev/blog/posts/evals-faq/) — *Deep dive into discrete pass/fail rubrics, why Likert scales fail, and synthetic test set creation.*
-* **Eugene Yan (Amazon)**: [Evaluating LLMs: A Field Guide](https://eugeneyan.com/writing/evals/) — *Comprehensive blueprint covering exact match, semantic similarity, LLM-as-a-judge, and human-in-the-loop systems.*
-* **Anthropic**: [Demystifying Evals for AI Agents](https://www.anthropic.com/engineering/evals) — *State trajectory evaluation, grading intermediate tool use, and testing multi-turn flows.*
-
-### 2. Standards, Frameworks & Observability
-* **OpenTelemetry**: [Semantic Conventions for Generative AI Systems](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — *Official W3C / CNCF standard for tracing spans, token metrics, and model attributes.*
-* **Langfuse**: [Langfuse Documentation](https://langfuse.com/docs) & [GitHub Repository](https://github.com/langfuse/langfuse) — *Open-source LLM engineering platform for traces, prompt management, and score logging.*
-* **Arize Phoenix**: [Arize Phoenix Documentation](https://docs.arize.com/phoenix/) & [GitHub Repository](https://github.com/Arize-ai/phoenix) — *AI observability, evaluation, and vector retrieval diagnostics.*
-* **Inspect AI (UK AI Safety Institute)**: [Inspect AI Documentation](https://inspect.aisi.org.uk/) & [GitHub Repository](https://github.com/UKGovernmentBEIS/inspect_ai) — *Open-source framework for large language model evaluation, tool-use evaluation, and CI pipelines.*
-* **Google Agents CLI & ADK**: [Google Agents CLI Guide](https://google.github.io/agents-cli/) & [ADK Evaluation Documentation](https://google.github.io/adk-docs/evaluate/) — *Automated benchmark runner, trajectory evaluation, and CI/CD agent evaluation tooling.*
-
-### 3. Seminal Academic Papers
-* **G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment** (Liu et al., 2023): [arXiv:2303.16634](https://arxiv.org/abs/2303.16634) — *Introduced Chain-of-Thought prompting for LLM-based evaluation rubrics.*
-* **Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena** (Zheng et al., 2023): [arXiv:2306.05685](https://arxiv.org/abs/2306.05685) — *Cataloged position bias, verbosity bias, and self-enhancement bias in model evaluators.*
-
----
-
-## 🏆 Capstone Challenge: Automated CI/CD Evaluation Pipeline [MUST-HAVE] 🔴
+## 🏆 Capstone Challenge: Automated CI/CD Evaluation Pipeline
 
 Build and configure a fully automated, production-grade CI/CD Evaluation Pipeline that runs a **50-test benchmark** against an enterprise customer support agent on every GitHub Pull Request.
 
-👉 **[View the Capstone Challenge](./labs/capstone-cicd-evaluation-pipeline.md)**
+👉 **[Launch the Capstone Challenge](./labs/capstone-cicd-evaluation-pipeline.md)**
+
+---
+
+## 🔗 Cross-Phase Architectural Flow
+
+Phase 06 serves as the primary verification bridge between agent development and production infrastructure:
+
+```text
+Phase 00: Foundations & Token Mechanics (KV cache sizing, memory bandwidth)
+  │
+Phase 01: Prompt & Context Engineering (Delimiters, schema-constrained decoding)
+  │
+Phase 02: Enterprise Retrieval & RAG (Retrieval precision, chunking, embeddings)
+  │
+Phase 03: Tools & Model Context Protocol (JSON-RPC 2.0 schemas, stdio/SSE)
+  │
+Phase 04: Stateful Agent Orchestration (ReAct loops, WAL event stores, checkpoints)
+  │
+Phase 05: AI Security & Guardrails (Prompt injection, Dual-LLM quarantine, canary tokens)
+  │
+▼
+Phase 06: Evals, Observability & Telemetry (Deterministic gates, OTel spans, drift canaries)
+  │
+▼
+Phase 07: High-Throughput Serving & LLMOps (vLLM, continuous batching, quantization, gateways)
+  │
+Phase 08: AI-Augmented SDLC & Leadership (Enterprise AI architecture, leadership)
+```
+
+---
+
+## 📚 Curated Bibliography & Authoritative Primary Sources
+
+### 1. Foundational Evaluation Literature
+* **Hamel Husain**: [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — *The seminal treatise explaining why offline evals are the dividing line between toy prototypes and durable software products.*
+* **Hamel Husain**: [Creating an LLM as a Judge That You Can Trust](https://hamel.dev/blog/posts/evals-faq/) — *Deep dive into discrete pass/fail rubrics, why Likert scales fail, and synthetic test set creation.*
+* **Eugene Yan (Amazon)**: [Evaluating LLMs: A Field Guide](https://eugeneyan.com/writing/evals/) — *Comprehensive blueprint covering exact match, semantic similarity, LLM-as-a-judge, and human-in-the-loop systems.*
+* **Anthropic**: [Demystifying Evals for AI Agents](https://www.anthropic.com/engineering/evals) — *State trajectory evaluation, grading intermediate tool use, and testing multi-turn flows.*
+
+### 2. Standards, Frameworks & Telemetry
+* **OpenTelemetry**: [Semantic Conventions for Generative AI Systems](https://opentelemetry.io/docs/specs/semconv/gen-ai/) — *Official W3C / CNCF standard for tracing spans, token metrics, and model attributes.*
+* **OpenTelemetry GitHub**: [open-telemetry/semantic-conventions-genai](https://github.com/open-telemetry/semantic-conventions-genai) — *Dedicated upstream registry for AI telemetry.*
+* **W3C Recommendation**: [Trace Context Specification (traceparent)](https://www.w3.org/TR/trace-context/) — *Universal distributed trace propagation standard.*
+* **Langfuse**: [Langfuse Documentation](https://langfuse.com/docs) & [GitHub Repository](https://github.com/langfuse/langfuse) — *Open-source LLM engineering platform for traces, prompt management, and score logging.*
+* **Arize Phoenix**: [Arize Phoenix Documentation](https://docs.arize.com/phoenix/) & [GitHub Repository](https://github.com/Arize-ai/phoenix) — *AI observability, evaluation, and vector retrieval diagnostics.*
+* **UK AI Safety Institute**: [Inspect AI Documentation](https://inspect.aisi.org.uk/) & [GitHub Repository](https://github.com/UKGovernmentBEIS/inspect_ai) — *Open-source framework for large language model evaluation and sandboxed tool-use.*
+* **Confident AI / DeepEval**: [DeepEval Documentation](https://docs.confident-ai.com/) — *Developer-centric, pytest-native evaluation framework.*
+
+### 3. Seminal Academic Papers
+* **Liu et al. (2023)**: [G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment](https://arxiv.org/abs/2303.16634) — *Introduced Chain-of-Thought prompting for LLM-based evaluation rubrics.*
+* **Zheng et al. (2023)**: [Judging LLM-as-a-Judge with MT-Bench and Chatbot Arena](https://arxiv.org/abs/2306.05685) — *Cataloged position bias, verbosity bias, and self-enhancement bias in model evaluators.*
+* **Kim et al. (2024)**: [Prometheus 2: An Open-Source Language Model for Fine-Grained Evaluation](https://arxiv.org/abs/2405.01535) — *Fine-tuned open-weight judge models matching proprietary frontier performance.*
+* **Shahul et al. (2023)**: [Ragas: Automated Evaluation of Retrieval Augmented Generation](https://arxiv.org/abs/2309.15217) — *Component-level evaluation of RAG retrieval and generation quality.*
+* **Xu et al. (2023)**: [WizardLM: Empowering Large Language Models to Follow Complex Instructions](https://arxiv.org/abs/2304.12244) — *The Evol-Instruct synthetic data generation methodology.*
+* **Jimenez et al. (2024)**: [SWE-bench: Can Language Models Resolve Real-World GitHub Issues?](https://arxiv.org/abs/2310.06770) — *Autonomous software engineering benchmark.*
 
 ---
 
 ## 🔮 Summary Checklist: Preparing for Phase 07
 
-Before advancing to **Phase 07: Production Deployment & LLMOps**, ensure you can answer **YES** to all architectural readiness checkpoints:
+Before advancing to **[Phase 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md)**, ensure you can answer **YES** to all architectural readiness checkpoints:
 
-- [ ] **Deterministic Unit Gate**: Do all agent responses run through Level 1 schema, regex, and latency assertions before hitting production or LLM judges?
+- [ ] **Deterministic Unit Gate**: Do all agent responses pass Level 1 schema, regex, and latency assertions before hitting production or LLM judges?
 - [ ] **Binary Rubric Scoring**: Have you completely eradicated subjective 1-to-5 Likert scales in favor of discrete binary pass/fail rubrics with step-by-step reasoning?
 - [ ] **Trajectory Visibility**: Can your observability platform reconstruct the complete parent-child span tree of an agent's multi-step tool calls, arguments, and intermediate thoughts?
 - [ ] **Golden Dataset in Version Control**: Do you have a versioned suite of core, edge, and adversarial test cases harvested directly from real production anomalies?
 - [ ] **Automated CI/CD Gating**: Does your pull request pipeline automatically block merges if model accuracy drops below 95% or token cost regresses by more than 15%?
-- [ ] **OpenTelemetry Compliance**: Are all GenAI spans emitting standard `gen_ai.system`, `gen_ai.usage.input_tokens`, and `gen_ai.usage.output_tokens` attributes?
+- [ ] **OpenTelemetry Compliance**: Are all GenAI spans emitting standard `gen_ai.operation.name`, `gen_ai.agent.name`, and token usage attributes?
+- [ ] **Hourly Canary Monitoring**: Does a background worker dispatch golden canary probes to cloud endpoints every 60 minutes to catch silent provider updates?
 
-*(Proceed to [Phase 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md))*
+*(Proceed to **[Phase 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md)**)*

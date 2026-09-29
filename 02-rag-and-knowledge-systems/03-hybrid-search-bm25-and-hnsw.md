@@ -141,27 +141,31 @@ HNSW is the multi-dimensional geometric equivalent of a Skip List:
 - **Lower Graph Layers**: Contain progressively denser clusters of vectors with tight neighborhood links.
 
 ```mermaid
-flowchart TD
-    subgraph Layer2["Layer 2: Express Highway (Sparse, long-range jumps)"]
-        L2_Entry(["Entry Point"]) --> L2_N1["Cluster A"]
-        L2_N1 --> L2_N2["Cluster B"]
-    end
+    flowchart TD
+        subgraph Layer2["Layer 2: Express Highway (Sparse, long-range jumps)"]
+            direction LR
+            L2_Entry(["Entry Point"]) -->|Highway Jump| L2_N1["Cluster A"]
+            L2_N1 -.->|Evaluate further| L2_N2["Cluster B"]
+        end
 
-    subgraph Layer1["Layer 1: Regional Roads (Medium density)"]
-        L1_N1["Node 1"] --> L1_N2["Node 2"]
-        L1_N2 --> L1_N3["Node 3"]
-        L1_N3 --> L1_N4["Node 4"]
-    end
+        subgraph Layer1["Layer 1: Regional Roads (Medium density)"]
+            direction LR
+            L1_N2["Node 2 (Entry)"] -->|Regional Hop| L1_N3["Node 3"]
+            L1_N2 -.->|Evaluate| L1_N1["Node 1"]
+            L1_N3 -.->|Evaluate further| L1_N4["Node 4"]
+        end
 
-    subgraph Layer0["Layer 0: Local Streets (Dense base graph - 100% of vectors)"]
-        L0_A["Vector A"] <--> L0_B["Vector B"]
-        L0_B <--> L0_C["Vector C"]
-        L0_C <--> L0_D["Vector D"]
-        L0_D <--> L0_E["Vector E"]
-    end
+        subgraph Layer0["Layer 0: Local Streets (Dense base graph — 100% of vectors)"]
+            direction LR
+            L0_D["Vector D (Entry)"] --- L0_E["Vector E"]
+            L0_D --- L0_C["Vector C"]
+            L0_C --- L0_B["Vector B"]
+            L0_B --- L0_A["Vector A"]
+            L0_D -->|Local Beam Search| L0_Target["Nearest Neighbors"]
+        end
 
-    L2_N1 -.->|Descend| L1_N2
-    L1_N3 -.->|Descend| L0_D
+    Layer2 ==>|"Descend: Cluster A → Node 2"| Layer1
+    Layer1 ==>|"Descend: Node 3 → Vector D"| Layer0
 ```
 
 ### Visual Walkthrough of HNSW Traversal:
@@ -186,8 +190,8 @@ Vector search engines evaluate proximity using one of three standard distance me
 
 | Distance Metric | Mathematical Formulation | Precondition | Production Performance Profile |
 |---|---|---|---|
-| **Cosine Similarity** | `cos(θ) = (u · v) / (||u||_2 * ||v||_2)` | Unnormalized vectors | Incurs division and square root overhead per vector evaluation. Range: `[-1, 1]`. |
-| **Dot Product (Inner)** | `u · v = Σ [ u_i * v_i ]` | **Must be L2 Normalized** | **3x faster than Cosine**. When vectors are unit-length (`||u||_2 = 1.0`), Dot Product equals Cosine Similarity and compiles to native SIMD/AVX-512 FMA (Fused Multiply-Add) instructions. |
+| **Cosine Similarity** | `cos(θ) = (u · v) / (‖u‖_2 * ‖v‖_2)` | Unnormalized vectors | Incurs division and square root overhead per vector evaluation. Range: `[-1, 1]`. |
+| **Dot Product (Inner)** | `u · v = Σ [ u_i * v_i ]` | **Must be L2 Normalized** | **3x faster than Cosine**. When vectors are unit-length (`‖u‖_2 = 1.0`), Dot Product equals Cosine Similarity and compiles to native SIMD/AVX-512 FMA (Fused Multiply-Add) instructions. |
 | **Euclidean Distance (L2)** | `d(u, v) = sqrt( Σ [ (u_i - v_i)^2 ] )` | Raw or normalized | Measures geometric spatial distance. Minimizing L2 distance on normalized vectors is mathematically identical to maximizing Dot Product. |
 
 > **Production Golden Rule**:  
