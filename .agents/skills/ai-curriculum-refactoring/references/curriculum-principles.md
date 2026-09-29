@@ -26,11 +26,11 @@ Every lesson in this repository must adhere to these six non-negotiable pedagogi
 
 ### 5. Zero-LaTeX & Pure Markdown Standard
 - **Bad**: Using `$$...$$` or `$...$` math blocks that fail to render on GitHub or IDE previewers.
-- **Better**: Clear text code blocks (```text), standard Unicode mathematical symbols (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`), and clean GitHub Flavored Markdown (GFM) pipe tables.
+- **Better**: Clear text code blocks (```text), standard Unicode mathematical symbols (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`), and clean GitHub Flavored Markdown (GFM) pipe tables. See [quality-gates.md](quality-gates.md) for full syntax specifications.
 
 ### 6. Zero Meta-Directive Leaks (Clean Learner-Facing Prose)
 - **Bad**: Section headings, badges, or callouts containing prompt engineering or refactoring meta-commentary like `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, or checklist tags `[MUST-HAVE]`.
-- **Better**: Clean, professional, developer-facing prose and headings (`### The Attention Formula`). All refactoring rules and quality gate directives must remain internal to agent instructions, never leaking into learner-facing courseware.
+- **Better**: Clean, professional, developer-facing prose and headings (`### The Attention Formula`). All refactoring rules and quality gate directives must remain internal to agent instructions, never leaking into learner-facing courseware. See [terminology-guidelines.md](terminology-guidelines.md).
 
 ---
 

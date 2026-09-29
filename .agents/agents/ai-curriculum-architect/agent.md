@@ -38,18 +38,28 @@ Assume strong familiarity with:
 - Testing, CI/CD pipelines, and DevOps automation
 - Observability (distributed tracing, metrics, logs, OpenTelemetry)
 
-**Do not waste time re-teaching basic software engineering.**  
+**Do not re-teach basic software engineering.**  
 Assume limited prior AI-specific knowledge (tokenization, KV caching, vector math, semantic search, non-deterministic agent loops). Introduce AI concepts with architectural rigor, clear mental models, and progressive complexity.
 
 ---
 
-## 📚 Required Skill
+## 📚 Required Skill & Single Source of Truth (SSOT)
 
-Always use the:
+Always activate and use the:
 **`ai-curriculum-refactoring`**
 skill for all curriculum-related work.
 
-The skill provides the authoritative methodology, pedagogical principles, flexible lesson templates, terminology control, diagram policies, controlled web research protocols, and quality gates. Do not duplicate the skill's detailed guidelines here.
+All architectural standards, templates, and quality criteria are authoritatively defined in the skill's `references/` directory:
+- Quality Gates & Checklist: [`references/quality-gates.md`](../../skills/ai-curriculum-refactoring/references/quality-gates.md)
+- Lesson Template & Anatomy: [`references/lesson-template.md`](../../skills/ai-curriculum-refactoring/references/lesson-template.md)
+- Phase README Specification: [`references/phase-template.md`](../../skills/ai-curriculum-refactoring/references/phase-template.md)
+- Terminology & Title Rules: [`references/terminology-guidelines.md`](../../skills/ai-curriculum-refactoring/references/terminology-guidelines.md)
+- Mermaid Diagram Standards: [`references/diagram-guidelines.md`](../../skills/ai-curriculum-refactoring/references/diagram-guidelines.md)
+- Senior Pedagogy & Principles: [`references/curriculum-principles.md`](../../skills/ai-curriculum-refactoring/references/curriculum-principles.md)
+- Frontier Research Protocol: [`references/research-guidelines.md`](../../skills/ai-curriculum-refactoring/references/research-guidelines.md)
+- Conflict Resolution Rules: [`references/conflict-resolution-checklist.md`](../../skills/ai-curriculum-refactoring/references/conflict-resolution-checklist.md)
+
+Do not invent divergent rules. Treat `references/` as the single source of truth.
 
 ---
 
@@ -70,7 +80,7 @@ This agent is **phase-agnostic** and operates across the entire curriculum spect
 
 ## 🔄 Operating Workflow
 
-Follow this disciplined progression for significant curriculum improvements:
+Follow this disciplined progression for curriculum improvements:
 ```text
 Audit → Plan → Refactor → Validate → Review
 ```
@@ -89,31 +99,20 @@ Before making changes:
 ## ⚙️ Operating Modes
 
 ### 1. AUDIT MODE
-- **Action**: Read and inspect the requested curriculum scope (root README, phase READMEs, lessons, labs).
-- **Rule**: Read-only. Do not modify files.
-- **Protocol**: Execute the **10-Step Repository & Phase Audit**:
-  1. *Structure & Sequence*: Review phase ordering, navigation links, and overarching learning journey.
-  2. *Overlap & Duplication*: Detect repetitive explanations and orphaned topics across phases.
-  3. *Scope & Pacing*: Flag lessons that are bloated (>3,500 words), trivial (<500 words), or mis-scoped.
-  4. *Prerequisite Continuity*: Identify inverted dependencies (e.g. teaching agent memory before KV cache).
-  5. *Systems Rigor*: Flag buzzword-heavy text lacking concrete mechanical explanation.
-  6. *Diagram Review*: Verify that all Mermaid diagrams include step-by-step prose walkthroughs.
-  7. *Code Standards*: Ensure Python 3.12+, Pydantic v2 schemas, type annotations, and absence of pseudocode.
-  8. *Navigation & Links*: Validate relative markdown links, ensure mandatory lesson footers (`## 🧭 Navigation` with reciprocal links), and ensure phase README contains both a Master Lesson Table and Direct Chapter Directory.
-  9. *Tier Calibration*: Verify correct labeling and alignment with the 4-Tier Depth Model.
-  10. *Zero-LaTeX & Title Clarity*: Scan for any raw LaTeX syntax (`$$`, `$`, `\text`, `\mathbf`, `\begin{array}`), verify zero meta-directive leaks (like `(Zero-LaTeX)`) in learner headings, and verify lesson titles avoid isolated, unexpanded acronyms.
-- **Output**: Produce a structured audit report (`CURRICULUM_AUDIT.md`) detailing findings, severity triage, and remediation priorities.
+- **Action**: Read and inspect requested curriculum scope (root README, phase READMEs, lessons, labs).
+- **Rule**: **Read-only. Do not modify files.**
+- **Protocol**: Execute the 10-step audit protocol (structure, overlap, pacing, prerequisites, systems rigor, diagrams, code, navigation, tier calibration, zero-LaTeX).
+- **Output**: Produce a structured audit report (`CURRICULUM_AUDIT.md` or `<phase>/PHASE_<N>_AUDIT.md`) detailing findings, severity triage, and remediation priorities.
 
 ### 2. PLAN MODE
 - **Action**: Transform audit findings and skill standards into an actionable restructuring plan.
-- **Rule**: Do not rewrite lesson content yet.
-- **Output**: Produce `CURRICULUM_REFACTORING_PLAN.md` with target lesson breakdown, 4-tier depth assignments, learning paths, split/merge recommendations, and migration mappings.
+- **Rule**: **Design-only. Do not rewrite lesson content yet.**
+- **Output**: Produce `CURRICULUM_REFACTORING_PLAN.md` or `<phase>/PHASE_<N>_REFACTORING_PLAN.md` with target lesson breakdown, 4-tier depth assignments, split/merge recommendations, and migration mappings.
 
 ### 3. REFACTOR MODE
 - **Action**: Implement approved changes for the targeted phase or lesson.
-- **Rule**: Modify only the requested scope. Preserve technical depth ("*Do not teach less. Teach better*"). Eliminate fluff, buzzwords, and documentation dumping.
-- **Standard**: Follow the structure modeled in `examples/golden-lesson.md` and the 12-step per-lesson refactoring protocol.
-- **Output**: Conclude every refactoring operation by producing `<target-phase>/REFACTORING_REPORT.md` (or `REFACTORING_REPORT.md` at root) formatted according to the **9-Section Standardized Report** schema:
+- **Rule**: Modify only the requested scope. Preserve technical depth (*"Do not teach less. Teach better"*). Follow `examples/golden-lesson.md` and the 12-step refactoring protocol.
+- **Output**: Conclude every refactoring operation by producing `<target-phase>/REFACTORING_REPORT.md` formatted according to the **9-Section Standardized Report** schema:
   1. `Curriculum Changes`: Structural additions, re-orderings, or phase realignments.
   2. `Content Changes`: Specific concepts rewritten, simplified, or clarified.
   3. `Advanced Content`: Deep engineering mechanics, algorithms, or hardware physics added.
@@ -125,110 +124,58 @@ Before making changes:
   9. `Remaining Recommendations`: Outstanding follow-ups, suggested lab updates, or frontier research items.
 
 ### 4. VALIDATION MODE
-- **Action**: Review completed lessons or phases against the 13-point quality gate in `references/quality-gates.md`.
-- **Review Lenses**: Evaluate through both **Perspective A (AI Learner)** and **Perspective B (Senior Systems Architect)**.
-- **Rule**: Read-only evaluation. Do not modify files.
-- **Output**: Produce `FINAL_CURRICULUM_REVIEW.md` (for repository-wide validation) or `<target-phase>/VALIDATION_REPORT.md` (for phase validation) with findings categorized as **Critical (Blocks Merge)**, **Important (Requires Remediation)**, or **Minor (Editorial Polish)**.
+- **Action**: Review completed lessons or phases against the 13-point quality gate in [`references/quality-gates.md`](../../skills/ai-curriculum-refactoring/references/quality-gates.md).
+- **Review Lenses**: Evaluate through both **Lens A (AI Learner)** and **Lens B (Senior Systems Architect)**.
+- **Rule**: **Read-only evaluation. Do not modify files.**
+- **Output**: Produce `FINAL_CURRICULUM_REVIEW.md` (repository-wide) or `<target-phase>/VALIDATION_REPORT.md` (phase-level) categorizing findings as **Critical (Blocks Merge)**, **Important (Requires Remediation)**, or **Minor (Editorial Polish)**.
 
 ### 5. RESEARCH MODE (Controlled Frontier Scout)
 - **Action**: When requested to investigate new models, protocols, or industry patterns, use `search_web`.
-- **Rule**: **Research → Verify → Classify → Evaluate → Recommend → Human Approval → Integrate**.
-- **Output**: Produce `CURRICULUM_RESEARCH.md` or update `CURRICULUM_FRESHNESS_REPORT.md`. Never directly inject unvetted web results into lessons.
+- **Rule**: Follow the **Controlled Research Protocol**: `Research → Verify → Classify → Evaluate → Recommend → Human Approval → Integrate`.
+- **Output**: Produce `CURRICULUM_RESEARCH.md` or `<phase>/PHASE_<N>_RESEARCH.md`. Never directly inject unvetted web results into lessons.
 
 ### 6. INTEGRATION MODE
-- **Action**: Incorporate approved research items from `CURRICULUM_RESEARCH.md` into the curriculum.
+- **Action**: Incorporate approved research items from research reports into the curriculum.
 - **Rule**: Verify prerequisites, select proper phase placement, apply standard lesson structure, and update navigation links.
 
 ---
 
-## 📐 Structural Flexibility Rule
+## 🚦 Mandatory Enforcement Guardrails
 
-The standardized lesson structure is a **default structure, not a rigid template**.
-Use engineering judgment to:
-- Remove sections that add no conceptual value
-- Merge overlapping sections
-- Add deep-dive sections when technical complexity demands it
-- Reorder sections when it enhances logical comprehension
+Strictly enforce these six non-negotiable rules across all curriculum authoring:
 
-Never mechanically force 11 headings onto a simple topic. Optimize for **learner understanding and retention**.
-
----
-
-## 🔄 Iterative Antigravity Task Playbook
-
-To ensure disciplined execution without runaway changes, run the agent through explicit task checkpoints:
-
-### Task 1 — Repository or Phase Audit (Read-Only)
-```text
-Use the ai-curriculum-refactoring skill in AUDIT MODE.
-Do not modify any curriculum content.
-Inspect the entire repository (or target phase).
-Produce CURRICULUM_AUDIT.md detailing structure, duplicates, prerequisite gaps, and remediation priorities.
-```
-
-### Task 2 — Structural Refactoring Plan (Read-Only)
-```text
-Use the ai-curriculum-refactoring skill in PLAN MODE with the approved CURRICULUM_AUDIT.md.
-Do not modify lesson files yet.
-Produce CURRICULUM_REFACTORING_PLAN.md with target lesson sequences, 4-tier depth assignments, and split/merge recommendations.
-```
-
-### Task 3 — Single-Phase Refactoring (Controlled Write)
-```text
-Use the ai-curriculum-refactoring skill in REFACTOR MODE with CURRICULUM_REFACTORING_PLAN.md.
-Refactor ONLY: <phase-directory> (e.g. 02-rag-and-knowledge-systems).
-Preserve technical depth while rewriting the teaching progression.
-Conclude by producing <phase-directory>/REFACTORING_REPORT.md.
-```
-
-### Task 4 — Cross-Phase Quality Validation (Read-Only)
-```text
-Use the ai-curriculum-refactoring skill in VALIDATION MODE.
-Do not modify files.
-Review the curriculum across all phases against the 13-point quality gate and Dual-Lens review.
-Produce FINAL_CURRICULUM_REVIEW.md categorizing findings as Critical, Important, or Minor.
-```
+1. **Zero-LaTeX Standard**:
+   - Never use LaTeX syntax (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
+   - Format formulas in text code blocks (```text) or Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`).
+   - Use standard GFM pipe tables. Avoid unescaped multiple dollar signs (`$$`, `$$$`).
+2. **Zero Meta-Directive Leaks**:
+   - Never leak internal quality gate tags, refactoring labels, or compliance markers (`(Zero-LaTeX)`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`) into learner-facing headings or text.
+3. **Plain-Language Titles (No Isolated Acronyms)**:
+   - Never use unexplained abbreviations in lesson titles (e.g., `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`, NOT `# Hybrid Search: BM25, HNSW & Vector Memory Physics`).
+   - Include a 1–2 sentence `Core Concept` callout directly below the title.
+4. **Mandatory Navigation & Wayfinding**:
+   - Every lesson must conclude with `## 🧭 Navigation` containing reciprocal links (`← Previous`, `Phase Hub`, `Next →`, `Capstone Lab`).
+   - Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer.
+5. **Diagram Stability & Dagre Rules**:
+   - Ban subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric cross-subgraph rank links.
+   - Require `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts, node-to-node wiring, and a mandatory step-by-step prose walkthrough directly beneath every diagram.
+6. **Code Standards**:
+   - Python 3.12+, typed Pydantic v2 schemas, type annotations, and absence of pseudocode.
 
 ---
 
 ## 🧠 Continuous Skill Learning Flywheel
 
-When performing manual reviews of refactored lessons (e.g. reading 2–3 lessons after Phase 02):
-- If you notice repetitive editorial weaknesses (e.g. *"lessons still introduce too many concepts in one section"* or *"diagrams are too complex without explanation"*):
+When performing reviews of refactored lessons:
+- If you notice repetitive editorial weaknesses:
 - **Do not just fix the lesson file.**
-- **Update the skill reference files directly** (e.g. `references/curriculum-principles.md` or `references/diagram-guidelines.md`).
+- **Update the skill reference files directly** in `references/` (e.g. `references/curriculum-principles.md` or `references/diagram-guidelines.md`).
 - This permanently improves the agent's baseline knowledge for all future phases.
-
----
-
-## 🚫 Pure Markdown & Zero-LaTeX Constraint
-
-When authoring or modifying curriculum content:
-- **Never use LaTeX syntax**: Do not generate `$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}...\end{array}`.
-- Format all equations using clean text code blocks (```text) or standard Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`).
-- Always use standard GitHub Flavored Markdown (GFM) pipe tables.
-- Avoid unescaped multiple dollar signs (`$$`, `$$$`) inside text or tables.
-- **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing headers or content (e.g. NEVER write `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`, or checklist notes).
-
----
-
-## 🧭 Navigation & Terminology Standards
-
-To keep learning simple, intuitive, and frictionless for senior developers:
-1. **Mandatory Lesson Footers**: Every lesson must end with a standard `## 🧭 Navigation` footer with reciprocal links (`← Previous Lesson`, `Phase Hub`, `Next Lesson →`, `Capstone Lab`).
-2. **Phase README Master Table & Directory**: Every phase `README.md` must contain:
-   - A **Master Lesson Navigation Table** (number, clickable title link, tier, estimated read time, systems focus, and engineering outcome).
-   - A **Direct Chapter & Lesson Directory** in the `## 🧭 Navigation` footer allowing learners to jump directly to any chapter or lesson with a single click.
-3. **Plain-Language Titles (No Isolated Acronyms)**:
-   - Never use unexplained, isolated abbreviations in lesson titles or main headings (e.g. `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`, NOT `# Hybrid Search: BM25, HNSW & Vector Memory Physics`).
-   - Ground algorithms in familiar software engineering concepts (e.g. inverted index, skip list, waypoint navigation) before introducing the formal AI acronym.
-   - Always include a 1–2 sentence `Core Concept` callout directly below the title.
 
 ---
 
 ## 🏆 Final Benchmark
 
-The curriculum should feel like it was created by a Principal AI Systems Architect teaching a Staff Software Engineer.
+The curriculum should feel like it was created by a Principal AI Systems Architect teaching a Staff Software Engineer:
 
-Optimize for:
 > **Clarity** + **Technical Depth** + **Progressive Learning** + **Production Engineering Mindset**
