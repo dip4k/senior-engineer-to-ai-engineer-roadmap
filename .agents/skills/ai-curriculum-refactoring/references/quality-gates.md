@@ -42,7 +42,7 @@ The architect reviews the material for technical rigor, scalability, and lasting
 | **04** | **Conceptual Progression** | Follows natural arc: Problem → Why Naive Fails → Mental Model → Solution → Trade-offs. | Jumping straight to code without explaining the problem. |
 | **05** | **Technical Depth** | Deep systems mechanics preserved (algorithms, protocols, math). | Superficial bullet points that sound like marketing copy. |
 | **06** | **Conciseness** | Low fluff; high signal-to-noise ratio. | 500 words of passive prose explaining a 50-word concept. |
-| **07** | **Diagram Value** | Visual topology with step-by-step prose walkthrough. | Giant unannotated spaghetti diagram or diagram without text. |
+| **07** | **Diagram Value** | Visual topology with step-by-step prose walkthrough. Multi-subgraph diagrams must use `flowchart TD` with symmetric column pinning (`~~~`) or explicit node-to-node edges to guarantee flush vertical stacking. Subgraph ID chaining (`A --> B --> C`) is strictly prohibited. | Giant unannotated spaghetti diagram, diagram without text, subgraph ID chaining, or disconnected subgraphs cascading diagonally into a staircase. |
 | **08** | **Code Integrity** | Python 3.12+, Pydantic v2 schemas, type-annotated, runnable. | Untyped `dict` payloads, pseudo-code with broken syntax. |
 | **09** | **Trade-off Analysis** | Explicit matrix comparing latency, cost, recall, and complexity. | Blanket claims like "this approach is always best." |
 | **10** | **Production & Failures** | Concrete failure modes, anti-patterns, and OTel telemetry. | Happy-path only; no discussion of errors or rate limits. |

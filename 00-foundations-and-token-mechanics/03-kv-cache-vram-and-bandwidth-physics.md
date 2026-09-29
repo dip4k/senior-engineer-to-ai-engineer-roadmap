@@ -187,6 +187,14 @@ flowchart TD
         Q_GQA --- K_GQA --- V_GQA
         GQA_Note["Ratio: 4:1:1 (4 Q heads per KV group)\nKV-Cache Size: 25% (4x reduction)\nMatches MHA accuracy while saving 75% VRAM"]
     end
+
+    Q_MHA ~~~ Q_MQA
+    K_MHA ~~~ K_MQA
+    V_MHA ~~~ V_MQA
+
+    Q_MQA ~~~ Q_GQA
+    K_MQA ~~~ K_GQA
+    V_MQA ~~~ V_GQA
 ```
 
 ### Walkthrough of Attention Architectures:
@@ -242,7 +250,13 @@ flowchart TD
         P11["Frame 11 (Req A, Block 2)"]
     end
 
-    Logical --> PageTable --> Physical
+    L0 --> T0
+    L1 --> T1
+    L2 --> T2
+
+    T0 --> P7
+    T1 --> P2
+    T2 --> P11
 ```
 
 ### Walkthrough of PagedAttention Paging:

@@ -177,7 +177,7 @@ Just writing down the temporary intermediate attention weights for a single requ
 In standard PyTorch implementations (prior to 2022), the GPU repeatedly copied these massive `N × N` matrices back and forth between High-Bandwidth Memory (HBM) and SRAM, causing catastrophic memory thrashing.
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph StandardAttention["Standard Attention (Memory Thrashing)"]
         HBM1["GPU HBM (Slow, Large)"] -->|"Load Q, K"| SRAM1["GPU SRAM (Fast, 100KB/SM)"]
         SRAM1 -->|"Write N×N Softmax Matrix"| HBM2["GPU HBM"]
@@ -190,6 +190,8 @@ flowchart LR
         SRAM_Tile -->|"Compute Online Softmax & Multiply V_j in SRAM"| SRAM_Tile
         SRAM_Tile -->|"Write Final Output Only"| HBM_Out["GPU HBM (Zero N×N Intermediate Writes)"]
     end
+
+    HBM3 ~~~ HBM_Fast
 ```
 
 ### Walkthrough of the Memory Comparison:
