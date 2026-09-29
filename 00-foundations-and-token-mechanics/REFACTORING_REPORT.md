@@ -15,7 +15,7 @@
 ---
 
 ## 2. Content Changes
-- **Zero-LaTeX Enforcement**: Replaced all raw LaTeX equations (`$$...$$`, `\text{...}`, `\frac{...}{...}`) across all lessons and the capstone lab with standard GitHub Flavored Markdown (GFM) text blocks or Unicode formulas (`→`, `×`, `Σ`, `≈`).
+- **Zero-LaTeX Enforcement**: Replaced all raw LaTeX equations (block and inline delimiters, fractions, and font macros) across all lessons and the capstone lab with standard GitHub Flavored Markdown (GFM) text blocks or Unicode formulas (`→`, `×`, `Σ`, `≈`).
 - **Senior Systems Metaphors**: Grounded all AI primitives in traditional systems concepts (e.g. FlashAttention as SRAM cache tiling; PagedAttention as OS virtual memory paging; BPE as Huffman byte compaction; test-time compute as exam scratchpad).
 - **Conciseness & High Signal**: Eliminated marketing hype, repetitive conversational padding, and passive prose, achieving tight word budgets (1,200 to 2,000 words per lesson).
 

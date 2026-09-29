@@ -2,7 +2,7 @@
 
 > **Regulated Decisioning Pipeline**: Tabular Risk Scoring + Fairlearn Bias Audit + SHAP Attributions + Grounded LLM Adverse Action Generator  
 > 
-> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🛡️ Module 05: Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [🏗️ 11 Enterprise AI System Designs](../architecture/10-enterprise-ai-system-designs.md)
+> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🛡️ Module 05: Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [🏗️ Enterprise AI System Designs](../architecture/enterprise-ai-system-designs.md)
 
 ---
 

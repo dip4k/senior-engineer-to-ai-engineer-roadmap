@@ -21,7 +21,7 @@ This document establishes the comprehensive, actionable blueprint for refactorin
 1. **Monolith Decomposition**: Decompose all 9 monolithic phase `README.md` files (totalling 90,289 words) into lean **Phase Orientation Hubs** linking to **50 modular, bite-sized lessons** (~800–2,500 words each).
 2. **Standardized 4-Tier Depth Model**: Replace the legacy 3-tier taxonomy (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`, `[KNOWLEDGE-BASE]`) with the authoritative 4-tier model: `🟢 Core` (Tier 1), `🟡 Engineering Depth` (Tier 2), `🔵 Advanced` (Tier 3), and `⚫ Deep Dive` (Tier 4).
 3. **Lab Architecture Harmonization**: Unify the repository's 3 conflicting lab systems. Reconcile root `labs/lab-01` through `lab-07` with `scripts/verify_lab.py` and `agent-forge`, expanding 18-line skeletons into production-grade guided labs while preserving Phase 04 internal labs as specialized agent exercises.
-4. **Complete Zero-LaTeX Conversion**: Convert all 180+ raw LaTeX delimiters (`$$...$$`, `\frac{...}{...}`, `\text{...}`, `\sum`) into pure GFM text code blocks (```text) or standard Unicode (`→`, `Σ`, `≈`, `α`, `≤`, `≥`, `Δ`).
+4. **Complete Zero-LaTeX Conversion**: Convert all 180+ raw LaTeX delimiters (display math blocks, fractions, text tags, and summations) into pure GFM text code blocks (text fences) or standard Unicode (`→`, `Σ`, `≈`, `α`, `≤`, `≥`, `Δ`).
 5. **Diagram Walkthrough Coverage**: Equip all 167 Mermaid diagrams with explicit, numbered step-by-step prose walkthroughs conforming to Quality Gate 07.
 6. **Link & Resource Integrity**: Add the missing root `LICENSE` file, repair over 100 broken heading anchors, and synchronize `resources/topics-and-resource-map.md` from an obsolete 24-phase index to the canonical 9-phase (00–08) curriculum.
 
@@ -298,20 +298,20 @@ Update lines 150–161 of root `README.md` to point to the canonical `labs/lab-0
 
 ## 🚫 Zero-LaTeX Conversion Strategy
 
-Quality Gate 13 strictly prohibits raw LaTeX math delimiters (`$$...$$`, `$...$`, `\frac`, `\text`, `\sum`, `\Delta`). All mathematical formulas must be converted to standard Unicode or fenced code blocks:
+Quality Gate 13 strictly prohibits raw LaTeX math delimiters (double-dollar math blocks, inline dollar math, LaTeX fractions, text blocks, and summation symbols). All mathematical formulas must be converted to standard Unicode or fenced code blocks:
 
 ### Conversion Patterns
 
-| LaTeX Expression (Current) | GFM Unicode / Fenced Block Replacement (Target) |
+| Legacy Math Pattern | GFM Unicode / Fenced Block Replacement (Target) |
 |---|---|
-| `$$\text{DIR} = \frac{P(\hat{Y}=1 \mid A=\text{unprivileged})}{P(\hat{Y}=1 \mid A=\text{privileged})}$$` | ```text<br>DIR = P(Y_hat=1 | A=unprivileged) / P(Y_hat=1 | A=privileged)<br>``` |
-| `$$\text{RRF\_Score}(d) = \sum_{m \in M} \frac{1}{k + r_m(d)}$$` | ```text<br>RRF_Score(d) = Σ [ 1 / (k + rank_m(d)) ]  for each ranking m in M<br>``` |
-| `$$\text{TPS} = \frac{N_{\text{output\_tokens}}}{T_{\text{total}} - \text{TTFT}}$$` | ```text<br>TPS = N_output_tokens / (T_total - TTFT)<br>``` |
-| `$$\text{Cost} = \sum (\text{Input Tokens} \times P_{in}) + \sum (\text{Output Tokens} \times P_{out})$$` | ```text<br>Total Cost = Σ (Input Tokens × P_in) + Σ (Output Tokens × P_out) + Tool Compute Cost<br>``` |
-| `$\Delta_{\text{DP}} \le 0.10$` | `Δ_DP ≤ 0.10` |
-| `$\Delta_{\text{EO}} \le 0.05$` | `Δ_EO ≤ 0.05` |
-| `$K$` tokens, `$N$` elements, `$O(N)$` | `K` tokens, `N` elements, `O(N)` |
-| `$\text{Temp} = 0.0$` | `Temperature = 0.0` |
+| `DIR = P(Y_hat=1 | unprivileged) / P(Y_hat=1 | privileged)` (formerly raw LaTeX formula) | ```text<br>DIR = P(Y_hat=1 | A=unprivileged) / P(Y_hat=1 | A=privileged)<br>``` |
+| `RRF_Score(d) = sum(1 / (k + r_m(d)))` (formerly raw LaTeX sum/fraction) | ```text<br>RRF_Score(d) = Σ [ 1 / (k + rank_m(d)) ]  for each ranking m in M<br>``` |
+| `TPS = N_output_tokens / (T_total - TTFT)` (formerly raw LaTeX fraction) | ```text<br>TPS = N_output_tokens / (T_total - TTFT)<br>``` |
+| `Cost = sum(Input Tokens * P_in) + ...` (formerly raw LaTeX sum) | ```text<br>Total Cost = Σ (Input Tokens × P_in) + Σ (Output Tokens × P_out) + Tool Compute Cost<br>``` |
+| `Delta_DP <= 0.10` (formerly raw LaTeX Delta / le) | `Δ_DP ≤ 0.10` |
+| `Delta_EO <= 0.05` (formerly raw LaTeX Delta / le) | `Δ_EO ≤ 0.05` |
+| Legacy `$K$` tokens, `$N$` elements, `$O(N)$` | `K` tokens, `N` elements, `O(N)` |
+| `Temp = 0.0` (formerly raw LaTeX text format) | `Temperature = 0.0` |
 | `MatchCheck{"Discrepancy > \$5,000?"}` | `MatchCheck{"Discrepancy > $5,000?"}` (unquoted/unescaped standard label) |
 
 ---
@@ -345,7 +345,7 @@ flowchart TD
 | **LINK-03** | `ai-engineering-glossary-by-practice.md` | Double-hyphens in slugs (e.g. `#2-prompt--context-engineering`). | Normalize all internal heading links to single hyphens matching GitHub slug rules. |
 | **LINK-04** | `ai-platform-and-agent-infrastructure-roadmap.md` | Legacy `#phase-*` anchor references mismatch actual headings. | Update all anchor links to match target section headings. |
 | **LINK-05** | `resources/topics-and-resource-map.md` | Indexes 24 phases (Phases 0–23) instead of 9 phases. | Restructure to index Phases 00–08, aligning exactly with the core syllabus. |
-| **LINK-06** | `architecture/10-enterprise-ai-system-designs.md` | Filename says `10-...` but content and links say `11 Enterprise AI System Designs`. | Retain filename but ensure all cross-references resolve cleanly with matching title metadata. |
+| **LINK-06** | `architecture/enterprise-ai-system-designs.md` | Formerly `10-enterprise-ai-system-designs.md`. | Renamed to generic filename and updated all repository links. |
 
 ---
 

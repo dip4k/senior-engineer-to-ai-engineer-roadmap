@@ -26,7 +26,7 @@
 ---
 
 ## 2. Content Changes
-- **Zero-LaTeX Enforcement**: Eliminated 100% of raw LaTeX expressions (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\approx`, `\times`, `-\infty`) and unescaped currency dollar signs (`\$42,000`, `\$120,000`, `\$50,000`) across all lesson files and the phase hub. All formulas now render natively in standard GitHub Flavored Markdown (GFM) via fenced text blocks or clean Unicode (`→`, `≈`, `×`).
+- **Zero-LaTeX Enforcement**: Eliminated 100% of raw LaTeX expressions (display math blocks, inline math delimiters, LaTeX fractions, text tags, and approximation symbols) and unescaped currency dollar signs across all lesson files and the phase hub. All formulas now render natively in standard GitHub Flavored Markdown (GFM) via fenced text blocks or clean Unicode (`→`, `≈`, `×`).
 - **Senior Systems Metaphors**: Grounded all AI primitives in traditional software and systems engineering concepts:
   - Context AST as Compiler Intermediate Representation (IR).
   - Context Budgeting as OS Virtual Memory & Page Eviction.
@@ -63,7 +63,7 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 5. `03-prefix-and-prompt-caching.md`: Cold Cache Prefill vs. Warm HBM Read (`flowchart LR`) with 4-step memory traffic walkthrough.
 6. `03-prefix-and-prompt-caching.md`: RadixAttention Dynamic Prefix Tree (`flowchart TD`) with 5-step walkthrough.
 7. `04-constrained-decoding-and-schema-fsm.md`: Token-Level FSM Logit Masking Loop (`flowchart TD`) with 5-step walkthrough.
-8. `05-mecw-and-context-rot.md`: Attention Retrieval Accuracy vs. Token Depth Position (`xychart-beta`) with 3-step U-curve walkthrough.
+8. `05-mecw-and-context-rot.md`: Attention Retrieval Accuracy vs. Token Depth Position (`flowchart LR` + GFM benchmark table) with 3-step U-curve walkthrough.
 9. `05-mecw-and-context-rot.md`: Boundary Pinning & Dual-Anchor Layout (`flowchart TD`) with 3-step walkthrough.
 
 *Pruned Diagram*: Deleted legacy Diagram 03 (`flowchart LR` for 16K budget) because it redundantly restated a markdown table.
@@ -129,7 +129,7 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 | **10** | **Production & Failures** | ✅ PASS | ✅ PASS | The 3 War Stories (\$42K Timestamp, 60-Tool Latency, \$120K Middle Void) embedded in lessons. |
 | **11** | **Link Integrity** | ❌ FAIL | ✅ PASS | Capstone return anchor repaired; 100% of relative links verified. |
 | **12** | **Surrounding Fit** | ❌ FAIL | ✅ PASS | Clean reciprocal navigation connecting Phase 00, Phase 01, and Phase 02. |
-| **13** | **Zero-LaTeX Formatting** | ❌ FAIL | ✅ PASS | Zero `$$...$$` or unrendered LaTeX; all math in clean text code blocks or Unicode. |
+| **13** | **Zero-LaTeX Formatting** | ❌ FAIL | ✅ PASS | Zero raw LaTeX math blocks or delimiters; all math in clean text code blocks or Unicode. |
 
 **Final Quality Gate Score**: **13 / 13 PASS**.
 
@@ -181,7 +181,7 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 - **High-Signal War Stories**: Each major operational hazard is paired with a real-world post-mortem.
 
 #### 5. Diagrams
-- **Visual Utility**: 8 crisp Mermaid diagrams (`flowchart TD`, `flowchart LR`, `xychart-beta`) provide clear visual topologies.
+- **Visual Utility**: 8 crisp Mermaid diagrams (`flowchart TD`, `flowchart LR`) provide clear visual topologies.
 - **Simplicity**: Complex spaghetti connections were pruned.
 - **Prose Walkthroughs**: 100% of diagrams feature explicit, numbered step-by-step prose walkthroughs directly beneath each block (Quality Gate 07 compliant).
 
@@ -213,7 +213,7 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 
 #### 🟢 MINOR (Editorial Polish)
 1. **.NET 9 Standalone Execution Note**: Added execution guidance in `examples/README.md` clarifying that `StrictJsonPipeline.cs` can be executed directly as a top-level console application using the .NET 9+ SDK.
-2. **Standardized LaTeX Cleanup**: Replaced remaining `$\to$` in report table with native Unicode `→`.
+2. **Standardized LaTeX Cleanup**: Replaced remaining LaTeX arrow tags in report table with native Unicode `→`.
 
 ---
 

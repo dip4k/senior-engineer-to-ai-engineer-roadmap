@@ -2,7 +2,7 @@
 ### The 50-Point Enterprise Go-Live Audit Gate & Risk Assessment Framework
 
 > **An authoritative, non-negotiable operational gate required before deploying non-deterministic GenAI, LLM pipelines, or autonomous agent systems to production.**  
-> [Home / Master Curriculum](../README.md) • [10 Enterprise AI System Designs](./10-enterprise-ai-system-designs.md) • [Architecture Decision Records (ADRs)](./adrs/README.md) • [Production Post-Mortems](./post-mortems/README.md) • [Emerging AI Roadmap](../ai-technology-roadmap-2025-2026.md)
+> [Home / Master Curriculum](../README.md) • [Enterprise AI System Designs](./enterprise-ai-system-designs.md) • [Architecture Decision Records (ADRs)](./adrs/README.md) • [Production Post-Mortems](./post-mortems/README.md) • [Emerging AI Roadmap](../ai-technology-roadmap-2025-2026.md)
 
 ---
 

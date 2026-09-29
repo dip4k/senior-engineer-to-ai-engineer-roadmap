@@ -1,4 +1,4 @@
-# 11 Enterprise AI System Designs: End-to-End Architectural Blueprints
+# Enterprise AI System Designs: End-to-End Architectural Blueprints
 
 > **A comprehensive architectural manual for Senior AI Engineers, Tech Leads, and Enterprise Solutions Architects designing, scaling, and governing production-grade AI systems.**  
 > 

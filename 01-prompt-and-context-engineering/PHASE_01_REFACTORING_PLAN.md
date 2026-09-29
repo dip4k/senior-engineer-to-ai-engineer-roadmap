@@ -204,14 +204,14 @@ Each lesson is engineered using the flexible 11-part pedagogical structure speci
 * **Target File**: `01-prompt-and-context-engineering/04-constrained-decoding-and-schema-fsm.md`
 * **Depth Tier**: `🟡 Engineering Depth` (Tier 2)
 * **Target Word Budget**: ~1,800 words
-* **Systems Mental Model**: **Compiler Lexer & Pushdown Automaton / DFA**. Intercepting model token generation at step $t$ and applying a bitmask over raw logits so that invalid syntax tokens have mathematical probability $0$ ($e^{-\infty} = 0$).
+* **Systems Mental Model**: **Compiler Lexer & Pushdown Automaton / DFA**. Intercepting model token generation at step `t` and applying a bitmask over raw logits so that invalid syntax tokens have mathematical probability 0 (`e^(-inf) = 0`).
 * **Core Topics & Engineering Progression**:
   1. *The Fragility of Naive JSON Prompting*: Why prompting *"Respond in JSON"* and using regex or fallback parsers produces runtime microservice crashes (markdown backtick wrappers, unescaped quotes, trailing commas, missing required fields).
   2. *Why "JSON Mode" is Insufficient*: JSON Mode guarantees valid JSON syntax, but does NOT guarantee adherence to your specific Pydantic / JSON schema.
   3. *Finite State Machine (FSM) Logit Masking*:
      - Converting a JSON Schema / Regex into a Deterministic Finite Automaton (DFA) or Context-Free Grammar (CFG).
-     - At every token generation step $t$, the FSM determines the set of legally acceptable next tokens.
-     - Applying an additive logit mask ($-\infty$ to illegal vocabulary tokens) prior to softmax:
+     - At every token generation step `t`, the FSM determines the set of legally acceptable next tokens.
+     - Applying an additive logit mask (`-inf` to illegal vocabulary tokens) prior to softmax:
        ```text
        Logits_masked[token] = Logits_raw[token]   if token in Allowed_Tokens(state)
        Logits_masked[token] = -inf                 otherwise
@@ -257,7 +257,7 @@ Each lesson is engineered using the flexible 11-part pedagogical structure speci
        ```text
        SNR_context = Task_Relevant_Tokens / Total_Window_Tokens
        ```
-     - Why context with $\text{SNR} < 0.15$ triggers severe hallucinations and instruction ignoring.
+     - Why context with `SNR < 0.15` triggers severe hallucinations and instruction ignoring.
   5. *Architectural Mitigations*:
      - **The 50% Operational Ceiling Rule**: Never allow production context to exceed 50% of the model's rated window before forcing compaction or retrieval reranking.
      - **Boundary Pinning (Dual-Anchor Framing)**: Pinning high-criticality system rules and developer guidelines at token 0, and repeating critical constraint reminders at the dynamic tail (immediately preceding the generation prompt).
@@ -265,7 +265,7 @@ Each lesson is engineered using the flexible 11-part pedagogical structure speci
        ```text
        Reordered_Documents = [Doc_1, Doc_3, Doc_5, ..., Doc_6, Doc_4, Doc_2]
        ```
-  6. *Production War Story 3*: *The $120,000 Wire Transfer Disaster & The Middle Void* (An Anti-Money Laundering compliance clause buried at 45% context depth was ignored by an LLM in a 78,000-token audit document).
+  6. *Production War Story 3*: *The \$120,000 Wire Transfer Disaster & The Middle Void* (An Anti-Money Laundering compliance clause buried at 45% context depth was ignored by an LLM in a 78,000-token audit document).
 * **Research & Audit Integration**:
   - `UPDATE_EXISTING` (Candidate 07): Anchor MECW and multi-hop degradation in the empirical findings of the **RULER benchmark** (Hsieh et al., COLM 2024).
   - Purge all 12 raw LaTeX expressions from the existing text and replace with clean monospace blocks and Unicode characters.
@@ -391,32 +391,32 @@ Every raw LaTeX expression and unescaped currency dollar sign identified in the 
 
 | Legacy Line | Raw Expression Found | Refactored GFM Text / Monospace Remediation |
 |:---:|---|---|
-| **125** | `($0–10\%$)`, `($90–100\%$)`, `($20–80\%$)` | `(0% to 10%)`, `(90% to 100%)`, `(20% to 80%)` |
-| **174** | `last $N$ turns` | `last N turns` |
-| **186** | `spend $8,500 on fine dining` | `spend \$8,500 on fine dining` (escaped dollar) |
-| **202** | `Top-$K$` | `Top-K` |
-| **204** | `($> 0.82$)` | `(greater than 0.82)` or `(> 0.82)` |
-| **277** | `$N=4$` | `N = 4` |
-| **278** | `($0$ to $N-5$)` | `(0 to N - 5)` |
-| **324** | `($0–10\%$)` | `(0% to 10%)` |
-| **325** | `($90–100\%$)` | `(90% to 100%)` |
-| **326** | `$20\%$ and $80\%$` | `20% and 80%` |
-| **357** | `$$\text{Order: } [\text{Doc}_1, \dots, \text{Doc}_2]$$` | Monospace text block: `Order: [Doc_1, Doc_3, ..., Doc_2]` |
-| **382** | `$$\text{SNR}_{\text{context}} = \frac{\text{Task-Relevant Tokens}}{\text{Total Context Tokens}}$$` | Fenced text block: `SNR_context = Task_Relevant_Tokens / Total_Window_Tokens` |
-| **384** | `$\text{SNR} < 0.15$` | `SNR < 0.15` |
-| **529** | `every word costs $1.00` | `every word costs \$1.00` |
-| **562–580** | `$512 \times 512$`, `$$\text{Tokens}_{\text{OpenAI}} = ...$$` | Relocated to appendix; formatted as clean text blocks. |
-| **686–688** | `$t$`, `$-\infty$`, `($e^{-\infty} = 0$)` | Monospace `t`, `-inf` or `-infinity`, `(e^(-inf) = 0)` |
-| **771** | `under $50 for Standard or $150 for Gold` | `under \$50 for Standard or \$150 for Gold` |
-| **902–906** | `Refund $45...`, `Transfer $10,000...` | `Refund \$45...`, `Transfer \$10,000...` |
-| **993–1014** | `$42,000 Weekend Invoice`, `$120,000 Wire` | Backticked or escaped: `\$42,000`, `\$120,000`, `\$50,000` |
+| **125** | `(0–10%)`, `(90–100%)`, `(20–80%)` (formerly LaTeX %) | `(0% to 10%)`, `(90% to 100%)`, `(20% to 80%)` |
+| **174** | `last N turns` (formerly LaTeX N) | `last N turns` |
+| **186** | `spend \$8,500 on fine dining` | `spend \$8,500 on fine dining` (escaped dollar) |
+| **202** | `Top-K` (formerly LaTeX K) | `Top-K` |
+| **204** | `(> 0.82)` (formerly LaTeX math) | `(greater than 0.82)` or `(> 0.82)` |
+| **277** | `N = 4` (formerly LaTeX N) | `N = 4` |
+| **278** | `(0 to N-5)` (formerly LaTeX math) | `(0 to N - 5)` |
+| **324** | `(0–10%)` (formerly LaTeX %) | `(0% to 10%)` |
+| **325** | `(90–100%)` (formerly LaTeX %) | `(90% to 100%)` |
+| **326** | `20% and 80%` (formerly LaTeX %) | `20% and 80%` |
+| **357** | `Order: [Doc_1, ..., Doc_2]` (formerly raw LaTeX) | Monospace text block: `Order: [Doc_1, Doc_3, ..., Doc_2]` |
+| **382** | `SNR_context = Task_Relevant / Total` (formerly raw LaTeX fraction) | Fenced text block: `SNR_context = Task_Relevant_Tokens / Total_Window_Tokens` |
+| **384** | `SNR < 0.15` (formerly raw LaTeX text) | `SNR < 0.15` |
+| **529** | `every word costs \$1.00` | `every word costs \$1.00` |
+| **562–580** | `512 × 512, Tokens_OpenAI = ...` (formerly raw LaTeX) | Relocated to appendix; formatted as clean text blocks. |
+| **686–688** | `t, -inf, (e^(-inf) = 0)` (formerly raw LaTeX) | Monospace `t`, `-inf` or `-infinity`, `(e^(-inf) = 0)` |
+| **771** | `under \$50 for Standard or \$150 for Gold` | `under \$50 for Standard or \$150 for Gold` |
+| **902–906** | `Refund \$45...`, `Transfer \$10,000...` | `Refund \$45...`, `Transfer \$10,000...` |
+| **993–1014** | `\$42,000 Weekend Invoice`, `\$120,000 Wire` | Backticked or escaped: `\$42,000`, `\$120,000`, `\$50,000` |
 
 ### 8.2. Link Integrity & Navigation Protocol
 1. **Fix Broken Capstone Lab Link**: Update line 30 of `labs/capstone-context-engineering-pipeline.md`:
    - *Old (Broken)*: `[Return to Module 01](../README.md#10-capstone-engineering-challenge)`
    - *New (Verified)*: `[Return to Phase 01 Orientation](../README.md)`
 2. **Standardized Lesson Headers & Footers**: Every lesson file (`01` through `05`) must include standardized breadcrumb navigation:
-   - Header: `[← Phase 01 Hub](./README.md) | [Previous Lesson](./XX-...) | [Next Lesson](./YY-...)`
+   - Header: ``[← Phase 01 Hub](./README.md) | [Previous Lesson](./XX-...) | [Next Lesson](./YY-...)``
    - Footer: Sequential links to the next lesson, the capstone lab, and upstream/downstream phases.
 3. **Cross-Phase Navigation Handoffs**:
    - Upstream link in Phase 01 `README.md` to `../00-foundations-and-token-mechanics/README.md`.
@@ -453,7 +453,7 @@ When authorized to enter **REFACTOR MODE**, execution will follow this strict 7-
 2. Establish backward links from Phase 01 to Phase 00 and forward links to Phase 02.
 
 ### Stage 6: Quality Gate & Zero-LaTeX Verification Sweep
-1. Scan all created markdown files for unescaped `$$`, `$`, `\frac`, or unrendered LaTeX syntax.
+1. Scan all created markdown files for unescaped math delimiters, fractions, or unrendered LaTeX syntax.
 2. Verify that 100% of Mermaid diagrams contain numbered step-by-step prose walkthroughs.
 3. Test all relative file links and navigation anchors.
 

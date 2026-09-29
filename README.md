@@ -255,7 +255,7 @@ flowchart LR
 ### 🏛️ Dedicated Architectural Blueprints & System Designs
 <a id="dedicated-architectural-blueprints-system-designs"></a>
 
-* 🏗️ [**11 Enterprise AI System Designs**](./architecture/10-enterprise-ai-system-designs.md): 11 complete end-to-end architectures (Problem Statement, Approach, Block Diagram, Senior/Architect Notes) including:
+* 🏗️ [**Enterprise AI System Designs**](./architecture/enterprise-ai-system-designs.md): Complete end-to-end production architectures (Problem Statement, Approach, Block Diagram, Senior/Architect Notes) including:
   - Financial Reconciliation & Exception Management Engine (Saga Pattern)
   - Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning (GraphRAG + RBAC)
   - Autonomous Cloud Infrastructure SRE & Remediation Agent

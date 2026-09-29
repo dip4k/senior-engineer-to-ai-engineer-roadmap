@@ -271,7 +271,7 @@ Below is the detailed evaluation of every candidate topic audited for Phase 01:
 * **Classification**: `MOVE_TOPIC`
 * **Topic**: OpenAI 512x512 Tile Calculations and Anthropic Pixel Surface Area Formulas.
 * **Why It Matters**: Image token math is valuable for vision engineers, but interrupts the conceptual flow of compiling text ASTs, token budgeting, and JSON schema logit masking.
-* **Current Phase 1 Coverage**: Section 11 covers 36 lines of tile math with heavy LaTeX formulas (`\times`, `\lceil`).
+* **Current Phase 1 Coverage**: Section 11 covers 36 lines of tile math with heavy formulas (multiplication, ceilings).
 * **Recommended Action**: **MOVE** to an optional multimodal appendix or specialized vision section.
 * **Proposed Location**: Multimodal Appendix / Phase 01 Supplementary Resources.
 * **Prerequisites**: Phase 01 (Token budgeting).
@@ -310,7 +310,7 @@ Below is the detailed evaluation of every candidate topic audited for Phase 01:
 | **10** | Context Routing & Sub-Agents | `MOVE_TOPIC` | Phase 04 / Lesson 04 | Move triage classifier, sub-agents, and reducers to Phase 04 multi-agent orchestration. |
 | **11** | Dynamic Tool Loadout Registry | `MOVE_TOPIC` | Phase 03 / Lesson 03 | Move full tool registry and execution engine to Phase 03; keep schema token cap in Phase 01. |
 | **12** | Enterprise DMN Claims Rule Engine | `MOVE_TOPIC` | Phase 01 / Lesson 01 & `examples/` | Condense 160-line claims engine to high-level concept; preserve full benchmark in `examples/`. |
-| **13** | Multimodal Vision Tiling Math | `MOVE_TOPIC` | Multimodal Appendix | Move $512 \times 512$ tile math to specialized appendix to keep text AST progression focused. |
+| **13** | Multimodal Vision Tiling Math | `MOVE_TOPIC` | Multimodal Appendix | Move 512 × 512 tile math to specialized appendix to keep text AST progression focused. |
 | **14** | Prompt Begging & Magic Phrases | `NOT_RELEVANT` | Excluded | Explicitly exclude obsolete prompt tricks; enforce typed compiler engineering. |
 
 ---

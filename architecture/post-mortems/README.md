@@ -2,7 +2,7 @@
 ### Blameless Root-Cause Analyses (RCAs), Blast Radius Calculations & Architectural Inoculations
 
 > **Real-world systems incident post-mortems analyzing catastrophic, non-deterministic failures in production GenAI and autonomous agent platforms.**  
-> [Home / Master Curriculum](../../README.md) • [Production Readiness Review (PRR)](../production-readiness-review.md) • [Architecture Decision Records (ADRs)](../adrs/README.md) • [10 Enterprise AI System Designs](../10-enterprise-ai-system-designs.md)
+> [Home / Master Curriculum](../../README.md) • [Production Readiness Review (PRR)](../production-readiness-review.md) • [Architecture Decision Records (ADRs)](../adrs/README.md) • [Enterprise AI System Designs](../enterprise-ai-system-designs.md)
 
 ---
 

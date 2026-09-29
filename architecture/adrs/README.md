@@ -2,7 +2,7 @@
 ### Definitive Architectural Trade-Offs, Decision Rubrics & Systemic Contracts
 
 > **Formal records documenting high-stakes architectural choices, trade-offs, and technical policies across the AI-Native engineering stack.**  
-> [Home / Master Curriculum](../../README.md) • [Production Readiness Review (PRR)](../production-readiness-review.md) • [10 Enterprise AI System Designs](../10-enterprise-ai-system-designs.md) • [Production Post-Mortems](../post-mortems/README.md)
+> [Home / Master Curriculum](../../README.md) • [Production Readiness Review (PRR)](../production-readiness-review.md) • [Enterprise AI System Designs](../enterprise-ai-system-designs.md) • [Production Post-Mortems](../post-mortems/README.md)
 
 ---
 

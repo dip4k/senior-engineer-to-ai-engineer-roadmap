@@ -51,12 +51,42 @@ As total token volume expands without a proportional increase in relevant data, 
 Seminal research by Liu et al. (Stanford / UC Berkeley, 2023) demonstrated that large language models do not attend to context uniformly. Retrieval and reasoning performance follows a pronounced **U-shaped curve**:
 
 ```mermaid
-xychart-beta
-    title "Retrieval Accuracy vs. Token Depth Position in Context Window"
-    x-axis ["0% (Start)", "10%", "20%", "30%", "40%", "50% (Middle)", "60%", "70%", "80%", "90%", "100% (End)"]
-    y-axis "Accuracy %" 0 --> 100
-    bar [94, 88, 54, 38, 32, 28, 35, 48, 62, 85, 96]
+flowchart LR
+    subgraph Primacy["1. Primacy Anchor (0%–10% Depth)"]
+        direction TB
+        P1["Top 10% of Context Window"]
+        P2["Accuracy: 94% – 88%"]
+        P3["Positional encoding anchor<br>Highest attention retention"]
+        P1 --> P2 --> P3
+    end
+
+    subgraph Void["2. Middle Attention Void (20%–80% Depth)"]
+        direction TB
+        V1["Middle 60% of Context"]
+        V2["Accuracy: 54% -> 28% (Nadirs at 50%)"]
+        V3["Severe reasoning degradation<br>Information lost in the middle"]
+        V1 --> V2 --> V3
+    end
+
+    subgraph Recency["3. Recency Anchor (90%–100% Depth)"]
+        direction TB
+        R1["Tail 10% of Context Window"]
+        R2["Accuracy: 85% – 96%"]
+        R3["Immediate working memory<br>Active autoregressive heads"]
+        R1 --> R2 --> R3
+    end
+
+    Primacy ==>|"Attention collapses into"| Void
+    Void ==>|"Attention rebounds into"| Recency
 ```
+
+| Token Depth Position | Location in Prompt Envelope | Empirical Retrieval Accuracy | Attention & Recency Dynamics |
+| :---: | :--- | :---: | :--- |
+| **0% – 10%** | Context Window Start | **94% – 88%** | Primacy Anchor (Strong attention retention from positional token 0) |
+| **20% – 40%** | Upper Middle Context | **54% – 38%** | Progressive attention attenuation across multi-head projections |
+| **50% (Dead Center)** | Middle Void (Nadir) | **28%** | Maximum degradation ("Lost-in-the-Middle" failure zone) |
+| **60% – 80%** | Lower Middle Context | **35% – 62%** | Gradual recovery as distance to generation head narrows |
+| **90% – 100%** | Context Window Tail | **85% – 96%** | Recency Anchor (Immediate working memory before next token emit) |
 
 ### Prose Walkthrough of the Attention U-Curve:
 1. **Primacy Bias (Token Depth 0% to 10%)**: Models exhibit highest attention fidelity at the very beginning of the context. Tokens placed in the initial static prefix are processed early in positional encoding layers and serve as the anchor for subsequent autoregressive layers.

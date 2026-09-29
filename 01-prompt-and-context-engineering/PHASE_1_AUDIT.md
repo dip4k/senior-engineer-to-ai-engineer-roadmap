@@ -34,7 +34,7 @@ However, Phase 01 suffers from **critical architectural, pedagogical, and struct
 1. **The Monolithic README Trap**: Phase 01 contains **zero modular lesson files**. All 23 disparate topics, 14 diagrams, 4 code implementations, 3 war stories, and 2 tradeoff matrices are packed into a single 1,276-line file (8,952 words), exceeding cognitive load budgets by more than 2.5x.
 2. **Inverted Conceptual Progression**: Foundational syntax primitives—such as the 4-tier enterprise role hierarchy (Section 13) and XML delimiter sandboxing (Section 12)—are taught *after* complex composite systems like Context ASTs (Section 3), Token Budgeting (Section 4), Compaction Pipelines (Section 5), and Tool Loadout Pruning (Section 8).
 3. **Out-of-Scope Domain Creep**: Over 160 lines in Section 16 are devoted to an enterprise claims adjudication rule engine (DMN / Drools pattern) and data warehouse semantic layers (Cube / MetricFlow), while Section 9 introduces multi-agent routing (sub-agents, reducers) before the learner has even encountered tool wire protocols (Phase 03) or agent loops (Phase 04).
-4. **Pervasive Zero-LaTeX & Markdown Preview Violations**: Over 25 raw LaTeX equations (`$$...$$`, `$N$`, `\text{...}`, `\frac{...}{...}`, `\approx`, `\times`, `\infty`) and 10+ unescaped currency dollar signs (`$10,000`, `$42,000`, `$120,000`) break GitHub, Antigravity IDE, and standard Markdown previewers.
+4. **Pervasive Zero-LaTeX & Markdown Preview Violations**: Over 25 raw LaTeX equations (display math blocks, inline math delimiters, fractions, approximations, multiplications, infinities) and 10+ unescaped currency dollar signs (\$10,000, \$42,000, \$120,000) break GitHub, Antigravity IDE, and standard Markdown previewers.
 5. **Diagram Walkthrough Deficit**: Out of 14 Mermaid diagrams, **8 diagrams completely lack an accompanying step-by-step prose walkthrough**, directly violating Quality Gate 07.
 6. **Broken Lab Navigation Anchor**: The capstone lab explicitly links back to `../README.md#10-capstone-engineering-challenge`, which is a broken anchor (`404` dead link) because the README anchor is `#23-capstone-engineering-challenge-must-have-`.
 7. **Legacy Tier Taxonomy**: The phase relies on legacy `[MUST-HAVE] 🔴`, `[GOOD-TO-KNOW] 🟡`, and `[KNOWLEDGE-BASE] 🔵` labels rather than the authoritative 4-Tier Depth Model (`🟢 Core`, `🟡 Engineering Depth`, `🔵 Advanced`, `⚫ Deep Dive`).
@@ -135,7 +135,7 @@ The monolith must be decomposed into **5 focused, modular lessons** following a 
    - *Remediation*: **SIMPLIFY & MOVE**. Retain the core principle (*"LLM as Semantic Extractor, Code as Deterministic Adjudicator"*) in Lesson 01 as an architectural pattern; preserve the complete 350-line benchmark in `examples/semantic_layer_decoupling.py`.
 
 ### 3.5. Advanced Material Introduced Too Early
-- **Multimodal Context Assembly (Section 11, Lines 555–591)**: Detailed pixel tiling formulas (OpenAI $512 \times 512$ tile math, Anthropic $\lceil(W \times H)/750\rceil$) are introduced before the learner has mastered text-based schema decoding and prefix caching. This should be moved to an optional appendix or integrated into specialized vision pipelines.
+- **Multimodal Context Assembly (Section 11, Lines 555–591)**: Detailed pixel tiling formulas (OpenAI 512 × 512 tile math, Anthropic ceil((W × H) / 750)) are introduced before the learner has mastered text-based schema decoding and prefix caching. This should be moved to an optional appendix or integrated into specialized vision pipelines.
 
 ### 3.6. Shallow Explanations
 - **Section 14 (Constrained Grammar Decoding)**: Explains logit masking in 5 short bullet points without showing an actual grammar snippet (GBNF or regex automaton state transition table) or explaining why logit masking can introduce latency during the first-token grammar compilation phase.
@@ -202,7 +202,7 @@ Phase 01 contains **14 Mermaid diagrams**. Every diagram was audited for concept
 - **Diagrams 01 and 02** duplicate each other's architectural content.
 
 ### 5.2. Missing Visuals Where Diagrams Would Materially Improve Understanding
-1. **FSM Token-Level Logit Masking (Step-by-Step)**: A diagram illustrating the active vocabulary, raw model logits, the FSM state filter masking illegal tokens with $-\infty$, and the resulting softmax probability distribution.
+1. **FSM Token-Level Logit Masking (Step-by-Step)**: A diagram illustrating the active vocabulary, raw model logits, the FSM state filter masking illegal tokens with -inf, and the resulting softmax probability distribution.
 2. **Prefix Taint & Cache Invalidation**: A diagram contrasting an invalidating prefix change (dynamic timestamp at token 0 destroying 10K cached tokens) versus an append-only dynamic tail (100% prefix reuse).
 3. **Positional Reranking (Edge-Weighting)**: A visual showing how 10 RAG chunks are reordered into an attention U-curve (`[Doc 1, Doc 3, ..., Doc 4, Doc 2]`).
 
@@ -268,51 +268,51 @@ The curriculum should add citations to:
 
 ## 8. Zero-LaTeX & Markdown Preview Compliance (Quality Gate 13)
 
-Standard Markdown previewers (VS Code, GitHub Web, Antigravity IDE) fail when encountering raw LaTeX math delimiters (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`) and unescaped currency dollar signs.
+Standard Markdown previewers (VS Code, GitHub Web, Antigravity IDE) fail when encountering raw LaTeX math delimiters (display blocks, inline dollars, text tags, fractions) and unescaped currency dollar signs.
 
 ### 8.1. Inventory of LaTeX Violations in `01-prompt-and-context-engineering/README.md`
 
 | Line # | Raw LaTeX Expression Found | Standard GFM Text / Monospace Remediation |
 |:---:|---|---|
-| **125** | `($0–10\%$)`, `($90–100\%$)`, `($20–80\%$)` | `(0% to 10%)`, `(90% to 100%)`, `(20% to 80%)` |
-| **174** | `last $N$ turns` | `last N turns` |
-| **202** | `Top-$K$` | `Top-K` |
-| **204** | `($> 0.82$)` | `(greater than 0.82)` or `(> 0.82)` |
-| **277** | `$N=4$` | `N = 4` |
-| **278** | `($0$ to $N-5$)` | `(0 to N - 5)` |
-| **324** | `($0–10\%$)` | `(0% to 10%)` |
-| **325** | `($90–100\%$)` | `(90% to 100%)` |
-| **326** | `$20\%$ and $80\%$` | `20% and 80%` |
-| **357** | `$$\text{Order: } [\text{Doc}_1, \dots, \text{Doc}_2]$$` | Monospace text block: `Order: [Doc_1, Doc_3, ..., Doc_2]` |
-| **382** | `$$\text{SNR}_{\text{context}} = \frac{\text{Task-Relevant Information Tokens}}{\text{Total Context Tokens in Window}}$$` | Fenced text code block: `SNR_context = Task_Relevant_Tokens / Total_Window_Tokens` |
-| **384** | `$\text{SNR} < 0.15$` | `SNR < 0.15` |
-| **562** | `$2048 \times 2048$`, `$512 \times 512$` | `2048 × 2048`, `512 × 512` |
-| **564** | `$512 \times 512$` | `512 × 512` |
-| **566** | `$$\text{Tokens}_{\text{OpenAI}} = 85 + (\text{Number of Tiles} \times 170)$$` | Fenced text block: `OpenAI_Tokens = 85 + (Num_Tiles × 170)` |
-| **568** | `$1920 \times 1080$` | `1920 × 1080` |
-| **569** | `$512 \times 512$` | `512 × 512` |
-| **570** | `$85 + (6 \times 170) = \mathbf{1,105 \text{ tokens}}$` | `85 + (6 × 170) = 1,105 tokens` |
-| **574** | `$$\text{Tokens}_{\text{Claude}} \approx \left\lceil \frac{\text{Width} \times \text{Height}}{750} \right\rceil$$` | Fenced text block: `Claude_Tokens ≈ ceil((Width × Height) / 750)` |
-| **576** | `$1024 \times 768$` | `1024 × 768` |
-| **577** | `$$\frac{1024 \times 768}{750} \approx \mathbf{1,049 \text{ tokens}}$$` | Fenced text block: `(1024 × 768) / 750 ≈ 1,049 tokens` |
-| **580** | `$4000 \times 3000$` | `4000 × 3000` |
-| **686** | `$t$` | `t` |
-| **687** | `$-\infty$` | `-inf` or `-infinity` |
-| **688** | `($e^{-\infty} = 0$)` | `(e^(-inf) = 0)` |
+| **125** | `(0–10%)`, `(90–100%)`, `(20–80%)` | `(0% to 10%)`, `(90% to 100%)`, `(20% to 80%)` |
+| **174** | `last N turns` | `last N turns` |
+| **202** | `Top-K` | `Top-K` |
+| **204** | `(> 0.82)` | `(greater than 0.82)` or `(> 0.82)` |
+| **277** | `N=4` | `N = 4` |
+| **278** | `(0 to N-5)` | `(0 to N - 5)` |
+| **324** | `(0–10%)` | `(0% to 10%)` |
+| **325** | `(90–100%)` | `(90% to 100%)` |
+| **326** | `20% and 80%` | `20% and 80%` |
+| **357** | `Order: [Doc_1, ..., Doc_2]` (raw LaTeX equation) | Monospace text block: `Order: [Doc_1, Doc_3, ..., Doc_2]` |
+| **382** | `SNR_context = Task_Relevant / Total` (raw LaTeX fraction) | Fenced text code block: `SNR_context = Task_Relevant_Tokens / Total_Window_Tokens` |
+| **384** | `SNR < 0.15` (raw LaTeX math text) | `SNR < 0.15` |
+| **562** | `2048 × 2048`, `512 × 512` (LaTeX times) | `2048 × 2048`, `512 × 512` |
+| **564** | `512 × 512` (LaTeX times) | `512 × 512` |
+| **566** | `Tokens_OpenAI = 85 + (Tiles × 170)` (raw LaTeX formula) | Fenced text block: `OpenAI_Tokens = 85 + (Num_Tiles × 170)` |
+| **568** | `1920 × 1080` (LaTeX times) | `1920 × 1080` |
+| **569** | `512 × 512` (LaTeX times) | `512 × 512` |
+| **570** | `85 + (6 × 170) = 1,105 tokens` (LaTeX mathbf/text) | `85 + (6 × 170) = 1,105 tokens` |
+| **574** | `Tokens_Claude ≈ ceil((W × H) / 750)` (LaTeX approx/frac) | Fenced text block: `Claude_Tokens ≈ ceil((Width × Height) / 750)` |
+| **576** | `1024 × 768` (LaTeX times) | `1024 × 768` |
+| **577** | `(1024 × 768) / 750 ≈ 1,049 tokens` (LaTeX frac/approx) | Fenced text block: `(1024 × 768) / 750 ≈ 1,049 tokens` |
+| **580** | `4000 × 3000` (LaTeX times) | `4000 × 3000` |
+| **686** | `t` (LaTeX inline math) | `t` |
+| **687** | `-inf` (LaTeX infty) | `-inf` or `-infinity` |
+| **688** | `(e^(-inf) = 0)` (LaTeX infty) | `(e^(-inf) = 0)` |
 
 ### 8.2. Inventory of Unescaped Currency Dollar Signs
 Unescaped currency dollar signs trigger LaTeX math parsing in preview engines when two or more appear in the same paragraph:
-- **Line 186**: `spend $8,500 on fine dining` (needs backticks or `\$8,500`).
-- **Line 529**: `every word costs $1.00` (needs `\$1.00`).
-- **Line 771**: `under $50 for Standard or $150 for Gold` (needs `\$50` and `\$150`).
-- **Line 902**: `Refund $45 for late pizza delivery` (needs `\$45`).
-- **Line 906**: `Transfer $10,000 to external offshore account` (needs `\$10,000`).
-- **Line 993**: `The $42,000 Weekend Invoice` (needs `\$42,000` or plain text).
-- **Line 994**: `spent $42,000 in 48 hours` (needs `\$42,000`).
-- **Line 998**: `dropped by $38,000` (needs `\$38,000`).
-- **Line 1011**: `The $120,000 Wire Transfer Disaster` (needs `\$120,000`).
-- **Line 1012**: `approved a $120,000 foreign currency transfer` (needs `\$120,000`).
-- **Line 1014**: `No transactions exceeding $50,000` (needs `\$50,000`).
+- **Line 186**: `spend \$8,500 on fine dining` (needs backticks or `\$8,500`).
+- **Line 529**: `every word costs \$1.00` (needs `\$1.00`).
+- **Line 771**: `under \$50 for Standard or \$150 for Gold` (needs `\$50` and `\$150`).
+- **Line 902**: `Refund \$45 for late pizza delivery` (needs `\$45`).
+- **Line 906**: `Transfer \$10,000 to external offshore account` (needs `\$10,000`).
+- **Line 993**: `The \$42,000 Weekend Invoice` (needs `\$42,000` or plain text).
+- **Line 994**: `spent \$42,000 in 48 hours` (needs `\$42,000`).
+- **Line 998**: `dropped by \$38,000` (needs `\$38,000`).
+- **Line 1011**: `The \$120,000 Wire Transfer Disaster` (needs `\$120,000`).
+- **Line 1012**: `approved a \$120,000 foreign currency transfer` (needs `\$120,000`).
+- **Line 1014**: `No transactions exceeding \$50,000` (needs `\$50,000`).
 
 ---
 
@@ -363,7 +363,7 @@ Every section, diagram, and asset in Phase 01 is mapped to a specific transforma
 | **Sec 17: Classical Prompt Patterns (Lines 894–927)** | ~350 | **REORGANIZE / REWRITE** | Few-Shot ICL and CoT scratchpads belong in `01-context-ast-architecture.md` as static AST nodes. Add reasoning model prefill caveats. |
 | **Sec 18: System Architecture Flow (Lines 928–966)** | ~250 | **REORGANIZE / REWRITE** | Place in Phase `README.md` and Lesson 01 with a full 8-step numbered prose walkthrough. |
 | **Sec 19: Comparative Tradeoff Matrices (Lines 968–989)** | ~300 | **REORGANIZE / MERGE** | Embed schema tradeoff matrix into Lesson 04; embed prompt caching matrix into Lesson 03. |
-| **Sec 20: Production War Stories (Lines 991–1018)** | ~550 | **REORGANIZE / MERGE** | Embed War Story 1 ($42K Timestamp) in Lesson 03; War Story 2 (60 Tools) in Lesson 02; War Story 3 ($120K Middle Void) in Lesson 05. |
+| **Sec 20: Production War Stories (Lines 991–1018)** | ~550 | **REORGANIZE / MERGE** | Embed War Story 1 (\$42K Timestamp) in Lesson 03; War Story 2 (60 Tools) in Lesson 02; War Story 3 (\$120K Middle Void) in Lesson 05. |
 | **Sec 21: Production Code Implementations (Lines 1020–1253)** | ~1,100 | **REORGANIZE / REWRITE** | Distribute focused, runnable code blocks into corresponding modular lessons (`01` through `04`). |
 | **Sec 22: Curated Verified Resources (Lines 1254–1271)** | ~300 | **REORGANIZE / REWRITE** | Distribute authoritative primary source citations into their respective modular lessons. Add Outlines and SGLang papers. |
 | **Sec 23 & Lab: Capstone Challenge (Lines 1273–1276 & `labs/`)** | ~400 | **KEEP / REORGANIZE** | Fix broken return anchor in `capstone-context-engineering-pipeline.md`. Link cleanly to modular lesson progression. |
@@ -504,7 +504,7 @@ When transitioning Phase 01 into **REFACTOR MODE**, execute the following ordere
    - Assign `🟡 Engineering Depth` to Lessons 03 and 04.
    - Assign `🔵 Advanced` to Lesson 05.
 3. **Purge All Raw LaTeX & Escape Currency Dollar Signs**:
-   - Convert all `$$...$$` and `$...$` expressions into standard text code blocks or clean Unicode characters (`→`, `×`, `≈`, `≤`, `≥`).
+   - Convert all display math blocks and inline math expressions into standard text code blocks or clean Unicode characters (`→`, `×`, `≈`, `≤`, `≥`).
    - Escape or backtick all currency dollar amounts (`\$10,000`, `\$42,000`, `\$120,000`).
 4. **Enforce Step-by-Step Prose Walkthroughs for All Mermaid Diagrams**:
    - Ensure every retained Mermaid diagram features an explicit, numbered step-by-step prose walkthrough directly beneath the code block.

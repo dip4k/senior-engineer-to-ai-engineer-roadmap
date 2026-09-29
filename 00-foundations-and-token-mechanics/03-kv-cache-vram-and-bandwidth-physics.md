@@ -164,50 +164,49 @@ The AI industry evolved attention architectures to reduce the size of the scratc
 
 ```mermaid
 flowchart TD
-    subgraph MHA["Multi-Head Attention (MHA)\n(Original GPT-3, GPT-4)"]
-        Q_MHA["Query Heads (H = 8)"]
-        K_MHA["Key Heads (H = 8)"]
-        V_MHA["Value Heads (H = 8)"]
-        Q_MHA --- K_MHA --- V_MHA
-        MHA_Note["Ratio: 1:1:1\nBaseline KV-Cache Size: 100%"]
+    subgraph Traditional["Traditional & Extreme Compression"]
+        subgraph MHA["1. Multi-Head Attention (MHA)"]
+            direction TB
+            Q_MHA["Query Heads (H = 8)"]
+            K_MHA["Key Heads (H = 8)"]
+            V_MHA["Value Heads (H = 8)"]
+            MHA_Note["Ratio: 1:1:1<br>KV-Cache: 100% (Baseline)"]
+            Q_MHA --> K_MHA --> V_MHA --> MHA_Note
+        end
+
+        subgraph MQA["2. Multi-Query Attention (MQA)"]
+            direction TB
+            Q_MQA["Query Heads (H = 8)"]
+            K_MQA["Key Head (H = 1)"]
+            V_MQA["Value Head (H = 1)"]
+            MQA_Note["Ratio: 8:1:1<br>KV-Cache: 12.5% (8x saving)<br>Accuracy degradation"]
+            Q_MQA --> K_MQA --> V_MQA --> MQA_Note
+        end
     end
 
-    subgraph MQA["Multi-Query Attention (MQA)\n(PaLM, Falcon)"]
-        Q_MQA["Query Heads (H = 8)"]
-        K_MQA["Key Head (H = 1)"]
-        V_MQA["Value Head (H = 1)"]
-        Q_MQA --- K_MQA --- V_MQA
-        MQA_Note["Ratio: 8:1:1\nKV-Cache Size: 12.5% (8x reduction)\nCan cause slight quality degradation"]
+    subgraph Modern["Modern Production Standards"]
+        subgraph GQA["3. Grouped-Query Attention (GQA)"]
+            direction TB
+            Q_GQA["Query Heads (H = 8, 4 groups)"]
+            K_GQA["Key Heads (G = 2)"]
+            V_GQA["Value Heads (G = 2)"]
+            GQA_Note["Ratio: 4:1:1<br>KV-Cache: 25% (4x saving)<br>Matches MHA accuracy"]
+            Q_GQA --> K_GQA --> V_GQA --> GQA_Note
+        end
+
+        subgraph MLA["4. Multi-Head Latent Attention (MLA)"]
+            direction TB
+            Q_MLA["Query Heads (H = 128)"]
+            Latent["Latent Vector c_t (Dim: 512)"]
+            Absorb["Matrix Absorption into W^Q / W^O"]
+            MLA_Note["Low-Rank Projection<br>KV-Cache: ~6.7% (15x saving)<br>Full MHA expressiveness"]
+            Q_MLA --> Latent --> Absorb --> MLA_Note
+        end
     end
 
-    subgraph GQA["Grouped-Query Attention (GQA)\n(LLaMA 3, Mistral, Qwen 2.5)"]
-        Q_GQA["Query Heads (H = 8, 4 groups of 2)"]
-        K_GQA["Key Heads (G = 2)"]
-        V_GQA["Value Heads (G = 2)"]
-        Q_GQA --- K_GQA --- V_GQA
-        GQA_Note["Ratio: 4:1:1 (4 Q heads per KV group)\nKV-Cache Size: 25% (4x reduction)\nMatches MHA accuracy while saving 75% VRAM"]
-    end
-
-    subgraph MLA["Multi-Head Latent Attention (MLA)\n(DeepSeek-V2, V3, R1)"]
-        Q_MLA["Query Heads (H = 128)"]
-        Latent["Compressed Latent Vector\nc_t^KV (Dimension: 512)"]
-        Absorb["Weight Absorption:\nW^UK absorbed into W^Q\nW^UV absorbed into W^O"]
-        Q_MLA --- Latent
-        Latent --- Absorb
-        MLA_Note["Compression: Low-Rank Latent Projection\nKV-Cache Size: ~6.7% (15x reduction)\nMatches MHA expressiveness at MQA memory footprint"]
-    end
-
-    Q_MHA ~~~ Q_MQA
-    K_MHA ~~~ K_MQA
-    V_MHA ~~~ V_MQA
-
-    Q_MQA ~~~ Q_GQA
-    K_MQA ~~~ K_GQA
-    V_MQA ~~~ V_GQA
-
-    Q_GQA ~~~ Q_MLA
-    K_GQA ~~~ Latent
-    V_GQA ~~~ Absorb
+    %% Symmetrical connections between evolutionary generations
+    MHA_Note -->|"Group into shared KV"| GQA
+    MQA_Note -->|"Compress into latent vector"| MLA
 ```
 
 ### Walkthrough of Attention Architectures:
@@ -497,7 +496,7 @@ If a 9th user submits a request, the cluster will OOM unless you implement Paged
 
 ## 10. Key Takeaways
 
-1. **The KV-Cache Is Stateful Scratchpad Memory**: In autoregressive decode, past Key and Value vectors must be retained in VRAM to prevent quadratic $O(N^2)$ recomputation.
+1. **The KV-Cache Is Stateful Scratchpad Memory**: In autoregressive decode, past Key and Value vectors must be retained in VRAM to prevent quadratic O(N^2) recomputation.
 2. **Decode Is Memory-Bandwidth-Bound**: Generating tokens one at a time is bottlenecked by the speed of transferring model weights and KV activations across the HBM bus.
 3. **Grouped-Query Attention (GQA) Is the Industry Standard**: By grouping Query heads to share Key-Value heads, GQA reduces KV-cache memory consumption by 4x to 8x with zero loss in output quality.
 4. **PagedAttention Eliminates Memory Waste**: Applying OS-style non-contiguous paging to the KV cache reduces memory fragmentation from ~70% to under 4%.
