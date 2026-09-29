@@ -207,4 +207,4 @@ BENCHMARK_SUITE = [
 
 ---
 
-[Return to Module 05: AI Security & Guardrails](../README.md#9-capstone-engineering-challenge-the-secure-enterprise-agent-gateway-must-have-)
+[Return to Phase 05 Hub: AI Security & Guardrails](../README.md#🏆-capstone-engineering-challenge)
