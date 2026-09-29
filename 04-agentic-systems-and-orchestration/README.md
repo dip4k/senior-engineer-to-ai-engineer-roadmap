@@ -52,9 +52,9 @@ flowchart TD
 
 ### Prose Diagram Walkthrough: Phase Learning Pathways
 
-1. **Foundational Core (Lessons 01–03)**: Every engineer starts by mastering the distinction between deterministic workflows and open agents (Lesson 01), armoring execution loops with cryptographic governors (Lesson 02), and implementing durable event-sourced WAL persistence with saga rollbacks (Lesson 03).
-2. **⚡ Fast Track Path**: For engineers seeking immediate, practical patterns to deploy robust single-agent tools into existing microservices. Concludes after Lesson 03 with hands-on practice in **Lab 1** (Human-in-the-Loop workflows) and **Lab 3** (Loop engineering circuit breakers).
-3. **🏢 Enterprise Track Path**: For technical leads and platform architects engineering distributed multi-agent systems, cross-session memory architectures, untrusted code execution sandboxes, and evaluating enterprise ADKs/platforms. Progresses through Lessons 04, 05, 06, and 07, examines the enterprise reference matrices, and culminates in the end-to-end **Capstone Code Review Engine**.
+1. **Foundational Core (Lessons 01–03)**: Every engineer starts by mastering the distinction between deterministic workflows and autonomous agents (Lesson 01), protecting execution loops with duplicate-action detection and budget decay controls (Lesson 02), and implementing durable state persistence using Write-Ahead Logs (WAL) and saga rollback patterns (Lesson 03).
+2. **⚡ Fast Track Path**: For engineers seeking immediate, practical patterns to deploy robust single-agent tools into existing microservices. Concludes after Lesson 03 with hands-on practice in **Lab 1** (Human-in-the-Loop approval workflows) and **Lab 3** (Loop governance and circuit breakers).
+3. **🏢 Enterprise Track Path**: For technical leads and platform architects engineering distributed multi-agent systems, cross-session memory architectures, untrusted code execution sandboxes, and evaluating enterprise Agent Development Kits (ADKs) and platforms. Progresses through Lessons 04, 05, 06, and 07, examines the enterprise reference matrices, and culminates in the end-to-end **Capstone Code Review Engine**.
 
 ---
 

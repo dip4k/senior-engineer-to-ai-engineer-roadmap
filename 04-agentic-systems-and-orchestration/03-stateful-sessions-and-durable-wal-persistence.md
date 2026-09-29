@@ -4,7 +4,7 @@
 >
 > **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Agent Architecture: Harnesses & Loops](02-react-loops-and-execution-governors.md)
 
-> **Core Concept**: Production agents are long-running, stateful systems. When a server restarts, a human takes hours to approve an action, or a network connection drops, the agent must be able to resume immediately without re-running expensive model calls or duplicating database writes. To achieve this, we use graph state machines with clean state reducers, an append-only Write-Ahead Log (WAL), session branching, and the Distributed Saga pattern with compensating rollback tools.
+> **Core Concept**: In Lessons 01 and 02, we built deterministic workflow patterns and governed agent loops with action fingerprinting and budget decay. But what happens when the server running that loop crashes mid-execution? Production agents are long-running, stateful systems. When a server restarts, a human takes hours to approve an action, or a network connection drops, the agent must be able to resume immediately without re-running expensive model calls or duplicating database writes. To achieve this, we use graph state machines with clean state reducers, an append-only Write-Ahead Log (WAL), session branching, and the Distributed Saga pattern with compensating rollback tools.
 
 ---
 

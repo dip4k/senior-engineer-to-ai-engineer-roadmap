@@ -4,7 +4,7 @@
 >
 > **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
 
-> **Core Concept**: Autonomous agents rely on two complementary architectural pillars: the **Harness** (the operational runtime, safety boundaries, and tool environment that wraps the model) and **Loop Engineering** (the design of recursive reasoning cycles that prevent infinite loops, detect stalled progress, and guarantee convergence). Without both, an agent is little more than an unconstrained while-loop that burns through API budgets.
+> **Core Concept**: In Lesson 01, we learned to keep the control plane in code and use the language model as a reasoning worker. But what governs the reasoning cycle itself? Autonomous agents rely on two complementary architectural pillars: the **Harness** (the operational runtime, safety boundaries, and tool environment that wraps the model) and **Loop Engineering** (the design of recursive reasoning cycles that prevent infinite loops, detect stalled progress, and guarantee convergence). Without both, an agent is little more than an unconstrained while-loop that burns through API budgets.
 
 ---
 
@@ -22,8 +22,8 @@ while not task_finished:
 ```
 
 In a production system, this simple loop is extremely dangerous:
-* When an external service returns an unexpected error (like an HTTP 403 Forbidden or an empty search result), the language model does not stop. Instead, it rephrases its reasoning slightly and **retries the exact same failing action** over and over.
-* Every turn appends more text to the message list. As context grows, API costs compound quadratically, response times slow down, and the model begins to lose track of its original instructions.
+* When an external service returns an unexpected error (like an HTTP 403 Forbidden or an empty search result), the language model continues generating tool calls. It rephrases its output slightly and **retries the exact same failing action** over and over—because from the model's perspective, a failed observation is simply more input text to respond to.
+* Every turn appends more text to the message list. Because models charge per input token, and each turn re-sends the *entire* accumulated conversation, API costs grow rapidly. Response times slow down, and the model assigns lower attention probability to its original instructions as they get buried under pages of intermediate output (a phenomenon researchers call "Lost in the Middle").
 * If a tool mutates a production database or charges a payment, an unconstrained loop can perform duplicate actions before anyone notices.
 
 To build agents that can safely run in production, we need two distinct engineering disciplines:
@@ -52,7 +52,7 @@ flowchart TD
         L4["Convergence Monitoring & Safe Escape Hatches"]:::loop
     end
 
-    Model["Foundation Language Model (The Brain)"]:::model
+    Model["Foundation Language Model (Reasoning Engine)"]:::model
 
     TheHarness -.->|"Encloses and protects"| Model
     TheLoop -->|"Directs the execution flow of"| Model
@@ -61,9 +61,9 @@ flowchart TD
 
 ### Prose Diagram Walkthrough: Harness vs. Loop
 
-1. **The Model (The Brain)**: The foundation model is responsible for semantic reasoning, understanding user intent, and proposing which tool to call with what parameters.
+1. **The Model (The Reasoning Engine)**: The foundation model is responsible for semantic text processing—understanding user intent, interpreting observations, and proposing which tool to call with what parameters.
 2. **The Harness (The Body & Armor)**: The harness is the software infrastructure surrounding the model. It provides tool connectivity, isolates code execution, enforces security rules, takes state snapshots, and trims bulky responses before they reach the model.
-3. **The Loop (The Behavioral Strategy)**: Loop engineering defines how the agent iterates. It controls how the agent reflects on observations, detects when it is stuck in repetitive loops, reduces temperature as turns elapse, and triggers safe exit routines when limits are reached.
+3. **The Loop (The Behavioral Strategy)**: Loop engineering defines how the agent iterates. It controls how the agent processes observations, detects when it is stuck in repetitive cycles, reduces randomness as turns elapse, and triggers safe exit routines when limits are reached.
 
 ---
 
@@ -151,9 +151,9 @@ flowchart TD
 
 #### Why ReAct Outperforms Simple Approaches
 
-* **Pure Chain-of-Thought (Reasoning Only)**: If a model reasons without tools, it cannot verify external facts. When it reaches an unknown piece of data, it hallucinates plausible-sounding answers.
+* **Pure Chain-of-Thought (Reasoning Only)**: If a model generates text without access to tools, it has no mechanism to verify external facts. When it reaches an unknown piece of data, it fills the gap with statistically plausible but fabricated answers (hallucination).
 * **Pure Action (Calling Tools Without Thinking)**: If a model calls tools without an intermediate reasoning step, it cannot plan multi-step sequences, diagnose why a query failed, or synthesize observations from multiple sources.
-* **The ReAct Combination**: Reasoning guides which tool to select; tool observations ground the reasoning in verified real-world facts.
+* **The ReAct Combination**: The reasoning step guides which tool to select; the tool observation grounds the next reasoning step in verified real-world facts.
 
 ### Overcoming Short-Sighted Drift: Plan-and-Execute
 
@@ -174,9 +174,9 @@ To understand why loop governance is essential, consider this real-world product
 >
 > *So the agent was thorough. It reasoned: 'Perhaps the secret path needs a trailing slash.' Failed with 403. 'Perhaps I should query the vault using the raw REST API.' Failed with 403. 'Perhaps I should base64-encode the token parameter.' Failed with 403. 'Perhaps I should test every path under /v1/secret/.'*
 >
-> *By 2:45 AM, the agent had executed **240 autonomous loop cycles**, consumed **38 million tokens**, generated **\$570 in API charges**, and flooded the internal secrets vault with **950 requests per second**—tripping enterprise rate limiters and locking human engineers out of the system!"*
+> *By 2:45 AM, the agent had executed **240 autonomous loop cycles**, consumed **38 million tokens**, generated **$570 in API charges**, and flooded the internal secrets vault with **950 requests per second**—tripping enterprise rate limiters and locking human engineers out of the system!"*
 
-If that agent had been equipped with loop governance, Turn 3 would have detected that the agent was repeating the same failing action, applied budget decay, halted the loop, and escalated to an on-call engineer within 45 seconds at a total cost of \$0.04.
+If that agent had been equipped with loop governance, Turn 3 would have detected that the agent was repeating the same failing action, applied budget decay, halted the loop, and escalated to an on-call engineer within 45 seconds at a total cost of $0.04.
 
 ---
 
@@ -224,7 +224,9 @@ The runtime maintains a sliding-window buffer of the last 4 tool calls. If the i
 ### 2. Progressive Budget Decay
 Agents given a flat budget of 10 turns often spend turns 1 through 7 wandering through exploratory queries, only to run out of turns before writing down the final answer.
 
-**Progressive Budget Decay** dynamically tightens runtime parameters as the remaining budget decreases:
+**Progressive Budget Decay** dynamically tightens runtime parameters as the remaining budget decreases.
+
+> **What is Temperature?** Temperature is a model configuration parameter that controls output randomness. At temperature `0.0`, the model always picks the single most probable next token (fully deterministic output). At temperature `1.0`, it samples from a wider probability distribution, producing more varied but less predictable outputs. Lowering temperature forces the agent toward safer, more focused responses as it approaches its budget limit.
 
 | Budget Phase | Turns Remaining | Model Temperature | Available Tooling | System Guidance |
 |---|:---:|:---:|---|---|
@@ -234,7 +236,7 @@ Agents given a flat budget of 10 turns often spend turns 1 through 7 wandering t
 | **Phase 4: Emergency Stop** | Turn 9+ | `0.0` | Zero tools allowed | *"Budget exhausted. Summarize current findings immediately."* |
 
 ### 3. Convergence Monitoring (Detecting Thought Stalls)
-An agent can avoid exact duplicate tool calls while still being mentally stuck—for example, searching for "error in pod", then "pod error log", then "pod crash trace".
+An agent can avoid exact duplicate tool calls while still producing semantically equivalent queries that make no real progress—for example, searching for "error in pod", then "pod error log", then "pod crash trace".
 
 To catch this, the runtime measures whether the agent is actually moving closer to the goal:
 * **Semantic Similarity**: The runtime compares the vector embedding of the current "Thought" against the previous turn's thought. If similarity exceeds `0.94` across three consecutive turns, the model is simply repeating the same reasoning in different words.

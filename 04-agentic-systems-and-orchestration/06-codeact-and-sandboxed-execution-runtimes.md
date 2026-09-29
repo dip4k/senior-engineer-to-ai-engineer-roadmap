@@ -4,6 +4,8 @@
 >
 > **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
 
+> **Core Concept**: In Lesson 05, we learned how multi-agent systems delegate work across specialized agents via standardized protocols. But so far, every tool has been a pre-written function with a fixed signature. What if the agent needs to write and execute its own code to solve a problem? Code-as-Action (CodeAct) replaces the slow, multi-turn JSON tool-calling pattern with direct executable script generation. The model writes a short Python script, and the harness runs it inside a hardened sandbox. This eliminates dozens of network round-trips, but introduces severe security risks that require operating-system-level isolation.
+
 ---
 
 ## 1. The Engineering Problem: The JSON Tool Calling Bottleneck
