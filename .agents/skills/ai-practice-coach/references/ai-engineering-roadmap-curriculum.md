@@ -5,7 +5,7 @@ This reference outlines the universal roadmap modules and hands-on katas generat
 ---
 
 ## 1. LLM Silicon, Compute & Token Mechanics
-- **Key Concepts**: Autoregressive decoding, KV-cache VRAM allocation (\(2 \times 2 \times n_{\text{layers}} \times d_{\text{model}} \times \text{tokens}\)), Memory-bandwidth-bound vs. Compute-bound operations, Time to First Token (TTFT) vs. Tokens Per Second (TPS), Reasoning tokens (hidden thinking phase, test-time compute scaling).
+- **Key Concepts**: Autoregressive decoding, KV-cache VRAM allocation (`2 × 2 × n_layers × d_model × tokens`), Memory-bandwidth-bound vs. Compute-bound operations, Time to First Token (TTFT) vs. Tokens Per Second (TPS), Reasoning tokens (hidden thinking phase, test-time compute scaling).
 - **Hands-On Katas**:
   - Implement a KV-cache memory calculator given GPU VRAM, batch size, context window, and model parameters.
   - Write a token streaming simulator with latency profiling (TTFT and inter-token latency percentiles: p50, p95, p99).

@@ -18,3 +18,10 @@ trigger: always_on
    - Never pass untrusted user or retrieval input directly to privileged tool execution layers without sanitization and policy evaluation.
    - In MCP tools, mutations (`DROP`, `DELETE`, `UPDATE`) must either be denied or gated by human-in-the-loop approvals.
    - All state transitions must support idempotency keys to prevent duplicate execution during network retries.
+
+4. **Pure Markdown & Zero-LaTeX Standard**:
+   - Never generate LaTeX math tags (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}...\end{array}`) in documentation or lesson files. Many IDE and GitHub previewers fail to render them.
+   - For mathematical equations, use clean text code blocks (```text) or Unicode symbols (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`).
+   - Use standard GitHub Flavored Markdown (GFM) pipe tables instead of LaTeX arrays.
+   - Do not use raw multiple dollar signs (`$$`, `$$$`) inside text or tables to prevent accidental trigger of math parsers; use descriptive text (`Low`, `Medium`, `High`) or backticks.
+

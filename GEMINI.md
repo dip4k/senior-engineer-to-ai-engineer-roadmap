@@ -9,12 +9,17 @@ Welcome to the **AI-Native Engineer** repository! This workspace is configured f
 Antigravity automatically discovers skills and rules located in `.agents/`:
 
 ### Discovered Skills (`.agents/skills/`):
+- **`ai-curriculum-refactoring`**: Methodology, templates, quality gates, and controlled web research protocols for refactoring curriculum modules.
 - **`ai-practice-coach`**: General model-driven practice coach for an AI Engineering Roadmap using live web search without relying on repo labs or files.
 - **`ai-engineering-tutor`**: Socratic teaching, walkthroughs, quizzes, and code katas for repo modules 00 through 08.
 - **`agent-forge-builder`**: Scaffolding, extending, and testing the `agent-forge` production framework.
 - **`repo-content-refresher`**: Frontier scout using `search_web` to detect new AI developments and audit repository coverage.
 - **`lab-verifier-and-eval`**: Automated evaluation and grading harness for Labs 01–07.
 - **`mcp-tool-architect`**: Model Context Protocol (MCP) server & client construction with JSON-RPC schemas.
+
+### Custom Workspace Agents (`.agents/agents/`):
+- **`ai-curriculum-architect`**: Workspace agent running in `AUDIT`, `PLAN`, `REFACTOR`, `VALIDATE`, `RESEARCH`, or `INTEGRATION` modes to engineer senior developer curriculum.
+
 
 ---
 
