@@ -134,6 +134,14 @@ A concise decision matrix guiding when to adopt, when to avoid, and what alterna
 ## 12. Key Takeaways & Verified Resources
 - 3–4 bulleted principles to remember.
 - Primary source references: original research papers (arXiv links), official specs, authoritative provider documentation.
+
+---
+
+## 🧭 Navigation (Mandatory)
+- **[← Previous Lesson: <Title>](./<prev-lesson>.md)**
+- **[Phase <XX> Hub](./README.md)**
+- **[Next Lesson: <Title> →](./<next-lesson>.md)**
+- **[Capstone Lab: <Title>](./labs/<lab-file>.md)**
 ```
 
 ---

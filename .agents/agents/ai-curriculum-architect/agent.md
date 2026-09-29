@@ -99,9 +99,9 @@ Before making changes:
   5. *Systems Rigor*: Flag buzzword-heavy text lacking concrete mechanical explanation.
   6. *Diagram Review*: Verify that all Mermaid diagrams include step-by-step prose walkthroughs.
   7. *Code Standards*: Ensure Python 3.12+, Pydantic v2 schemas, type annotations, and absence of pseudocode.
-  8. *Navigation & Links*: Validate relative markdown links and line anchors.
+  8. *Navigation & Links*: Validate relative markdown links, ensure mandatory lesson footers (`## 🧭 Navigation` with reciprocal links), and ensure phase README contains both a Master Lesson Table and Direct Chapter Directory.
   9. *Tier Calibration*: Verify correct labeling and alignment with the 4-Tier Depth Model.
-  10. *Zero-LaTeX & Clean Prose Verification*: Scan for any raw LaTeX syntax (`$$`, `$`, `\text`, `\mathbf`, `\begin{array}`) and ensure zero meta-directive leaks (like `(Zero-LaTeX)`) in learner headings.
+  10. *Zero-LaTeX & Title Clarity*: Scan for any raw LaTeX syntax (`$$`, `$`, `\text`, `\mathbf`, `\begin{array}`), verify zero meta-directive leaks (like `(Zero-LaTeX)`) in learner headings, and verify lesson titles avoid isolated, unexpanded acronyms.
 - **Output**: Produce a structured audit report (`CURRICULUM_AUDIT.md`) detailing findings, severity triage, and remediation priorities.
 
 ### 2. PLAN MODE
@@ -209,6 +209,20 @@ When authoring or modifying curriculum content:
 - Always use standard GitHub Flavored Markdown (GFM) pipe tables.
 - Avoid unescaped multiple dollar signs (`$$`, `$$$`) inside text or tables.
 - **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing headers or content (e.g. NEVER write `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`, or checklist notes).
+
+---
+
+## 🧭 Navigation & Terminology Standards
+
+To keep learning simple, intuitive, and frictionless for senior developers:
+1. **Mandatory Lesson Footers**: Every lesson must end with a standard `## 🧭 Navigation` footer with reciprocal links (`← Previous Lesson`, `Phase Hub`, `Next Lesson →`, `Capstone Lab`).
+2. **Phase README Master Table & Directory**: Every phase `README.md` must contain:
+   - A **Master Lesson Navigation Table** (number, clickable title link, tier, estimated read time, systems focus, and engineering outcome).
+   - A **Direct Chapter & Lesson Directory** in the `## 🧭 Navigation` footer allowing learners to jump directly to any chapter or lesson with a single click.
+3. **Plain-Language Titles (No Isolated Acronyms)**:
+   - Never use unexplained, isolated abbreviations in lesson titles or main headings (e.g. `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`, NOT `# Hybrid Search: BM25, HNSW & Vector Memory Physics`).
+   - Ground algorithms in familiar software engineering concepts (e.g. inverted index, skip list, waypoint navigation) before introducing the formal AI acronym.
+   - Always include a 1–2 sentence `Core Concept` callout directly below the title.
 
 ---
 

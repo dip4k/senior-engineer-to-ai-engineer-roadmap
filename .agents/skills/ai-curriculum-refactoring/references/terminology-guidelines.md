@@ -69,3 +69,25 @@ Remove generic marketing language that conveys zero engineering meaning:
 
 When defining or refining critical terms, maintain alignment with the repository's master reference:
 [ai-engineering-glossary-by-practice.md](../../../../ai-engineering-glossary-by-practice.md).
+
+---
+
+## 6. Lesson Titles & Main Headings (No Isolated Acronyms)
+
+Lesson titles and top-level headings must **never use unexpanded, isolated abbreviations or acronyms**.
+
+### ❌ Bad Headings & Titles:
+- `# Hybrid Search: BM25, HNSW & Vector Memory Physics`
+- `# Implementing MCP with SSE`
+- `# ACORN and RRF in RAG`
+
+### ✅ Good Headings & Titles:
+- `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`
+- `# Tools & Protocols: Model Context Protocol (MCP) JSON-RPC Architecture`
+- `# Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation`
+
+### The Rule:
+1. **Lead with Plain Language**: Start with descriptive, standard software engineering concepts (e.g. "Lexical Keyword Matching", "Vector Proximity Graphs", "Multi-Tenant Security").
+2. **Include Acronym in Parentheses**: Place the industry-standard acronym in parentheses after the descriptive phrase (e.g. `(BM25)`, `(HNSW)`, `(MCP)`).
+3. **Anchor in Core Concept Subtitle**: Immediately below the title, provide a 1–2 sentence `Core Concept` callout explaining what the mechanism does in plain systems terms before introducing formulas or code.
+

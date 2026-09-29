@@ -1,45 +1,107 @@
-# Capstone Engineering Challenge: Enterprise RAG Pipeline
+# Capstone Engineering Challenge: Multi-Tenant Enterprise Hybrid RAG
 
-### Challenge Objective
-Build a complete, standalone, production-grade **Enterprise Hybrid RAG Engine** with:
-1. Multi-stage Hybrid Retrieval (BM25 + Dense Vectors fused via Reciprocal Rank Fusion).
-2. Cross-Encoder Reranking with strict relevance thresholding.
-3. Automated Citation Extraction and Hallucination Verification.
-
-### Architectural Specifications & Acceptance Criteria
-
-| Requirement | Production Standard |
-|---|---|
-| **1. Ingestion & Chunking** | Parse 10 multi-page enterprise policy documents (markdown / PDF). Apply recursive character chunking (target 500 chars, 50 overlap). |
-| **2. Hybrid Retrieval (Solves Low Recall & Keyword Misses)** | Implement both BM25 and Dense Cosine Search. Combine Top-20 hits using Reciprocal Rank Fusion (k=60). |
-| **3. Reranking & Pruning** | Rerank top 20 candidates using a Cross-Encoder (Cohere API or local SentenceTransformer `cross-encoder/ms-marco-MiniLM-L-6-v2`). Filter out any chunk with score < 0.70. |
-| **4. Grounded Synthesis** | Assemble prompt with explicit XML tags `<context>`. Generate answer requiring format `[DocTitle:ChunkId]`. |
-| **5. Automated Citation Verifier (Solves Hallucination)** | Deterministic post-processor checking:<br>1. Did the response include at least one valid citation?<br>2. Are cited chunk IDs present in the retrieved set?<br>3. Does the cited chunk contain the claimed entities/numbers?<br>If verification fails, reject output and trigger an explicit abstention statement: *"Insufficient verified evidence."* |
-
-### Implementation Blueprint & Hands-On Steps:
-
-1. **Step 1: Ingestion & Vector / Sparse Indexing:**
-   - Index policy markdown files into an in-memory or embedded database (Qdrant, Chroma, or SQLite-vss + BM25Okapi).
-   - Verify that chunks preserve parent metadata (`document_id`, `section_title`, `chunk_id`).
-
-2. **Step 2: Hybrid Query Execution & RRF Merging:**
-   - Execute parallel dense vector search (top 20) and sparse BM25 search (top 20).
-   - Merge results using Reciprocal Rank Fusion formula: $RRF(d) = \sum \frac{1}{60 + \text{rank}(d)}$.
-
-3. **Step 3: Cross-Encoder Reranking & Quality Cutoff:**
-   - Score the top 20 fused candidates with a cross-encoder model.
-   - Discard low-relevance candidates (< 0.70 threshold) to prevent context pollution.
-
-4. **Step 4: Citation Extraction & Deterministic Guard:**
-   - Synthesize answer with strict instruction to cite every factual claim via `[DocTitle:ChunkId]`.
-   - Run a deterministic validator checking that citations exist and cited text contains matching entities.
-   - If unverified, return explicit abstention response instead of hallucinating.
-
-### Evaluation Protocol
-To complete Phase 02, write and run an evaluation test suite containing 20 test questions:
-- 10 in-domain answerable questions (Target: 100% precision, 0 hallucinations).
-- 5 out-of-domain unanswerable questions (Target: 100% correct abstention, zero guesses).
-- 5 adversarial trick questions with contradictory or negated premises (Target: 100% detection of contradiction).
+> **Lab Type**: Production Verification & Implementation | **Automated Test Runner**: `python scripts/verify_lab.py --lab 1`  
+> **Prerequisites**: [Phase 02: Hybrid Search](../03-hybrid-search-bm25-and-hnsw.md), [Phase 02: RRF & Reranking](../04-reciprocal-rank-fusion-and-cross-encoders.md), [Phase 02: Predicate Filtering](../05-predicate-filtering-and-acorn.md)
 
 ---
-[Return to Module 02](../README.md#9-capstone-engineering-challenge)
+
+## 1. Challenge Objective
+
+Build a standalone, production-grade **Enterprise Multi-Tenant Hybrid RAG Pipeline** that enforces:
+1. **Layout-Aware Ingestion**: Preserving structural metadata (`document_id`, `tenant_id`, `section_title`, `chunk_id`).
+2. **Two-Stage Hybrid Retrieval**: Combining lexical BM25 search with dense vector similarity, fused via **Reciprocal Rank Fusion** (`k = 60`).
+3. **Multi-Tenant Security Isolation**: Enforcing query-time tenant metadata pre-filtering to prevent cross-tenant information leakage and filter starvation.
+4. **Cross-Encoder Reranking & Quality Cutoff**: Scoring the top-20 fused candidates and discarding low-relevance chunks (< 0.70 threshold).
+5. **Deterministic Citation Verification**: Checking that generated responses include explicit inline citations (`[DocTitle:ChunkId]`) matching verified evidence.
+
+---
+
+## 2. Architectural Specifications & Acceptance Criteria
+
+| Inspection Dimension | Production Acceptance Standard | Automated Verification Check |
+|---|---|---|
+| **1. Dual-Index Ingestion** | Ingest documents into parallel BM25 lexical postings and normalized dense vector storage. | `agent_forge.retrieval.hybrid_engine.HybridRetriever.index_documents()` |
+| **2. Multi-Tenant Filtering** | Given Tenant A and Tenant B documents containing identical search terms, a search authorized for Tenant A **must return 0% Tenant B documents**. | Query-time predicate enforcement with zero cross-tenant contamination. |
+| **3. Rank-Harmonic Fusion** | Fuse BM25 and Dense candidate ranks using Reciprocal Rank Fusion (`k = 60`):<br>`RRF_Score(d) = Σ [ 1 / (60 + rank_m(d)) ]` | Concordant top documents achieve elevated rank. |
+| **4. Relevance Pruning** | Filter out candidates scoring below the minimum threshold (0.65–0.70) to prevent prompt noise pollution. | Low-relevance candidate suppression. |
+| **5. Citation & Abstention** | Responses must cite evidence chunks using `[DocId:ChunkId]`. If evidence is insufficient, system must return an explicit abstention. | Zero hallucination on unanswerable out-of-domain queries. |
+
+---
+
+## 3. Automated Verification via `scripts/verify_lab.py`
+
+This capstone challenge is harmonized with the canonical repository evaluation harness.
+
+To test and grade your implementation:
+
+```bash
+# Run automated verification for Lab 1 (Multi-Tenant Hybrid RAG)
+python scripts/verify_lab.py --lab 1
+```
+
+### Expected Test Harness Output:
+```text
+[✅ PASS] Lab 1: Multi-Tenant Hybrid RAG with RRF & Isolation
+       Successfully indexed multi-tenant corpus. Tenant A query returned 1 hits, 0 leakage. RRF score = 0.03226.
+```
+
+---
+
+## 4. Hands-On Step-by-Step Implementation Blueprint
+
+### Step 1: Document Indexing & Tenant Metadata Binding
+- Parse the enterprise knowledge corpus into discrete chunks.
+- Bind every chunk to a strict metadata schema:
+  ```python
+  {
+      "id": "doc_sec_001",
+      "content": "SKU-9942 enterprise high-performance database cluster specs...",
+      "metadata": {
+          "tenant_id": "tenant_a",
+          "department": "infrastructure",
+          "classification": "confidential"
+      }
+  }
+  ```
+- Index chunks into the BM25 inverted index and normalized vector store.
+
+### Step 2: Query-Time Predicate Enforcement
+- Intercept the incoming query and bind the authenticated `tenant_id`.
+- Execute parallel lexical and dense searches restricted *strictly* to matching tenant chunks.
+
+### Step 3: Reciprocal Rank Fusion & Reranking
+- Extract top-20 ranks from BM25 and top-20 ranks from vector search.
+- Merge lists using the RRF formula:
+  ```text
+  RRF_Score(d) = (1 / (60 + rank_bm25(d))) + (1 / (60 + rank_dense(d)))
+  ```
+- Pass top fused candidates through the Cross-Encoder reranker.
+
+### Step 4: Grounded Synthesis with Citation Verifier
+- Wrap retrieved chunks in explicit XML tags:
+  ```xml
+  <context_document id="doc_sec_001" tenant="tenant_a">
+    ...content...
+  </context_document>
+  ```
+- Enforce inline citation format: `[doc_sec_001:p1]`.
+- Implement deterministic post-verification:
+  1. Does the response contain at least one valid citation?
+  2. Are all cited IDs present in the retrieved evidence set?
+  3. If verification fails, return: *"I do not have sufficient verified evidence to answer this question."*
+
+---
+
+## 5. Evaluation Protocol
+
+To validate your pipeline, execute an evaluation test suite containing 20 test questions:
+- **10 In-Domain Answerable Questions**: Target: 100% precision, 0 hallucinations, valid inline citations.
+- **5 Out-of-Domain Unanswerable Questions**: Target: 100% correct abstention, zero guesses.
+- **5 Adversarial Trick Questions**: Questions with contradictory or negated premises (Target: 100% detection of contradiction).
+
+---
+
+## 6. Navigation
+- [Return to Phase 02 Hub](../README.md)
+- [Canonical Root Lab Specification](../../labs/lab-01-multi-tenant-hybrid-rag.md)
+- [Reference Implementation: `examples/hybrid_rag_pipeline.py`](../examples/hybrid_rag_pipeline.py)

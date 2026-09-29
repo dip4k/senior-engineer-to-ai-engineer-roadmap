@@ -38,7 +38,7 @@ The architect reviews the material for technical rigor, scalability, and lasting
 |---|---|---|---|
 | **01** | **Learning Objective** | Clear, outcome-oriented architectural objective at the top. | Vague intro ("In this section we talk about RAG"). |
 | **02** | **Prerequisites** | All prerequisite concepts have been taught in earlier lessons/phases. | Introducing KV cache eviction without explaining token generation. |
-| **03** | **Terminology Control** | All acronyms expanded on first use; concept explained before name. | Unanchored acronym soup (`HNSW + RRF + CRAG`). |
+| **03** | **Terminology Control** | All acronyms expanded on first use; concept explained before name; lesson titles and main headings avoid unexpanded abbreviations. | Unanchored acronym soup (`HNSW + RRF + CRAG`), or isolated abbreviations in titles (`# BM25 and HNSW`). |
 | **04** | **Conceptual Progression** | Follows natural arc: Problem → Why Naive Fails → Mental Model → Solution → Trade-offs. | Jumping straight to code without explaining the problem. |
 | **05** | **Technical Depth** | Deep systems mechanics preserved (algorithms, protocols, math). | Superficial bullet points that sound like marketing copy. |
 | **06** | **Conciseness** | Low fluff; high signal-to-noise ratio. | 500 words of passive prose explaining a 50-word concept. |
@@ -47,7 +47,7 @@ The architect reviews the material for technical rigor, scalability, and lasting
 | **09** | **Trade-off Analysis** | Explicit matrix comparing latency, cost, recall, and complexity. | Blanket claims like "this approach is always best." |
 | **10** | **Production & Failures** | Concrete failure modes, anti-patterns, and OTel telemetry. | Happy-path only; no discussion of errors or rate limits. |
 | **11** | **Link Integrity** | All relative Markdown links resolve to real files and line anchors. | Broken `404` relative paths to non-existent markdown files. |
-| **12** | **Surrounding Fit** | Lesson connects cleanly to preceding and succeeding lessons in the phase. | Standalone essay with no clear entry or exit point. |
+| **12** | **Surrounding Fit & Navigation** | Every lesson concludes with a standardized `## 🧭 Navigation` footer with reciprocal links (`← Previous`, `Phase Hub`, `Next →`, `Capstone Lab`). Phase README includes a Master Lesson Navigation Table and a Direct Chapter & Lesson Directory. | Standalone essay with no clear entry or exit point, missing lesson footer navigation, or phase README lacking direct chapter links. |
 | **13** | **Zero-LaTeX & Clean Markdown** | Pure GitHub Flavored Markdown (GFM). Zero LaTeX delimiters (`$$`, `$`, `\frac`, `\begin{array}`). Formulas in text code blocks; Unicode symbols (`→`, `⟷`, `Σ`, `≈`, `α`). Zero meta-directive leaks: no internal directives, compliance tags, or quality labels (`(Zero-LaTeX)`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`) in learner-facing headings or prose. | Broken math rendering, raw LaTeX tags, or internal agent directives/tags visible in standard previewers. |
 
 ---

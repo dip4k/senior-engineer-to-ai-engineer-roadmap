@@ -50,14 +50,14 @@ Briefly walk through the path in 2–3 sentences.
 
 ---
 
-## 📚 Modular Curriculum Lessons
+## 📚 Modular Curriculum Lessons (Master Navigation Table)
 
-| # | Lesson Title | Core Focus | Engineering Outcome |
-|---|---|---|---|
-| **01** | [Foundational Primitive](./01-<topic>.md) | Architectural or mathematical core | Measurable baseline capability |
-| **02** | [Core Implementation](./02-<topic>.md) | Deterministic system mechanism | Fault-tolerant execution pattern |
-| **03** | [Advanced Scaling](./03-<topic>.md) | High-concurrency / distributed optimization | Production throughput & latency SLA |
-| **04** | [Production Defense / Telemetry](./04-<topic>.md) | Guardrails, evaluations, or observability | Enterprise compliance & failure recovery |
+| # | Lesson / Module | Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
+|---|---|---|---|---|---|
+| **01** | [Foundational Primitive](./01-<topic>.md) | `🟢 Core` | ~18 min | Architectural or mathematical core | Measurable baseline capability |
+| **02** | [Core Implementation / Deep Dive](./02-<topic>.md) | `⚫ Deep Dive` | ~22 min | Deterministic system mechanism | Fault-tolerant execution pattern |
+| **03** | [Advanced Scaling](./03-<topic>.md) | `🟡 Engineering Depth` | ~20 min | High-concurrency / distributed optimization | Production throughput & latency SLA |
+| **04** | [Production Defense / Telemetry](./04-<topic>.md) | `🔵 Advanced` | ~22 min | Guardrails, evaluations, or observability | Enterprise compliance & failure recovery |
 
 ### Exemplar Lesson Maps by Curricular Phase:
 - **Phase 00 (Foundations)**: Tokenization & BPE → Attention & KV Cache Memory → Prefill vs. Decode Physics → Chunked Prefill & FlashAttention.
@@ -95,4 +95,20 @@ Only list authoritative primary sources:
 - Original arXiv whitepapers
 - Official protocol standards (MCP, OpenTelemetry GenAI)
 - Official engineering blogs (Anthropic Research, OpenAI Engineering, Google DeepMind)
+
+---
+
+## 🧭 Navigation (Mandatory)
+
+### Phase Progression
+- **Previous Phase**: **[← Phase <XX-1>: <Title>](../<phase-prev>/README.md)**
+- **Next Phase**: **[Phase <XX+1>: <Title> →](../<phase-next>/README.md)**
+
+### Direct Chapter & Lesson Directory
+- **[Lesson 01: <Title>](./01-<topic>.md)**
+- **[Lesson 02: <Title>](./02-<topic>.md)**
+- **[Lesson 03: <Title>](./03-<topic>.md)**
+- **[Lesson 04: <Title>](./04-<topic>.md)**
+- **[Platform Appendix: <Title>](./reference/<topic>.md)**
+- **[Hands-On Capstone Lab: <Title>](./labs/<lab-topic>.md)**
 ```

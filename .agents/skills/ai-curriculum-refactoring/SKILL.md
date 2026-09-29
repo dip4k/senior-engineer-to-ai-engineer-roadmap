@@ -153,6 +153,28 @@ To ensure all documentation renders flawlessly across all preview environments (
 
 ---
 
+## 🧭 Universal Navigation & Wayfinding Standard
+
+Seamless wayfinding is critical for senior engineers navigating complex curriculum:
+1. **Mandatory Lesson Footers**: Every lesson (`XX-<topic>.md`) across all phases must conclude with a standardized `## 🧭 Navigation` footer with reciprocal links:
+   - `[← Previous Lesson: <Title>](./<prev-file>.md)` (or `[← Phase Hub](./README.md)` if first lesson)
+   - `[Phase <XX> Hub](./README.md)`
+   - `[Next Lesson: <Title> →](./<next-file>.md)`
+   - Relevant capstone lab or platform appendix link.
+2. **Phase README Master Table & Directory**: Every phase `README.md` must contain:
+   - A **Master Lesson Navigation Table** in the curriculum section (`#`, `Lesson / Module Link`, `Tier`, `Est. Time`, `Core Systems Focus`, `Key Engineering Outcome`).
+   - A **Direct Chapter & Lesson Directory** in the `## 🧭 Navigation` footer allowing learners to jump directly to any chapter, lesson, appendix, or hands-on lab with a single click.
+
+---
+
+## 🏷️ Title & Terminology Discipline (No Isolated Acronyms)
+
+1. **Lesson Titles & Headings**: Never use unexpanded, isolated acronyms in lesson titles or main headings (e.g. avoid `# Hybrid Search: BM25, HNSW & Vector Memory Physics`; use `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`).
+2. **Concept Before Acronym**: Explain what the system does in standard distributed systems or software engineering terms (e.g. inverted index, multi-dimensional skip list, waypoint graph navigation) before introducing the formal AI acronym.
+3. **Core Concept Subtitle**: Place a 1–2 sentence `Core Concept` callout directly beneath the title and tier badge anchoring the mental model before diving into mechanics.
+
+---
+
 ## 🎯 Whiteboard Delivery Stems & Tone Guidelines
 
 Maintain the voice of a Principal AI Systems Architect conducting a technical whiteboard session with a Staff Software Engineer:
