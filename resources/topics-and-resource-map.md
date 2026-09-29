@@ -75,20 +75,25 @@
 ### Core Topics
 - Document ingestion & layout-aware parsing (unstructured tables, headers, PDFs)
 - Chunking strategies: Fixed-size, recursive character, sliding window, and semantic boundary chunking
+- Vision-Language Document Retrieval (ColPali): Document patch embeddings and late interaction (MaxSim) bypassing OCR
 - Late Chunking: Document-level transformer embeddings with token pooling across chunk boundaries
 - Dense vector search (HNSW spatial graphs, cosine similarity, inner product)
+- DiskANN & NVMe-resident vector graphs: Offloading full vectors to SSD with in-memory PQ guides (15–50x RAM reduction)
 - Sparse lexical search (BM25 inverted indexes, term frequency / inverse document frequency)
 - Hybrid Retrieval: Merging dense and sparse result lists
 - Reciprocal Rank Fusion (RRF): Harmonic rank distribution algorithms (`k=60`)
 - Cross-Encoder Reranking: Two-stage retrieval pipelines with query-chunk full attention scoring
 - Predicate-Filtered search (ACORN) and multi-tenant document-level RBAC isolation
-- GraphRAG: Entity/relationship extraction, Leiden community clustering, and hierarchical summaries
+- GraphRAG: Entity/relationship extraction, Leiden community clustering, hierarchical summaries, and incremental graph updates (LightRAG / Fast-GraphRAG)
 
 ### Curated Resources
 - [Pinecone — Retrieval-Augmented Generation](https://www.pinecone.io/learn/retrieval-augmented-generation/) — *Production RAG architectures and indexing patterns*
 - [Weaviate — Hybrid Search Explained](https://weaviate.io/blog/hybrid-search-explained) — *Dense + Sparse fusion mechanics and score normalization*
 - [Jina AI — Late Chunking Research Paper](https://arxiv.org/abs/2409.04701) — *Passing full context through transformers before pooling embeddings*
+- [ColPali: Efficient Document Retrieval with Vision Language Models](https://arxiv.org/abs/2407.01449) (Faysse et al., ICLR 2025) — *Vision-language patch retrieval with late interaction*
+- [DiskANN: Billion-point Nearest Neighbor Search](https://www.microsoft.com/en-us/research/publication/diskann-fast-accurate-billion-point-nearest-neighbor-search-on-a-single-node/) (Microsoft Research) — *SSD-based vector indexing for massive scale*
 - [Microsoft Research — GraphRAG Paper & Repository](https://github.com/microsoft/graphrag) — *Modular Graph-based Retrieval-Augmented Generation*
+- [LightRAG: Simple and Fast Graph-based RAG](https://arxiv.org/abs/2410.05779) — *Dual-level retrieval with dynamic incremental updates*
 - [Cohere Rerank Documentation](https://docs.cohere.com/docs/reranking) — *Cross-encoder scoring, relevance thresholds, and precision tuning*
 - [FAISS Documentation (Meta AI)](https://github.com/facebookresearch/faiss) — *Billion-scale similarity search and clustering algorithms*
 - [Qdrant Vector Database Documentation](https://qdrant.tech/documentation/) — *Payload-based filtering, HNSW indexing, and multi-tenant isolation*

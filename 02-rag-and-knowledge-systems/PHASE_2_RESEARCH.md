@@ -289,3 +289,44 @@ As required by Step 4 of the curriculum refactoring methodology, this research r
    - *Recommendation*: **APPROVE**. Moves adversarial chunk injection to Phase 05 and autonomous agent loops to Phase 04.
 
 *Awaiting human review and authorization before proceeding to PLAN MODE.*
+
+---
+
+## 8. 2025/2026 Frontier Scout Update & Validation Assessment
+
+> **Follow-up Scout Date**: 2026-09-29  
+> **Status**: Verified & Integrated  
+> **Focus**: Hardware Memory Offloading (DiskANN), Dynamic Knowledge Graph Updates (LightRAG), and Visual Patch Retrieval Scaling (ColPali).
+
+### 8.1. New Research Discoveries
+
+#### 1. DiskANN & NVMe-Resident Vector Storage (Microsoft Research / `pgvectorscale`)
+- **Systems Driver**: In-memory HNSW graphs suffer from the "RAM Wall." Indexing 1 billion FP32 vectors with neighbor links requires >400 GB of high-speed DRAM, creating exorbitant infrastructure costs.
+- **Mechanics**: DiskANN establishes a two-tier storage model:
+  1. Full-precision vectors and the full proximity graph reside on high-speed NVMe SSDs.
+  2. Only compressed Product Quantization (PQ) vectors reside in active DRAM as a navigational guide.
+  3. Traversal navigates candidate neighborhoods in RAM, performing minimal, targeted SSD sector reads exclusively for top candidate distance refinement.
+- **Architectural Value**: **15–50x reduction in DRAM footprint**. Adopted in Azure Cosmos DB, SQL Server 2025, PostgreSQL via `pgvectorscale`, Couchbase, and SurrealDB.
+- **Evaluation & Action**: `UPDATE_EXISTING`. Integrated into Phase 02 README and `resources/topics-and-resource-map.md`.
+
+#### 2. LightRAG & Fast-GraphRAG (Dual-Level Incremental Graph Retrieval)
+- **Systems Driver**: Original Microsoft GraphRAG requires expensive, upfront global entity extraction and Leiden community summarization over the entire corpus. In dynamic enterprise datasets (live supply chains, real-time policies), updating the document collection required an expensive full-graph rebuild.
+- **Mechanics**: LightRAG (arXiv:2410.05779) introduces:
+  1. **Dual-Level Retrieval**: Low-level (entity/relationship focused) + High-level (global theme focused).
+  2. **Incremental Indexing**: Integrates new documents into the graph without re-clustering or re-summarizing untouched communities, cutting token overhead by up to 99%.
+- **Evaluation & Action**: `UPDATE_EXISTING`. Integrated into Phase 02 README, Lesson 06 references, and `resources/topics-and-resource-map.md`.
+
+#### 3. ColPali Multi-Vector Standardization (Hugging Face `sentence-transformers` v6+)
+- **Systems Driver**: Early ColPali implementations relied on bespoke research code and custom MaxSim operators.
+- **Mechanics**: Sentence Transformers v6+ standardized `MultiVectorEncoder` for PaliGemma and ColQwen2 models, while vector databases (Qdrant, Vespa) added native multi-vector late-interaction indexing.
+- **Trade-off Reality**: Because each document page generates hundreds of patch vectors, multi-vector indexing requires Binary Quantization (BQ) or late-interaction pruning to prevent index bloat.
+- **Evaluation & Action**: `UPDATE_EXISTING`. Integrated into Phase 02 README and resource map.
+
+### 8.2. Research Validation Matrix
+
+| Innovation | Relevance Score (1-5) | Stability Score (1-5) | Prerequisite Alignment | Curriculum Placement | Decision |
+|---|:---:|:---:|---|---|:---:|
+| **DiskANN NVMe Storage** | 5/5 | 5/5 (Matured across PostgreSQL/Azure/SQL Server) | Builds on HNSW graph traversal and RAM sizing (Lesson 03) | `03-hybrid-search-bm25-and-hnsw.md`, Phase 02 README, and Resource Map | **APPROVED & INTEGRATED** |
+| **LightRAG / Fast-GraphRAG** | 5/5 | 4/5 (Rapidly standardizing open source) | Builds on Leiden community detection and GraphRAG (Lesson 06) | `06-graphrag-and-entity-traversal.md`, Phase 02 README, and Resource Map | **APPROVED & INTEGRATED** |
+| **ColPali Multi-Vector Scaling** | 4/5 | 4/5 (Standardized in Sentence Transformers v6+) | Builds on document layout parsing (Lesson 01) | `01-document-parsing-and-chunking.md`, Phase 02 README, and Resource Map | **APPROVED & INTEGRATED** |
+

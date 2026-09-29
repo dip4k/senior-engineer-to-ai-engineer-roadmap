@@ -63,8 +63,8 @@ To successfully execute the architectures in this phase, learners should have ma
 | **Phase 00: Foundations** | Latent Embeddings & Vector Spaces | [`00/01-transformer-and-hardware-physics.md`](../00-foundations-and-token-mechanics/01-transformer-and-hardware-physics.md) |
 | **Phase 00: Foundations** | KV Cache Memory Bandwidth Physics | [`00/03-kv-cache-vram-and-bandwidth-physics.md`](../00-foundations-and-token-mechanics/03-kv-cache-vram-and-bandwidth-physics.md) |
 | **Phase 01: Context Engineering** | Context AST Compilation & XML Delimiters | [`01/01-context-ast-architecture.md`](../01-prompt-and-context-engineering/01-context-ast-architecture.md) |
-| **Phase 01: Context Engineering** | Prompt Caching Breakpoints | [`01/03-prefix-and-prompt-caching.md`](../01-prompt-and-context-engineering/01-context-ast-architecture.md) |
-| **Phase 01: Context Engineering** | Attention Degradation & Lost in the Middle | [`01/05-mecw-and-context-rot.md`](../01-prompt-and-context-engineering/01-context-ast-architecture.md) |
+| **Phase 01: Context Engineering** | Prompt Caching Breakpoints | [`01/03-prefix-and-prompt-caching.md`](../01-prompt-and-context-engineering/03-prefix-and-prompt-caching.md) |
+| **Phase 01: Context Engineering** | Attention Degradation & Lost in the Middle | [`01/05-mecw-and-context-rot.md`](../01-prompt-and-context-engineering/05-mecw-and-context-rot.md) |
 
 ---
 
@@ -89,12 +89,12 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 
 | # | Lesson / Module | Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
 |---|---|---|---|---|---|
-| **01** | [Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) | `🟢 Core` | 18 min | Layout-aware boundary detection, tables, Parent-Child hierarchies, and Contextual Retrieval prepending. | Prevent semantic fragmentation from flattened PDF reading orders and destroyed tables. |
+| **01** | [Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) | `🟢 Core` | 18 min | Layout-aware boundary detection, tables, Parent-Child hierarchies, Contextual Retrieval prepending, and ColPali visual patch retrieval. | Prevent semantic fragmentation from flattened PDF reading orders and destroyed tables. |
 | **02** | [Late Chunking Deep Dive: Deferred Pooling](./02-late-chunking-deep-dive.md) | `⚫ Deep Dive` | 22 min | Full-document token self-attention matrices with deferred chunk span mean-pooling. | Eliminate chunk-boundary context amnesia and resolve ambiguous pronouns across chunk cuts. |
-| **03** | [Hybrid Search: Lexical (BM25), Vector Graphs (HNSW) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) | `🟢 Core` | 20 min | Inverted index mechanics, BM25 term saturation/normalization, HNSW skip list layers, SIMD dot products, and DRAM sizing. | Build a dual-coordinate retrieval engine combining exact keyword precision with semantic latent recall. |
+| **03** | [Hybrid Search: Lexical (BM25), Vector Graphs (HNSW/DiskANN) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) | `🟢 Core` | 20 min | Inverted index mechanics, BM25 term saturation/normalization, HNSW skip list layers, SIMD dot products, DRAM sizing, and DiskANN NVMe scaling. | Build a dual-coordinate retrieval engine combining exact keyword precision with semantic latent recall. |
 | **04** | [Reciprocal Rank Fusion & Cross-Encoder Reranking](./04-reciprocal-rank-fusion-and-cross-encoders.md) | `🟡 Engineering Depth` | 22 min | Score normalization fallacy, RRF harmonic rank math (`k = 60`), Bi-Encoder vs Cross-Encoder attention, and IR metrics (MRR, NDCG). | Fuse disparate lexical and vector candidate ranks and achieve >92% MRR@10 under sub-150ms P99 budgets. |
 | **05** | [Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation](./05-predicate-filtering-and-acorn.md) | `🔵 Advanced` | 20 min | Graph disconnection vs filter starvation, ACORN 2-hop navigation waypoints, PostgreSQL `pgvector 0.7+` iterative scans and RLS. | Enforce strict enterprise multi-tenant isolation without dropping recall or stalling graph traversal. |
-| **06** | [Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Traversal](./06-graphrag-and-entity-traversal.md) | `🔵 Advanced` | 24 min | Global dataset-wide aggregation failures, Leiden hierarchical community clustering, and UNSPSC ontological constraints. | Answer holistic, corpus-wide analytical questions without hallucinations or unconstrained semantic bleed. |
+| **06** | [Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Traversal](./06-graphrag-and-entity-traversal.md) | `🔵 Advanced` | 24 min | Global dataset-wide aggregation failures, Leiden community clustering, LightRAG/Fast-GraphRAG incremental updates, and UNSPSC ontologies. | Answer holistic, corpus-wide analytical questions without hallucinations or unconstrained semantic bleed. |
 | **Ref** | [Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md) | Reference | 15 min | Managed cloud architectures: Azure AI Search, AWS Textract geometry, and GCP Vertex AI Grounding. | Evaluate managed cloud search services vs. custom self-hosted retrieval infrastructure. |
 | **Lab** | [Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](./labs/capstone-enterprise-rag-pipeline.md) | Hands-on Lab | 60 min | End-to-end verified hybrid RAG pipeline with strict tenant isolation, RRF fusion, and citation verification. | Automated test suite verification passing `python scripts/verify_lab.py --lab 1`. |
 
@@ -103,15 +103,15 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 ### Detailed Module Architecture Guides
 
 ### [01. Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) `🟢 Core`
-- **Focus**: The upstream reality of enterprise data. Multi-column PDF reading orders, borderless financial table reconstruction, hierarchical parent-child (small-to-big) chunking, and Anthropic Contextual Retrieval prepending.
+- **Focus**: The upstream reality of enterprise data. Multi-column PDF reading orders, borderless financial table reconstruction, hierarchical parent-child (small-to-big) chunking, Anthropic Contextual Retrieval prepending, and ColPali visual patch retrieval.
 - **Mental Model**: The Relational Knowledge Normalizer.
 
 ### [02. Late Chunking Deep Dive: Deferred Pooling](./02-late-chunking-deep-dive.md) `⚫ Deep Dive`
 - **Focus**: Eliminating chunk-boundary contextual blindness. Processing full documents through long-context transformer encoders before chunk span mean-pooling. Mathematical mechanics, token attention matrices, and runnable Python implementation.
 - **Mental Model**: Document-Level Self-Attention with Deferred Boundary Pooling.
 
-### [03. Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) `🟢 Core`
-- **Focus**: Why dense vectors fail on exact alphanumeric IDs and negations. Sparse inverted indexes (BM25 Okapi), dense metric-space skip lists (HNSW), SIMD Dot Product optimization, Matryoshka Representation Learning (MRL), and vector database RAM sizing physics.
+### [03. Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW/DiskANN) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) `🟢 Core`
+- **Focus**: Why dense vectors fail on exact alphanumeric IDs and negations. Sparse inverted indexes (BM25 Okapi), dense metric-space skip lists (HNSW), SIMD Dot Product optimization, Matryoshka Representation Learning (MRL), vector database RAM sizing physics, and DiskANN NVMe SSD scaling (15–50x RAM reduction).
 - **Mental Model**: Dual Coordinate Retrieval (Lexical Coordinate Space + Spatial Proximity Graph).
 
 ### [04. Reciprocal Rank Fusion & Cross-Encoder Reranking](./04-reciprocal-rank-fusion-and-cross-encoders.md) `🟡 Engineering Depth`
@@ -123,7 +123,7 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 - **Mental Model**: The Filtered Metric Subgraph & Cryptographic Tenant Perimeter.
 
 ### [06. Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Entity Traversal](./06-graphrag-and-entity-traversal.md) `🔵 Advanced`
-- **Focus**: The failure of vector search on global aggregation queries. Microsoft GraphRAG hierarchical community detection (Leiden clustering) and community summaries. Constraining entity extraction and multi-hop Cypher queries with formal enterprise ontologies (UNSPSC, MDM) to eliminate semantic bleed.
+- **Focus**: The failure of vector search on global aggregation queries. Microsoft GraphRAG hierarchical community detection (Leiden clustering), community summaries, and dynamic incremental updates (LightRAG / Fast-GraphRAG). Constraining entity extraction and multi-hop Cypher queries with formal enterprise ontologies (UNSPSC, MDM) to eliminate semantic bleed.
 - **Mental Model**: The Dual-Memory Nexus (Vector Associations constrained by Symbolic Taxonomies).
 
 ### [Reference: Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md) `Platform Appendix`
