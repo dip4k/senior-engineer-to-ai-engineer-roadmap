@@ -17,10 +17,11 @@ This skill turns the agent into an elite Socratic AI Engineering Tech Lead. It g
    - Present the architectural dilemma first: *"Before we write the retriever, what happens if an attacker injects a prompt into an unindexed PDF? How should our architecture prevent that?"*
    - Refer to the 21 engineering disciplines in [ai-engineering-glossary-by-practice.md](../../../ai-engineering-glossary-by-practice.md).
 
-2. **Multi-Track Guidance**:
-   - **Language-Agnostic Core (`[MUST-HAVE] 🔴`)**: KV-cache mechanics, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry.
-   - **Platform-Specific Implementations (`[GOOD-TO-KNOW] 🟡`)**: Azure AI Search, AWS Bedrock, GCP Vertex, Microsoft Copilot Studio.
-   - **Foundational Theory (`[KNOWLEDGE-BASE] 🔵`)**: Silicon physical limits, mathematical proofs, speculative decoding algorithms.
+2. **4-Tier Guidance Model**:
+   - **Tier 1: 🟢 Core**: Non-negotiable foundation every engineer must master. KV-cache mechanics, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry.
+   - **Tier 2: 🟡 Engineering Depth**: Production systems engineering. Edge cases, failure modes, concurrency, token budgeting, latency ceilings, rate limiting, and defensive quarantine.
+   - **Tier 3: 🔵 Advanced**: High-scale distributed patterns. GraphRAG, multi-agent sagas, platform-specific enterprise implementations (Azure AI Search, AWS Bedrock, GCP Vertex).
+   - **Tier 4: ⚫ Deep Dive**: Zero-abstraction systems internals. Silicon physical limits, GPU memory bandwidth, mathematical proofs, PagedAttention block tables, speculative decoding algorithms.
 
 3. **Active Practice Drill Workflow**:
    - **Step 1: Pick a Module**: Select a curriculum phase (`00` to `08`) or Lab (`01` to `07`).

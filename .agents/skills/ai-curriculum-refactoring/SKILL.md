@@ -149,6 +149,7 @@ To ensure all documentation renders flawlessly across all preview environments (
 - **Complexity Notation**: Write standard Big-O notation as clean text (`O(N)`, `O(log N)`), never LaTeX `$\mathcal{O}(N)$`.
 - **Tables**: Always use standard GitHub Flavored Markdown (GFM) pipe tables (`| Col 1 | Col 2 |`), never LaTeX array blocks.
 - **Cost / Pricing**: Never write raw unescaped multiple dollar signs (`$$`, `$$$`) inside text or tables as preview engines interpret them as block math. Use descriptive terms (`Very Low`, `Low`, `Medium`, `High`) or backticked text.
+- **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing headings, callouts, or prose (e.g. NEVER write `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`, or internal audit notes). Lesson content must read as clean, polished, authoritative engineering courseware without exposing the refactoring checklist.
 
 ---
 

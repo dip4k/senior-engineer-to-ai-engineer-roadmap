@@ -48,7 +48,7 @@ The architect reviews the material for technical rigor, scalability, and lasting
 | **10** | **Production & Failures** | Concrete failure modes, anti-patterns, and OTel telemetry. | Happy-path only; no discussion of errors or rate limits. |
 | **11** | **Link Integrity** | All relative Markdown links resolve to real files and line anchors. | Broken `404` relative paths to non-existent markdown files. |
 | **12** | **Surrounding Fit** | Lesson connects cleanly to preceding and succeeding lessons in the phase. | Standalone essay with no clear entry or exit point. |
-| **13** | **Zero-LaTeX Formatting** | Pure GitHub Flavored Markdown (GFM). Zero LaTeX delimiters (`$$`, `$`, `\frac`, `\begin{array}`). Formulas in text code blocks; Unicode symbols (`→`, `⟷`, `Σ`, `≈`, `α`). | Broken math rendering or raw LaTeX tags visible in standard previewers. |
+| **13** | **Zero-LaTeX & Clean Markdown** | Pure GitHub Flavored Markdown (GFM). Zero LaTeX delimiters (`$$`, `$`, `\frac`, `\begin{array}`). Formulas in text code blocks; Unicode symbols (`→`, `⟷`, `Σ`, `≈`, `α`). Zero meta-directive leaks: no internal directives, compliance tags, or quality labels (`(Zero-LaTeX)`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`) in learner-facing headings or prose. | Broken math rendering, raw LaTeX tags, or internal agent directives/tags visible in standard previewers. |
 
 ---
 
@@ -61,6 +61,7 @@ When reporting audit findings in **VALIDATION MODE**, group issues into three ti
 - Missing core prerequisites that make comprehension impossible.
 - Broken file links or non-existent lab references.
 - Inclusion of raw LaTeX math delimiters (`$$`, `$`, `\frac`, etc.) or unescaped multiple dollar signs that break standard Markdown previewers.
+- Leaking internal meta-directives, refactoring tags, or compliance labels (`(Zero-LaTeX)`, `(Refactored)`, `[MUST-HAVE]`) into learner-facing headings or text.
 - Unbounded loops or security anti-patterns presented as best practices.
 
 ### 🟡 Important (Requires Remediation)

@@ -17,11 +17,12 @@ When you move from traditional Software 1.0 (where an `if` statement behaves the
 This repository is not a collection of surface-level tutorials or marketing buzzwords. It is a battle-tested **architectural masterclass** treating Large Language Models not as magical oracles, but as **probabilistic reasoning microservices** governed by deterministic harnesses: finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
 
 > [!NOTE]
-> **Learner-Friendly Architecture: Multi-Track Guidance**
-> This repository is a comprehensive masterclass spanning the entire modern AI engineering landscape. **Not all sections or modules are mandatory for every engineer or job role.**
-> - **Language- & Platform-Agnostic Core (`[MUST-HAVE] 🔴`)**: Universal architectural principles (KV-cache physical realities, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry) that every senior AI engineer must master, regardless of programming language or cloud provider.
-> - **Platform-Specific Implementations (`[GOOD-TO-KNOW] 🟡`)**: Specialized cloud services (e.g. Azure AI Search, AWS Bedrock, GCP Vertex), enterprise platforms (Microsoft Copilot Studio, Power Platform, SAP), and framework-specific SDKs. Focus on these only if they directly match your current enterprise stack or target role track.
-> - **Foundational Theory (`[KNOWLEDGE-BASE] 🔵`)**: Silicon physics, mathematical proofs, and seminal research papers for deep conceptual mastery.
+> **Calibrated Depth: The 4-Tier Model**
+> This repository is a comprehensive masterclass spanning the entire modern AI engineering landscape. Every lesson is calibrated using our **[4-Tier Lesson Depth Model](#architectural-mastery-tiers)**:
+> - **Tier 1: 🟢 Core**: Universal architectural principles (KV-cache physical realities, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry) that every senior AI engineer must master.
+> - **Tier 2: 🟡 Engineering Depth**: Production systems engineering, failure modes, concurrency, latency ceilings, rate limiting, and defensive quarantine.
+> - **Tier 3: 🔵 Advanced**: High-scale distributed patterns, multi-agent sagas, platform-specific enterprise implementations (Azure AI Search, AWS Bedrock, GCP Vertex), and specialized agent swarms.
+> - **Tier 4: ⚫ Deep Dive**: Hardware memory hierarchy, GPU bandwidth, mathematical proofs, and custom kernel optimizations.
 >
 > Check the **[Recommended Learning Paths](#recommended-learning-paths)** to follow the curriculum tailored directly to your role (e.g., RAG Architect, Autonomous Agent Engineer, Platform Engineer, or Enterprise AI Lead).
 

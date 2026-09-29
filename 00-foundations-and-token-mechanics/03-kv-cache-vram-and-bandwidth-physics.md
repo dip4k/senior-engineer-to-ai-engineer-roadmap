@@ -113,7 +113,7 @@ sequenceDiagram
    - Arithmetic intensity drops to near zero (~1 FLOP/byte). The GPU compute cores spend most of their time idle, waiting for model weights and the KV-cache to be read from HBM.
    - This phase determines the **Tokens-Per-Second (TPS)** throughput.
 
-### Latency Formula (Zero-LaTeX):
+### Latency Formula:
 ```text
 Total Request Latency = TTFT + ( Output_Tokens × (1 / TPS) )
 ```

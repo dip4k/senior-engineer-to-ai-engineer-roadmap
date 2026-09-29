@@ -90,38 +90,40 @@ AI system architecture is language-agnostic. Enterprise architectures frequently
 
 ---
 
-## 2. The 3-Tier Classification Taxonomy
+## 2. The 4-Tier Lesson Depth Model
 
-To focus engineering effort on high-impact patterns, all topics in this curriculum are classified into a three-tier taxonomy:
+To calibrate depth, prerequisites, and pacing, all topics in this curriculum are classified into a 4-tier taxonomy:
 
-> 📋 See the [3-Tier Classification Tagging System](./README.md#️-the-3-tier-classification-tagging-system) in the main curriculum for the full taxonomy definition.
+> 📋 See the [Architectural Mastery Tiers](./README.md#architectural-mastery-tiers) in the main curriculum for the full taxonomy definition.
 
-1. **`[MUST-HAVE]` 🔴**: Core capabilities required for building reliable production systems, enforcing schemas, controlling latency and costs, and designing enterprise architectures.
-2. **`[GOOD-TO-HAVE]` 🟡**: Techniques applied when scaling throughput, coordinating multi-agent handoffs, extending context windows, or addressing complex edge cases.
-3. **`[KNOWLEDGE-BASE]` 🔵**: Conceptual grounding. High-level mental models for hardware physics and inference behavior without requiring manual implementation from scratch.
+1. **`🟢 Core`**: Non-negotiable foundation every engineer must master. Establishes primary mental models, basic mechanics, failure modes of the naive approach, and working reference implementations.
+2. **`🟡 Engineering Depth`**: Production systems engineering. Covers edge cases, concurrency, failure modes, memory budgeting, latency limits, and OpenTelemetry instrumentation.
+3. **`🔵 Advanced`**: High-scale distributed patterns, specialized enterprise extensions (e.g., GraphRAG, multi-agent sagas, speculative decoding, custom kernel optimizations).
+4. **`⚫ Deep Dive`**: Zero-abstraction systems internals, mathematical proofs, hardware physics, wire protocol specifications, and memory layouts.
 
-### Comprehensive 3-Tier Enterprise Classification Matrix
+### Comprehensive 4-Tier Enterprise Classification Matrix
 
 | Domain | Topic | Tier | Enterprise Focus & Technical Rationale | Prior Knowledge Leveraged |
 |:---|:---|:---:|:---|:---|
-| **Foundations** | **Transformer Inference & KV-Cache Mechanics** | `[MUST-HAVE]` 🔴 | Sizing memory budgets, Time-To-First-Token (TTFT), and Tokens-Per-Second (TPS). | Hardware memory hierarchy, Caching |
-| **Foundations** | **PagedAttention & FlashAttention** | `[MUST-HAVE]` 🔴 | Efficient GPU memory management in hosted inference engines (vLLM). | OS virtual memory, Paging |
-| **Foundations** | **Training from Scratch / Custom CUDA Kernels** | `[KNOWLEDGE-BASE]` 🔵 | Conceptual reference; enterprise applications consume foundation models via APIs or runtimes. | Compilers, Matrix arithmetic |
-| **Prompt Engineering** | **Structured Outputs & Schema Constraints** | `[MUST-HAVE]` 🔴 | Enforcing typed JSON responses to prevent serialization failures in downstream services. | Type systems, JSON Schema, Pydantic |
-| **Prompt Engineering** | **Prompt Caching Mechanics** | `[MUST-HAVE]` 🔴 | Reusing KV-cache blocks across requests to reduce latency and API token costs. | HTTP caching (ETags), Memoization |
-| **Knowledge Systems** | **Hybrid Retrieval (Dense HNSW + Sparse BM25)** | `[MUST-HAVE]` 🔴 | Combining semantic meaning with exact keyword/code matching for high accuracy. | Database indexing, Inverted indexes |
-| **Knowledge Systems** | **Reciprocal Rank Fusion (RRF) & Reranking** | `[MUST-HAVE]` 🔴 | Fusing heterogeneous candidate lists and scoring deep relevance with cross-encoders. | Search ranking algorithms, Sorting |
-| **Tooling & Protocols** | **Model Context Protocol (MCP) JSON-RPC 2.0** | `[MUST-HAVE]` 🔴 | Standardized open protocol connecting models to internal data sources and tools. | JSON-RPC, REST, Microservices |
-| **Tooling & Protocols** | **Tool Sandboxing & Ephemeral Execution** | `[MUST-HAVE]` 🔴 | Isolating dynamic code and file modifications inside containerized boundaries. | Container isolation (Docker, gVisor) |
-| **Agentic Systems** | **Deterministic State Machines** | `[MUST-HAVE]` 🔴 | Replacing loose loops with explicit state transitions, graph reducers, and checkpointing. | Finite State Machines, Saga pattern |
-| **Agentic Systems** | **Human-in-the-Loop (HITL) Step-Up Approval** | `[MUST-HAVE]` 🔴 | Enforcing human approval tokens for irreversible state mutations (writes, payments). | 2FA, Authorization gates, Workflow engines |
-| **Security & Guardrails** | **Dual-LLM Privilege Separation (Quarantine)** | `[MUST-HAVE]` 🔴 | Isolating untrusted external data in an unprivileged model before calling internal tools. | DMZ architecture, Privilege separation |
-| **Security & Guardrails** | **Cryptographic Canary Tokens** | `[MUST-HAVE]` 🔴 | Detecting system prompt exfiltration through high-entropy gateway trap tokens. | Honeypots, Intrusion detection |
-| **Evals & Telemetry** | **Discrete Binary Evals & CI/CD Regression** | `[MUST-HAVE]` 🔴 | Objective Pass/Fail assertions and automated regression test suites for prompt changes. | Unit testing, TDD, CI/CD pipelines |
-| **Evals & Telemetry** | **OpenTelemetry GenAI Semantic Conventions** | `[MUST-HAVE]` 🔴 | Standardized distributed tracing spans across model calls, retrieval, and tool executions. | OpenTelemetry (OTel), APM, Tracing |
-| **LLMOps & Infra** | **Multi-Provider AI Gateway & Fallbacks** | `[MUST-HAVE]` 🔴 | Routing traffic with circuit breakers, rate limiters, and automated provider failover. | API Gateway, Reverse proxy, Polly |
-| **LLMOps & Infra** | **Dual-Tier Caching (SHA-256 + Semantic Vector)** | `[GOOD-TO-HAVE]` 🟡 | Serving exact and near-match requests from memory caches to eliminate LLM invocation costs. | Redis, Distributed caching |
-| **SDLC & Engineering** | **Autonomous Coding Agents & Repository Directives** | `[MUST-HAVE]` 🔴 | Accelerating developer workflows using explicit machine-readable guidelines (`AGENT.md`). | Code review, Linting, Architecture ADRs |
+| **Foundations** | **Transformer Inference & KV-Cache Mechanics** | `🟢 Core` | Sizing memory budgets, Time-To-First-Token (TTFT), and Tokens-Per-Second (TPS). | Hardware memory hierarchy, Caching |
+| **Foundations** | **PagedAttention & FlashAttention** | `🟡 Engineering Depth` | Efficient GPU memory management in hosted inference engines (vLLM). | OS virtual memory, Paging |
+| **Foundations** | **Training from Scratch / Custom CUDA Kernels** | `⚫ Deep Dive` | Conceptual reference; enterprise applications consume foundation models via APIs or runtimes. | Compilers, Matrix arithmetic |
+| **Prompt Engineering** | **Structured Outputs & Schema Constraints** | `🟢 Core` | Enforcing typed JSON responses to prevent serialization failures in downstream services. | Type systems, JSON Schema, Pydantic |
+| **Prompt Engineering** | **Prompt Caching Mechanics** | `🟢 Core` | Reusing KV-cache blocks across requests to reduce latency and API token costs. | HTTP caching (ETags), Memoization |
+| **Knowledge Systems** | **Hybrid Retrieval (Dense HNSW + Sparse BM25)** | `🟢 Core` | Combining semantic meaning with exact keyword/code matching for high accuracy. | Database indexing, Inverted indexes |
+| **Knowledge Systems** | **Reciprocal Rank Fusion (RRF) & Reranking** | `🟡 Engineering Depth` | Fusing heterogeneous candidate lists and scoring deep relevance with cross-encoders. | Search ranking algorithms, Sorting |
+| **Tooling & Protocols** | **Model Context Protocol (MCP) JSON-RPC 2.0** | `🟢 Core` | Standardized open protocol connecting models to internal data sources and tools. | JSON-RPC, REST, Microservices |
+| **Tooling & Protocols** | **Tool Sandboxing & Ephemeral Execution** | `🟡 Engineering Depth` | Isolating dynamic code and file modifications inside containerized boundaries. | Container isolation (Docker, gVisor) |
+| **Agentic Systems** | **Deterministic State Machines** | `🟢 Core` | Replacing loose loops with explicit state transitions, graph reducers, and checkpointing. | Finite State Machines, Saga pattern |
+| **Agentic Systems** | **Human-in-the-Loop (HITL) Step-Up Approval** | `🟡 Engineering Depth` | Enforcing human approval tokens for irreversible state mutations (writes, payments). | 2FA, Authorization gates, Workflow engines |
+| **Security & Guardrails** | **Dual-LLM Privilege Separation (Quarantine)** | `🟢 Core` | Isolating untrusted external data in an unprivileged model before calling internal tools. | DMZ architecture, Privilege separation |
+| **Security & Guardrails** | **Cryptographic Canary Tokens** | `🟡 Engineering Depth` | Detecting system prompt exfiltration through high-entropy gateway trap tokens. | Honeypots, Intrusion detection |
+| **Evals & Telemetry** | **Discrete Binary Evals & CI/CD Regression** | `🟢 Core` | Objective Pass/Fail assertions and automated regression test suites for prompt changes. | Unit testing, TDD, CI/CD pipelines |
+| **Evals & Telemetry** | **OpenTelemetry GenAI Semantic Conventions** | `🟡 Engineering Depth` | Standardized distributed tracing spans across model calls, retrieval, and tool executions. | OpenTelemetry (OTel), APM, Tracing |
+| **LLMOps & Infra** | **Multi-Provider AI Gateway & Fallbacks** | `🟢 Core` | Routing traffic with circuit breakers, rate limiters, and automated provider failover. | API Gateway, Reverse proxy, Polly |
+| **LLMOps & Infra** | **Dual-Tier Caching (SHA-256 + Semantic Vector)** | `🟡 Engineering Depth` | Serving exact and near-match requests from memory caches to eliminate LLM invocation costs. | Redis, Distributed caching |
+| **SDLC & Engineering** | **Autonomous Coding Agents & Repository Directives** | `🟢 Core` | Accelerating developer workflows using explicit machine-readable guidelines (`AGENT.md`). | Code review, Linting, Architecture ADRs |
+
 
 ---
 

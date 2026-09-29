@@ -148,7 +148,7 @@ flowchart TD
 3. **Scaling & Causal Masking**: The scores are divided by the square root of the head dimension (`sqrt(d_k)`) to prevent large values from saturating the softmax function. In autoregressive models, an upper-triangular causal mask sets future token positions to `-infinity` so a token cannot "cheat" by looking at future answers.
 4. **Softmax & Value Aggregation**: The softmax function converts each row of masked scores into a normalized probability distribution (`A`). This probability matrix is multiplied by the Value tensor `V`, producing context-weighted vector representations for every token.
 
-### The Attention Formula (Zero-LaTeX):
+### The Attention Formula:
 ```text
 Attention(Q, K, V) = softmax( (Q · K^T) / sqrt(d_k) + Mask ) · V
 ```

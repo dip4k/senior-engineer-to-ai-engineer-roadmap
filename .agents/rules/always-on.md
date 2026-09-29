@@ -25,3 +25,6 @@ trigger: always_on
    - Use standard GitHub Flavored Markdown (GFM) pipe tables instead of LaTeX arrays.
    - Do not use raw multiple dollar signs (`$$`, `$$$`) inside text or tables to prevent accidental trigger of math parsers; use descriptive text (`Low`, `Medium`, `High`) or backticks.
 
+5. **Zero Meta-Directive Leaks**:
+   - Never output internal prompting instructions, quality gate checklists, or refactoring tags (e.g. `(Zero-LaTeX)`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`) into learner-facing headings, callouts, or courseware text. All content must read as clean, polished engineering documentation.
+

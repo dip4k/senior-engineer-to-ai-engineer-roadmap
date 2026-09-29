@@ -101,7 +101,7 @@ Before making changes:
   7. *Code Standards*: Ensure Python 3.12+, Pydantic v2 schemas, type annotations, and absence of pseudocode.
   8. *Navigation & Links*: Validate relative markdown links and line anchors.
   9. *Tier Calibration*: Verify correct labeling and alignment with the 4-Tier Depth Model.
-  10. *Zero-LaTeX Verification*: Scan for any raw LaTeX syntax (`$$`, `$`, `\text`, `\mathbf`, `\begin{array}`).
+  10. *Zero-LaTeX & Clean Prose Verification*: Scan for any raw LaTeX syntax (`$$`, `$`, `\text`, `\mathbf`, `\begin{array}`) and ensure zero meta-directive leaks (like `(Zero-LaTeX)`) in learner headings.
 - **Output**: Produce a structured audit report (`CURRICULUM_AUDIT.md`) detailing findings, severity triage, and remediation priorities.
 
 ### 2. PLAN MODE
@@ -208,6 +208,7 @@ When authoring or modifying curriculum content:
 - Format all equations using clean text code blocks (```text) or standard Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`).
 - Always use standard GitHub Flavored Markdown (GFM) pipe tables.
 - Avoid unescaped multiple dollar signs (`$$`, `$$$`) inside text or tables.
+- **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing headers or content (e.g. NEVER write `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`, or checklist notes).
 
 ---
 

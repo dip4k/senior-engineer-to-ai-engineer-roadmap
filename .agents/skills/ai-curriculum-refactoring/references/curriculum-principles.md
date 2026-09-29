@@ -4,9 +4,9 @@ This document defines the foundational teaching principles for the AI-Native Eng
 
 ---
 
-## 🏛️ The 5 Golden Rules of AI Curriculum Engineering
+## 🏛️ The 6 Golden Rules of AI Curriculum Engineering
 
-Every lesson in this repository must adhere to these five non-negotiable pedagogical rules:
+Every lesson in this repository must adhere to these six non-negotiable pedagogical rules:
 
 ### 1. Anchor the Concept Before Naming It (Mental Model Before Acronym)
 - **Bad**: *"Today we will study HNSW, BM25, and RRF to build an advanced hybrid RAG architecture using LangChain."* (Acronym soup, cognitive overload, zero intuition).
@@ -27,6 +27,10 @@ Every lesson in this repository must adhere to these five non-negotiable pedagog
 ### 5. Zero-LaTeX & Pure Markdown Standard
 - **Bad**: Using `$$...$$` or `$...$` math blocks that fail to render on GitHub or IDE previewers.
 - **Better**: Clear text code blocks (```text), standard Unicode mathematical symbols (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`), and clean GitHub Flavored Markdown (GFM) pipe tables.
+
+### 6. Zero Meta-Directive Leaks (Clean Learner-Facing Prose)
+- **Bad**: Section headings, badges, or callouts containing prompt engineering or refactoring meta-commentary like `### The Attention Formula (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, or checklist tags `[MUST-HAVE]`.
+- **Better**: Clean, professional, developer-facing prose and headings (`### The Attention Formula`). All refactoring rules and quality gate directives must remain internal to agent instructions, never leaking into learner-facing courseware.
 
 ---
 

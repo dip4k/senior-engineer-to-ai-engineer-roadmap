@@ -4,7 +4,7 @@
 
 ---
 
-> Curriculum taxonomy aligns with the [3-tier classification defined in the root README](../README.md) (`[MUST-HAVE]` 🔴, `[GOOD-TO-HAVE]` 🟡, `[KNOWLEDGE-BASE]` 🔵).
+> Aligns with the [Architectural Mastery Tiers](../README.md#architectural-mastery-tiers) of the curriculum.
 
 ---
 
@@ -42,19 +42,19 @@ flowchart TD
 
 ## 📑 Table of Contents
 
-1. [Why Engineers Need to Care [MUST-HAVE] 🔴](#1-why-engineers-need-to-care-must-have-)
-2. [EU AI Act Timeline & Enforcement Milestones [MUST-HAVE] 🔴](#2-eu-ai-act-timeline--enforcement-milestones-must-have-)
-3. [The 4-Tier Risk Classification Taxonomy [MUST-HAVE] 🔴](#3-the-4-tier-risk-classification-taxonomy-must-have-)
-4. [General-Purpose AI (GPAI) & Foundation Model Obligations [GOOD-TO-HAVE] 🟡](#4-general-purpose-ai-gpai--foundation-model-obligations-good-to-have-)
-5. [The Production AI Engineering Compliance Checklist [MUST-HAVE] 🔴](#5-the-production-ai-engineering-compliance-checklist-must-have-)
-6. [Long-Term Memory & Data Governance Under GDPR [MUST-HAVE] 🔴](#6-long-term-memory--data-governance-under-gdpr-must-have-)
-7. [Enterprise Responsible AI Frameworks: The Big Four Compared [GOOD-TO-HAVE] 🟡](#7-enterprise-responsible-ai-frameworks-the-big-four-compared-good-to-have-)
-8. [War Stories from the Compliance Trenches [KNOWLEDGE-BASE] 🔵](#8-war-stories-from-the-compliance-trenches-knowledge-base-)
-9. [Curated Reference Index & Legal Portals [KNOWLEDGE-BASE] 🔵](#9-curated-reference-index--legal-portals-knowledge-base-)
+1. [Why Engineers Need to Care](#1-why-engineers-need-to-care)
+2. [EU AI Act Timeline & Enforcement Milestones](#2-eu-ai-act-timeline--enforcement-milestones)
+3. [The 4-Tier Risk Classification Taxonomy](#3-the-4-tier-risk-classification-taxonomy)
+4. [General-Purpose AI (GPAI) & Foundation Model Obligations](#4-general-purpose-ai-gpai--foundation-model-obligations)
+5. [The Production AI Engineering Compliance Checklist](#5-the-production-ai-engineering-compliance-checklist)
+6. [Long-Term Memory & Data Governance Under GDPR](#6-long-term-memory--data-governance-under-gdpr)
+7. [Enterprise Responsible AI Frameworks: The Big Four Compared](#7-enterprise-responsible-ai-frameworks-the-big-four-compared)
+8. [War Stories from the Compliance Trenches](#8-war-stories-from-the-compliance-trenches)
+9. [Curated Reference Index & Legal Portals](#9-curated-reference-index--legal-portals)
 
 ---
 
-## 1. Why Engineers Need to Care [MUST-HAVE] 🔴
+## 1. Why Engineers Need to Care
 
 ### The Construction Site Analogy (ELI10)
 
@@ -134,7 +134,7 @@ flowchart TD
 
 ---
 
-## 2. EU AI Act Timeline & Enforcement Milestones [MUST-HAVE] 🔴
+## 2. EU AI Act Timeline & Enforcement Milestones
 
 The EU AI Act entered into force on **August 1, 2024**. Rather than dropping all requirements at once, the European Parliament instituted a phased rollout. As an engineer, you must know exactly which milestone impacts your current sprint backlog.
 
@@ -172,7 +172,7 @@ flowchart LR
 
 ---
 
-## 3. The 4-Tier Risk Classification Taxonomy [MUST-HAVE] 🔴
+## 3. The 4-Tier Risk Classification Taxonomy
 
 The EU AI Act rejects a one-size-fits-all approach. It categorizes every AI system into one of **four risk tiers**. Your engineering workload depends almost entirely on which bucket your application falls into.
 
@@ -253,7 +253,7 @@ flowchart TD
 
 ---
 
-## 4. General-Purpose AI (GPAI) & Foundation Model Obligations [GOOD-TO-HAVE] 🟡
+## 4. General-Purpose AI (GPAI) & Foundation Model Obligations
 
 ### Foundation Lab vs Downstream Application Developer
 
@@ -292,7 +292,7 @@ If you are building an enterprise application, you cannot just sign up with an i
 
 ---
 
-## 5. The Production AI Engineering Compliance Checklist [MUST-HAVE] 🔴
+## 5. The Production AI Engineering Compliance Checklist
 
 When an enterprise auditor or regulatory inspector knocks on your door, they won't read your marketing slides. They will ask to see your repositories, CI/CD pipelines, and database tables.
 
@@ -364,7 +364,7 @@ flowchart LR
 
 ---
 
-## 6. Long-Term Memory & Data Governance Under GDPR [MUST-HAVE] 🔴
+## 6. Long-Term Memory & Data Governance Under GDPR
 
 ### The Collision: Vector Stores vs GDPR Article 17 ("Right to be Forgotten")
 
@@ -742,7 +742,7 @@ namespace EnterpriseAi.Governance
 
 ---
 
-## 7. Enterprise Responsible AI Frameworks: The Big Four Compared [GOOD-TO-HAVE] 🟡
+## 7. Enterprise Responsible AI Frameworks: The Big Four Compared
 
 When engineering leadership decides to implement a responsible AI program, they often get overwhelmed by competing terminology. The industry has converged on **four major frameworks**:
 
@@ -769,7 +769,7 @@ flowchart TD
 
 ---
 
-## 8. War Stories from the Compliance Trenches [KNOWLEDGE-BASE] 🔵
+## 8. War Stories from the Compliance Trenches
 
 ### War Story 1: The 2:15 AM Pager Duty & The €35M LinkedIn Scraper
 
@@ -835,7 +835,7 @@ Six months later, during a routine executive demo of a new financial insight fea
 
 ---
 
-## 9. Curated Reference Index & Legal Portals [KNOWLEDGE-BASE] 🔵
+## 9. Curated Reference Index & Legal Portals
 
 ### Official European Union Resources
 * **[Official EU AI Act Legal Text (EUR-Lex - Regulation 2024/1689)](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32024R1689)**: The authoritative, unedited treaty text published in the Official Journal of the European Union.

@@ -30,21 +30,21 @@ flowchart TD
 ## 📑 Table of Contents
 
 - [Introduction: The Honeymoon is Over](#introduction-the-honeymoon-is-over)
-- [1. Building an Agent When a DAG Works](#1-building-an-agent-when-a-dag-works-must-have)
-- [2. Not Caching the System Prompt](#2-not-caching-the-system-prompt-must-have)
-- [3. Dynamic Data at the Top of Prompt (Prefix Taint)](#3-dynamic-data-at-the-top-of-prompt-prefix-taint-must-have)
-- [4. No Loop Limits (The $500 Runaway at 2 AM)](#4-no-loop-limits-the-500-runaway-at-2-am-must-have)
-- [5. Free-Form SQL Tools (Prompt Injection to DROP TABLE)](#5-free-form-sql-tools-prompt-injection-to-drop-table-must-have)
-- [6. Skipping Evals (The "Vibe Check" Trap)](#6-skipping-evals-the-vibe-check-trap-must-have)
-- [7. Single-Provider API Dependency](#7-single-provider-api-dependency-must-have)
-- [8. Not Streaming (The 15-Second Blank Screen)](#8-not-streaming-the-15-second-blank-screen-must-have)
-- [9. Lost-in-the-Middle (The U-Shaped Attention Trap)](#9-lost-in-the-middle-the-u-shaped-attention-trap-must-have)
-- [10. Fine-Tuning When RAG Works](#10-fine-tuning-when-rag-works-must-have)
-- [11. No Semantic Caching (Paying for Identical Answers)](#11-no-semantic-caching-paying-for-identical-answers-good-to-have)
-- [12. Dumping 100+ Tools on a Single Agent](#12-dumping-100-tools-on-a-single-agent-must-have)
-- [13. No Context Budgeting (Context Window Overflow)](#13-no-context-budgeting-context-window-overflow-must-have)
-- [14. Ignoring GDPR for Agent Memory (Crypto-Shredding)](#14-ignoring-gdpr-for-agent-memory-crypto-shredding-good-to-have)
-- [15. Treating the LLM as a Reliable Microservice](#15-treating-the-llm-as-a-reliable-microservice-must-have)
+- [1. Building an Agent When a DAG Works](#1-building-an-agent-when-a-dag-works)
+- [2. Not Caching the System Prompt](#2-not-caching-the-system-prompt)
+- [3. Dynamic Data at the Top of Prompt (Prefix Taint)](#3-dynamic-data-at-the-top-of-prompt-prefix-taint)
+- [4. No Loop Limits (The $500 Runaway at 2 AM)](#4-no-loop-limits-the-500-runaway-at-2-am)
+- [5. Free-Form SQL Tools (Prompt Injection to DROP TABLE)](#5-free-form-sql-tools-prompt-injection-to-drop-table)
+- [6. Skipping Evals (The "Vibe Check" Trap)](#6-skipping-evals-the-vibe-check-trap)
+- [7. Single-Provider API Dependency](#7-single-provider-api-dependency)
+- [8. Not Streaming (The 15-Second Blank Screen)](#8-not-streaming-the-15-second-blank-screen)
+- [9. Lost-in-the-Middle (The U-Shaped Attention Trap)](#9-lost-in-the-middle-the-u-shaped-attention-trap)
+- [10. Fine-Tuning When RAG Works](#10-fine-tuning-when-rag-works)
+- [11. No Semantic Caching (Paying for Identical Answers)](#11-no-semantic-caching-paying-for-identical-answers)
+- [12. Dumping 100+ Tools on a Single Agent](#12-dumping-100-tools-on-a-single-agent)
+- [13. No Context Budgeting (Context Window Overflow)](#13-no-context-budgeting-context-window-overflow)
+- [14. Ignoring GDPR for Agent Memory (Crypto-Shredding)](#14-ignoring-gdpr-for-agent-memory-crypto-shredding)
+- [15. Treating the LLM as a Reliable Microservice](#15-treating-the-llm-as-a-reliable-microservice)
 - [Quick Reference Summary Matrix](#quick-reference-summary-matrix)
 - [Production Readiness Audit Checklist](#production-readiness-audit-checklist)
 
@@ -64,7 +64,7 @@ This cheatsheet catalogs the **Top 15 Beginner Mistakes** that cause production 
 
 ---
 
-## 1. Building an Agent When a DAG Works `[MUST-HAVE]` 🔴
+## 1. Building an Agent When a DAG Works
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you want to make a ham and cheese sandwich. 
@@ -161,7 +161,7 @@ public async Task<InvoiceData> ProcessInvoiceAsync(byte[] pdfBytes, Cancellation
 
 ---
 
-## 2. Not Caching the System Prompt `[MUST-HAVE]` 🔴
+## 2. Not Caching the System Prompt
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you visit the same coffee shop every morning. Before the barista lets you order your $4 latte, you force them to read the entire 500-page *Encyclopedia of World Beans* out loud, and you pay them $10 every single time for reading it. 
@@ -232,7 +232,7 @@ print(f"Tokens read from cache: {response.usage.cache_read_input_tokens}")  # 90
 
 ---
 
-## 3. Dynamic Data at the Top of Prompt (Prefix Taint) `[MUST-HAVE]` 🔴
+## 3. Dynamic Data at the Top of Prompt (Prefix Taint)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you have a giant 500-page book with a golden bookmark at page 450. But before you read it, someone scribbles today's exact second-by-second timestamp on **Page 1**. Because Page 1 changed, the whole book has to be re-printed and re-bound from scratch. Your bookmark is completely destroyed.
@@ -304,7 +304,7 @@ User Session: {request.session_id}
 
 ---
 
-## 4. No Loop Limits (The $500 Runaway at 2 AM) `[MUST-HAVE]` 🔴
+## 4. No Loop Limits (The $500 Runaway at 2 AM)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you tell a vacuum cleaning robot: *"Keep vacuuming until you find my lost earring."* You leave for a week. The earring was never in the house. The robot runs continuously, overheats, burns a hole in your carpet, and runs up a $500 electricity bill.
@@ -384,7 +384,7 @@ while agent.is_active():
 
 ---
 
-## 5. Free-Form SQL Tools (Prompt Injection to DROP TABLE) `[MUST-HAVE]` 🔴
+## 5. Free-Form SQL Tools (Prompt Injection to DROP TABLE)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you run a bank. Instead of letting tellers do standard transactions, you give every customer who walks in the front door a master crowbar, access to the vault computer, and say: *"Just type whatever database query you feel like into the screen."*
@@ -467,7 +467,7 @@ def validate_and_execute_safe_sql(raw_query: str, read_only_session) -> list:
 
 ---
 
-## 6. Skipping Evals (The "Vibe Check" Trap) `[MUST-HAVE]` 🔴
+## 6. Skipping Evals (The "Vibe Check" Trap)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you are building a bridge for cars. To test if the bridge is safe, the builder drives their bicycle across it once, smiles, says *"Feels sturdy to me!"*, and immediately opens it to 80,000 eighteen-wheeler trucks.
@@ -535,7 +535,7 @@ def test_prompt_regression(test_case):
 
 ---
 
-## 7. Single-Provider API Dependency `[MUST-HAVE]` 🔴
+## 7. Single-Provider API Dependency
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you run a busy pizza delivery shop, and you only have one single delivery driver. When that driver gets a flat tire or catches the flu, your entire business shuts down, customers starve, and your shop goes bankrupt.
@@ -612,7 +612,7 @@ async def resilient_complete(messages: List[Dict[str, str]]) -> str:
 
 ---
 
-## 8. Not Streaming (The 15-Second Blank Screen) `[MUST-HAVE]` 🔴
+## 8. Not Streaming (The 15-Second Blank Screen)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you sit down at a restaurant. Instead of bringing you water and bread while you wait, the waiter makes you sit in dead silence staring at an empty table for 45 minutes until the entire 5-course feast is ready all at once. You assume they forgot your order and walk out.
@@ -696,7 +696,7 @@ public async IAsyncEnumerable<string> StreamAnalysisAsync(
 
 ---
 
-## 9. Lost-in-the-Middle (The U-Shaped Attention Trap) `[MUST-HAVE]` 🔴
+## 9. Lost-in-the-Middle (The U-Shaped Attention Trap)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you read a massive 1,000-page mystery novel in one night. You remember the thrilling first chapter clearly. You remember the twist ending clearly. But everything between pages 300 and 700 is a fuzzy, forgotten blur in your mind.
@@ -755,7 +755,7 @@ def sandwich_context_placement(ranked_chunks: List[str]) -> str:
 
 ---
 
-## 10. Fine-Tuning When RAG Works `[MUST-HAVE]` 🔴
+## 10. Fine-Tuning When RAG Works
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you want your student to know today's weather forecast.
@@ -797,7 +797,7 @@ flowchart TD
 
 ---
 
-## 11. No Semantic Caching (Paying for Identical Answers) `[GOOD-TO-HAVE]` 🟡
+## 11. No Semantic Caching (Paying for Identical Answers)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you run a front desk. Every day, 200 tourists ask: *"Where is the Eiffel Tower?"* Instead of answering from memory or pointing to the map on your desk, you call a luxury tour guide in France on an expensive international satellite phone every single time.
@@ -876,7 +876,7 @@ class SemanticCache:
 
 ---
 
-## 12. Dumping 100+ Tools on a Single Agent `[MUST-HAVE]` 🔴
+## 12. Dumping 100+ Tools on a Single Agent
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you hand a handyman a Swiss Army knife that has 150 different miniature attachments that all look almost identical. When you ask them to tighten a Phillips screw, they spend 15 minutes squinting, opening and closing the wrong blades, and eventually strip your screw with a file.
@@ -936,7 +936,7 @@ response = llm.bind_tools(active_tools).invoke(user_prompt)
 
 ---
 
-## 13. No Context Budgeting (Context Window Overflow) `[MUST-HAVE]` 🔴
+## 13. No Context Budgeting (Context Window Overflow)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you are packing a suitcase for a flight. You keep throwing shoes, jackets, and books inside without checking the airline's weight scale. At the boarding gate, the zipper rips open, your clothes spill across the runway, and security throws your bag in the trash.
@@ -1006,7 +1006,7 @@ class ContextBudgetGovernor:
 
 ---
 
-## 14. Ignoring GDPR for Agent Memory (Crypto-Shredding) `[GOOD-TO-HAVE]` 🟡
+## 14. Ignoring GDPR for Agent Memory (Crypto-Shredding)
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you write down someone's phone number on a brick, bake the brick into the concrete foundation of a 40-story skyscraper, and then the person says: *"By law, you must erase my phone number without damaging the building."*
@@ -1072,7 +1072,7 @@ class CryptoShreddedMemoryStore:
 
 ---
 
-## 15. Treating the LLM as a Reliable Microservice `[MUST-HAVE]` 🔴
+## 15. Treating the LLM as a Reliable Microservice
 
 ### 💡 Explain Like I'm 10 (ELI10)
 Imagine you have a coworker who is a brilliant genius, but they randomly fall asleep for 20 seconds, sometimes get overwhelmed and lock their office door, and occasionally shout random gibberish. If your entire company stops functioning every time they take a nap, your company is built wrong.

@@ -158,3 +158,4 @@ All lesson markdown files must render without requiring KaTeX/MathJax plugins:
 - **Symbols**: Use standard Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`, `×`, `Δ`).
 - **Complexity**: Write `O(N)` and `O(log N)` directly as monospace text.
 - **Tables**: Use standard Markdown pipe tables; avoid LaTeX arrays or unescaped `$$` cost indicators.
+- **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing section titles or prose (e.g. do NOT name a section `### The Attention Formula (Zero-LaTeX):` or `### Step 1 (Refactored)`). Write clean, authoritative titles (`### The Attention Formula`).
