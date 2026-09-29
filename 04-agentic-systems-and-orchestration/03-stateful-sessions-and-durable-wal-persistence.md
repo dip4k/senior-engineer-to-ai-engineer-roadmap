@@ -1,21 +1,21 @@
-# Stateful Sessions, Durable WAL Persistence & Distributed Sagas
+# Stateful Sessions, Durable Write-Ahead Logs & Distributed Sagas
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟡 Tier 2: Depth` | Estimated Reading Time: 50 min
+> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟡 Tier 2: Depth` | Estimated Reading Time: 45 min
 >
-> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md)
+> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Agent Architecture: Harnesses & Loops](02-react-loops-and-execution-governors.md)
 
-> **Core Concept**: Production agents are long-running stateful distributed systems. When nodes crash, humans pause for approvals, or network partitions occur, the agent must recover seamlessly without re-running expensive LLM steps. Achieving this requires graph state machines with deterministic reducers, Event-Sourced Write-Ahead Log (WAL) persistence, session forking (time travel), and Distributed Sagas with compensating rollback tools.
+> **Core Concept**: Production agents are long-running, stateful systems. When a server restarts, a human takes hours to approve an action, or a network connection drops, the agent must be able to resume immediately without re-running expensive model calls or duplicating database writes. To achieve this, we use graph state machines with clean state reducers, an append-only Write-Ahead Log (WAL), session branching, and the Distributed Saga pattern with compensating rollback tools.
 
 ---
 
-## 1. The Engineering Problem: The In-Memory Volatility Trap
+## 1. The Real-World Problem: What Happens When Memory Vanishes?
 
-Most open-source agent tutorials maintain conversation history and tool outputs inside a local Python list (`messages: list[dict]`). While this works for short, interactive toy demos, it represents a catastrophic architectural flaw in enterprise production: **the in-memory volatility trap**.
+In simple tutorials, an agent's conversation history and tool outputs are usually stored in a simple Python list: `messages = []`. 
 
-Consider what occurs in a real-world enterprise deployment:
-1. **Container Restarts & Preemption**: Kubernetes reschedules a worker pod due to node pressure while an agent is on turn 7 of an 8-turn code refactoring sequence. 45,000 tokens of accumulated reasoning, parsed AST diffs, and intermediate state vanish instantly.
-2. **Asynchronous Human-in-the-Loop (HITL) Halts**: An agent requires executive approval to issue a \$5,000 invoice credit. The approval request sits in a director's Slack queue for 4 hours. Keeping a stateful container alive and maintaining an open socket connection for 4 hours wastes infrastructure, blocks worker threads, and leaks memory.
-3. **Double-Spend & Corruption During Naive Replay**: If the application crashes and simply restarts the agent from turn 1, the model may re-execute previously completed mutating tools—charging a customer's credit card twice or provisioning duplicate cloud infrastructure.
+While this works for interactive desktop demos, keeping state only in application memory causes major production failures:
+1. **Server Restarts and Scaling Events**: Suppose your agent is on turn 7 of an 8-turn code refactoring workflow. Your cloud platform moves the application container to another node due to high CPU load. The memory list disappears instantly. You lose 40,000 tokens of accumulated reasoning, and the customer is left with an unfinished transaction.
+2. **Long Human Approval Pauses**: An agent reaches a step requiring a manager's sign-off to approve a \$5,000 credit. The manager might not click "Approve" for four hours. Keeping a stateful container running with an open socket for hours wastes server resources and leaks memory.
+3. **Accidental Duplicate Actions**: If your application crashes and restarts the agent from step 1, the model might repeat actions it already completed—such as charging a credit card a second time or creating duplicate cloud servers.
 
 ```mermaid
 flowchart TD
@@ -23,290 +23,242 @@ flowchart TD
     classDef store fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
     classDef worker fill:#f9f9f9,stroke:#333,stroke-width:1px;
 
-    subgraph Volatile["THE IN-MEMORY TRAP (Anti-Pattern)"]
+    subgraph Volatile["THE IN-MEMORY TRAP (Fragile)"]
         direction TB
-        V1["Worker A (Pod 1): Turn 1 to 6 Complete"]:::worker
-        V1 -->|"Step 7: Awaiting Human Approval"| V2["State kept in RAM list[dict]"]:::fail
-        V2 -->|"Kubernetes Preempts Pod 1"| V3["CRASH: 40k Tokens Lost\nOrphaned DB records\nUser session dropped"]:::fail
+        V1["Worker Pod 1: Turns 1 through 6 Finished"]:::worker
+        V1 -->|"Step 7: Waiting for manager approval"| V2["State stored only in RAM list"]:::fail
+        V2 -->|"Container crashes or restarts"| V3["LOST: 40k Tokens Gone\nOrphaned database records\nUser session disconnected"]:::fail
     end
 
-    subgraph Durable["THE DURABLE WAL ARCHITECTURE (Production Pattern)"]
+    subgraph Durable["THE DURABLE WRITE-AHEAD LOG (Production)"]
         direction TB
-        D1["Worker A: Executes Turn 6"]:::worker
-        D1 -->|"Atomically Appends Event"| WAL["Durable State Store (Postgres/SQLite)\n• TurnEvent append-only log\n• Checkpoint snapshot chk_06\n• Status: SUSPENDED"]:::store
-        WAL -->|"4 Hours Later: Webhook Hit\nWorker B (Pod 2) Rehydrates State"| D2["Worker B: Resumes at Turn 7\nZero re-tokens burned\nZero duplicated tool calls"]:::worker
+        D1["Worker Pod 1: Finishes Turn 6"]:::worker
+        D1 -->|"Saves event to database"| WAL["Durable Database (PostgreSQL / SQLite)\n• Event journal: TurnEvent 1..6\n• Snapshot checkpoint chk_06\n• Status: SUSPENDED"]:::store
+        WAL -->|"4 Hours Later: Webhook arrives\nWorker Pod 2 loads state"| D2["Worker Pod 2: Resumes at Turn 7\nZero re-spent tokens\nZero duplicated tool calls"]:::worker
     end
 ```
 
-### Prose Diagram Walkthrough: In-Memory Trap vs. Durable WAL
+### How the Durable Architecture Works
 
-1. **The In-Memory Trap**: When state exists purely in application memory, pod termination or preemption destroys the execution trajectory. Resuming requires restarting from scratch, incurring duplicate token costs and risking repeated non-idempotent tool calls.
-2. **Durable WAL Architecture**: After every cognitive step and tool invocation, the control plane atomically appends an immutable event to an external database (e.g., PostgreSQL or SQLite).
-3. **Suspended Execution**: When awaiting human authorization or long-running jobs, the session transitions to `SUSPENDED` and releases all compute resources.
-4. **Rehydration**: Any available worker node can query the database by `session_id`, rehydrate the exact state machine in milliseconds, and resume execution without re-invoking the foundation model.
+1. **The In-Memory Trap**: When state lives only in RAM, server restarts destroy the entire execution history. To recover, you must rerun everything from scratch, paying for duplicate tokens and risking duplicate tool executions.
+2. **The Write-Ahead Log**: After every reasoning turn and tool action, the application writes an event record to a durable database (such as PostgreSQL or SQLite).
+3. **Suspended Execution**: When waiting for a human approval or external webhook, the session sets its status to `SUSPENDED` and releases all memory and CPU resources.
+4. **Seamless Resumption**: When the human approves, any available worker loads the events for that session ID from the database, restores the state machine in a few milliseconds, and picks up right where it left off.
 
 ---
 
-## 2. The Mental Model: Graph State Machines & Reducers
+## 2. The Mental Model: Graph State Machines & State Reducers
 
-To make agent state deterministic, robust architectures model the agent as a **Graph State Machine** governed by **pure reducer functions** (pioneered in modern frameworks like LangGraph):
+To make agent state predictable and reproducible, modern frameworks (such as LangGraph) structure the agent as a **State Machine** governed by **State Reducers**:
 
 ```mermaid
 flowchart LR
     classDef node fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
     classDef state fill:#f9f9f9,stroke:#333,stroke-width:1px;
 
-    StateT["State(t)\n{messages, budget, claim}"]:::state --> Node["Graph Node N\n(LLM or Tool Worker)"]:::node
-    Node -->|"Emits State Delta Event\n{new_message, cost}"| Reducer["State Reducer Function\nState(t+1) = f(State(t), Event)"]:::node
-    Reducer --> StateNext["State(t+1)\n(Immutable Checkpoint)"]:::state
+    StateT["Current State\n{messages, spend, claim}"]:::state --> Node["Worker Node N\n(Runs prompt or tool)"]:::node
+    Node -->|"Emits update event\n{new_message, cost}"| Reducer["State Reducer\nMerges event into state"]:::node
+    Reducer --> StateNext["New State\n(Saved Checkpoint)"]:::state
 ```
 
-### Core Primitives of Graph State Machines
+### Core Primitives Explained Simply
 
-1. **State Schema**: A strongly typed data structure (e.g., a Pydantic v2 model) containing all variables required across the session (conversation messages, extracted entities, remaining budget, approval flags).
-2. **Nodes**: Isolated, discrete execution units (functions or classes) that receive the current state and return a **State Delta** (a dictionary of updates).
-3. **Edges**: Deterministic or conditional routing functions that evaluate state fields and determine which node executes next.
-4. **Reducers**: Pure functions that define *how* state deltas are merged into the existing state. Rather than overwriting fields blindly, reducers enforce deterministic mutation rules:
-   * *Append Reducer*: Appends new messages or logs to an existing list (`messages = existing_messages + delta_messages`).
-   * *Additive Reducer*: Sums token counts or financial spend (`total_cost = existing_cost + turn_cost`).
-   * *Overwrite Reducer*: Replaces scalar attributes (`status = delta_status`).
+1. **State Schema**: A strongly typed data model (using Pydantic v2) containing everything the agent needs to track: messages, extracted customer details, accumulated spend, and approval status.
+2. **Nodes**: Isolated Python functions or classes that receive the current state, do one specific piece of work (like calling a model or running an API), and return an update event.
+3. **Edges**: Conditional checks in code that look at the current state and decide which node to visit next (for example: *"if requires_approval is true, route to the approval node; otherwise, route to execution"*).
+4. **State Reducers**: Clean functions that specify *how* an update event should be merged into the existing state:
+   * *Append Reducer*: Adds new messages to an existing conversation history list without overwriting past messages.
+   * *Additive Reducer*: Sums token costs or financial amounts (`total_cost = current_cost + new_cost`).
+   * *Replace Reducer*: Updates a status field (e.g., updating status from `ACTIVE` to `COMPLETED`).
 
-```text
-Mathematical Invariant:
-State_{t+1} = Reducer(State_t, Event_{t+1})
-```
-
-Because state is a pure mathematical function of prior state and discrete transition events, any agent trajectory can be deterministically audited, replayed, or forked.
+Because state updates are treated as clean, deterministic events, an agent's entire trajectory can be saved, replayed, or inspected at any point.
 
 ---
 
-## 3. Event-Sourced Write-Ahead Log (WAL) & Crash Rehydration
+## 3. Event-Sourced Write-Ahead Logs & Instant Crash Recovery
 
-The industry standard for durability in mission-critical distributed systems (e.g., PostgreSQL, Kafka, distributed filesystems) is the **Write-Ahead Log (WAL)**. In agentic engineering, an Event-Sourced WAL records every input, thought, action, observation, and state delta to append-only disk storage *before* the runtime yields or mutates external systems.
+In distributed databases (like PostgreSQL), a **Write-Ahead Log (WAL)** ensures that every transaction is written to disk *before* changes are applied. If the database crashes, it reads the log upon reboot and recovers without losing data.
+
+We apply this exact pattern to autonomous agents:
 
 ```mermaid
 sequenceDiagram
     autonumber
     participant Runtime as Agent Runtime
-    participant LLM as Foundation Model
-    participant WAL as Append-Only WAL (PostgreSQL)
-    participant Tool as External System (DB/API)
-    participant Worker2 as Worker Node B (Post-Crash)
+    participant LLM as Language Model
+    participant WAL as Write-Ahead Log (Database)
+    participant Tool as Payment Gateway
+    participant Worker2 as Worker Pod 2 (After Crash)
 
-    Runtime->>LLM: 1. Prompt with State Context
-    LLM-->>Runtime: 2. Thought & ToolCall('refund_charge', id='ch_99')
-    Runtime->>WAL: 3. AppendEvent(ToolDispatchedEvent) [COMMIT]
-    Runtime->>Tool: 4. Execute Mutating Call
-    Tool-->>Runtime: 5. Observation: {status: 'success', tx_id: 'tx_401'}
-    Runtime->>WAL: 6. AppendEvent(ObservationCapturedEvent) [COMMIT]
+    Runtime->>LLM: 1. Send prompt with current state
+    LLM-->>Runtime: 2. Model outputs: refund_customer(id='cust_99')
+    Runtime->>WAL: 3. Save ToolDispatchedEvent to database [COMMITTED]
+    Runtime->>Tool: 4. Execute external payment refund
+    Tool-->>Runtime: 5. Return success: {status: 'ok', tx_id: 'tx_401'}
+    Runtime->>WAL: 6. Save ObservationCapturedEvent to database [COMMITTED]
     
-    Note over Runtime: 💥 WORKER POD TERMINATES (OOM / Pod Eviction)
+    Note over Runtime: 💥 SERVER CONTAINER CRASHES OR RESTARTS
     
-    Worker2->>WAL: 7. QueryEventsBySession(session_id='sess-882')
-    WAL-->>Worker2: 8. Return Immutable Event Stream (Events 1..6)
-    Worker2->>Worker2: 9. Rehydrate State Machine via Reducer (5ms)
-    Worker2->>LLM: 10. Resume Execution at Step 7 seamlessly
+    Worker2->>WAL: 7. Query events for session 'sess-882'
+    Worker2-->>Worker2: 8. Replay events through state reducer (takes 5ms)
+    Worker2->>LLM: 9. Resume next turn without re-running payment refund
 ```
 
-### Prose Diagram Walkthrough: Event-Sourced WAL & Crash Recovery
+### Step-by-Step Crash Recovery Walkthrough
 
-1. **Prompt Dispatch**: The runtime dispatches the active state to the foundation model.
-2. **Action Emission**: The model generates a Thought and an Action requesting a refund tool call.
-3. **Write-Ahead Logging (WAL Commit)**: Before the tool is executed over the network, the runtime writes a `ToolDispatchedEvent` to the database. If the process crashes during network transit, the system knows an execution was initiated.
-4. **Tool Execution**: The tool is executed against the payment processor.
-5. **Observation Capture**: The external system returns confirmation.
-6. **Observation Commit**: The runtime commits the `ObservationCapturedEvent` to the WAL.
-7. **The Crash Event**: The active host pod crashes or is evicted by the orchestrator.
-8. **Rehydration**: A replacement worker (Worker Node B) picks up the orphaned session, retrieves all events from the WAL, and executes the state reducers sequentially.
-9. **Zero-Loss Continuity**: Within 5 milliseconds, the state machine is reconstructed to the exact point of the crash. Worker B resumes execution without re-invoking the model or duplicating the payment refund.
+1. **Prompt Dispatch**: The runtime sends the current state to the model.
+2. **Action Proposal**: The model proposes a refund tool call.
+3. **Write-Ahead Commit**: Before making the network call, the runtime writes a `ToolDispatchedEvent` to the database. If the process dies while waiting for the network, the database already records that the tool was initiated.
+4. **Tool Execution**: The payment gateway runs the refund.
+5. **Observation Capture**: The gateway returns a success receipt.
+6. **Observation Commit**: The runtime writes an `ObservationCapturedEvent` to disk.
+7. **The Crash**: The server pod restarts unexpectedly.
+8. **Instant Rehydration**: A new worker pod loads all saved events for that session ID from the database and replays them through the state reducer. Within 5 milliseconds, the exact state is restored.
+9. **Zero-Loss Continuity**: The new worker resumes the conversation without repeating the refund or re-paying for the earlier model inference.
 
 ---
 
-## 4. The Distributed Saga Pattern & Compensating Rollback Tools
+## 4. The Distributed Saga Pattern: Compensating Rollback Tools
 
-When an autonomous agent interacts with external APIs, databases, or microservices, distributed transactions cannot rely on classical Two-Phase Commit (2PC) protocols. Enterprise systems are loosely coupled, third-party APIs lack distributed transaction locks, and agent execution trajectories may span minutes or hours.
+When an agent interacts with multiple external services (booking travel, reserving inventory, charging credit cards), standard database transactions cannot span across third-party APIs. If step 4 of a 5-step task fails, you cannot simply issue a database `ROLLBACK`.
 
-To ensure transactional integrity, architects implement the **Distributed Saga Pattern with Compensating Transactions**:
+To maintain consistency, enterprise architectures implement the **Distributed Saga Pattern**:
 
 ```mermaid
 flowchart TD
-    classDef forward fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef rollback fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef coord fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef fwd fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    classDef roll fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    classDef saga fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
 
-    subgraph ForwardPath["FORWARD EXECUTION TRAJECTORY"]
+    subgraph ForwardPath["FORWARD ACTIONS"]
         direction LR
-        S1["Step 1: Reserve Flight\n(Action: reserve_flight)"]:::forward
-        --> S2["Step 2: Reserve Hotel\n(Action: reserve_hotel)"]:::forward
-        --> S3["Step 3: Charge Corporate Card\n(Action: charge_card)"]:::forward
-        --> S4["Step 4: Provision Cloud Sandbox\n(Action: provision_cluster)"]:::forward
+        S1["Step 1: Reserve Flight\n(Action: reserve_flight)"]:::fwd
+        --> S2["Step 2: Reserve Hotel\n(Action: reserve_hotel)"]:::fwd
+        --> S3["Step 3: Charge Corporate Card\n(Action: charge_card)"]:::fwd
+        --> S4["Step 4: Provision Cloud Sandbox\n(Action: provision_cluster)"]:::fwd
     end
 
-    S4 -->|"Step 4 FAILS!\n(Quota Exceeded 403)"| Saga["SAGA COORDINATOR\nTriggers Reverse Compensation Chain"]:::coord
+    S4 -->|"Step 4 FAILS!\n(Quota Exceeded Error)"| Saga["SAGA COORDINATOR\nExecutes Rollback Chain in Reverse"]:::saga
 
-    subgraph CompensatingPath["COMPENSATING ROLLBACK CHAIN (Reverse Order)"]
+    subgraph RollbackPath["COMPENSATING ROLLBACKS (Reverse Order)"]
         direction LR
-        C3["Rollback 3: Refund Card\n(Compensate: refund_transaction)"]:::rollback
-        --> C2["Rollback 2: Cancel Hotel\n(Compensate: cancel_hotel)"]:::rollback
-        --> C1["Rollback 1: Cancel Flight\n(Compensate: cancel_flight)"]:::rollback
+        C3["Rollback 3: Refund Card\n(Compensate: refund_transaction)"]:::roll
+        --> C2["Rollback 2: Cancel Hotel\n(Compensate: cancel_hotel)"]:::roll
+        --> C1["Rollback 1: Cancel Flight\n(Compensate: cancel_flight)"]:::roll
     end
 
     Saga --> C3
-    C1 --> Done["System Returned to Clean Consistent State"]
+    C1 --> Done["All systems restored to clean state"]
 ```
 
-### Prose Diagram Walkthrough: Distributed Saga Rollback
+### How the Saga Rollback Works
 
-1. **Forward Trajectory**: The agent successfully executes Steps 1, 2, and 3, reserving travel and charging a card. Each mutating action is logged to the Saga journal along with its output identifiers (`booking_id`, `charge_id`).
-2. **The Terminal Failure**: At Step 4, provisioning the cloud sandbox fails due to an irrecoverable quota exhaustion.
-3. **Saga Coordinator Interception**: The control plane halts the agent. It does not allow the model to guess what to do next. Instead, the Saga Coordinator reads the transaction journal in reverse chronological order.
-4. **Compensating Rollback Execution**: The coordinator invokes the registered **Compensating Rollback Tool** for each completed step:
-   * First, it calls `refund_transaction(charge_id)` to reverse Step 3.
-   * Next, it calls `cancel_hotel(booking_id)` to reverse Step 2.
-   * Finally, it calls `cancel_flight(booking_id)` to reverse Step 1.
-5. **Clean Consistency**: The enterprise environment is restored to a clean state, preventing orphaned financial liabilities or reserved resources.
+1. **Forward Execution**: The agent successfully completes Steps 1, 2, and 3, saving booking and transaction IDs in its journal.
+2. **The Failure**: At Step 4, cloud provisioning fails because the customer's quota is exceeded.
+3. **The Saga Coordinator**: Instead of letting the model guess what to do next, application code steps in. The Saga Coordinator reads the transaction journal in reverse chronological order.
+4. **Compensating Rollbacks**: The coordinator calls the registered **Compensating Rollback Tool** for each completed step:
+   * First, it refunds the credit card charge from Step 3.
+   * Next, it cancels the hotel booking from Step 2.
+   * Finally, it cancels the flight reservation from Step 1.
+5. **System Consistency**: The external systems are returned to a clean, consistent state without stranded reservations or unauthorized charges.
 
-### The Compensating Tool Contract
+### The Compensating Tool Pair Rule
 
-Every state-mutating tool registered with an agent orchestrator must declare a registered compensating action:
+Every tool that mutates state should have a matching compensating tool registered with the system:
 
-| Forward Mutating Tool | Execution Arguments | Registered Compensating Tool | Rollback Arguments |
+| Forward Mutating Tool | What it Does | Compensating Rollback Tool | How it Undoes the Action |
 |---|---|---|---|
-| `reserve_hotel_room` | `hotel_id`, `guest_id`, `dates` | `cancel_hotel_reservation` | `booking_reference_id` |
-| `charge_credit_card` | `customer_id`, `amount_usd` | `refund_credit_card_charge` | `transaction_id`, `reason` |
-| `provision_kubernetes_cluster` | `cluster_spec`, `region` | `deprovision_kubernetes_cluster` | `cluster_id`, `force=True` |
-| `grant_iam_role` | `principal_email`, `role_arn` | `revoke_iam_role` | `principal_email`, `role_arn` |
+| `reserve_hotel_room` | Reserves a hotel room | `cancel_hotel_reservation` | Cancels using booking ID |
+| `charge_credit_card` | Charges payment | `refund_credit_card` | Refunds using transaction ID |
+| `create_database_table`| Creates schema table | `drop_database_table` | Drops table safely |
+| `grant_iam_role` | Adds cloud permissions | `revoke_iam_role` | Removes role assignment |
 
 ---
 
-## 5. Session Forking & Time-Travel Debugging
+## 5. Session Branching & Time-Travel Debugging
 
-Because graph checkpoints are stored as immutable snapshots, an agent runtime can **fork** an active session into multiple counterfactual branches:
+Because checkpoints are stored as immutable snapshots, your application can **branch** a session into multiple paths:
 
 ```mermaid
 flowchart TD
     classDef node fill:#f9f9f9,stroke:#333,stroke-width:1px;
     classDef fork fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
 
-    T1["Turn 1 (chk_01)"]:::node --> T2["Turn 2 (chk_02)"]:::node
-    T2 --> T3["Turn 3 (chk_03)"]:::node
-    T3 --> Fork{"Fork Session at chk_03"}:::fork
+    T1["Turn 1"]:::node --> T2["Turn 2"]:::node --> T3["Turn 3 (Checkpoint 3)"]:::node
+    T3 --> Fork{"Branch at Checkpoint 3"}:::fork
     
-    Fork -->|"Branch A: Model A (Claude 3.7)"| A4["Branch A: Turn 4"]:::node --> A5["Branch A: Turn 5"]:::node
-    Fork -->|"Branch B: Model B (Grok-3)"| B4["Branch B: Turn 4"]:::node --> B5["Branch B: Turn 5"]:::node
+    Fork -->|"Branch A: Strategy A"| A4["Branch A: Turn 4"]:::node --> A5["Branch A: Turn 5"]:::node
+    Fork -->|"Branch B: Strategy B"| B4["Branch B: Turn 4"]:::node --> B5["Branch B: Turn 5"]:::node
     
-    A5 & B5 --> Judge{"Evaluator Rubric"}:::fork
-    Judge -->|"Selects Branch A"| Trunk["Commit Branch A to Canonical Trunk"]:::node
+    A5 & B5 --> Judge{"Evaluate Outcomes"}:::fork
+    Judge -->|"Strategy A succeeded"| Commit["Commit Strategy A to Master State"]:::node
 ```
 
-### Production Applications of Session Forking
+### Why Session Branching Matters in Production
 
-1. **Speculative Branching & Exploration**: An agent tasked with resolving a complex production bug can fork at Turn 3 to explore two divergent hypotheses simultaneously (Hypothesis A: Database lock contention; Hypothesis B: Memory leak in worker). The system evaluates both branches in parallel and commits only the successful resolution.
-2. **Time-Travel Post-Mortem Debugging**: When an agent hallucinates at Turn 8 in production, engineers do not have to guess what happened. They can load checkpoint `chk_07`, replay Turn 8 in a local sandbox with deterministic mocks, inspect the raw token log-probabilities, and identify the exact prompt flaw.
+* **Exploring Multiple Strategies in Parallel**: An automated coding agent debugging an issue can branch at Turn 3 to test two hypotheses simultaneously. It tests both in separate sandboxes and commits only the winning fix.
+* **Time-Travel Debugging**: If an agent makes a mistake on Turn 8 in production, developers don't have to guess why. They can load Checkpoint 7 locally, replay Turn 8 with exact inputs, and pinpoint the issue immediately.
 
 ---
 
-## 6. Context Compaction & Observation Pruning
+## 6. Context Trimming: Keeping Prompts Lean
 
-In long-running ReAct sessions, raw tool responses (e.g., 20-page PDF text extractions, 1,000-line JSON query outputs) quickly saturate the foundation model's context window. This triggers the **Lost in the Middle** effect, where the model forgets its core system instructions and begins hallucinating.
+As an agent calls tools, raw responses (like large JSON payloads or log files) quickly fill up the model's context window. This causes the model to lose track of initial instructions and wastes tokens.
 
-Enterprise runtimes enforce a **Three-Tier Context Pruning Pipeline**:
+A production runtime uses a **Three-Tier Context Cleaning Pipeline**:
 
 ```mermaid
 flowchart TD
     classDef raw fill:#ffebee,stroke:#c62828,stroke-width:1px;
-    classDef tier fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    classDef clean fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
     classDef out fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
 
-    Raw["Raw Tool Output (15,000 Tokens of JSON / HTML / Logs)"]:::raw
+    Raw["Raw Tool Output (15,000 tokens of raw JSON & logs)"]:::raw
     
-    --> T1["TIER 1: DETERMINISTIC STRUCTURAL PROJECTION\n• Strip null / empty keys\n• Filter strictly to schema-whitelisted fields\n• Truncate arrays to top 5 items\n(Achieves 75-80% token reduction)"]:::tier
+    --> T1["TIER 1: STRUCTURED FILTERING\n• Remove empty and null fields\n• Keep only fields needed by schema\n• Limit array results to top 5 items\n(Reduces payload by 75-80%)"]:::clean
     
-    --> T2["TIER 2: MODEL-DRIVEN SUMMARIZATION SCRATCHPAD\n• If payload still > 1,500 tokens, invoke fast model (Haiku / Flash)\n• Extract only verified facts and metrics directly relevant to goal\n(Condenses payload to 200 tokens)"]:::tier
+    --> T2["TIER 2: TARGETED SUMMARIZATION\n• If payload is still over 1,500 tokens, call a fast model\n• Extract only the key numbers and facts needed for the goal\n(Condenses payload to ~200 tokens)"]:::clean
     
-    --> T3["TIER 3: SLIDING-WINDOW POINTER CACHING\n• For tool observations older than 2 turns, replace raw text with pointer:\n'[Tool Observation ORD-9021: Stored in Checkpoint Key chk_9981]'\n• Full text available on-demand via fetch_cached_observation() tool"]:::tier
+    --> T3["TIER 3: POINTER CACHING\n• For tool outputs older than 2 turns, replace full text with pointer:\n'[Output for Order 9021 saved in record #chk_02]'\n• Full text fetched only if agent calls a lookup tool"]:::clean
     
-    --> Clean["Optimized Context Window (Lean, High-Signal, High-Attention)"]:::out
+    --> Clean["Optimized, High-Attention Context Window"]:::out
 ```
-
-### Prose Diagram Walkthrough: Context Pruning Pipeline
-
-1. **Tier 1 (Deterministic Structural Projection)**: Before passing API data to the LLM, application code filters out tracking metadata, null values, and internal timestamps, capping array lengths.
-2. **Tier 2 (Model-Driven Summarization)**: If the filtered data remains bulky, a sub-second, low-cost model extracts key entities and quantitative metrics into a structured 200-token summary.
-3. **Tier 3 (Sliding-Window Pointer Caching)**: Historical tool outputs older than two turns are pruned from the active prompt and replaced with immutable database pointers. If the agent later needs the full JSON, it can invoke a dedicated lookup tool.
 
 ---
 
-## 7. Distributed Observability: OpenTelemetry GenAI Semantic Spans
+## 7. Production Python 3.12+ Implementation: SQLite Event Log & Saga Coordinator
 
-Standard Application Performance Monitoring (APM) tools (e.g., Datadog, New Relic) trace HTTP requests and database queries, but fail to provide visibility into agent reasoning trajectories.
-
-Production agent architectures instrument every step using the **OpenTelemetry (OTel) GenAI Semantic Conventions**:
-
-```mermaid
-flowchart TD
-    classDef trace fill:#ede7f6,stroke:#512da8,stroke-width:2px;
-    classDef span fill:#f9f9f9,stroke:#333,stroke-width:1px;
-
-    Root["Trace: AgentSessionSpan (session_id='sess-8821', correlation_id='#corr-99')"]:::trace
-    
-    Root --> Turn1["Span: AgentTurn (turn=1, phase='PLAN')"]:::span
-    Turn1 --> LLM1["Span: gen_ai.client (model='claude-3-7-sonnet', tokens=1450)"]:::span
-    
-    Root --> Turn2["Span: AgentTurn (turn=2, phase='ACT')"]:::span
-    Turn2 --> Tool1["Span: ToolExecution (tool.name='query_customer_db', status='OK')"]:::span
-    Turn2 --> WAL1["Span: WALCommit (checkpoint_id='chk_02')"]:::span
-    
-    Root --> Turn3["Span: AgentTurn (turn=3, phase='HITL_SUSPEND')"]:::span
-    Turn3 --> HITL1["Span: AwaitApprovalWebhook (status='SUSPENDED', approver='VP_FINANCE')"]:::span
-```
-
-### Required GenAI Semantic Attributes
-
-| OpenTelemetry Attribute Key | Type | Description & Example |
-|---|---|---|
-| `gen_ai.system` | `string` | Framework or provider (`openai`, `anthropic`, `langgraph`, `maf`) |
-| `gen_ai.request.model` | `string` | Model identifier (`claude-3-7-sonnet-20250219`, `grok-3`) |
-| `gen_ai.agent.turn` | `int` | Sequential turn index within the active session (`1`, `2`, `3`) |
-| `gen_ai.tool.name` | `string` | Name of the tool invoked (`refund_credit_card_charge`) |
-| `gen_ai.tool.call_id` | `string` | Cryptographic correlation hash of tool arguments |
-| `gen_ai.saga.action_type` | `string` | Transaction classification (`FORWARD` or `COMPENSATING`) |
-
----
-
-## 8. Production Python 3.12+ Implementation: SQLite-Backed WAL & Saga Coordinator
-
-Below is a complete, runnable Python 3.12+ implementation demonstrating an **Event-Sourced Write-Ahead Log (WAL)**, **Deterministic State Rehydration**, and a **Saga Rollback Coordinator**.
+Here is a complete, runnable Python 3.12+ implementation demonstrating an **Event-Sourced Write-Ahead Log**, **State Rehydration**, and a **Saga Rollback Coordinator**:
 
 ```python
 """
-Production Stateful Agent Runtime with SQLite WAL & Distributed Saga Coordinator
-Implements: Append-Only Event Store, Crash Rehydration, and Reverse Compensating Rollbacks.
-Stack: Python 3.12+, SQLite3, Pydantic v2, Typed State Reducers
+Production Stateful Agent Runtime with SQLite WAL & Saga Coordinator
+Implements: Append-Only Event Store, Crash Recovery, and Reverse Rollbacks.
+Tech Stack: Python 3.12+, SQLite3, Pydantic v2, Typed State Reducers
 """
 
 from __future__ import annotations
 
 import json
 import sqlite3
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 from typing import Any, Callable, Dict, List, Optional
 from pydantic import BaseModel, Field
 
 
 # ============================================================================
-# 1. EVENT SCHEMAS & REDUCERS
+# 1. EVENT SCHEMAS & STATE REDUCER
 # ============================================================================
 
 class EventType(StrEnum):
-    SESSION_INITIALIZED = "SESSION_INITIALIZED"
-    THOUGHT_RECORDED = "THOUGHT_RECORDED"
+    SESSION_STARTED = "SESSION_STARTED"
+    THOUGHT_LOGGED = "THOUGHT_LOGGED"
     TOOL_DISPATCHED = "TOOL_DISPATCHED"
-    OBSERVATION_CAPTURED = "OBSERVATION_CAPTURED"
-    SAGA_STEP_REGISTERED = "SAGA_STEP_REGISTERED"
+    OBSERVATION_SAVED = "OBSERVATION_SAVED"
+    SAGA_STEP_SAVED = "SAGA_STEP_SAVED"
     SESSION_SUSPENDED = "SESSION_SUSPENDED"
-    SESSION_COMPLETED = "SESSION_COMPLETED"
+    SESSION_FINISHED = "SESSION_FINISHED"
 
 
 class AgentEvent(BaseModel):
@@ -327,45 +279,45 @@ class AgentSessionState(BaseModel):
     status: str = "ACTIVE"
 
 
-def state_reducer(state: AgentSessionState, event: AgentEvent) -> AgentSessionState:
-    """Pure state reducer: State(t+1) = Reducer(State(t), Event)."""
+def update_state(state: AgentSessionState, event: AgentEvent) -> AgentSessionState:
+    """Clean state reducer: merges new event into current state."""
     state.current_turn = max(state.current_turn, event.turn)
 
     match event.event_type:
-        case EventType.SESSION_INITIALIZED:
+        case EventType.SESSION_STARTED:
             state.status = "INITIALIZED"
-        case EventType.THOUGHT_RECORDED:
+        case EventType.THOUGHT_LOGGED:
             state.messages.append({"role": "assistant", "content": event.payload["thought"]})
-        case EventType.OBSERVATION_CAPTURED:
+        case EventType.OBSERVATION_SAVED:
             state.messages.append({"role": "tool", "content": json.dumps(event.payload["observation"])})
             state.accumulated_cost_usd += event.payload.get("cost_usd", 0.0)
-        case EventType.SAGA_STEP_REGISTERED:
+        case EventType.SAGA_STEP_SAVED:
             state.saga_journal.append(event.payload)
         case EventType.SESSION_SUSPENDED:
             state.status = "SUSPENDED"
-        case EventType.SESSION_COMPLETED:
+        case EventType.SESSION_FINISHED:
             state.status = "COMPLETED"
 
     return state
 
 
 # ============================================================================
-# 2. SQLITE EVENT-SOURCED WRITE-AHEAD LOG (WAL)
+# 2. SQLITE WRITE-AHEAD LOG (WAL)
 # ============================================================================
 
 class SQLiteEventLog:
-    """Durable append-only Write-Ahead Log for agent transactions."""
+    """Durable append-only event store for state persistence."""
 
     def __init__(self, db_path: str = ":memory:") -> None:
         self.db = sqlite3.connect(db_path)
         self.db.row_factory = sqlite3.Row
-        self._init_schema()
+        self._init_tables()
 
-    def _init_schema(self) -> None:
+    def _init_tables(self) -> None:
         with self.db:
             self.db.execute(
                 """
-                CREATE TABLE IF NOT EXISTS agent_events (
+                CREATE TABLE IF NOT EXISTS events (
                     event_id INTEGER PRIMARY KEY AUTOINCREMENT,
                     session_id TEXT NOT NULL,
                     turn INTEGER NOT NULL,
@@ -375,26 +327,24 @@ class SQLiteEventLog:
                 );
                 """
             )
-            self.db.execute(
-                "CREATE INDEX IF NOT EXISTS idx_sess ON agent_events(session_id);"
-            )
+            self.db.execute("CREATE INDEX IF NOT EXISTS idx_sess ON events(session_id);")
 
-    def append_event(self, event: AgentEvent) -> int:
-        """Atomically commits an event to the WAL."""
+    def append(self, event: AgentEvent) -> int:
+        """Atomically saves an event record before action runs."""
         with self.db:
             cursor = self.db.execute(
                 """
-                INSERT INTO agent_events (session_id, turn, event_type, payload)
+                INSERT INTO events (session_id, turn, event_type, payload)
                 VALUES (?, ?, ?, ?)
                 """,
                 (event.session_id, event.turn, event.event_type.value, json.dumps(event.payload)),
             )
             return cursor.lastrowid
 
-    def rehydrate_state(self, session_id: str) -> AgentSessionState:
-        """Reconstructs state by replaying all historical events through the reducer."""
+    def load_state(self, session_id: str) -> AgentSessionState:
+        """Restores state by reading events from database and running reducer."""
         cursor = self.db.execute(
-            "SELECT * FROM agent_events WHERE session_id = ? ORDER BY event_id ASC",
+            "SELECT * FROM events WHERE session_id = ? ORDER BY event_id ASC",
             (session_id,),
         )
         state = AgentSessionState(session_id=session_id)
@@ -407,7 +357,7 @@ class SQLiteEventLog:
                 payload=json.loads(row["payload"]),
                 timestamp=row["created_at"],
             )
-            state = state_reducer(state, event)
+            state = update_state(state, event)
         return state
 
 
@@ -415,27 +365,32 @@ class SQLiteEventLog:
 # 3. SAGA ROLLBACK COORDINATOR
 # ============================================================================
 
-class SagaRollbackCoordinator:
-    """Manages forward mutating registrations and reverse compensating executions."""
+class SagaCoordinator:
+    """Tracks mutating actions and coordinates reverse rollbacks upon failure."""
 
     def __init__(self, wal: SQLiteEventLog) -> None:
         self.wal = wal
-        self.compensating_tool_registry: Dict[str, Callable[[Dict[str, Any]], bool]] = {}
+        self.rollback_handlers: Dict[str, Callable[[Dict[str, Any]], bool]] = {}
 
-    def register_compensating_tool(
+    def register_rollback(
         self, tool_name: str, rollback_fn: Callable[[Dict[str, Any]], bool]
     ) -> None:
-        self.compensating_tool_registry[tool_name] = rollback_fn
+        self.rollback_handlers[tool_name] = rollback_fn
 
-    def record_forward_step(
-        self, session_id: str, turn: int, forward_tool: str, rollback_tool: str, rollback_args: Dict[str, Any]
+    def record_step(
+        self,
+        session_id: str,
+        turn: int,
+        forward_tool: str,
+        rollback_tool: str,
+        rollback_args: Dict[str, Any],
     ) -> None:
-        """Commits a step to the Saga journal in the WAL."""
-        self.wal.append_event(
+        """Records completed action and its rollback instructions in the log."""
+        self.wal.append(
             AgentEvent(
                 session_id=session_id,
                 turn=turn,
-                event_type=EventType.SAGA_STEP_REGISTERED,
+                event_type=EventType.SAGA_STEP_SAVED,
                 payload={
                     "forward_tool": forward_tool,
                     "rollback_tool": rollback_tool,
@@ -444,87 +399,83 @@ class SagaRollbackCoordinator:
             )
         )
 
-    def execute_saga_rollback(self, session_id: str) -> bool:
-        """
-        Executes registered compensating actions in REVERSE chronological order.
-        """
-        state = self.wal.rehydrate_state(session_id)
-        print(f"\n[SAGA COORDINATOR] Initiating reverse rollback for session: {session_id}")
-        
-        # Traverse saga journal in reverse order
+    def execute_rollback(self, session_id: str) -> bool:
+        """Executes rollbacks in REVERSE order."""
+        state = self.wal.load_state(session_id)
+        print(f"\n[Saga] Rolling back transactions for session: {session_id}")
+
         for step in reversed(state.saga_journal):
             rollback_tool = step["rollback_tool"]
             rollback_args = step["rollback_args"]
-            print(f"  -> Rolling back: {step['forward_tool']} via {rollback_tool}({rollback_args})")
-            
-            handler = self.compensating_tool_registry.get(rollback_tool)
+            print(f"  -> Undoing: {step['forward_tool']} by calling {rollback_tool}({rollback_args})")
+
+            handler = self.rollback_handlers.get(rollback_tool)
             if not handler:
-                raise RuntimeError(f"Missing compensating tool handler for: {rollback_tool}")
-            
-            success = handler(rollback_args)
-            if not success:
-                print(f"  ❌ CRITICAL: Compensating tool {rollback_tool} failed!")
+                raise RuntimeError(f"Missing rollback handler for: {rollback_tool}")
+
+            if not handler(rollback_args):
+                print(f"  ❌ Rollback failed for {rollback_tool}!")
                 return False
 
-        print("[SAGA COORDINATOR] Rollback completed successfully. System state consistent.\n")
+        print("[Saga] Rollback complete. Systems returned to clean state.\n")
         return True
 
 
 # ============================================================================
-# 4. VERIFICATION & SIMULATION RUNNER
+# 4. SIMULATION & VERIFICATION RUNNER
 # ============================================================================
 
-def mock_cancel_flight(args: Dict[str, Any]) -> bool:
-    print(f"     [SYSTEM API] Flight reservation {args['booking_id']} cancelled. Refund credited.")
+def cancel_flight_mock(args: Dict[str, Any]) -> bool:
+    print(f"     [External API] Cancelled flight {args['booking_id']}. Booking removed.")
     return True
 
-def mock_refund_payment(args: Dict[str, Any]) -> bool:
-    print(f"     [SYSTEM API] Payment transaction {args['tx_id']} refunded (${args['amount']:.2f}).")
+def refund_card_mock(args: Dict[str, Any]) -> bool:
+    print(f"     [External API] Refunded ${args['amount']:.2f} for transaction {args['tx_id']}.")
     return True
 
 def main() -> None:
     wal = SQLiteEventLog(":memory:")
-    saga = SagaRollbackCoordinator(wal)
+    saga = SagaCoordinator(wal)
 
-    # Register compensating handlers
-    saga.register_compensating_tool("cancel_flight_booking", mock_cancel_flight)
-    saga.register_compensating_tool("refund_credit_card", mock_refund_payment)
+    # Register rollback tools
+    saga.register_rollback("cancel_flight_booking", cancel_flight_mock)
+    saga.register_rollback("refund_credit_card", refund_card_mock)
 
-    session_id = "sess-booking-9921"
+    session_id = "sess-booking-101"
 
-    # Step 1: Initialize session in WAL
-    wal.append_event(AgentEvent(session_id=session_id, turn=0, event_type=EventType.SESSION_INITIALIZED, payload={}))
+    # Step 1: Initialize session
+    wal.append(AgentEvent(session_id=session_id, turn=0, event_type=EventType.SESSION_STARTED, payload={}))
 
-    # Step 2: Agent executes Step 1 (Book Flight) & logs to Saga
-    print("Executing Turn 1: Reserving Flight...")
-    saga.record_forward_step(
+    # Step 2: Book flight
+    print("Turn 1: Booking Flight...")
+    saga.record_step(
         session_id=session_id,
         turn=1,
-        forward_tool="book_flight_ticket",
+        forward_tool="book_flight",
         rollback_tool="cancel_flight_booking",
-        rollback_args={"booking_id": "FLIGHT-AA-401"},
+        rollback_args={"booking_id": "FLIGHT-BA-202"},
     )
 
-    # Step 3: Agent executes Step 2 (Charge Card) & logs to Saga
-    print("Executing Turn 2: Charging Corporate Card...")
-    saga.record_forward_step(
+    # Step 3: Charge corporate card
+    print("Turn 2: Charging Corporate Card...")
+    saga.record_step(
         session_id=session_id,
         turn=2,
-        forward_tool="charge_corporate_card",
+        forward_tool="charge_card",
         rollback_tool="refund_credit_card",
-        rollback_args={"tx_id": "TX-902188", "amount": 650.00},
+        rollback_args={"tx_id": "TX-881920", "amount": 540.00},
     )
 
-    # Step 4: Step 3 (Book Hotel) Fails with Quota Exceeded!
-    print("Executing Turn 3: Booking Hotel -> ❌ FAILS (Room Sold Out 409 Conflict)!")
+    # Step 4: Hotel booking fails
+    print("Turn 3: Booking Hotel -> ❌ FAILS (No rooms available)")
 
-    # Step 5: Simulate Pod Crash & Rehydration
-    print("\n--- SIMULATING CRASH & REHYDRATION ON REPLACEMENT NODE ---")
-    rehydrated_state = wal.rehydrate_state(session_id)
-    print(f"Rehydrated State: Turn={rehydrated_state.current_turn}, Saga Steps={len(rehydrated_state.saga_journal)}")
+    # Step 5: Simulate container restart and state recovery
+    print("\n--- Simulating Container Crash & Fast State Recovery ---")
+    recovered_state = wal.load_state(session_id)
+    print(f"Recovered State: Turn={recovered_state.current_turn}, Completed Saga Steps={len(recovered_state.saga_journal)}")
 
-    # Step 6: Execute Saga Rollback
-    saga.execute_saga_rollback(session_id)
+    # Step 6: Trigger automatic Saga rollback
+    saga.execute_rollback(session_id)
 
 
 if __name__ == "__main__":
@@ -533,47 +484,19 @@ if __name__ == "__main__":
 
 ---
 
-## 9. Production Failure Modes & Defensive Invariants
+## 8. Key Takeaways & Summary
 
-When implementing stateful agents and persistent WALs, enforce these architectural invariants:
-
-### Failure Mode 1: Non-Idempotent Tool Replays
-* **The Root Cause**: During crash rehydration or network retries, a tool invocation is executed a second time with the same parameters, producing duplicate charges or duplicated database rows.
-* **The Defensive Invariant**: **Cryptographic Idempotency Keys**. Every tool dispatched by the agent must include an `idempotency_key` generated from `SHA256(session_id + str(turn) + tool_name)`. Upstream APIs must cache and reject duplicate keys.
-
-### Failure Mode 2: Unbounded State Reducer Bloat
-* **The Root Cause**: Using naive list reducers (`messages.append(msg)`) across a 50-turn session results in multi-megabyte state snapshots. Deserializing and transferring this payload across Redis or PostgreSQL degrades throughput.
-* **The Defensive Invariant**: **Periodic Snapshot Compaction**. Every 5 turns, execute an offline compaction worker that prunes raw tool outputs older than 2 turns and commits a compressed snapshot checkpoint.
-
-### Failure Mode 3: Orphaned Saga Compensations
-* **The Root Cause**: A compensating tool fails midway through a rollback (e.g., payment gateway returns HTTP 503 during refund), leaving the system in a half-rolled-back state.
-* **The Defensive Invariant**: **Persistent Dead-Letter Compensation Queue (DLCQ)**. If a compensating tool fails, write the rollback event to a durable Dead-Letter Queue with exponential backoff and alert the human operations team.
-
----
-
-## 10. Hands-On Architectural Exercises & Lab Integration
-
-To apply stateful persistence and sagas to real-world architectures:
-
-1. **Stateful Agent with HITL**: Complete [Lab 1: Stateful Agent with HITL Approval](labs/lab1-stateful-agent-hitl.md). Build an agent that persists its state graph to disk and resumes execution after receiving an external webhook.
-2. **Distributed Saga Implementation**: Complete [Lab 4: Distributed Saga Pattern for Multi-Step Rollback](labs/lab4-saga-pattern.md). Implement forward execution and reverse compensating transactions across multi-service workflows.
-3. **C# Pipeline Architecture**: Review [`examples/MultiAgentPipeline.cs`](examples/MultiAgentPipeline.cs) to inspect how typed enterprise pipelines handle asynchronous message coordination and state checkpoints in .NET ecosystems.
-
----
-
-## 11. Key Takeaways & Summary
-
-* **State Durability is Non-Negotiable**: Never maintain agent state purely in memory. Container preemption or human approval halts will wipe out accumulated context.
-* **Model State as a Graph with Reducers**: Enforce `State_{t+1} = Reducer(State_t, Event_{t+1})` to guarantee deterministic state transitions and seamless time-travel debugging.
-* **Event-Sourced WAL Enables Instant Crash Recovery**: Write events to append-only storage before executing tools. Replacement workers can rehydrate state in 5 milliseconds.
-* **Every Mutating Action Demands a Compensating Tool**: Implement the Distributed Saga pattern to reverse multi-step actions in reverse topological order when late-stage steps fail.
-* **Prune Context Continuously**: Use structural projection, summarization scratchpads, and sliding-window pointer caching to prevent context window saturation.
+* **Do Not Rely on In-Memory State**: Server restarts and scaling events will wipe out conversation histories. Always save state events to a database.
+* **Use Graph State Machines with Reducers**: Make state updates clean, deterministic, and traceable so any session can be restored instantly.
+* **Write-Ahead Logs Prevent Loss**: Committing events to disk before actions execute allows replacement workers to recover state in milliseconds.
+* **Pair Every Mutating Tool with a Rollback**: Use the Distributed Saga pattern so that if an agent fails at step 4, steps 1, 2, and 3 are cleanly rolled back in reverse order.
+* **Keep Context Windows Clean**: Trim large JSON responses, discard null fields, and cache older outputs to keep prompts focused and affordable.
 
 ---
 
 ## 🧭 Navigation
 
-| [← Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 04: Agent Memory Systems & Cognitive Architectures →](04-agent-memory-systems-and-cognitive-architectures.md) |
+| [← Lesson 02: Agent Architecture: Harnesses & Loops](02-react-loops-and-execution-governors.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 04: Agent Memory Systems & Cognitive Architectures →](04-agent-memory-systems-and-cognitive-architectures.md) |
 |:---:|:---:|:---:|
 | **Previous Lesson** | **Phase Hub** | **Next Lesson** |
-| [Lab 1: Stateful Agent & HITL](labs/lab1-stateful-agent-hitl.md) | [Lab 4: Distributed Saga Pattern](labs/lab4-saga-pattern.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+| [Lab 1: Stateful Agent & Human Approvals](labs/lab1-stateful-agent-hitl.md) | [Lab 4: Distributed Saga Pattern](labs/lab4-saga-pattern.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |

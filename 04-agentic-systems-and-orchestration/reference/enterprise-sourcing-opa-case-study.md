@@ -18,7 +18,7 @@ A naive single-agent ReAct loop fails in enterprise sourcing for three systemic 
 3. **Zero Tolerance for Hallucinated Authority**: An agent must never be permitted to autonomously approve spend limits, alter standard indemnification clauses, or bypass required financial controls.
 
 > **The Hallucinated Authority Anti-Pattern**:
-> If you prompt an LLM: *"Verify if this \$150,000 purchase order requires CFO approval according to corporate policy,"* the model will occasionally decide that a Director's approval is sufficient, or hallucinate an exception based on friendly phrasing in an email. **In regulated enterprise systems, corporate policy and delegation of authority (DOA) must remain 100% deterministic.**
+> If you prompt an LLM: *"Verify if this $150,000 purchase order requires CFO approval according to corporate policy,"* the model will occasionally decide that a Director's approval is sufficient, or hallucinate an exception based on friendly phrasing in an email. **In regulated enterprise systems, corporate policy and delegation of authority (DOA) must remain 100% deterministic.**
 
 ---
 

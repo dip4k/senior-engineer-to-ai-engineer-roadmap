@@ -56,7 +56,7 @@ You lead the AI platform team at *FinHealth*, an enterprise wealth management an
 
 The implementation team did what 90% of tutorials recommend:
 1. Every time a user chats, an asynchronous worker takes the conversation turn, embeds it using a popular embedding model, and inserts the vector into a shared cloud vector database.
-2. In each turn, the agent takes the user’s incoming prompt, runs a top-$K$ cosine similarity query across the vector collection, and prepends the top 5 chunks into the LLM system prompt as `"Relevant Past Memories"`.
+2. In each turn, the agent takes the user’s incoming prompt, runs a top-K cosine similarity query across the vector collection, and prepends the top 5 chunks into the LLM system prompt as `"Relevant Past Memories"`.
 
 Sounds reasonable, right? Here is what actually happened at 2:00 AM:
 
@@ -243,12 +243,14 @@ Shoving raw semantic similarity into production is how agents fail. Here are the
 
 In 1885, German psychologist Hermann Ebbinghaus formulated the **Forgetting Curve**, proving human memory retention decays exponentially over time unless reinforced:
 
-$$R = e^{-\frac{\Delta t}{S}}$$
+```text
+R = e^(-Δt / S)
+```
 
 Where:
-- $R$ is Memory Retrievability (probability of recall).
-- $\Delta t$ is the elapsed time since the memory was last accessed or updated.
-- $S$ is Memory Stability (the strength or importance of the memory).
+- `R` is Memory Retrievability (probability of recall).
+- `Δt` is the elapsed time since the memory was last accessed or updated.
+- `S` is Memory Stability (the strength or importance of the memory).
 
 In agent architecture, a memory created 10 minutes ago should almost always have higher priority than an identical semantic memory recorded 6 months ago, **unless** the older memory has massive structural importance (e.g., an allergy or root password).
 
@@ -264,13 +266,15 @@ flowchart LR
 
 The mathematical production formula for composite memory ranking:
 
-$$\text{FinalScore}(m, q) = w_{\text{sim}} \cdot \text{CosineSim}(v_m, v_q) + w_{\text{rec}} \cdot e^{-\lambda (t_{\text{now}} - t_m)} + w_{\text{imp}} \cdot \frac{\text{Importance}(m)}{10}$$
+```text
+FinalScore(m, q) = w_sim * CosineSim(v_m, v_q) + w_rec * e^(-λ * (t_now - t_m)) + w_imp * (Importance(m) / 10)
+```
 
 Where typical production weights are:
-- $w_{\text{sim}} = 0.50$ (Relevance)
-- $w_{\text{rec}} = 0.30$ (Recency)
-- $w_{\text{imp}} = 0.20$ (Importance)
-- $\lambda$ (decay factor) = $\frac{\ln(2)}{t_{\text{half\_life}}}$. If half-life is 7 days (604,800 seconds), $\lambda \approx 1.14 \times 10^{-6}$.
+- `w_sim = 0.50` (Relevance)
+- `w_rec = 0.30` (Recency)
+- `w_imp = 0.20` (Importance)
+- `λ` (decay factor) = `ln(2) / t_half_life`. If half-life is 7 days (604,800 seconds), `λ ≈ 1.14e-6`.
 
 ### Pattern 2: LLM-Driven Importance & Saliency Scoring
 
@@ -298,12 +302,14 @@ Dense vector embeddings are notoriously terrible at exact keyword matches, such 
 
 **Reciprocal Rank Fusion (RRF)** combines dense vector rankings and sparse BM25 rankings without needing score normalization across different vector spaces:
 
-$$RRF\_Score(d \in D) = \sum_{m \in M} \frac{1}{k + r_m(d)}$$
+```text
+RRF_Score(d in D) = Σ [1 / (k + r_m(d))]
+```
 
 Where:
-- $M$ is the set of retrieval systems (e.g., $M = \{\text{Dense Vector}, \text{Sparse BM25}\}$).
-- $r_m(d)$ is the rank position of document $d$ in system $m$ (1-indexed).
-- $k$ is a constant smoothing parameter (empirically tuned to $60$).
+- `M` is the set of retrieval systems (e.g., Dense Vector and Sparse BM25).
+- `r_m(d)` is the rank position of document `d` in system `m` (1-indexed).
+- `k` is a constant smoothing parameter (empirically tuned to 60).
 
 ```mermaid
 flowchart TD
@@ -1331,7 +1337,7 @@ flowchart TD
 | :--- | :--- | :--- |
 | **M1: Namespaced Partitioning** | Multi-tenant memory engine implemented. | Querying User A's context returns zero vectors or text belonging to User B, even under identical high-similarity prompts. |
 | **M2: Temporal Decay Scoring** | Ebbinghaus decay math integrated. | A 30-day-old fact with importance 5 ranks strictly lower than an identical 10-minute-old fact with importance 5. |
-| **M3: Contradiction Invalidation** | Predicate invalidation logic active. | Changing a preference from *"Always use TypeScript"* to *"Switching to Go"* suppresses the TypeScript preference on turn $t+1$. |
+| **M3: Contradiction Invalidation** | Predicate invalidation logic active. | Changing a preference from *"Always use TypeScript"* to *"Switching to Go"* suppresses the TypeScript preference on turn t+1. |
 | **M4: Crypto-Shredding Compliance** | KMS key destruction workflow. | Invoking the shredder renders raw payloads undecipherable within 100ms without triggering an index rebuild. |
 
 ---
@@ -1339,7 +1345,7 @@ flowchart TD
 ### Key Takeaways & Architecture Checklist
 
 - [ ] **Working Memory** is ephemeral tokens in the context window; **Short-Term Memory** is thread history in a checkpointer; **Long-Term Memory** is namespaced semantic, episodic, and procedural storage.
-- [ ] **Never use pure cosine similarity** for long-term agent memory. Always combine vector similarity, temporal decay ($e^{-\lambda \Delta t}$), and importance scoring.
+- [ ] **Never use pure cosine similarity** for long-term agent memory. Always combine vector similarity, temporal decay (`e^(-λ * Δt)`), and importance scoring.
 - [ ] **Dense + Sparse Hybrid Search (RRF)** is mandatory for technical domains where exact error codes, IDs, and symbols clash with conceptual natural language.
 - [ ] **Vector databases cannot comply with GDPR Article 17** via raw deletion without catastrophic performance hits. Implement **Crypto-Shredding** with per-user KMS keys.
 - [ ] **Invalidate old predicates actively**. Without temporal validity ranges or retraction hooks, your agent will suffer from the "Zombie Fact" contradiction loop.

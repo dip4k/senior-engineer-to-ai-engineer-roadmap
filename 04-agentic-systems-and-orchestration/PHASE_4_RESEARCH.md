@@ -86,10 +86,10 @@ Autonomous agent orchestration underwent a profound industrial consolidation bet
 
 ### Candidate 5: Loop Engineering (Action Fingerprinting & Budget Decay)
 * **Topic**: Deterministic Control Planes for Bounded Autonomous Loops
-* **Why It Matters**: Without execution governors, agents enter infinite oscillation loops or suffer compounding error drift ($0.95^{10} \approx 59.9\%$). Loop engineering is the defining discipline of senior agent architecture.
+* **Why It Matters**: Without execution governors, agents enter infinite oscillation loops or suffer compounding error drift (0.95^10 ≈ 59.9%). Loop engineering is the defining discipline of senior agent architecture.
 * **Core Disciplines**:
   1. *Action Fingerprinting*: SHA-256 hashing of `(tool_name, json_canonical_args)` in a sliding window to detect duplicate calls.
-  2. *Ring-Buffer Cycle Detection*: Detecting multi-step cycles ($A \to B \to A \to B$).
+  2. *Ring-Buffer Cycle Detection*: Detecting multi-step cycles (A → B → A → B).
   3. *Progressive Budget Decay*: Real-time decrementing of token and cost allowances per turn.
   4. *Semantic Stuckness Heuristics*: LLM evaluator detecting when reasoning traces fail to make forward progress.
 * **Current Phase 4 Coverage**: Strong theoretical coverage in Section 5.1, but buried inside a monolithic document.

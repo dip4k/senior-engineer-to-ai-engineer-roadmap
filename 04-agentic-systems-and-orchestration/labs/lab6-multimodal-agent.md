@@ -54,11 +54,11 @@ Images are not "free" in context windows. Foundation models decompose images int
 
 * **OpenAI (GPT-4o / o-series)**:
   * Low-res mode: Fixed **85 tokens**.
-  * High-res mode: Scales image to fit $2048 \times 2048$, resizes shortest edge to 768px, tiles into $512 \times 512$ grids. Each tile costs **170 tokens** + 85 base tokens.
-  * Formula: $\text{Tokens} = 85 + (170 \times \text{Tiles})$.
+  * High-res mode: Scales image to fit 2048 x 2048, resizes shortest edge to 768px, tiles into 512 x 512 grids. Each tile costs **170 tokens** + 85 base tokens.
+  * Formula: `Tokens = 85 + (170 * Tiles)`.
 * **Anthropic (Claude 3.5 / 3.7 Sonnet / Claude 4)**:
-  * Scales images up to $1568 \times 1568$ pixels.
-  * Formula: $\text{Tokens} \approx \frac{\text{Width} \times \text{Height}}{750}$. A $1024 \times 1024$ image consumes $\approx 1,398$ tokens.
+  * Scales images up to 1568 x 1568 pixels.
+  * Formula: `Tokens ≈ (Width * Height) / 750`. A 1024 x 1024 image consumes ≈ 1,398 tokens.
 * **Google (Gemini 2.0 / 2.5 Flash & Pro)**:
   * Native patch encoding: Fixed **258 tokens** per image tile (or video frame). Ultra-low-cost billing ($0.075/1M on Flash).
 
@@ -71,8 +71,8 @@ xychart-beta
 ```
 
 > [!WARNING]
-> **The 100-Page Document Trap**: Ingesting a 100-page scanned legal PDF at full $300\text{ DPI}$ without downsampling will consume over **350,000 visual tokens** in a single call—saturating token budgets and incurring massive latency penalties.
-> **Production Fix**: Pre-process documents via an adaptive rasterizer: render at $150\text{ DPI}$, convert to grayscale if color is irrelevant, and cap longest dimension to $1568\text{px}$.
+> **The 100-Page Document Trap**: Ingesting a 100-page scanned legal PDF at full 300 DPI without downsampling will consume over **350,000 visual tokens** in a single call—saturating token budgets and incurring massive latency penalties.
+> **Production Fix**: Pre-process documents via an adaptive rasterizer: render at 150 DPI, convert to grayscale if color is irrelevant, and cap longest dimension to 1568px.
 
 ---
 
@@ -298,10 +298,10 @@ Build an automated **Dashboard Health & Infrastructure Topology Auditor**:
 2. Ingest the image via Gemini 2.5 Flash or Claude 3.7 with high-res vision tokens.
 3. Extract all service nodes, edge connections, and active alerts.
 4. Detect if any Single Point of Failure (SPOF) or un-replicated database instance exists in the visual topology.
-5. If an anomaly is detected, emit a structured alert with precise $(x, y)$ coordinate bounding boxes to highlight on the UI.
+5. If an anomaly is detected, emit a structured alert with precise (x, y) coordinate bounding boxes to highlight on the UI.
 
 ### 🧪 Acceptance Criteria
-- [ ] Image rasterizer caps resolution to $1568 \times 1568$ to avoid token exhaustion.
+- [ ] Image rasterizer caps resolution to 1568 x 1568 to avoid token exhaustion.
 - [ ] Extraction output adheres 100% to a strict Pydantic model (`ArchitectureAuditReport`).
 - [ ] Dual-quarantine parser rejects low-opacity adversarial text injections.
-- [ ] End-to-end execution completes with $< 1,800\text{ms}$ latency using Gemini 2.5 Flash.
+- [ ] End-to-end execution completes with < 1,800ms latency using Gemini 2.5 Flash.
