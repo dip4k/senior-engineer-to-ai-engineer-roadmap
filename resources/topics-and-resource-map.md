@@ -260,6 +260,18 @@
 - **[OpenAI Structured Outputs Guide](https://platform.openai.com/docs/guides/structured-outputs)**: Constrained grammar decoding and 100% strict JSON schema enforcement.
 - **[OpenAI Reasoning Models Guide](https://platform.openai.com/docs/guides/reasoning)**: Test-time compute mechanics, reasoning tokens, and `reasoning_effort` tuning.
 
+### xAI Platform (Grok)
+- **[xAI Developer Documentation](https://docs.x.ai/)**: Reference documentation for Grok-3, Grok-3 Mini, and Grok Thinking reasoning models.
+- **[xAI Function Calling & Tool Use](https://docs.x.ai/guides/tools)**: OpenAI-compatible tool calling, parallel function execution, and built-in tools (web search, code interpreter).
+- **[xAI Structured Outputs Guide](https://docs.x.ai/guides/structured-outputs)**: Strict JSON schema enforcement via `response_format={"type": "json_schema"}`.
+- **[xAI Colossus Supercluster Infrastructure](https://x.ai/blog/colossus)**: High-bandwidth 100K-200K H100/H200 GPU supercluster architecture powering massive-scale inference and test-time reasoning.
+
+### Meta AI & Open Weights Ecosystem (Llama)
+- **[Meta Llama Documentation & Hub](https://llama.meta.com/)**: Primary portal for Llama 3.1, 3.2 (multimodal & lightweight edge 1B/3B), and 3.3 (70B) architectures.
+- **[Meta Llama Stack (`llama-stack`)](https://github.com/meta-llama/llama-stack)**: Standardized open API suite for building agentic AI applications: inference, memory, safety (Llama Guard 3, Prompt Guard), Vector IO / RAG, and tool runtimes.
+- **[Llama Stack MCP Provider](https://github.com/meta-llama/llama-stack-apps)**: Native Model Context Protocol (MCP) tool integration, enabling Llama models to consume standard MCP tool servers.
+- **[Meta Llama Tool Use & Prompt Formats](https://llama.meta.com/docs/model-cards-and-prompt-formats/llama3_1/)**: Special token format for system instructions, `<|python_tag|>` code interpreter execution, and custom JSON tool routing.
+
 ---
 
 ## 🏛️ Core GitHub Repositories to Bookmark
@@ -268,6 +280,7 @@
 |:---|:---|:---|:---:|
 | [modelcontextprotocol/specification](https://github.com/modelcontextprotocol/specification) | Linux Foundation | The JSON-RPC 2.0 open standard specification for Model Context Protocol | Phase 03 |
 | [anthropics/courses](https://github.com/anthropics/courses) | Anthropic | Interactive developer masterclasses on Tool Use, Prompting, and MCP | Phase 01, 03 |
+| [meta-llama/llama-stack](https://github.com/meta-llama/llama-stack) | Meta AI | Unified, modular client/server APIs for agentic tool use, memory, and RAG | Phase 02, 03, 04 |
 | [google/adk-docs](https://github.com/google/adk-docs) | Google | Documentation and code-first guides for Google Agent Development Kit | Phase 04 |
 | [googleapis/python-genai](https://github.com/googleapis/python-genai) | Google | Current official Python SDK for Gemini 2.0/2.5 and Vertex AI | Phase 00, 01 |
 | [microsoft/semantic-kernel](https://github.com/microsoft/semantic-kernel) | Microsoft | Enterprise agent orchestration SDK for C# / .NET 9 and Python | Phase 04 |

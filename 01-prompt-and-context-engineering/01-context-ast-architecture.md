@@ -231,7 +231,7 @@ FINAL_JSON_PAYLOAD
 ```
 
 > [!NOTE]
-> **Reasoning Model Interaction**: When working with native reasoning models (OpenAI `o1`/`o3-mini`, Claude 3.7 Extended Thinking, DeepSeek-R1), the model generates its own internal thinking tokens automatically. In those models, explicit prompt-based CoT instructions (`"Think step by step"`) are redundant and waste context tokens.
+> **Reasoning Model Interaction**: When working with native reasoning models (OpenAI `o1`/`o3-mini`, Claude 3.7 Extended Thinking, xAI `grok-3-thinking`, DeepSeek-R1), the model generates its own internal thinking tokens automatically. In those models, explicit prompt-based CoT instructions (`"Think step by step"`) are redundant and waste context tokens.
 
 ---
 

@@ -180,6 +180,8 @@ Tested, production-grade reference implementations are available in the [`exampl
 * [Model Context Protocol — Official Specification](https://modelcontextprotocol.io/specification/latest): The formal JSON-RPC 2.0 schema for Tools, Resources, Prompts, Sampling, and Elicitation.
 * [JSON-RPC 2.0 Specification](https://www.jsonrpc.org/specification): Authoritative wire protocol RFC for all MCP communication.
 * [JSON Schema Draft 2020-12](https://json-schema.org/draft/2020-12/release-notes): The standard governing structural constraints for tool parameters.
+* [Meta Llama Stack (`llama-stack`)](https://github.com/meta-llama/llama-stack): Unified open-weights agent tooling framework with native MCP provider integration.
+* [xAI Developer Documentation (Grok-3 Tools)](https://docs.x.ai/): Reference specifications for OpenAI-compatible function calling, structured schemas, and reasoning models.
 * [OWASP Top 10 for Large Language Models](https://genai.owasp.org/): Security guide covering Indirect Prompt Injection (LLM01) and Excessive Agency (LLM08).
 * [Sqlglot AST Parser](https://github.com/tobymao/sqlglot): Python SQL parser and transpiler for deterministic read-only query enforcement.
 * [FastMCP Library](https://github.com/PrefectHQ/fastmcp): High-level Python framework for building MCP servers and clients.

@@ -311,6 +311,37 @@ public sealed class TelemetryPlugin
 
 ---
 
+### 4. Meta Llama Stack: MCP Tool Engine Provider
+
+In the open-weights ecosystem, **Meta Llama Stack (`llama-stack`)** provides first-class support for the Model Context Protocol, enabling Llama 3.1/3.3 models to consume standard MCP servers as dynamic tool providers:
+
+```python
+"""
+llama_stack_mcp_client.py
+Configuring an MCP Server inside the Meta Llama Stack Tool Engine.
+Requirements: pip install llama-stack-client
+"""
+
+from llama_stack_client import LlamaStackClient
+
+client = LlamaStackClient(base_url="http://localhost:5000")
+
+# Register an external MCP server into the Llama Stack agent catalog
+client.toolgroups.register(
+    toolgroup_id="enterprise::observability_mcp",
+    provider_id="model-context-protocol",
+    mcp_endpoint={
+        "uri": "http://localhost:8080/mcp",
+        "protocol_version": "2026-07-28"
+    }
+)
+
+# Agents instantiated in Llama Stack automatically discover all tools
+# exposed by the registered MCP server via tools/list
+```
+
+---
+
 ## 5. Systems Failure Modes & Anti-Patterns
 
 ### Failure Mode 1: Tool Overloading (Using Tools Where Resources Belong)

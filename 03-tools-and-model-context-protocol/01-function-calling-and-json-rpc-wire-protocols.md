@@ -175,26 +175,32 @@ The receiver **must not** return a response to a notification. Notifications are
 
 ## 4. Provider-Native Tool Schemas & Constrained Decoding
 
-Before an LLM can generate a JSON-RPC request, it must be provided with a catalog of available tools. Frontier providers (OpenAI, Anthropic, Gemini) accept tool declarations structured under **JSON Schema Draft 2020-12**.
+Before an LLM can generate a JSON-RPC request, it must be provided with a catalog of available tools. Frontier and open-weights providers (OpenAI, xAI, Anthropic, Gemini, Meta Llama) accept tool declarations structured under **JSON Schema Draft 2020-12**.
 
-### Provider Schema Ingestion
+### Provider Tool Schema Comparison Matrix
 ```text
-Provider Tool Schema Comparison:
-+-------------------+----------------------------+------------------------------------+
-| Dimension         | Anthropic Claude           | OpenAI / Gemini                    |
-+-------------------+----------------------------+------------------------------------+
-| Top-level Key     | `tools`: [...]             | `tools`: [{"type": "function"}]    |
-| Parameter Schema  | `input_schema`: {...}      | `function`: {"parameters": {...}}  |
-| Strict Enforcement| Native JSON Schema         | `strict: true` (Structured Outputs)|
-| Choice Directive  | `tool_choice`: {"type":...}| `tool_choice`: "auto" | "required" |
-+-------------------+----------------------------+------------------------------------+
++-------------------+----------------------------+------------------------------------+------------------------------------+
+| Dimension         | Anthropic Claude           | OpenAI & xAI Grok-3                | Meta Llama 3.x / Llama Stack       |
++-------------------+----------------------------+------------------------------------+------------------------------------+
+| Top-level Key     | `tools`: [...]             | `tools`: [{"type": "function"}]    | `tools`: [...] or `tool_prompt`    |
+| Parameter Schema  | `input_schema`: {...}      | `function`: {"parameters": {...}}  | `parameters`: {...} (JSON Schema)  |
+| Strict Enforcement| Native JSON Schema         | `strict: true` (Grammar DFA)       | XGrammar / Llama Stack validation  |
+| Choice Directive  | `tool_choice`: {"type":...}| `tool_choice`: "auto" | "required" | Native `<|python_tag|>` dispatch   |
+| Wire Format       | JSON-RPC / Claude Messages | OpenAI-compatible REST / Tools API | Special tokens or Llama Stack API  |
++-------------------+----------------------------+------------------------------------+------------------------------------+
 ```
+
+### Frontier Tool Invocation Primitives:
+1. **xAI Grok-3 API**: Follows the OpenAI-compatible function calling standard. Grok-3 supports parallel tool execution, built-in search and code execution, and strict JSON Schema parameter compilation (`strict: true`).
+2. **Meta Llama 3.x & Llama Stack**: Meta Llama models provide dual-mode tool invocation:
+   - *Native Text Tokens*: Emits tool calls via `<|python_tag|>` for code interpreter and structured function calls between `<|start_header_id|>ipython<|end_header_id|>` tokens.
+   - *Meta Llama Stack (`llama-stack`)*: Abstracted tool engine that translates standardized tool schemas into provider-agnostic execution requests, with native support for the Model Context Protocol (MCP).
 
 ### Constrained Decoding (FSM Logit Masking)
 When a model is instructed to output JSON matching a schema, naive prompting produces occasional syntax errors (trailing commas, unescaped quotes). Production inference engines solve this using **Grammar-Constrained Decoding**:
-1. At each token step $t$, the inference engine converts the target JSON Schema into a **Context-Free Grammar (CFG)** or **Finite State Machine (FSM)**.
+1. At each token step t, the inference engine converts the target JSON Schema into a **Context-Free Grammar (CFG)** or **Finite State Machine (FSM)**.
 2. The FSM determines the exact set of valid subsequent tokens according to JSON syntax and the schema.
-3. The engine applies a **Logit Bias Mask** ($-\infty$) over all invalid tokens in the vocabulary before softmax normalization:
+3. The engine applies a **Logit Bias Mask** (-infinity) over all invalid tokens in the vocabulary before softmax normalization:
 
 ```text
 Raw Logits -> [Mask tokens that violate JSON syntax or Schema] -> Softmax -> Sample

@@ -251,9 +251,9 @@ A common point of confusion for systems architects is the difference between the
 
 ---
 
-## 6. Real-World Host Configurations: Cursor, Claude Desktop & Claude Code
+## 6. Real-World Host Configurations: Cursor, Claude Desktop, Meta Llama Stack & llama.cpp
 
-Host applications load MCP servers using a standardized JSON configuration file.
+Host applications load and connect to MCP servers using standardized configuration files:
 
 ### Local Stdio Configuration (`claude_desktop_config.json` / Cursor Settings)
 ```json
@@ -296,6 +296,23 @@ Host applications load MCP servers using a standardized JSON configuration file.
     }
   }
 }
+```
+
+### Meta Llama Stack MCP Provider Configuration (`run.yaml`)
+In open-source enterprise deployments, **Meta Llama Stack (`llama-stack`)** connects sovereign Llama 3.1/3.3 models to external MCP servers through its unified tool engine:
+```yaml
+# llama-stack run.yaml snippet
+tool_groups:
+  - toolgroup_id: builtin::enterprise_mcp
+    provider_id: model-context-protocol
+    mcp_endpoint:
+      uri: "https://mcp.internal.enterprise.com/sap-gateway"
+      protocol_version: "2026-07-28"
+      headers:
+        Authorization: "Bearer ${env.ENTERPRISE_MCP_TOKEN}"
+
+# In llama.cpp CLI for local, air-gapped sovereign execution:
+# ./llama-cli -m models/Llama-3.3-70B-Instruct-Q4_K_M.gguf --mcp-server "python -m mcp_database_server"
 ```
 
 ---

@@ -81,11 +81,11 @@ flowchart LR
 |:---|:---|:---|
 | **Core Skill** | Prompt Engineering (phrasing tricks) | **Context Engineering** (compiled ASTs, budgeting, compaction) |
 | **Agent Maturity** | Research demos & fragile while-loops | **Loop Engineering** (action fingerprints, progressive budget decay) |
-| **Tool Calling** | Ad-hoc JSON blobs & fragile regex | **Model Context Protocol (MCP)** (Linux Foundation standard) |
+| **Tool Calling** | Ad-hoc JSON blobs & fragile regex | **Model Context Protocol (MCP)** (Linux Foundation standard; adopted by Anthropic, OpenAI, Meta Llama Stack, and llama.cpp) |
 | **Memory Architecture** | Raw chat history dumps in RAM | **4-Tier Memory Taxonomy** (Working, Short-Term, Long-Term, MaaS) |
 | **Multi-Agent Systems** | Uncontrolled conversational chatter | **Tri-Protocol Stack** (MCP + Google A2A + AG-UI) |
-| **Reasoning Engine** | Manual Chain-of-Thought prompts | **Native Thinking Tokens** (o3/o4-mini, Claude Thinking, DeepSeek-R1) |
-| **Context Ceilings** | 8K–128K tokens (frequent OOMs) | **200K–2M+ tokens** (MECW awareness & prompt caching) |
+| **Reasoning Engine** | Manual Chain-of-Thought prompts | **Native Thinking Tokens** (o3/o4-mini, Claude Thinking, Grok-3 Thinking, DeepSeek-R1) |
+| **Context Ceilings** | 8K–128K tokens (frequent OOMs) | **200K–2M+ tokens** (MECW awareness, Llama 3.x 128K, prompt caching) |
 | **Cost Profile** | \$30–60 / 1M tokens (GPT-4) | **\$0.075–3.00 / 1M tokens** (200x spread, 50% off Batch APIs) |
 | **Regulatory Compliance** | Voluntary best practices | **EU AI Act Enforced** (GPAI obligations, crypto-shredding) |
 | **Coding Workflow** | Single-line tab autocomplete | **Autonomous Agentic Coding** (Claude Code CLI, Cursor, Windsurf) |
@@ -98,13 +98,13 @@ The curriculum progresses systematically from silicon and hardware inference rea
 
 ```mermaid
 flowchart TD
-    S0["Phase 00: Foundations & Token Mechanics<br>• Test-Time Compute • KV-Cache • Reasoning Tokens • TTFT/TPS"] --> S1
+    S0["Phase 00: Foundations & Token Mechanics<br>• Colossus Scale • Test-Time Compute • KV-Cache • Thinking Tokens"] --> S1
     S1["Phase 01: Context Engineering — The Master Discipline<br>• Context AST • 13K Budgeting • 4-Tier Compaction • Schema Masking"] --> S2
     S1 --> S3
     
     subgraph CoreTracks["Parallel Industrial Tracks"]
-        S2["Phase 02: Advanced Enterprise RAG<br>• Late Chunking • Hybrid (HNSW+BM25) • GraphRAG • Rerankers"]
-        S3["Phase 03: Tools & Model Context Protocol<br>• Stateless MCP 2026 • Streamable HTTP • Tasks • Container Sandboxing"]
+        S2["Phase 02: Advanced Enterprise RAG<br>• Late Chunking • Hybrid (HNSW+BM25) • Llama Stack Vector IO • GraphRAG"]
+        S3["Phase 03: Tools & Model Context Protocol<br>• Stateless MCP 2026 • Streamable HTTP • Llama Stack MCP • MicroVMs"]
     end
     
     S2 --> S4
@@ -121,10 +121,10 @@ flowchart TD
 
 | Phase | Module Name | Core Architectural Deliverables | Duration | Target Level |
 |:---:|:---|:---|:---:|:---:|
-| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth wall, prefill vs decode, reasoning models (test-time compute), thinking token economics, SLMs (Phi-4, Gemma 2), and AWQ/GPTQ quantization mechanics. | 1 Week | Senior |
-| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, Prefix & Context Caching optimization, **Shared Semantic Layer integration (Cube / MetricFlow)**, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, and MECW context rot. | 1 Week | Senior |
-| **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), ACORN predicate-filtered search, DiskANN, and GraphRAG. | 2 Weeks | Lead |
-| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), Streamable HTTP/SSE, **Enterprise PaaS MCP Bridge (Copilot Studio & Cloud PaaS)**, Zero-Trust Tool Sandboxes (MicroVMs), financial idempotency keys, and tool schema caching. | 1 Week | Lead |
+| **00** | [**Foundations & Token Mechanics**](./00-foundations-and-token-mechanics/README.md) | Transformer physical reality, KV-cache sizing, memory bandwidth wall, prefill vs decode, reasoning models (test-time compute, Grok-3 Thinking), xAI Colossus 100K+ GPU supercluster scaling, SLMs (Phi-4, Gemma 2), and AWQ/GPTQ quantization mechanics. | 1 Week | Senior |
+| **01** | [**Context Engineering: The Master Discipline**](./01-prompt-and-context-engineering/README.md) | Context AST architecture, 13K token budgeting portfolios, Prefix & Context Caching optimization, **Shared Semantic Layer integration (Cube / MetricFlow)**, Meta Llama 3.x prompt tokens (`<|start_header_id|>`), xAI Grok-3 structured decoding, 4-tier compaction pipeline, Lost-in-the-Middle mitigation, and MECW context rot. | 1 Week | Senior |
+| **02** | [**RAG & Knowledge Systems**](./02-rag-and-knowledge-systems/README.md) | Chunking strategies, Late Chunking, Hybrid Search (Dense HNSW + Sparse BM25), Reciprocal Rank Fusion (RRF), ACORN predicate-filtered search, DiskANN, GraphRAG, and **Meta Llama Stack Vector IO sovereign retrieval**. | 2 Weeks | Lead |
+| **03** | [**Tools & Model Context Protocol (MCP)**](./03-tools-and-model-context-protocol/README.md) | The Linux Foundation MCP standard, Stateless Core (July 2026), Streamable HTTP, **Meta Llama Stack & llama.cpp MCP integration**, xAI Grok-3 tool calling, **Enterprise PaaS MCP Bridge (Copilot Studio & Cloud PaaS)**, Zero-Trust Tool Sandboxes (MicroVMs), and tool schema caching. | 1 Week | Lead |
 | **04** | [**Agentic Systems & Orchestration**](./04-agentic-systems-and-orchestration/README.md) | Event-Sourced Write-Ahead Log (WAL), crash rehydration, Loop Engineering (action hashing, budget decay), Microsoft Agent Framework (MAF GA), and the Tri-Protocol stack. | 2 Weeks | Staff |
 | **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and **Algorithmic Bias, Disparate Impact & Fairlearn audits (EU AI Act compliance)**. | 1 Week | Lead |
 | **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, multi-turn tool trajectory FSM validation, groundedness judges, **Explainable AI (XAI / SHAP attribution grounding)**, and OpenTelemetry `semantic-conventions-genai` repo standards. | 1 Week | Lead |

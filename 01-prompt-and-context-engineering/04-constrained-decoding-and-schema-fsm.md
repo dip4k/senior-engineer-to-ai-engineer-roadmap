@@ -119,29 +119,42 @@ Developed by .txt and Willard & Louf (2023), **Outlines** compiles regular expre
 
 ---
 
-## 6. Provider-Level Native Implementation: OpenAI Structured Outputs
+## 6. Provider-Level Native Implementations: OpenAI, xAI Grok-3, and Meta Llama
 
-For engineers utilizing cloud APIs rather than self-hosting vLLM, OpenAI formalized native grammar-constrained decoding via **Structured Outputs**:
+For engineers utilizing cloud and open-weight models rather than writing custom FSM compilers, frontier providers support native grammar-constrained decoding via standardized schema interfaces:
 
-```json
-{
-  "type": "json_schema",
-  "json_schema": {
-    "name": "UserComplianceRecord",
-    "strict": true,
-    "schema": { ... }
-  }
-}
+### 1. OpenAI & xAI Grok-3 API (`json_schema`)
+Both OpenAI (GPT-4o, o3-mini) and xAI (Grok-3, Grok-3 Mini) adopt the standardized JSON Schema response format:
+
+```python
+# OpenAI & xAI Grok-3 Native Grammar Decoding
+response = client.chat.completions.create(
+    model="grok-3-mini",  # or "gpt-4o"
+    messages=[{"role": "user", "content": "Extract customer record from email text"}],
+    response_format={
+        "type": "json_schema",
+        "json_schema": {
+            "name": "UserComplianceRecord",
+            "strict": True,
+            "schema": UserComplianceRecord.model_json_schema()
+        }
+    }
+)
 ```
 
-### The Strict Contract Rules:
-To enable `strict: true`, OpenAI compiles the JSON Schema into a grammar DFA on their backend. This imposes strict architectural constraints:
-1. `additionalProperties: false` is **mandatory** on all object schemas.
+#### The Strict Contract Invariants:
+To enable `strict: true` (or backend FSM compilation on xAI/OpenAI clusters):
+1. `additionalProperties: false` is **mandatory** on all object schemas to bound the DFA state graph.
 2. Every declared property must be explicitly included in the `required` array. Optional fields must be modeled as union types with `null`:
    ```json
    "remediation_summary": { "type": ["string", "null"] }
    ```
 3. Recursive schemas and arbitrary open-ended dictionaries (`dict[str, Any]`) are disallowed.
+
+### 2. Meta Llama 3.x & Meta Llama Stack
+In the open-weights ecosystem, Meta Llama models enforce structured outputs through two complementary paths:
+- **Self-Hosted Serving (vLLM / SGLang with XGrammar)**: Llama 3.1/3.2/3.3 natively utilize GPU-accelerated XGrammar logit masking kernels, achieving sub-millisecond JSON Schema enforcement.
+- **Meta Llama Stack (`llama-stack`)**: The official Llama Stack Inference API provides a unified `response_format={"type": "json_schema"}` contract, compiling schemas into underlying serving engine grammars across cloud endpoints and local `llama.cpp` runtimes.
 
 ---
 

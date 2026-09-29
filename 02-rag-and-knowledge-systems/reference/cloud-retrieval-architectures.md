@@ -135,6 +135,45 @@ In Google Cloud environments, **Vertex AI Search & Grounding** enables hybrid en
 
 ---
 
+## 6. Open-Source & Sovereign Enterprise Retrieval: Meta Llama Stack (Vector IO & Agentic RAG)
+
+For enterprises operating under strict data sovereignty, financial banking privacy, or defense air-gap requirements, managed hyperscaler clouds may be prohibited. The **Meta Llama Stack (`llama-stack`)** provides the industry standard open-weights enterprise retrieval architecture:
+
+```mermaid
+flowchart TD
+    subgraph Client["Agent Application"]
+        Agent["Llama Stack Agentic RAG Client"]
+    end
+
+    subgraph LlamaStackServer["META LLAMA STACK SERVER RUNTIME"]
+        VectorIO["Vector IO API Provider<br>(Unified Embeddings & Query Interface)"]
+        RAGRouter["Agentic RAG Engine<br>(Decides Parametric vs Non-Parametric)"]
+        Inference["Llama 3.1 / 3.3 (128K Context Window)<br>(vLLM / TGI Serving Engine)"]
+    end
+
+    subgraph StorageLayer["Sovereign Data Stores"]
+        Qdrant[("Qdrant / Milvus / PGVector")]
+        Inverted[("OpenSearch / Tantivy BM25")]
+    end
+
+    Client --> Agent
+    Agent --> RAGRouter
+    RAGRouter --> VectorIO
+    VectorIO --> Qdrant
+    VectorIO --> Inverted
+    VectorIO --> RAGRouter
+    RAGRouter --> Inference
+    Inference --> Client
+```
+
+### Key Architectural Components:
+1. **Unified Vector IO Provider Interface**: Abstracted API allowing organizations to switch seamlessly between Milvus, Qdrant, Chroma, and PostgreSQL `pgvector` without altering application code.
+2. **Native Agentic RAG**: Unlike naive static pipelines that retrieve chunks on every prompt, the Llama Stack Agent dynamically inspects user queries, determines if external knowledge is required, queries the vector provider, and synthesizes answers with attribution.
+3. **128K Context Exploitation**: Leverages Llama 3.1/3.3 native 128K context windows to ingest larger, enriched document spans while maintaining sub-second inference via prompt caching and vLLM integration.
+4. **Safety & Compliance Moderation**: Plugs directly into **Llama Guard 3** and **Prompt Guard** to sanitize incoming retrieval queries and filter toxic or compromised external data before context insertion.
+
+---
+
 ## 🧭 Navigation
 
 - **[← Phase 02 Hub](../README.md)**
