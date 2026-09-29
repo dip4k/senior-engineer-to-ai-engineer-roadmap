@@ -167,7 +167,31 @@ Instead of registering all enterprise tools globally:
 
 ---
 
-## 8. Concrete Scenario & Code: The Production Context Compactor
+## 8. Preserving Semantic Entities Under Compaction: Contextual Retrieval Augmentation
+
+When aggressive token budgeting and compaction are applied to retrieved evidence (Layer 3), a common failure mode is **referential detachment**.
+
+### The Entity Loss Trap Under Truncation
+Consider a 300-token chunk extracted from Page 42 of an enterprise Master Services Agreement:
+> *"The penalty for early termination is 25% of the remaining annual contract value, payable within 30 days of written notice."*
+
+If the compactor truncates or summarizes previous conversational turns and surrounding chunks to fit a tight 13K budget:
+- The model sees the penalty rule, but **loses the identity of the contracting entity, the governing law, and the contract effective date** (which resided on Page 1 or in an evicted turn).
+- The model either hallucinates the parties or refuses to answer.
+
+### The Architectural Solution: Contextual Retrieval Headers
+To ensure chunks remain self-contained even when the rest of the context window is aggressively compacted, enterprise pipelines apply **Contextual Retrieval Augmentation** (pioneered by Anthropic):
+
+1. **Offline Context Synthesis**: During ingestion (or via an inexpensive cached prefill pass), a fast model generates a concise 50–100 token situational summary for each chunk:
+   ```text
+   [Context: Master Services Agreement dated Jan 15 2025 between Acme Corp (Client) and Globex Corp (Vendor), governing Cloud Infrastructure Services under Delaware Law.]
+   ```
+2. **Fixed Header Budgeting**: In the context portfolio, allocate a fixed **75 tokens per retrieved chunk** for the contextual header.
+3. **Compaction Resilience**: Even if historical dialogue is compressed via Tier 3 summarization or externalized via Tier 4, every retrieved chunk in Layer 3 retains its core entity anchors, preventing hallucination.
+
+---
+
+## 9. Concrete Scenario & Code: The Production Context Compactor
 
 Below is a complete, runnable Python 3.12+ implementation of a `ContextCompactor` executing Tier 1 (deterministic trimming) and Tier 2 (tool payload masking) using `tiktoken`.
 

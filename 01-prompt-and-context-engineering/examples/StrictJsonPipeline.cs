@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
+using System.ClientModel;
 using Azure.AI.OpenAI;
 using OpenAI.Chat;
 

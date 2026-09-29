@@ -178,9 +178,11 @@ flowchart TD
 ```
 
 ### Step-by-Step RadixAttention Walkthrough:
-1. **Tree-Structured Radix Trie**: The inference server maintains a Radix Tree of all cached token sequences across all active tenants in GPU memory.
-2. **Automatic Prefix Forking**: Multiple distinct user requests sharing the same system prompt branch off from the same parent KV-cache node.
-3. **Zero Configuration**: Developers do not need to set manual breakpoints. The engine automatically traverses the tree, identifies the longest common prefix match, and reuses pre-existing memory pages via PagedAttention.
+1. **Tree-Structured Radix Trie**: Unlike linear prompt caching (which only tracks a single contiguous string from token 0), the inference server maintains a Radix Tree of all cached token sequences across all active requests in GPU memory.
+2. **Automatic Prefix Forking**: Multiple distinct user requests sharing the same system prompt branch off from the same parent KV-cache node. When Request 1 diverges at Token 5,000, Request 2 can still reuse the parent 5,000 tokens while extending its own independent branch.
+3. **Zero-Configuration Prefix Matching**: Developers do not need to set manual breakpoints or HTTP headers. The engine automatically traverses the tree, identifies the longest common prefix match, and reuses pre-existing physical memory pages via PagedAttention.
+4. **LRU Tree Eviction Under VRAM Pressure**: When GPU memory approaches its capacity threshold, the serving engine executes Least Recently Used (LRU) pruning on the leaf nodes of the radix tree, preserving high-frequency root nodes (system prompts and few-shot portfolios) while discarding stale request tails.
+5. **Multi-Turn Agent Acceleration**: In an agent loop with 10 turns, Turns 1 through 9 are retained as ancestor nodes in the radix tree. On Turn 10, the engine only computes prefill attention for the single newest tool output, reducing multi-turn agent response latencies from seconds to milliseconds.
 
 ---
 

@@ -48,6 +48,9 @@
 - **RadixAttention Tree Prefix Caching (Lesson 03)**: Added deep dive on SGLang/vLLM tree-based KV-cache sharing across branching multi-turn sessions.
 - **RULER Long-Context Evaluation Benchmark (Lesson 05)**: Integrated empirical findings from the COLM 2024 paper (Hsieh et al.), proving why single-needle NIAH tests give architects false confidence and documenting multi-hop reasoning degradation beyond 32K–64K tokens.
 - **Boundary Pinning & Edge-Weighted Positional Reranking (Lesson 05)**: Provided mathematical and algorithmic solutions to mitigate the Lost-in-the-Middle U-curve.
+- **Developer Message Role & Assistant Prefilling Invariants (Lesson 01)**: Documented provider mapping for developer role invariants (`role: "developer"` vs Anthropic `system` vs Gemini `system_instruction`) and why assistant prefilling fails with HTTP 400 on reasoning models due to internal scratchpad execution.
+- **Contextual Retrieval Augmentation (Lesson 02)**: Integrated Anthropic's pattern of prepending 50–100 token document context headers to each chunk, ensuring referential and entity preservation under aggressive context compaction.
+- **RadixAttention Trie & LRU Eviction (Lesson 03)**: Documented tree-based prefix matching and multi-turn agent acceleration in SGLang/vLLM.
 
 ---
 
@@ -58,7 +61,7 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 3. `01-context-ast-architecture.md`: 4-Tier Enterprise Role Hierarchy (`flowchart TD`) with 4-step walkthrough.
 4. `02-token-budgeting-and-compaction.md`: 4-Tier Compaction Escalation Pipeline (`flowchart TD`) with 5-step walkthrough.
 5. `03-prefix-and-prompt-caching.md`: Cold Cache Prefill vs. Warm HBM Read (`flowchart LR`) with 4-step memory traffic walkthrough.
-6. `03-prefix-and-prompt-caching.md`: RadixAttention Dynamic Prefix Tree (`flowchart TD`) with 3-step walkthrough.
+6. `03-prefix-and-prompt-caching.md`: RadixAttention Dynamic Prefix Tree (`flowchart TD`) with 5-step walkthrough.
 7. `04-constrained-decoding-and-schema-fsm.md`: Token-Level FSM Logit Masking Loop (`flowchart TD`) with 5-step walkthrough.
 8. `05-mecw-and-context-rot.md`: Attention Retrieval Accuracy vs. Token Depth Position (`xychart-beta`) with 3-step U-curve walkthrough.
 9. `05-mecw-and-context-rot.md`: Boundary Pinning & Dual-Anchor Layout (`flowchart TD`) with 3-step walkthrough.
@@ -77,17 +80,18 @@ Created 8 high-signal Mermaid diagrams across the phase, all equipped with expli
 
 ## 6. Files Changed
 - **Created**:
-  - `01-prompt-and-context-engineering/01-context-ast-architecture.md` (New modular lesson, ~1,500 words)
-  - `01-prompt-and-context-engineering/02-token-budgeting-and-compaction.md` (New modular lesson, ~1,600 words)
-  - `01-prompt-and-context-engineering/03-prefix-and-prompt-caching.md` (New modular lesson, ~1,800 words)
+  - `01-prompt-and-context-engineering/01-context-ast-architecture.md` (New modular lesson, ~1,500 words; updated with developer role & prefill rules)
+  - `01-prompt-and-context-engineering/02-token-budgeting-and-compaction.md` (New modular lesson, ~1,600 words; updated with Contextual Retrieval)
+  - `01-prompt-and-context-engineering/03-prefix-and-prompt-caching.md` (New modular lesson, ~1,800 words; updated with RadixAttention trie mechanics)
   - `01-prompt-and-context-engineering/04-constrained-decoding-and-schema-fsm.md` (New modular lesson, ~1,800 words)
   - `01-prompt-and-context-engineering/05-mecw-and-context-rot.md` (New modular lesson, ~1,600 words)
+  - `01-prompt-and-context-engineering/examples/StrictJsonPipeline.csproj` (New .NET 9 project file; verified build)
   - `01-prompt-and-context-engineering/PHASE_01_REFACTORING_PLAN.md` (Architectural refactoring blueprint)
-  - `01-prompt-and-context-engineering/PHASE_1_REFACTORING_REPORT.md` (This standardized report)
+  - `01-prompt-and-context-engineering/REFACTORING_REPORT.md` (This standardized report)
 - **Modified**:
   - `01-prompt-and-context-engineering/README.md` (Rewritten from 1,276-line monolith into ~450-word Orientation Hub)
   - `01-prompt-and-context-engineering/labs/capstone-context-engineering-pipeline.md` (Repaired broken return anchor, aligned acceptance criteria)
-  - `01-prompt-and-context-engineering/examples/StrictJsonPipeline.cs` (Simplified from ASP.NET WebApplication to clean .NET 9 console harness)
+  - `01-prompt-and-context-engineering/examples/StrictJsonPipeline.cs` (Added using System.ClientModel, verified build)
   - `01-prompt-and-context-engineering/examples/context_pipeline.py` (Modernized to Anthropic GA API, `claude-3-7-sonnet-latest`, added reasoning prefill warnings)
   - `01-prompt-and-context-engineering/examples/README.md` (Updated descriptions and CLI execution commands)
 

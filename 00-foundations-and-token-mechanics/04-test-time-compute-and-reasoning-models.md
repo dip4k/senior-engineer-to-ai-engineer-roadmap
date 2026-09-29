@@ -99,6 +99,40 @@ flowchart TD
 4. **Internal Self-Correction & Backtracking**: When a reasoning branch violates a constraint or reaches a contradiction, the model generates an internal pivot token (e.g. `"Wait, that assumption fails under edge condition X. Let me re-evaluate."`), pruning the bad branch and exploring alternative paths.
 5. **Final Synthesis**: Once the solution is internally verified, the model summarizes its conclusion into the final visible output.
 
+### The RL Training Paradigm: PPO vs. GRPO (DeepSeek-R1 Innovation)
+
+How do models learn this self-correcting behavior without supervised fine-tuning? The breakthrough lies in **Group Relative Policy Optimization (GRPO)** (arXiv:2501.12948):
+
+```mermaid
+flowchart LR
+    subgraph PPO["Traditional PPO (Heavy VRAM Overhead)"]
+        direction TB
+        Actor["Actor Policy (π_θ)"]
+        Ref["Reference Model (π_ref)"]
+        Reward["Reward Model (r_ψ)"]
+        Critic["Critic / Value Model (V_ϕ)\n(Consumes 100% Actor VRAM)"]
+        Actor --- Critic
+    end
+
+    subgraph GRPO["DeepSeek GRPO (Critic-Less Efficiency)"]
+        direction TB
+        Prompt["Prompt q"] --> Group["Sample Group of G Outputs\n{o_1, o_2, ..., o_G}"]
+        Group --> RuleEval["Deterministic Rule-Based Verifiers\n(Unit Tests • Math Solvers • Syntax AST)"]
+        RuleEval --> RelAdv["Group Relative Advantage:\nA_i = (r_i - mean(r)) / std(r)"]
+        RelAdv --> Update["Direct Policy Update\n(Zero Critic Model in VRAM!)"]
+    end
+```
+
+#### Walkthrough of the PPO vs. GRPO Comparison:
+1. **The PPO Bottleneck**: Traditional Proximal Policy Optimization (PPO) requires maintaining a separate **Critic (Value) Model** of comparable size to the actor model in GPU VRAM to predict the expected future reward for each token state. This doubles hardware VRAM requirements and introduces training instability.
+2. **The GRPO Critic-Less Alternative**: GRPO eliminates the critic network entirely. For each prompt `q`, it samples a group of `G` candidate outputs (`G = 8` to `16`).
+3. **Group Relative Advantage**: It scores each output using objective rule-based verifiers and calculates relative advantage by normalizing against the group mean and standard deviation:
+   ```text
+   A_i = [ r_i - Mean({r_1, ..., r_G}) ] / [ StdDev({r_1, ..., r_G}) + ε ]
+   ```
+4. **Rule-Based Verification Over Neural Rewards**: Instead of subjective human preference models (which are vulnerable to reward hacking and sycophancy), GRPO uses deterministic verifiers: compiler check pass/fail, mathematical proof validation, and unit test results.
+5. **Emergence of "Aha Moments"**: Driven solely by rule-based rewards and relative advantage, models spontaneously learn to backtrack (`"Wait, that assumption fails under edge condition X. Let me rethink."`), re-read prompts, and self-verify before emitting visible tokens.
+
 ---
 
 ## 5. Frontier Reasoning Model Landscape

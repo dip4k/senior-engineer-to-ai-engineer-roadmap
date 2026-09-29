@@ -139,10 +139,30 @@ flowchart TD
 ### Step-by-Step Role Walkthrough:
 1. **Developer / System Role**: The highest-privilege execution plane.
    - *Platform Evolution*: OpenAI formalized the dedicated `developer` role in reasoning models (such as `o1` and `o3-mini`) to separate developer-defined application invariants from internal platform safety guardrails. In models supporting `developer`, use it for operational contracts; in standard chat endpoints, use `system`.
+   - *Provider Mapping*:
+     - **OpenAI**: `role: "developer"` (reasoning models) or `role: "system"` (standard chat).
+     - **Anthropic Claude**: Top-level `system` string/array parameter in the Messages API.
+     - **Google Gemini**: Top-level `system_instruction` object in GenerateContentConfig.
    - *Rule*: Never place untrusted user input inside the `developer` or `system` role.
 2. **User Role**: The untrusted client input plane. All external text, user instructions, and dynamic chat queries must be placed here.
 3. **Assistant Role**: Contains previous model responses, historical conversational turns, or intermediate reasoning steps.
 4. **Tool Role**: Contains the raw, structured output returned by external APIs or database lookups executed by the agent runtime.
+
+### Critical Operational Caveat: Assistant Prefilling Restrictions in Reasoning Models
+
+In classical prompt engineering (2023–2024), developers frequently used **Assistant Message Prefilling** to force JSON generation or trigger specific formatting:
+
+```json
+[
+  {"role": "user", "content": "Extract invoice data."},
+  {"role": "assistant", "content": "{\n  \"invoice_id\":"}
+]
+```
+
+> [!WARNING]
+> **Assistant Prefilling Fails with HTTP 400 on Reasoning Models**:  
+> Frontier reasoning models (such as OpenAI `o1`, `o3-mini`, and DeepSeek-R1) explicitly reject requests that conclude with an open assistant message. The reason is rooted in their inference mechanics: reasoning models must emit internal thinking/scratchpad tokens **before** generating any assistant-visible tokens. Prefilling the assistant turn disrupts the hidden scratchpad generation loop.  
+> **Production Fix**: Never use assistant prefilling to force structured output. Instead, rely on **Constrained Grammar Decoding (Lesson 04)** or strict JSON schemas.
 
 ---
 

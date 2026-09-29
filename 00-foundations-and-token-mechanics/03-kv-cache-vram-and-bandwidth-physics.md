@@ -156,7 +156,7 @@ A single user conversation spanning 8,192 tokens consumes **2.68 GB of dedicated
 
 ---
 
-## 5. Attention Architectures: MHA vs. MQA vs. GQA
+## 5. Attention Architectures: MHA vs. MQA vs. GQA vs. MLA
 
 Early transformers used **Multi-Head Attention (MHA)**, where every Query head has its own dedicated Key head and Value head. As context lengths expanded to 32k and 128k, MHA's KV-cache became completely unsustainable.
 
@@ -188,6 +188,15 @@ flowchart TD
         GQA_Note["Ratio: 4:1:1 (4 Q heads per KV group)\nKV-Cache Size: 25% (4x reduction)\nMatches MHA accuracy while saving 75% VRAM"]
     end
 
+    subgraph MLA["Multi-Head Latent Attention (MLA)\n(DeepSeek-V2, V3, R1)"]
+        Q_MLA["Query Heads (H = 128)"]
+        Latent["Compressed Latent Vector\nc_t^KV (Dimension: 512)"]
+        Absorb["Weight Absorption:\nW^UK absorbed into W^Q\nW^UV absorbed into W^O"]
+        Q_MLA --- Latent
+        Latent --- Absorb
+        MLA_Note["Compression: Low-Rank Latent Projection\nKV-Cache Size: ~6.7% (15x reduction)\nMatches MHA expressiveness at MQA memory footprint"]
+    end
+
     Q_MHA ~~~ Q_MQA
     K_MHA ~~~ K_MQA
     V_MHA ~~~ V_MQA
@@ -195,24 +204,47 @@ flowchart TD
     Q_MQA ~~~ Q_GQA
     K_MQA ~~~ K_GQA
     V_MQA ~~~ V_GQA
+
+    Q_GQA ~~~ Q_MLA
+    K_GQA ~~~ Latent
+    V_GQA ~~~ Absorb
 ```
 
 ### Walkthrough of Attention Architectures:
 1. **Multi-Head Attention (MHA)**:
    - Standard 1:1:1 ratio. If there are 64 Query heads, there are 64 Key heads and 64 Value heads.
-   - Offers maximum representational expressiveness, but the KV cache scales linearly with the total number of attention heads.
+   - Offers maximum representational expressiveness, but the KV cache scales linearly with the total number of attention heads (`2 × 2 × L × H × d_k × N × B`).
 2. **Multi-Query Attention (MQA)**:
    - All Query heads share a single Key head and a single Value head.
    - Reduces KV-cache memory by `H_Q` times (up to an 8x or 16x reduction).
-   - Drawback: Can degrade reasoning and fine-grained associative recall on complex multi-hop tasks.
+   - Drawback: Noticeable degradation in fine-grained associative recall and multi-hop reasoning.
 3. **Grouped-Query Attention (GQA)** (Ainslie et al., 2023):
    - Divides Query heads into `G` groups, with each group sharing one Key and one Value head.
    - For example, LLaMA-3-70B has 64 Query heads and 8 KV heads (8 Query heads per group).
    - **Result**: Delivers 99%+ of MHA's benchmark accuracy while cutting KV-cache footprint by **8x**!
+4. **Multi-Head Latent Attention (MLA)** (DeepSeek-V2/V3/R1):
+   - Solves the fundamental dilemma: how to compress KV cache down to MQA levels while preserving full MHA multi-head expressiveness.
+   - **Low-Rank Compression**: Down-projects input representations into a compact latent vector `c_t^{KV}` of dimension `d_c` (e.g. 512), storing strictly `c_t^{KV}` in GPU memory.
+   - **Weight Matrix Absorption**: During inference decoding, the up-projection matrices (`W^{UK}` and `W^{UV}`) do NOT expand into large per-head tensors in VRAM. Instead, `W^{UK}` is mathematically absorbed directly into the Query projection matrix `W^Q`, allowing attention dot-products to execute against the compact latent vector:
+     ```text
+     q_t · (k_s)^T = (W^Q · h_t) · (W^{UK} · c_s^{KV})^T = (h_t · W^Q · (W^{UK})^T) · (c_s^{KV})^T
+     ```
+   - **Result**: Achieves a **93%+ memory reduction** (comparable to MQA) with zero loss in multi-head expressive capacity.
+
+### Attention Architecture Comparison Matrix
+
+| Dimension | Multi-Head Attention (MHA) | Multi-Query Attention (MQA) | Grouped-Query Attention (GQA) | Multi-Head Latent Attention (MLA) |
+|---|---|---|---|---|
+| **KV Cache Footprint** | 100% (Baseline) | ~6.2% – 12.5% (8x–16x reduction) | ~12.5% – 25% (4x–8x reduction) | **~5% – 7% (15x–20x reduction)** |
+| **KV Heads Ratio** | 1 : 1 (Query : KV) | N : 1 (All Q share 1 KV) | N : G (e.g. 8 Q share 1 KV) | Low-Rank Latent Vector (`d_c = 512`) |
+| **Model Expressiveness** | Maximum (Full multi-head) | Degraded on complex logic | Near-lossless (>99% MHA) | **Full MHA Equivalent (Absorbed)** |
+| **Inference Mechanism** | Standard tensor slicing | Single KV head broadcast | Grouped KV head broadcast | **Matrix absorption into Q & O** |
+| **Exemplar Models** | GPT-3, GPT-4 (original) | PaLM, Falcon | LLaMA 3, Mistral, Qwen 2.5 | **DeepSeek-V2, DeepSeek-V3, DeepSeek-R1** |
 
 ### Memory Reduction Factor Formula:
 ```text
-Memory Reduction Factor = Total_Query_Heads / Total_KV_Heads
+GQA Memory Reduction Factor = Total_Query_Heads / Total_KV_Heads
+MLA Memory Reduction Factor = (2 × n_heads × d_head) / d_c
 ```
 
 ---

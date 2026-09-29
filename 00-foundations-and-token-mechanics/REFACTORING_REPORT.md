@@ -24,23 +24,27 @@
 ## 3. Advanced Content
 - **Roofline Model & Arithmetic Intensity**: Detailed mathematical formulation of the memory bandwidth wall, showing why decode generation on an H100 spends 99.8% of clock cycles waiting for HBM memory bus transfers.
 - **Exact KV-Cache Derivation**: Provided step-by-step mathematical derivation for GQA memory footprints (`2 × 2 × Layers × H_KV × d_k × Batch × SeqLen`).
+- **Multi-Head Latent Attention (MLA)**: Detailed DeepSeek-V2/V3/R1 low-rank latent compression and weight matrix absorption (`W^UK` absorbed into `W^Q`), achieving MQA-level memory footprints (~5–7% of MHA) with standard MHA multi-head expressiveness.
+- **Group Relative Policy Optimization (GRPO)**: Detailed critic-less RL advantage formulation (`A_i = (r_i - mean(r)) / std(r)`) and rule-based verification rewards powering DeepSeek-R1 test-time reasoning scaling and spontaneous self-reflection ("Aha moments").
 - **50:1 Thinking Token Asymmetry**: Detailed economic analysis of reasoning models (o3, Claude 3.7 Thinking, DeepSeek-R1), demonstrating how a 28-token answer can generate 5,240 hidden tokens billed as output.
 - **AWQ & GPTQ Algorithms**: Documented activation-aware outlier protection (top 1% salient channels) and second-order Taylor expansion inverse Hessian compensation.
 
 ---
 
 ## 4. Diagram Changes
-- Created 7 crisp Mermaid diagrams across the phase:
+- Created and updated crisp Mermaid diagrams across the phase:
   1. `README.md`: Phase 00 Learning Progression flowchart with a 6-step walkthrough.
   2. `01-transformer-and-hardware-physics.md`: Scaled Dot-Product Attention Pipeline with a 4-step walkthrough.
   3. `01-transformer-and-hardware-physics.md`: Standard Attention Thrashing vs. FlashAttention Tiling with a step-by-step memory traffic comparison.
   4. `02-tokenization-and-bpe-mechanics.md`: BPE Merge Tree with a 4-step walkthrough.
   5. `02-tokenization-and-bpe-mechanics.md`: Logits to Probability Sampling Pipeline with parameter explanations.
   6. `03-kv-cache-vram-and-bandwidth-physics.md`: Prefill vs. Decode Lifecycle Sequence Diagram with step-by-step walkthrough.
-  7. `03-kv-cache-vram-and-bandwidth-physics.md`: PagedAttention Virtual Page Table Mapping with frame allocation walkthrough.
-  8. `04-test-time-compute-and-reasoning-models.md`: Test-Time Search & Verification Loop with PRM scoring walkthrough.
-  9. `04-test-time-compute-and-reasoning-models.md`: Architectural Decision Tree for model routing.
-  10. `05-slms-and-quantization-mechanics.md`: AWQ vs. GPTQ Quantization Mapping with activation analysis walkthrough.
+  7. `03-kv-cache-vram-and-bandwidth-physics.md`: MHA vs MQA vs GQA vs MLA Attention Architecture comparison flowchart with a 4-step walkthrough.
+  8. `03-kv-cache-vram-and-bandwidth-physics.md`: PagedAttention Virtual Page Table Mapping with frame allocation walkthrough.
+  9. `04-test-time-compute-and-reasoning-models.md`: Test-Time Search & Verification Loop with PRM scoring walkthrough.
+  10. `04-test-time-compute-and-reasoning-models.md`: Traditional PPO vs DeepSeek GRPO critic-less training flowchart with walkthrough.
+  11. `04-test-time-compute-and-reasoning-models.md`: Architectural Decision Tree for model routing.
+  12. `05-slms-and-quantization-mechanics.md`: AWQ vs. GPTQ Quantization Mapping with activation analysis walkthrough.
 - **Compliance**: 100% of Mermaid diagrams feature an explicit, numbered step-by-step prose walkthrough.
 
 ---
@@ -56,9 +60,10 @@
 - **Created**:
   - `00-foundations-and-token-mechanics/01-transformer-and-hardware-physics.md` (New modular lesson)
   - `00-foundations-and-token-mechanics/02-tokenization-and-bpe-mechanics.md` (New modular lesson)
-  - `00-foundations-and-token-mechanics/03-kv-cache-vram-and-bandwidth-physics.md` (New modular lesson)
-  - `00-foundations-and-token-mechanics/04-test-time-compute-and-reasoning-models.md` (New modular lesson)
+  - `00-foundations-and-token-mechanics/03-kv-cache-vram-and-bandwidth-physics.md` (New modular lesson; updated with MLA)
+  - `00-foundations-and-token-mechanics/04-test-time-compute-and-reasoning-models.md` (New modular lesson; updated with GRPO)
   - `00-foundations-and-token-mechanics/05-slms-and-quantization-mechanics.md` (New modular lesson)
+  - `00-foundations-and-token-mechanics/examples/TokenGovernor.csproj` (New .NET 9 Web API project file; verified build)
   - `00-foundations-and-token-mechanics/REFACTORING_REPORT.md` (This report)
 - **Modified**:
   - `00-foundations-and-token-mechanics/README.md` (Rewritten as Orientation & Navigation Hub)
