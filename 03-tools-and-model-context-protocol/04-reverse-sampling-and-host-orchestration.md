@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: In most AI applications, the flow goes one way: the model calls tools. **Reverse sampling** flips this direction — an MCP tool server can request the host application to generate a model completion on its behalf. This is useful when a tool needs AI assistance mid-execution (for example, a code analysis tool asking the model to summarize a complex diff). This lesson covers how the MCP host application orchestrates these bidirectional flows, manages multiple concurrent tool servers, and prevents runaway resource consumption.
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 Most developers view the Model Context Protocol purely from the perspective of an **MCP Server** author. However, in enterprise agent platforms, the most complex systems engineering occurs on the other side of the wire: inside the **MCP Host Application**.
@@ -301,8 +305,8 @@ Build a mock Host Gateway in Python that connects to an MCP tool server, interce
 ## 9. Enterprise Production Checklist
 
 - [ ] The Host Gateway advertises `"sampling": {}` only to authorized, internally audited MCP servers.
-- [ ] Sampling completions are restricted to lightweight models (e.g. Haiku / Flash) with strict token ceilings ($N \le 512$).
-- [ ] All tool dispatches are wrapped in deterministic timeouts ($T \le 30\text{s}$) with automated process termination on breach.
+- [ ] Sampling completions are restricted to lightweight models (e.g. Haiku / Flash) with strict token ceilings (maximum 512 tokens).
+- [ ] All tool dispatches are wrapped in deterministic timeouts (maximum 30 seconds) with automated process termination on breach.
 - [ ] An execution governor sliding window tracks tool call signatures and trips before 3 duplicate invocations occur.
 - [ ] Tool outputs are compacted and truncated before injection into the foundation model context window.
 

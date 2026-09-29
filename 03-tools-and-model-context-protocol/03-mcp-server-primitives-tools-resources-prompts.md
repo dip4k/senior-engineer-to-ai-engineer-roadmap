@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: An MCP server exposes three types of capabilities to AI applications: **Tools** (executable actions — like calling an API or running a database query), **Resources** (read-only data — like files, documents, or configuration), and **Prompts** (reusable prompt templates with placeholders). Think of it like a REST API: tools are POST/PUT endpoints that change state, resources are GET endpoints that read data, and prompts are pre-built request templates. This lesson explains how to define, schema-validate, and safely expose each primitive.
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 In classic web and API development, architectures separate concerns into distinct abstractions:

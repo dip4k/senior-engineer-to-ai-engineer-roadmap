@@ -275,15 +275,15 @@ if __name__ == "__main__":
 
 ---
 
-## 8. Production War Story: The \$120,000 Wire Transfer & The Middle Void
+## 8. Production War Story: The $120,000 Wire Transfer & The Middle Void
 
 In November 2024, a tier-1 fintech firm deployed an LLM-powered Automated Clearing House (ACH) and wire compliance verification pipeline. The system ingested multi-page customer transaction dossiers (averaging 78,000 tokens) containing transaction manifests, customer history, and regulatory guidelines.
 
 ### The Production Incident
-A transaction of **\$120,000 USD** was initiated from a commercial account to a foreign subsidiary.
-- Enterprise Rule 4.12 clearly stated: *"Any international wire transfer exceeding \$50,000 USD to a non-domestic entity requires a dual-officer secondary compliance review."*
+A transaction of **$120,000 USD** was initiated from a commercial account to a foreign subsidiary.
+- Enterprise Rule 4.12 clearly stated: *"Any international wire transfer exceeding $50,000 USD to a non-domestic entity requires a dual-officer secondary compliance review."*
 - The model evaluated the 78,000-token dossier and emitted: `{"status": "APPROVED", "violations": []}`.
-- The transaction cleared automatically without human review. Regulatory auditors flagged the infraction during a subsequent AML compliance audit, resulting in an immediate **\$120,000 regulatory settlement penalty**.
+- The transaction cleared automatically without human review. Regulatory auditors flagged the infraction during a subsequent AML compliance audit, resulting in an immediate **$120,000 regulatory settlement penalty**.
 
 ### The Root Cause Post-Mortem
 When engineers conducted an attention attribution analysis:

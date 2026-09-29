@@ -320,14 +320,14 @@ if __name__ == "__main__":
 
 ---
 
-## 10. Production War Story: The \$42,000 Weekend Invoice & The Timestamp Bug
+## 10. Production War Story: The $42,000 Weekend Invoice & The Timestamp Bug
 
 In August 2024, a high-volume legal research platform launched an AI-powered case analyzer handling 1.2 million queries over a holiday weekend. The architecture relied on a 45,000-token corpus of statutory laws and legal precedents.
 
 ### The Production Incident
 Under standard pricing, processing 45,000 tokens per request across 1.2 million queries would bankrupt the product. The architecture was specifically budgeted around prompt caching:
-- Expected Cost: \$0.30 per 1M cached tokens ≈ \$16,200.
-- Actual Weekend Invoice: **\$58,200** (an unexpected **\$42,000 overspend** in 48 hours).
+- Expected Cost: $0.30 per 1M cached tokens ≈ $16,200.
+- Actual Weekend Invoice: **$58,200** (an unexpected **$42,000 overspend** in 48 hours).
 - In addition, p95 response latency hovered at an unacceptable 12.5 seconds instead of the expected 1.5 seconds.
 
 ### The Root Cause Post-Mortem

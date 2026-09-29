@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: Language models generate text — they cannot directly execute code, call APIs, or query databases. **Function calling** (also called tool calling) is the mechanism that bridges this gap. The model generates a structured JSON request describing which function it wants to call and with what parameters. Your application code then executes that function and feeds the result back. Under the hood, this communication follows the **JSON-RPC 2.0** wire protocol — the same standard used in Ethereum, VS Code's Language Server Protocol (LSP), and many microservice systems you already know.
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 In traditional software systems, a function call is a deterministic, compiler-enforced jump: arguments are pushed onto the execution stack, instruction pointers advance to a resolved memory address, and a typed value is returned.
@@ -447,7 +451,7 @@ async def handle_query_ledger(params: QueryLedgerParams) -> Dict[str, Any]:
 * **Production Fix**: Never let exceptions escape the tool runner. Trap all exceptions and serialize them into standard JSON-RPC `-32603` or `{ "isError": true, "content": "..." }` frames. This allows the model to reason about the failure and explain it gracefully to the user.
 
 ### Failure Mode 3: Output Context Bombing (Denial of Wallet)
-* **Root Cause**: An agent calls `search_logs(pattern="error")` on an enterprise Elasticsearch cluster, which returns 85,000 raw log lines (15MB of text). The host naively injects the full string into the prompt context, burning \$3.50 in a single turn and pushing all system instructions out of the attention window.
+* **Root Cause**: An agent calls `search_logs(pattern="error")` on an enterprise Elasticsearch cluster, which returns 85,000 raw log lines (15MB of text). The host naively injects the full string into the prompt context, burning $3.50 in a single turn and pushing all system instructions out of the attention window.
 * **Production Fix**: Enforce strict output truncation middleware. If a tool output exceeds 16KB (or ~4,000 tokens), automatically truncate and append:
   ```text
   [WARNING: Output truncated. 45,210 characters omitted. Use specific filters or pagination.]
@@ -484,7 +488,7 @@ Implement a resilient tool execution runner that parses a stream of raw JSON-RPC
 
 - [ ] Every tool parameter schema declares `"additionalProperties": false` and uses strict regex patterns or enums for discrete identifiers.
 - [ ] Tool execution results pass through a hard size cap (e.g. 16KB / 4,000 tokens) before prompt context injection.
-- [ ] An execution governor circuit breaker enforces a maximum tool count per turn ($N \le 10$) and consecutive duplicate threshold ($N \le 2$).
+- [ ] An execution governor circuit breaker enforces a maximum tool count per turn (no more than 10) and consecutive duplicate threshold (no more than 2).
 - [ ] All diagnostic and debugging logs write exclusively to `stderr`, leaving `stdout` dedicated strictly to valid JSON-RPC 2.0 frames.
 - [ ] Provider constrained decoding (`strict: true`) is enabled on all structured output definitions.
 

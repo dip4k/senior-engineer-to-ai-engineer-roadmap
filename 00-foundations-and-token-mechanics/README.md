@@ -6,9 +6,9 @@
 
 ## 🏛️ Systems Overview & Architectural Mission
 
-An LLM is not an anthropomorphic brain or a standard CPU microservice; it is a **stateless, autoregressive tensor engine executing matrix operations over a discrete subword vocabulary space**.
+An LLM is not a thinking brain or a standard CPU microservice. In plain terms, it is a text-completion engine: you give it a block of text, and it predicts the most likely next words, one piece at a time. Technically, it is a **stateless, autoregressive tensor engine executing matrix operations over a discrete subword vocabulary space**.
 
-Every production request consumes GPU High-Bandwidth Memory (HBM) throughput, static VRAM for model weights, and dynamic VRAM for its Key-Value (KV) activation scratchpad. Operating AI systems at scale requires senior engineers to master the physical constraints of GPU memory hierarchies, subword tokenization economics, attention architectures, and test-time reasoning tokens.
+Every production request consumes GPU High-Bandwidth Memory (HBM) throughput, static VRAM (Video RAM — the GPU's dedicated memory) for model weights, and dynamic VRAM for its Key-Value (KV) activation scratchpad. Operating AI systems at scale requires senior engineers to master the physical constraints of GPU memory hierarchies, subword tokenization economics, attention architectures, and test-time reasoning tokens.
 
 ```mermaid
 flowchart TD

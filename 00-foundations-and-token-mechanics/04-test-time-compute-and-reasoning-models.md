@@ -141,11 +141,11 @@ The industry has converged on two distinct deployment architectures: pure reason
 
 | Model | Provider | Architecture & Mechanism | Thinking Budget Control | Max Context / Output | Cost Profile (per 1M Tokens) | Primary Enterprise Production Use Case |
 |---|---|---|---|---|---|---|
-| **OpenAI o3** | OpenAI | Large-scale RL over hidden CoT; deep tree search | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~\$10.00 / Out: ~\$40.00 *(Thinking billed as output)* | Mission-critical algorithmic verification, complex multi-file refactoring |
-| **OpenAI o4-mini** | OpenAI | Distilled compact RL reasoning architecture | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~\$1.10 / Out: ~\$4.40 *(Thinking billed as output)* | Fast STEM logic, real-time code triage, sub-second agent planning |
-| **Claude 3.7 Thinking** | Anthropic | Hybrid: toggles seamlessly between instant output and extended thinking | Explicit token budget (`budget_tokens: 1024..64000`) or disabled (`0`) | 200k Context / 64k Output | In: \$3.00 / Out: \$15.00 *(Thinking billed at \$15.00/1M)* | Full-stack software engineering, architecture audits, regulatory compliance |
-| **DeepSeek-R1** | DeepSeek | 671B MoE (37B active parameters); pure RL (R1-Zero) + cold-start SFT | Open-weights / `<think>` tag token boundaries | 64k Context / 32k Output | In: \$0.55 / Out: \$2.19 *(Cache Hit: \$0.14/1M)* | Air-gapped self-hosted reasoning, bulk batch code analysis, on-prem finance |
-| **Gemini 2.5 Pro Thinking** | Google | Native multimodal test-time compute with code execution sandbox | Configurable budget (`thinkingBudget: N`) | 1M - 2M Context / 64k Output | In: ~\$2.50 / Out: ~\$10.00 *(Thinking billed at \$10.00/1M)* | Long-context document forensic audits, full-repository migrations |
+| **OpenAI o3** | OpenAI | Large-scale RL over hidden CoT; deep tree search | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~$10.00 / Out: ~$40.00 *(Thinking billed as output)* | Mission-critical algorithmic verification, complex multi-file refactoring |
+| **OpenAI o4-mini** | OpenAI | Distilled compact RL reasoning architecture | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~$1.10 / Out: ~$4.40 *(Thinking billed as output)* | Fast STEM logic, real-time code triage, sub-second agent planning |
+| **Claude 3.7 Thinking** | Anthropic | Hybrid: toggles seamlessly between instant output and extended thinking | Explicit token budget (`budget_tokens: 1024..64000`) or disabled (`0`) | 200k Context / 64k Output | In: $3.00 / Out: $15.00 *(Thinking billed at $15.00/1M)* | Full-stack software engineering, architecture audits, regulatory compliance |
+| **DeepSeek-R1** | DeepSeek | 671B MoE (37B active parameters); pure RL (R1-Zero) + cold-start SFT | Open-weights / `<think>` tag token boundaries | 64k Context / 32k Output | In: $0.55 / Out: $2.19 *(Cache Hit: $0.14/1M)* | Air-gapped self-hosted reasoning, bulk batch code analysis, on-prem finance |
+| **Gemini 2.5 Pro Thinking** | Google | Native multimodal test-time compute with code execution sandbox | Configurable budget (`thinkingBudget: N`) | 1M - 2M Context / 64k Output | In: ~$2.50 / Out: ~$10.00 *(Thinking billed at $10.00/1M)* | Long-context document forensic audits, full-repository migrations |
 
 ---
 
@@ -167,7 +167,7 @@ The Model's Execution:
 ```
 
 ### The Financial Calculation
-In cloud LLM APIs, **all thinking tokens are billed as output tokens**. Because output tokens typically cost 3x to 5x more than input tokens (\$15/1M vs \$3/1M):
+In cloud LLM APIs, **all thinking tokens are billed as output tokens**. Because output tokens typically cost 3x to 5x more than input tokens ($15/1M vs $3/1M):
 
 ```text
 Input Cost:   (250 tokens / 1,000,000) × $3.00   = $0.00075
@@ -327,7 +327,7 @@ if __name__ == "__main__":
 
 ## 8. Production War Story: The 2:14 AM Runaway Bankruptcy
 
-> **The Incident**: It is 2:14 AM on Sunday. Your pager buzzes with an alert from cloud cost monitoring: an internal LLM gateway just generated **\$3,600 in charges over the last 90 minutes**.
+> **The Incident**: It is 2:14 AM on Sunday. Your pager buzzes with an alert from cloud cost monitoring: an internal LLM gateway just generated **$3,600 in charges over the last 90 minutes**.
 
 ### What Happened
 A fintech team deployed Claude 3.7 Thinking to triage incoming merchant chargeback dispute packets. An engineer configured the service with an aggressive configuration:
@@ -344,12 +344,12 @@ A merchant submitted an ambiguous 40-page PDF containing conflicting scanned led
 
 Because the chargeback worker was managed by a background SQS queue with an automated 3-retry dead-letter policy, every worker timeout caused another instance to pick up the exact same job. 
 
-Each attempt burned **32,000 thinking tokens** at \$15/1M (\$0.48 per attempt) while running for 55 seconds. When 100 concurrent workers processed the queue, the system burned:
+Each attempt burned **32,000 thinking tokens** at $15/1M ($0.48 per attempt) while running for 55 seconds. When 100 concurrent workers processed the queue, the system burned:
 ```text
 100 workers × 30 attempts/hour × $0.48 = $1,440 per hour
 ```
 
-Before the on-call engineer woke up, **\$3,600 had evaporated to triage a single \$45 disputed chargeback**.
+Before the on-call engineer woke up, **$3,600 had evaporated to triage a single $45 disputed chargeback**.
 
 ### Root Cause Analysis & Post-Mortem Architecture
 1. **Uncapped Default Budgets**: Automated batch workers must never have a 32k thinking budget. Batch triage tasks must cap `budget_tokens: 1024` or `2048`.

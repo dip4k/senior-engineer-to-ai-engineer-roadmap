@@ -35,7 +35,7 @@ A transformer is a mathematical matrix processor. Its input must be a discrete t
 
 If you treat text as a simple character stream when designing AI systems, you will encounter baffling production failures:
 - An extra leading whitespace in an API prompt can cause an LLM to completely fail a regex extraction or JSON schema.
-- A financial system sending dollar amounts with commas (`"\$1,000,000"`) might consume 4x more tokens than one formatted without commas (`"\$1000000"`).
+- A financial system sending dollar amounts with commas (`"$1,000,000"`) might consume 4x more tokens than one formatted without commas (`"$1000000"`).
 - Non-English users in your multi-tenant SaaS application will be billed 3x to 5x more for identical semantic workflows, and experience higher latency and context window starvation.
 
 To build reliable AI software, you must understand the compression algorithm sitting between your code and the neural network: **Byte-Pair Encoding (BPE)**.

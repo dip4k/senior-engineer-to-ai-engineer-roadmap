@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: When an AI model has access to tools, it creates a unique security challenge: the model runs with the application's high privileges (database access, API keys, file system permissions), but its behavior is guided by unpredictable user inputs and its own non-deterministic text generation. An attacker can craft a prompt that tricks the model into misusing a legitimate tool — a classic **Confused Deputy** attack (a term from computer security where a privileged program is tricked into acting on behalf of an attacker). This lesson covers how to sandbox tool execution, enforce least-privilege access, and defend against prompt injection attacks that target tool calls.
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 When an enterprise grants an LLM access to tools, it creates an unprecedented security challenge: **The model operates with high system privileges, but is guided by untrusted, non-deterministic inputs**.

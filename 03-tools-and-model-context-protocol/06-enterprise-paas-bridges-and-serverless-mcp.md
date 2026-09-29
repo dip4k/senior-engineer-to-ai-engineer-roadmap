@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: Enterprise organizations do not store their data in simple databases. They use massive Platform-as-a-Service (PaaS) systems like **SAP** (enterprise resource planning), **Salesforce** (customer relationship management), and **ServiceNow** (IT service management). This lesson covers how to build MCP tool servers that bridge AI agents into these enterprise systems — translating natural-language agent requests into the specific API calls, authentication flows, and approval workflows that these platforms require. It also covers **serverless MCP** deployment using cloud functions and API gateways.
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 In hobbyist AI development, tools query local SQLite files or mock weather APIs. In the enterprise, AI agents must interact directly with multi-billion-dollar **Systems of Record (SoR)**:
@@ -74,7 +78,7 @@ sequenceDiagram
 - **Technology**: SAP NetWeaver RFC via `pyrfc` / SAP Cloud SDK (.NET/Java) or SAP OData v4 Services.
 - **Boundary Rules**:
   - **Read Operations** (`sap_check_stock`, `sap_get_po_status`): Available autonomously to the agent.
-  - **Write Operations** (`sap_create_po`, `sap_post_goods_receipt`): Gated by strict parameter bounds (e.g., maximum order value $\le \$10,000$). Any order exceeding the threshold requires Human-in-the-Loop step-up Elicitation.
+  - **Write Operations** (`sap_create_po`, `sap_post_goods_receipt`): Gated by strict parameter bounds (e.g., maximum order value $\le $10,000$). Any order exceeding the threshold requires Human-in-the-Loop step-up Elicitation.
   - **Input Sanitization**: Material numbers must be validated as 18-character alphanumeric strings with leading zeros; Company Codes (`BUKRS`) must match uppercase 4-character strings.
 - **ABAP Authorization**: The tool executes using SAP authorization objects (`M_MATE_STA`, `M_EIKP_KAP`), ensuring the user cannot read materials outside their plant authorization.
 
@@ -115,7 +119,7 @@ sequenceDiagram
 
 | System of Record | MCP Tool Scope | Permitted Agent Autonomy | Forbidden / Gated Actions (Requires HITL) | Mandatory Security Control |
 |---|---|---|---|---|
-| **SAP S/4HANA** | Inventory, Purchase Orders, Material Ledger | Read status, verify stock, calculate invoice totals | Create purchase orders > \$10,000, post manual ledger adjustments, alter vendor bank details | BAPI parameter type validation, SAP RFC connection pool isolation, ABAP authorization object verification |
+| **SAP S/4HANA** | Inventory, Purchase Orders, Material Ledger | Read status, verify stock, calculate invoice totals | Create purchase orders > $10,000, post manual ledger adjustments, alter vendor bank details | BAPI parameter type validation, SAP RFC connection pool isolation, ABAP authorization object verification |
 | **ServiceNow** | Incidents, Change Requests, CMDB Assets | Read tickets, search knowledge articles, append work notes | Resolve incidents, approve emergency RFC changes, modify CMDB configuration baselines | PII/Secret regex masking, state transition validation, read-only REST service accounts |
 | **Salesforce CRM** | Leads, Accounts, Opportunities, Contacts | Query contact info, summarize account history, draft email tasks | Delete contact records, modify deal commission splits, export bulk CSV reports | Parameterized SOQL (No raw query input), Field-Level Security (FLS) enforcement, maximum 50-row limit |
 
@@ -252,11 +256,11 @@ class EnterpriseSapConnector:
 ## 9. Hands-On Lab Exercise
 
 ### Objective
-Implement an enterprise MCP connector for purchase order approval that extracts caller claims from simulated JWT headers, rejects approvals exceeding \$10,000, and commits verified orders to an audit log.
+Implement an enterprise MCP connector for purchase order approval that extracts caller claims from simulated JWT headers, rejects approvals exceeding $10,000, and commits verified orders to an audit log.
 
 ### Acceptance Criteria
 1. Define a Pydantic schema enforcing PO pattern `^PO-[0-9]{4,8}$` and cost center formatting.
-2. Assert that requests exceeding \$10,000 are rejected with a structured `is_error: True` payload.
+2. Assert that requests exceeding $10,000 are rejected with a structured `is_error: True` payload.
 3. Assert that callers lacking the `ERP.Approver` claim in their JWT are rejected with `ABAP_AUTH_FAILURE`.
 4. Ensure the output payload contains the caller's verified `upn` for corporate audit trails.
 

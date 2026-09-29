@@ -354,7 +354,7 @@ During testing with 1 or 2 tools, response latency hovered at a snappy 1.8 secon
 - Average request latency spiked from 1.8 seconds to **45.2 seconds**.
 - Time-to-First-Token (TTFT) climbed over 30 seconds.
 - Multi-turn chats frequently crashed with HTTP 400 context limit exceptions on turn 4 or 5.
-- The monthly provider API bill reached \$68,000 in its first week.
+- The monthly provider API bill reached $68,000 in its first week.
 
 ### The Root Cause Post-Mortem
 The agent runtime mounted all 60 tool JSON schemas on every request:

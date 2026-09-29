@@ -7,6 +7,10 @@
 
 ---
 
+> **Core Concept**: The **Model Context Protocol (MCP)** is an open standard (created by Anthropic, now governed by an open-source community) that defines how AI applications discover and use external tools. Think of MCP as the "USB standard for AI tools" — just as USB lets any computer connect to any peripheral without custom drivers, MCP lets any AI application connect to any tool server without custom integration code. MCP uses the JSON-RPC 2.0 wire protocol (from Lesson 01) and supports two transport modes: **stdio** (standard input/output pipes, like a local shell process) and **Streamable HTTP** (for remote servers over the network).
+
+---
+
 ## 1. Conceptual Foundation & Mental Model
 
 In traditional operating systems, applications do not communicate directly with raw storage silicon or display hardware. Instead, the OS kernel abstracts hardware through standardized device drivers and POSIX virtual file systems (`/dev/`, `/proc/`). A terminal emulator communicates with an underlying shell process through an anonymous pipe (`stdin` / `stdout`), decoupled by file descriptors.
