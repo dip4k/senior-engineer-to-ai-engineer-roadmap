@@ -3,13 +3,13 @@
 > **Standardized Refactoring Report (9-Section Schema)**  
 > **Target Phase**: `04-agentic-systems-and-orchestration/`  
 > **Architect**: AI Curriculum Architect  
-> **Status**: Completed, Enriched & Verified (Pass 2 Improvement Completed)  
+> **Status**: Completed, Enriched & Verified (7-Lesson Architecture)  
 > **Date**: September 2026  
 
 ---
 
 ## 1. Curriculum Changes
-* **Decomposition of Monolithic Architecture**: Successfully decomposed the original 2,236-line (155 KB) monolithic file into a modular 6-lesson curriculum, 2 specialized reference appendices, a streamlined Phase Navigation Hub, and 7 preserved hands-on labs.
+* **Decomposition of Monolithic Architecture**: Successfully decomposed the original 2,236-line (155 KB) monolithic file into a modular 7-lesson curriculum, 2 specialized reference appendices, a streamlined Phase Navigation Hub, and 7 preserved hands-on labs.
 * **Establishment of Clear Depth Tiers**:
   * `01-workflows-vs-agents-and-orchestration-patterns.md`: `🟢 Tier 1: Core`
   * `02-react-loops-and-execution-governors.md`: `🟢 Tier 1: Core`
@@ -17,12 +17,21 @@
   * `04-agent-memory-systems-and-cognitive-architectures.md`: `🟡 Tier 2: Depth`
   * `05-multi-agent-coordination-and-a2a-protocols.md`: `🔵 Tier 3: Advanced`
   * `06-codeact-and-sandboxed-execution-runtimes.md`: `⚫ Tier 4: Deep Dive`
-* **Two Dedicated Learning Tracks**: Formalized the ⚡ **Fast Track** (~2.5 hours, Lessons 01–03 + Labs 1 & 3) for application engineers, and the 🏢 **Enterprise Track** (~6.0 hours, Lessons 01–06 + References + Capstone) for platform leads and architects.
-* **Learner-Friendly Pedagogy Overhaul (Pass 2)**: All lessons rewritten from an academic journal style into a direct, conversational whiteboard teaching tone. Jargon was eliminated or grounded in plain-English analogies (e.g., the Restaurant Order Slip vs. Kitchen Recipe, the High-Rise Window Washer Harness vs. Catwalk Scaffold, the Infinite While-Loop with a Corporate Credit Card).
+  * `07-agent-development-platforms-and-adks.md`: `🟡 Tier 2: Depth` (NEW CHAPTER)
+* **Two Dedicated Learning Tracks**: Formalized the ⚡ **Fast Track** (~2.5 hours, Lessons 01–03 + Labs 1 & 3) for application engineers, and the 🏢 **Enterprise Track** (~6.5 hours, Lessons 01–07 + References + Capstone) for platform leads and architects.
+* **First-Principles AI Explanations for Beginners**:
+  * Completely eliminated anthropomorphic shortcuts (*"the model gets confused"*, *"the model thinks"*).
+  * Defined AI mechanics from the ground up: auto-regressive next-token prediction, prompt context prefixes, attention diffusion, parameter entropy, token budgets, and temperature sampling.
+  * Preserved senior software engineering vocabulary (state machines, WAL, ACID, saga patterns, RPC, cgroups, hypervisors, process isolation, API gateways, queuing, serialization).
 
 ---
 
 ## 2. Content Changes
+* **New Dedicated Chapter: Modern Agent Platforms & ADKs (Lesson 07)**:
+  * Elevates the agent development platforms, SDKs, and ADK toolchains into a full, first-class lesson.
+  * Establishes the 3-Tier Taxonomy: Tier 1 ADKs (Google ADK, OpenAI Agents SDK), Tier 2 Runtimes (LangGraph, Meta Llama Stack, PydanticAI), and Tier 3 Hosted Platforms (Azure AI Agent Service, Vertex AI, Bedrock).
+  * Comprehensive deep-dives into Microsoft Agent Framework (MAF 1.0 GA), Google ADK & `agents-cli`, OpenAI Agents SDK, Meta Llama Stack, PydanticAI, and LangGraph.
+  * Full runnable Python 3.12+ type-safe agent with dependency injection.
 * **Deepened Harness Engineering**: Fully detailed the 4 core systems of an enterprise agent harness:
   1. Sandboxing & Process Isolation (Google gVisor `runsc`, AWS Firecracker microVMs).
   2. State Checkpointing & Write-Ahead Logs (WAL append-only persistence).
@@ -33,13 +42,12 @@
   2. Progressive Budget Decay (dynamic token and cost decrementing per turn).
   3. Convergence Monitoring & Oscillation Detection (catching A → B → A loops).
   4. Safe Escape Hatches & Circuit Breakers (graceful degradation and human escalation).
-* **Zero Jargon Dumps & Explained Abbreviations**: Removed dense academic phrasing ("stochastic arithmetic coprocessor", "epistemic deadlocks"). Every abbreviation is introduced with plain-English context upon first appearance (WAL = Write-Ahead Log, DTO = Data Transfer Object, FSM = Finite State Machine, MCP = Model Context Protocol, A2A = Agent-to-Agent Protocol, AG-UI = Agent-User Interface, AST = Abstract Syntax Tree, KVM = Kernel-based Virtual Machine).
-* **Zero Content Deletion**: All architectural concepts, OPA Rego policies, Python Pydantic v2 implementations, and war stories (including the 2:14 AM Vault Meltdown) were preserved and enriched.
+* **Zero Jargon Dumps & Fully Defined Abbreviations**: Every abbreviation is introduced with plain-English context upon first appearance (WAL = Write-Ahead Log, DTO = Data Transfer Object, FSM = Finite State Machine, MCP = Model Context Protocol, A2A = Agent-to-Agent Protocol, AG-UI = Agent-User Interface, AST = Abstract Syntax Tree, KVM = Kernel-based Virtual Machine).
 
 ---
 
 ## 3. Advanced Content
-* **Microsoft Agent Framework (MAF 1.0 GA, April 2026)**: Added in-depth coverage of Microsoft's unified enterprise framework converging Semantic Kernel plugins and AutoGen asynchronous actor agents.
+* **Microsoft Agent Framework (MAF 1.0 GA, April 2026)**: In-depth coverage of Microsoft's unified enterprise framework converging Semantic Kernel plugins and AutoGen asynchronous actor agents.
 * **Linux Foundation Agent-to-Agent (A2A) Protocol**: Formally specified the A2A wire protocol, Agent Cards (`agent-card.json`), JSON-RPC 2.0 schemas, and the 7-state Task Lifecycle FSM.
 * **OpenAI Agents SDK (`openai-agents`)**: Modernized multi-agent handoff patterns with typed Pydantic envelopes and scoped handoff DTOs (saving 85% context compared to monolithic history dumps).
 * **The Tri-Protocol Stack (MCP + A2A + AG-UI)**: Established the industry standard decoupling tool execution (MCP), agent coordination (A2A), and human interaction (AG-UI).
@@ -50,7 +58,7 @@
 ---
 
 ## 4. Diagram Changes
-Created and updated 30 stabilized Mermaid diagrams (`flowchart TD`, `flowchart LR`, `stateDiagram-v2`, `sequenceDiagram`), each accompanied by a numbered step-by-step prose walkthrough:
+Created and updated 33 stabilized Mermaid diagrams (`flowchart TD`, `flowchart LR`, `stateDiagram-v2`, `sequenceDiagram`), each accompanied by a numbered step-by-step prose walkthrough:
 1. *Control Plane vs. Compute Plane* (Lesson 01)
 2. *The Spectrum of Agency* (Lesson 01)
 3. *Cascading Error Drift Propagation* (Lesson 01)
@@ -79,31 +87,35 @@ Created and updated 30 stabilized Mermaid diagrams (`flowchart TD`, `flowchart L
 26. *Harness vs. Scaffold Window Washer Analogy* (Lesson 06)
 27. *Sandboxing Isolation Tiers (Docker vs gVisor vs Firecracker)* (Lesson 06)
 28. *Ephemeral In-Memory Compaction* (Lesson 06)
-29. *Sourcing Capability Triad* (Reference: OPA Case Study)
-30. *Phase 04 System Topology & Learning Pathways* (Phase Hub README)
+29. *The 3-Tier Taxonomy: ADK vs Runtime vs Platform* (Lesson 07)
+30. *Microsoft Agent Framework Convergence (SK + AutoGen)* (Lesson 07)
+31. *Enterprise Framework Decision Tree* (Lesson 07 & Reference Matrix)
+32. *Sourcing Capability Triad* (Reference: OPA Case Study)
+33. *Phase 04 System Topology & Learning Pathways* (Phase Hub README)
 
 ---
 
 ## 5. Duplication Removed & Polish Applied
 * **Stripped Leaked Meta-Directives**: Purged all author checklist tags (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`, `[KNOWLEDGE-BASE]`, `🔴`, `🟡`, `🔵`).
-* **Zero-LaTeX Enforcement**: Replaced all raw LaTeX blocks (`$$...$$`, `$math$`, `\text{}`, `\frac{}`) in `README.md`, `labs/lab5-agent-memory-system.md`, and `labs/lab6-multimodal-agent.md` with standard GitHub Flavored Markdown code blocks (` ```text `) and Unicode symbols (`≈`, `→`, `Σ`, `λ`).
-* **Consolidated Framework Matrices**: Merged multiple scattered framework summaries into the authoritative reference file `reference/enterprise-agent-frameworks-matrix.md`.
+* **Zero-LaTeX Enforcement**: Replaced all raw LaTeX blocks across all files with standard GitHub Flavored Markdown code blocks (` ```text `) and Unicode symbols (`≈`, `→`, `Σ`, `λ`).
+* **Consolidated Framework Matrices**: Merged multiple scattered framework summaries into the authoritative reference file `reference/enterprise-agent-frameworks-matrix.md` and grounded them pedagogically in Lesson 07.
 
 ---
 
 ## 6. Files Changed
 * **Curriculum Lessons (Overhauled & Enriched)**:
-  * `01-workflows-vs-agents-and-orchestration-patterns.md` (460 lines)
-  * `02-react-loops-and-execution-governors.md` (470 lines)
-  * `03-stateful-sessions-and-durable-wal-persistence.md` (485 lines)
-  * `04-agent-memory-systems-and-cognitive-architectures.md` (450 lines)
-  * `05-multi-agent-coordination-and-a2a-protocols.md` (495 lines)
-  * `06-codeact-and-sandboxed-execution-runtimes.md` (460 lines)
+  * `01-workflows-vs-agents-and-orchestration-patterns.md` (586 lines)
+  * `02-react-loops-and-execution-governors.md` (514 lines)
+  * `03-stateful-sessions-and-durable-wal-persistence.md` (503 lines)
+  * `04-agent-memory-systems-and-cognitive-architectures.md` (422 lines)
+  * `05-multi-agent-coordination-and-a2a-protocols.md` (455 lines)
+  * `06-codeact-and-sandboxed-execution-runtimes.md` (515 lines)
+  * `07-agent-development-platforms-and-adks.md` (430 lines — NEW CHAPTER)
 * **Reference Architectures & Appendices**:
   * `reference/enterprise-agent-frameworks-matrix.md` (101 lines)
   * `reference/enterprise-sourcing-opa-case-study.md` (354 lines)
 * **Phase Hub & Labs**:
-  * `README.md` (Streamlined Phase Hub, 155 lines)
+  * `README.md` (Streamlined Phase Hub, 158 lines)
   * `labs/lab5-agent-memory-system.md` (Cleaned LaTeX formulas)
   * `labs/lab6-multimodal-agent.md` (Cleaned LaTeX formulas)
 * **Preserved Hands-On Labs & Code**:
@@ -119,7 +131,7 @@ Created and updated 30 stabilized Mermaid diagrams (`flowchart TD`, `flowchart L
 ---
 
 ## 7. Link Integrity Verification
-* Verified 100% two-way reciprocal navigation footers (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Relevant Lab]`) across all 6 lesson files, both reference appendices, and the Phase Hub `README.md`.
+* Verified 100% two-way reciprocal navigation footers (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Relevant Lab]`) across all 7 lesson files, both reference appendices, and the Phase Hub `README.md`.
 * Automated Python regex scan confirmed **0 broken relative links** across the entire Phase 04 directory.
 
 ---

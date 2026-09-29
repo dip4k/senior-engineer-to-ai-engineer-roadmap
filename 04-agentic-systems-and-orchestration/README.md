@@ -38,12 +38,13 @@ flowchart TD
         L3 --> Lab3["Lab 3: Infinite Loop Detection & Recovery"]:::lab
     end
     
-    subgraph EnterpriseTrack["🏢 Enterprise Track: Staff Architect & Multi-Agent Platform Lead (~6.0 Hours)"]
+    subgraph EnterpriseTrack["🏢 Enterprise Track: Staff Architect & Multi-Agent Platform Lead (~6.5 Hours)"]
         direction TB
         L3 --> L4["Lesson 04: Agent Memory Systems & MaaS"]:::core
         L4 --> L5["Lesson 05: Multi-Agent Coordination & A2A"]:::core
         L5 --> L6["Lesson 06: CodeAct & Sandboxed Runtimes"]:::core
-        L6 --> Ref1["Reference: Enterprise Frameworks Matrix"]:::track
+        L6 --> L7["Lesson 07: Modern Agent Platforms & ADKs"]:::core
+        L7 --> Ref1["Reference: Enterprise Frameworks Matrix"]:::track
         Ref1 --> Ref2["Reference: OPA Sourcing Case Study"]:::track
         Ref2 --> Capstone["Capstone: Code Review Agent Engine"]:::lab
     end
@@ -53,7 +54,7 @@ flowchart TD
 
 1. **Foundational Core (Lessons 01–03)**: Every engineer starts by mastering the distinction between deterministic workflows and open agents (Lesson 01), armoring execution loops with cryptographic governors (Lesson 02), and implementing durable event-sourced WAL persistence with saga rollbacks (Lesson 03).
 2. **⚡ Fast Track Path**: For engineers seeking immediate, practical patterns to deploy robust single-agent tools into existing microservices. Concludes after Lesson 03 with hands-on practice in **Lab 1** (Human-in-the-Loop workflows) and **Lab 3** (Loop engineering circuit breakers).
-3. **🏢 Enterprise Track Path**: For technical leads and platform architects engineering distributed multi-agent systems, cross-session memory architectures, and untrusted code execution sandboxes. Progresses through Lessons 04, 05, and 06, examines the enterprise reference matrices, and culminates in the end-to-end **Capstone Code Review Engine**.
+3. **🏢 Enterprise Track Path**: For technical leads and platform architects engineering distributed multi-agent systems, cross-session memory architectures, untrusted code execution sandboxes, and evaluating enterprise ADKs/platforms. Progresses through Lessons 04, 05, 06, and 07, examines the enterprise reference matrices, and culminates in the end-to-end **Capstone Code Review Engine**.
 
 ---
 
@@ -67,6 +68,7 @@ flowchart TD
 | **04** | [Agent Memory Systems & Cognitive Architectures](04-agent-memory-systems-and-cognitive-architectures.md) | `🟡 Tier 2: Depth` | 50 min | 4-Tier Memory Hierarchy (Working, Short-Term Buffer, Episodic, Semantic, Procedural); Ebbinghaus temporal decay; Letta / Mem0 MaaS; GDPR crypto-shredding. | Persists cross-session entity intelligence without context bloat; enables sub-second GDPR user erasure. |
 | **05** | [Multi-Agent Coordination & The Tri-Protocol Stack](05-multi-agent-coordination-and-a2a-protocols.md) | `🔵 Tier 3: Advanced` | 55 min | Supervisor-worker, peer swarms, dynamic handoffs; Linux Foundation A2A Protocol (Agent Cards, Task FSM); The Tri-Protocol Stack (MCP + A2A + AG-UI). | Coordinates specialized agent swarms with scoped 400-token handoff DTOs, reducing token usage by 85%. |
 | **06** | [Code-as-Action (CodeAct) & Execution Sandboxes](06-codeact-and-sandboxed-execution-runtimes.md) | `⚫ Tier 4: Deep Dive` | 50 min | Code-as-Action vs JSON tool ping-pong; AST security inspection; Google gVisor (`runsc`); AWS Firecracker microVMs; ephemeral in-memory compaction. | Achieves 30% fewer turns and 20% higher task success while securely isolating untrusted generated code. |
+| **07** | [Modern Agent Platforms & ADKs](07-agent-development-platforms-and-adks.md) | `🟡 Tier 2: Depth` | 50 min | ADKs vs Runtimes vs Hosted Platforms; Microsoft Agent Framework (MAF 1.0 GA); Google ADK & `agents-cli`; OpenAI Agents SDK; Meta Llama Stack; PydanticAI; LangGraph. | Selects, scaffolds, and decouples enterprise agent architectures from proprietary framework lock-in. |
 | **Ref** | [Enterprise Agent Frameworks Matrix](reference/enterprise-agent-frameworks-matrix.md) | `Reference` | 25 min | Microsoft Agent Framework (MAF 1.0 GA), LangGraph, Google ADK & `agents-cli`, PydanticAI, OpenAI Agents SDK, Meta Llama Stack. | Authoritative framework selection rubric based on infrastructure, language, and complexity requirements. |
 | **Ref** | [Enterprise Sourcing & OPA Rego Case Study](reference/enterprise-sourcing-opa-case-study.md) | `Reference` | 30 min | Sourcing Triad (Intake, Compare, SourceIQ); Open Policy Agent (OPA) Rego policy compilation; typed Delegation of Authority (DOA) envelopes. | Decouples deterministic compliance and spending thresholds from stochastic model reasoning. |
 
@@ -149,6 +151,7 @@ Every architectural principle in Phase 04 is grounded in peer-reviewed primary l
 * **[Lesson 04: Agent Memory Systems & Cognitive Architectures](04-agent-memory-systems-and-cognitive-architectures.md)**
 * **[Lesson 05: Multi-Agent Coordination & The Tri-Protocol Stack](05-multi-agent-coordination-and-a2a-protocols.md)**
 * **[Lesson 06: Code-as-Action (CodeAct) & Execution Sandboxes](06-codeact-and-sandboxed-execution-runtimes.md)**
+* **[Lesson 07: Modern Agent Development Platforms & Agent Development Kits (ADKs)](07-agent-development-platforms-and-adks.md)**
 * **[Reference Appendix: Enterprise Agent Frameworks Matrix](reference/enterprise-agent-frameworks-matrix.md)**
 * **[Reference Appendix: Enterprise Sourcing & OPA Rego Case Study](reference/enterprise-sourcing-opa-case-study.md)**
 * **[Capstone Challenge: Distributed Code Review Agent Engine](labs/capstone-code-review-engine.md)**

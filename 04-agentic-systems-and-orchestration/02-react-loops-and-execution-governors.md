@@ -78,7 +78,7 @@ In software:
 * **The Harness** is your sandbox, memory ceiling, duplicate action detector, timeout token, and database rollback coordinator. It defines *how safety and limits are enforced*.
 
 > **The Scaffold Fallacy**:
-> Engineering teams often spend weeks debating which agent framework to use (switching between LangChain, CrewAI, AutoGen, and LangGraph) while completely neglecting the harness. When their agent burns through \$1,000 in an hour or loops on a failing database write, they blame "model hallucinations." The model did not fail—their system lacked a safety harness.
+> Engineering teams often spend weeks debating which agent framework to use (switching between LangChain, CrewAI, AutoGen, and LangGraph) while completely neglecting the harness. When their agent burns through $1,000 in an hour or loops on a failing database write, they blame "model hallucinations." The model did not fail—their system lacked a safety harness.
 
 ### The 4 Core Systems of an Agent Harness
 

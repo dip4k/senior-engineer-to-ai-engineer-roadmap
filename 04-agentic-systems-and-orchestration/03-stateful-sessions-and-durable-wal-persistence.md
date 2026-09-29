@@ -14,7 +14,7 @@ In simple tutorials, an agent's conversation history and tool outputs are usuall
 
 While this works for interactive desktop demos, keeping state only in application memory causes major production failures:
 1. **Server Restarts and Scaling Events**: Suppose your agent is on turn 7 of an 8-turn code refactoring workflow. Your cloud platform moves the application container to another node due to high CPU load. The memory list disappears instantly. You lose 40,000 tokens of accumulated reasoning, and the customer is left with an unfinished transaction.
-2. **Long Human Approval Pauses**: An agent reaches a step requiring a manager's sign-off to approve a \$5,000 credit. The manager might not click "Approve" for four hours. Keeping a stateful container running with an open socket for hours wastes server resources and leaks memory.
+2. **Long Human Approval Pauses**: An agent reaches a step requiring a manager's sign-off to approve a $5,000 credit. The manager might not click "Approve" for four hours. Keeping a stateful container running with an open socket for hours wastes server resources and leaks memory.
 3. **Accidental Duplicate Actions**: If your application crashes and restarts the agent from step 1, the model might repeat actions it already completed—such as charging a credit card a second time or creating duplicate cloud servers.
 
 ```mermaid

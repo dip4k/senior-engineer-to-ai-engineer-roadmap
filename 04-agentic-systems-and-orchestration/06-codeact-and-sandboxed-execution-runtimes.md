@@ -509,7 +509,7 @@ To put CodeAct and sandboxed runtime engineering into practice:
 
 ## 🧭 Navigation
 
-| [← Lesson 05: Multi-Agent Coordination & A2A](05-multi-agent-coordination-and-a2a-protocols.md) | [Phase 04 Navigation Hub](README.md) | [Reference: Frameworks Matrix →](reference/enterprise-agent-frameworks-matrix.md) |
+| [← Lesson 05: Multi-Agent Coordination & The Tri-Protocol Stack](05-multi-agent-coordination-and-a2a-protocols.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 07: Modern Agent Development Platforms & ADKs →](07-agent-development-platforms-and-adks.md) |
 |:---:|:---:|:---:|
-| **Previous Lesson** | **Phase Hub** | **Next Reference** |
+| **Previous Lesson** | **Phase Hub** | **Next Lesson** |
 | [Lab 2: Multi-Agent Swarm](labs/lab2-multi-agent-swarm.md) | [Lab 3: Infinite Loops](labs/lab3-infinite-loops.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |

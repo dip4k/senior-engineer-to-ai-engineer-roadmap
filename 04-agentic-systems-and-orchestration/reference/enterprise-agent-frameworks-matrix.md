@@ -95,6 +95,6 @@ flowchart TD
 
 ## 🧭 Navigation
 
-| [← Lesson 06: CodeAct & Sandboxed Execution](../06-codeact-and-sandboxed-execution-runtimes.md) | [Phase 04 Navigation Hub](../README.md) | [Reference: OPA Sourcing Case Study →](enterprise-sourcing-opa-case-study.md) |
+| [← Lesson 07: Modern Agent Platforms & ADKs](../07-agent-development-platforms-and-adks.md) | [Phase 04 Navigation Hub](../README.md) | [Reference: OPA Sourcing Case Study →](enterprise-sourcing-opa-case-study.md) |
 |:---:|:---:|:---:|
 | **Previous Lesson** | **Phase Hub** | **Next Reference** |
