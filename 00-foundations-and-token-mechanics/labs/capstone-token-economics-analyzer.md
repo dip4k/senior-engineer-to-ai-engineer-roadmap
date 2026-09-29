@@ -10,7 +10,7 @@
    - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
 
 2. **In-Flight GPU KV-Cache & VRAM Allocation Estimator:**
-   - Compute required KV-cache footprint using the formula: $2 \times 2 \times \text{Layers} \times H_{KV} \times d_k \times \text{Batch} \times \text{TotalSequenceLen}$.
+   - Compute required KV-cache footprint using the formula: `2 × 2 × Layers × H_KV × d_k × Batch × TotalSequenceLen` (bytes).
    - Maintain an in-memory concurrent allocation counter across running inferences.
    - If an incoming request pushes total GPU KV-cache allocation past threshold (e.g., 85% of available VRAM), enqueue or reject before invoking downstream providers.
 
@@ -28,4 +28,5 @@
 - **KV-Cache Overflow Protection:** Simulate a 128k context request against a constrained budget; assert early rejection before dispatching to the upstream LLM API.
 
 ---
-[Return to Module 00](../README.md#12-capstone-engineering-challenge)
+[Return to Phase 00 Hub](../README.md)
+

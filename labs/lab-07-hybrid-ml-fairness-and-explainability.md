@@ -44,11 +44,13 @@ flowchart TD
 1. **Deterministic Predictive Scoring**: Train an interpretable tabular model on regulated credit/procurement features (`debt_to_income_ratio`, `liquidity_ratio`, `late_payments_last_24m`, `operating_years`, `credit_score`).
 2. **Fairlearn Statistical Bias Audit**:
    - Compute group-specific selection rates across protected classes (e.g., `minority_owned_enterprise` or demographic group).
-   - Calculate **Disparate Impact Ratio** ($DIR = \frac{\min(\text{Selection Rate})}{\max(\text{Selection Rate})}$) against the EEOC 0.80 threshold.
-   - Calculate **Demographic Parity Difference** ($DPD = |\text{Rate}_A - \text{Rate}_B|$) against the 0.10 threshold.
+   - Calculate **Disparate Impact Ratio** (`DIR = min(Selection Rate) / max(Selection Rate)`) against the EEOC 0.80 threshold.
+   - Calculate **Demographic Parity Difference** (`DPD = |Rate_A - Rate_B|`) against the 0.10 threshold.
 3. **SHAP Exact Feature Attributions**:
-   - Compute additive Shapley feature attributions ($\phi_i$) satisfying local accuracy:
-     $$\sum_{i=1}^{M} \phi_i = f(x) - \mathbb{E}[f(x)]$$
+   - Compute additive Shapley feature attributions (`phi_i`) satisfying local accuracy:
+     ```text
+     Σ [ phi_i ] = f(x) - E[f(x)]  for i = 1 to M
+     ```
    - Rank top adverse drivers (features with strongest negative impact pushing the score toward rejection).
 4. **LLM Adverse Action Generator with Groundedness Guardrail**:
    - Prompt an LLM to synthesize formal, empathetic, and legally compliant Adverse Action letters.
@@ -489,21 +491,27 @@ if __name__ == "__main__":
 - **Proxy Discrimination Check**: Even when protected attributes are omitted, models can inadvertently learn proxies (e.g., zip codes or operating years correlating with demographic groups). The `FairlearnBiasAuditor` acts as an independent compliance gate verifying that empirical outcomes satisfy statutory parity.
 
 ### 2. The 80% Rule (Disparate Impact) vs. Demographic Parity
-- **Disparate Impact Ratio ($DIR$)**:
-  $$DIR = \frac{\min(\text{Selection Rate}_{\text{minority}}, \text{Selection Rate}_{\text{majority}})}{\max(\text{Selection Rate}_{\text{minority}}, \text{Selection Rate}_{\text{majority}})} \ge 0.80$$
-  If majority vendors are approved at 60%, minority vendors must be approved at $\ge 48\%$ ($0.60 \times 0.80$).
-- **Demographic Parity Difference ($DPD$)**:
-  $$DPD = |\text{Selection Rate}_A - \text{Selection Rate}_B| \le 0.10$$
+- **Disparate Impact Ratio (DIR)**:
+  ```text
+  DIR = min(Selection Rate_minority, Selection Rate_majority) / max(Selection Rate_minority, Selection Rate_majority) ≥ 0.80
+  ```
+  If majority vendors are approved at 60%, minority vendors must be approved at ≥ 48% (0.60 × 0.80).
+- **Demographic Parity Difference (DPD)**:
+  ```text
+  DPD = |Selection Rate_A - Selection Rate_B| ≤ 0.10
+  ```
   Restricts the absolute difference between groups to within 10 percentage points.
 
 ### 3. Local Additive Feature Attributions via SHAP
-- **Local Accuracy Property**: The sum of all attribution contributions $\phi_i$ equals the difference between the model's prediction $f(x)$ and the baseline expected value $\mathbb{E}[f(x)]$.
-- **Adverse Factor Ranking**: Denied applicants are sorted by negative Shapley values ($\phi_i < 0$), surfacing the exact metrics (e.g., high debt-to-income, prior 24m delinquency) that drove the decision below the acceptance threshold.
+- **Local Accuracy Property**: The sum of all attribution contributions `phi_i` equals the difference between the model's prediction `f(x)` and the baseline expected value `E[f(x)]`.
+- **Adverse Factor Ranking**: Denied applicants are sorted by negative Shapley values (`phi_i < 0`), surfacing the exact metrics (e.g., high debt-to-income, prior 24m delinquency) that drove the decision below the acceptance threshold.
 
 ### 4. Groundedness Guardrails for LLM Generation
 - **The Compliance Trap**: If an LLM writes *"Your application was rejected due to inadequate collateral and lack of personal guarantee"*, but the applicant had ample collateral and the denial was purely caused by debt-to-income and late payments, the creditor faces regulatory enforcement and lawsuits.
 - **Deterministic Assertion Gate**: Before any LLM output is transmitted to a user or external system, the Groundedness Guardrail extracts the reasons and asserts a mathematical intersection:
-  $$\text{CitedReasons} \subseteq \text{AuthorizedSHAPReasons}(\text{Top-}K)$$
+  ```text
+  CitedReasons ⊆ AuthorizedSHAPReasons(Top-K)
+  ```
   If any cited factor is unauthorized, the output is quarantined immediately and an audit alert is published.
 
 ---
@@ -512,11 +520,11 @@ if __name__ == "__main__":
 
 | Gate | Objective | Target Metric | Assertion |
 |:---|:---|:---:|:---:|
-| **Fairness: Disparate Impact** | Prevent algorithmic disparate impact | $DIR \ge 0.80$ | `assert audit_report.disparate_impact_ratio >= 0.80` |
-| **Fairness: Parity Difference** | Limit absolute selection delta | $DPD \le 0.10$ | `assert audit_report.demographic_parity_difference <= 0.10` |
-| **SHAP Local Accuracy** | Ensure exact mathematical attribution | $|\sum \phi_i - (f(x) - \mathbb{E}[f(x)])| < 10^{-3}$ | `assert diff < 1e-3` |
-| **Groundedness Guardrail** | Eliminate hallucinated denial reasons | $0\%$ ungrounded reasons | `assert notice.guardrail_passed is True` |
-| **Hallucination Interception** | Block unauthorized causal claims | $100\%$ interception | `assert hallucinated_notice.guardrail_passed is False` |
+| **Fairness: Disparate Impact** | Prevent algorithmic disparate impact | `DIR ≥ 0.80` | `assert audit_report.disparate_impact_ratio >= 0.80` |
+| **Fairness: Parity Difference** | Limit absolute selection delta | `DPD ≤ 0.10` | `assert audit_report.demographic_parity_difference <= 0.10` |
+| **SHAP Local Accuracy** | Ensure exact mathematical attribution | `|Σ phi_i - (f(x) - E[f(x)])| < 10^-3` | `assert diff < 1e-3` |
+| **Groundedness Guardrail** | Eliminate hallucinated denial reasons | `0%` ungrounded reasons | `assert notice.guardrail_passed is True` |
+| **Hallucination Interception** | Block unauthorized causal claims | `100%` interception | `assert hallucinated_notice.guardrail_passed is False` |
 
 ---
 

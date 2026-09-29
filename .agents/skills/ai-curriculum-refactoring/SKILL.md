@@ -284,6 +284,20 @@ Research → Verify → Classify → Evaluate → Recommend → Human Approval �
 
 ---
 
+## Report Conflict Resolution
+
+When audit and research findings conflict, use the
+`references/conflict-resolution-checklist.md` reference.
+
+Do not blindly follow either report. Verify evidence, distinguish
+facts from recommendations, check prerequisites and curriculum
+placement, and make an explicit architectural decision.
+
+Record material conflicts and uncertainty rather than silently
+discarding contradictory findings.
+
+---
+
 ## 🗂️ Skill References & Reusable Assets
 
 Refer to these specialized sub-guidelines for detailed rules and templates:
