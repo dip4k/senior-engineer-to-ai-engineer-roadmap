@@ -4,6 +4,7 @@
 [![Verified: September 2026](https://img.shields.io/badge/Verified-September%202026-blue.svg)](#-the-ai-engineering-landscape-then-vs-now)
 [![Stack: Python 3.12+ | .NET 9](https://img.shields.io/badge/Polyglot-Python%20%7C%20.NET%209-brightgreen.svg)](#-dual-language-enterprise-stack)
 [![Protocols: MCP | A2A | AG-UI](https://img.shields.io/badge/Protocols-MCP%20%7C%20A2A%20%7C%20AG--UI-orange.svg)](#-enterprise-protocols--ecosystem)
+[![Agentic Dev: Antigravity | Claude Code | Copilot](https://img.shields.io/badge/Agentic%20Dev-Antigravity%20%7C%20Claude%20Code%20%7C%20Copilot-blueviolet.svg)](./LEARNING_WITH_AGENTS.md)
 [![Glossary: 21 Practices](https://img.shields.io/badge/Glossary-21%20Practices-blueviolet.svg)](./ai-engineering-glossary-by-practice.md)
 [![License: MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
@@ -32,6 +33,7 @@ This repository is not a collection of surface-level tutorials or marketing buzz
 
 ## 📑 Table of Contents
 
+* 🤖 [**Interactive Learning & Practice with Agents (Antigravity, Claude Code, Copilot)**](./LEARNING_WITH_AGENTS.md) *(Pre-setup agents, skills, and automated grading)*
 * 📖 [**Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) *(Essential 1–2 sentence companion guide across 21 disciplines)*
 1. [The AI Engineering Landscape: Then vs. Now](#-the-ai-engineering-landscape-then-vs-now)
 2. [Master Curriculum Syllabus (Phases 00–08)](#-master-curriculum-syllabus)

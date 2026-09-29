@@ -1,0 +1,14 @@
+{
+  "mcpServers": {
+    "agent-forge-mcp": {
+      "command": "python",
+      "args": ["-m", "agent_forge.mcp.servers.payment_server"],
+      "cwd": "agent-forge"
+    },
+    "web-search-helper": {
+      "command": "python",
+      "args": ["scripts/refresh_content_scout.py", "--queries-only"],
+      "cwd": "."
+    }
+  }
+}

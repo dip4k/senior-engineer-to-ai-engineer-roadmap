@@ -1,0 +1,10 @@
+{
+  "commands": {
+    "coach": ".claude/commands/coach.md",
+    "practice": ".claude/commands/practice.md",
+    "verify-lab": ".claude/commands/verify-lab.md",
+    "refresh-content": ".claude/commands/refresh-content.md",
+    "quiz": ".claude/commands/quiz.md",
+    "architect": ".claude/commands/architect.md"
+  }
+}
