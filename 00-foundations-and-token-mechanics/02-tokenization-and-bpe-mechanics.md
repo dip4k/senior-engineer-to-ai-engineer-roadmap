@@ -1,13 +1,13 @@
 # Lesson 02: Tokenization & Byte-Pair Encoding (BPE)
 
-`🟢 Core` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 11 minutes*
+`HIGH ROI / CORE` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 12 minutes*
 
 ---
 
 ## What You Will Learn
 
 By the end of this lesson, you will understand:
-- Why neural networks cannot directly process text strings, characters, or words.
+- Why neural networks cannot directly process text strings, characters, or full words.
 - The mechanics of Byte-Pair Encoding (BPE) and how subword merge trees are formed.
 - The hidden operational costs of tokenization: whitespace sensitivity, number shredding, and the non-English token tax.
 - How probability sampling works (Logits, Softmax, Temperature, Top-P, and Top-K).
@@ -56,35 +56,78 @@ If every distinct word is a token:
 - Sequence lengths remain short.
 - **The Catastrophe**: Natural language vocabulary is unbounded. Medical terms, typos, code variables (`getUserById`), and inflections require millions of unique words. A vocabulary of 2,000,000 words creates an embedding matrix so colossal it would consume 30+ GB of GPU memory just to store the dictionary lookup table! Any word not in the dictionary becomes an unknown token (`<UNK>`), destroying meaning.
 
-### The Engineering Solution: Subword Byte-Pair Encoding
-Subword tokenizers strike the optimal balance: common words are represented as single tokens, while rare words, code identifiers, or foreign scripts are broken down into subword chunks or raw bytes.
+---
+
+## 3. Systems Mental Model: Lego Bricks vs. Carved Marble
 
 ---
 
-## 3. Systems Mental Model: Huffman Coding for Language
+### Why Subwords Win
 
-Think of Byte-Pair Encoding like **Huffman coding** or **Lempel-Ziv compression (gzip)**:
+* 🧒 **The Analogy**:
+  * Imagine you want to build a model city:
+    * **Word-Level (Carved Marble)**: You demand a pre-carved, solid marble statue for every conceivable building in the world (a hospital, a school, a coffee shop, a 19th-century church). If someone asks for a "futuristic space hospital", your warehouse doesn't have it, so you give up (`<UNK>`). Your warehouse needs millions of massive statues.
+    * **Character-Level (Sand Grains)**: You try to build the city by gluing individual grains of sand together. You can build anything, but building one tiny house takes 100,000 individual operations. You run out of room before you even finish the roof!
+    * **Subword BPE (Lego Bricks)**: Common items come as standard pre-molded Lego pieces (`[the]`, `[house]`, `[running]`). When you need an unusual word like `"unbreakable"`, you simply snap together two smaller Lego bricks: `[un]` and `[breakable]`. You need only 100,000 standard pieces to build any word in any language in the universe!
 
-In gzip, the compressor scans data for frequently recurring byte sequences and replaces them with shorter bit codes. BPE does the same thing for language:
-- It starts with a base vocabulary of individual bytes (256 distinct values).
-- It scans billions of words of pre-training text and counts which two adjacent tokens appear together most frequently.
-- It merges that pair into a brand-new single token and adds it to the vocabulary table.
-- It repeats this merge process tens of thousands of times until reaching a target vocabulary size (typically 32,000 to 128,000 tokens).
+* ⚙️ **The Engineering Mechanics**:
+  * Byte-Pair Encoding (BPE) is a data compression algorithm adapted for natural language:
+    1. It initializes with a base vocabulary of 256 individual UTF-8 byte tokens.
+    2. It scans terabytes of pre-training text and counts the frequency of all adjacent token pairs.
+    3. It iteratively merges the single most frequent adjacent pair into a new token and adds it to the vocabulary.
+    4. It repeats this process until reaching the target vocabulary budget (typically 100,000 to 128,000 tokens in modern models like GPT-4o and LLaMA-3).
+
+* ⚠️ **What Happens If You Ignore This?**
+  * You treat token counts as word counts (e.g. assuming 1 word = 1 token).
+  * In production, when your system processes code snippets, foreign languages, or JSON payloads with indentation, your token usage explodes by 2x to 5x, blowing past context limits and causing budget overruns.
 
 ---
 
 ## 4. How Byte-Pair Encoding (BPE) Works
 
-Let's walk through the exact BPE training and tokenization process:
+Let's trace how the tokenizer transforms the raw string `"unbreakable"` into discrete integer tokens:
 
 ```mermaid
 flowchart TD
-    Raw["Raw Text: 'unbreakable'"] --> Bytes["1. UTF-8 Byte Stream: ['u', 'n', 'b', 'r', 'e', 'a', 'k', 'a', 'b', 'l', 'e']"]
-    Bytes --> Lookup["2. Match Known BPE Merge Pairs in Vocabulary Table"]
-    Lookup --> Merge1["Merge Step: ('u', 'n') -> 'un' (ID: 2834)"]
-    Merge1 --> Merge2["Merge Step: ('b', 'r') -> 'br'"]
-    Merge2 --> Merge3["Merge Step: ('break', 'able') -> 'breakable' (ID: 41920)"]
-    Merge3 --> FinalTokens["Final Output Tokens: ['un', 'breakable']\nToken IDs: [2834, 41920]"]
+    subgraph BPE["Byte-Pair Encoding (BPE) Tokenization Pipeline"]
+        direction TB
+
+        subgraph INGEST["1. Byte Deconstruction"]
+            Raw["Raw Text: 'unbreakable'"]
+            Bytes["UTF-8 Byte Stream:<br>['u', 'n', 'b', 'r', 'e', 'a', 'k', 'a', 'b', 'l', 'e']"]
+            Raw --> Bytes
+        end
+
+        subgraph MERGING["2. Iterative Merge Tree"]
+            Lookup["Match Known BPE Merge Pairs in Vocabulary Table"]
+            Merge1["Merge Step 1: ('u', 'n') → 'un' (ID: 2834)"]
+            Merge2["Merge Step 2: ('b', 'r') → 'br'"]
+            Merge3["Merge Step 3: ('break', 'able') → 'breakable' (ID: 41920)"]
+
+            Bytes --> Lookup
+            Lookup --> Merge1
+            Merge1 --> Merge2
+            Merge2 --> Merge3
+        end
+
+        subgraph SERIAL["3. Integer Token Serialization"]
+            FinalTokens["Final Subword Tokens:<br>['un', 'breakable']"]
+            FinalIDs["Final Integer Token IDs:<br>[2834, 41920]"]
+
+            Merge3 --> FinalTokens
+            FinalTokens --> FinalIDs
+        end
+    end
+
+    style BPE fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style INGEST fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style MERGING fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    style SERIAL fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style Raw fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Bytes fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style FinalTokens fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style FinalIDs fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### Walkthrough of the BPE Tokenization Process:
@@ -97,34 +140,60 @@ flowchart TD
 
 ## 5. Tokenizer Idiosyncrasies & Production Penalties
 
-Because BPE is a purely statistical compression algorithm with no intrinsic understanding of grammar, it introduces subtle behaviors that directly impact production systems:
+Because BPE is a purely statistical compression algorithm with no intrinsic understanding of human grammar, it introduces subtle behaviors that directly impact production systems:
 
-### 1. Leading Whitespace Sensitivity
-In modern tokenizers (such as OpenAI's `cl100k_base` or `o200k_base`, and Meta's LLaMA-3 tokenizer), whitespace is glued to the beginning of the subsequent word, not treated as an isolated token:
+---
+
+### Idiosyncrasy 1: Leading Whitespace Sensitivity
+
+* 🧒 **The Analogy**:
+  * Imagine a library filing system where an item with a tiny piece of scotch tape on its left edge is considered an entirely different category of object than the exact same item without tape.
+  * In modern BPE tokenizers, a word preceded by a space is a completely separate vocabulary entry from that word alone!
+
+* ⚙️ **The Engineering Mechanics**:
+  * In modern tokenizers (such as OpenAI's `cl100k_base` or `o200k_base`, and Meta's LLaMA-3 tokenizer), whitespace is glued to the beginning of the subsequent word:
 
 | Input String | Token Breakdown | Token IDs | Production Consequence |
 |---|---|---|---|
 | `"Hello"` | `["Hello"]` | `[9906]` | Token ID 9906 represents `"Hello"` without leading space. |
 | `" Hello"` | `[" Hello"]` | `[15496]` | Completely different token ID (15496) represents `" Hello"`! |
 
-**Why this matters**: If your few-shot prompt or template contains an accidental trailing space before a variable (e.g. `f"User Query: {query}"` where `query` starts with a space), the model receives two space tokens or an unfamiliar boundary token. This disrupts the model's learned prefix activations and degrades output quality.
+* ⚠️ **What Happens If You Ignore This?**
+  * When constructing prompt templates using string formatting (e.g. `f"User Query: {query}"` where `query` has an accidental leading space), the model receives two space tokens or an unfamiliar boundary token. This disrupts the model's learned prefix activations and degrades output quality or causes schema parsing failures.
 
-### 2. Number Shredding
-Tokenizers treat numbers inconsistently. While small numbers often have dedicated tokens, large numbers or formatted numbers are shredded into arbitrary sub-tokens:
+---
 
-```text
-"100"      --> 1 token:  ["100"]
-"1000"     --> 1 token:  ["1000"]
-"10000"    --> 2 tokens: ["10", "000"]
-"1,000,000"--> 5 tokens: ["1", ",", "000", ",", "000"]
-```
+### Idiosyncrasy 2: Number Shredding
 
-**Why this matters**: In financial and arithmetic applications, a raw string of numbers can consume significantly more context than expected. Furthermore, because digits are split inconsistently across digit boundaries, transformers struggle with multi-digit arithmetic without scratchpad reasoning.
+* 🧒 **The Analogy**:
+  * Imagine asking a child to read the number `1,000,000`. Instead of seeing "one million", the child's eyes chop it up into: *"one"*, *"comma"*, *"zero-zero-zero"*, *"comma"*, *"zero-zero-zero"*.
+  * The child has to hold five separate puzzle pieces in their head just to understand a single number.
 
-### 3. The Non-English Token Tax
-Because the training datasets for most foundation models are predominantly English (typically 80%+), the tokenizer's merge table heavily favors English character sequences. 
+* ⚙️ **The Engineering Mechanics**:
+  * Tokenizers treat numbers inconsistently. While small numbers often have dedicated tokens, large numbers or formatted numbers are shredded into arbitrary sub-tokens:
+    ```text
+    "100"       → 1 token:  ["100"]
+    "1000"      → 1 token:  ["1000"]
+    "10000"     → 2 tokens: ["10", "000"]
+    "1,000,000" → 5 tokens: ["1", ",", "000", ",", "000"]
+    ```
 
-Common English words are represented as single tokens. Non-Latin scripts (such as Devanagari, Arabic, Japanese, or Cyrillic) often lack frequent multi-byte merges, forcing the tokenizer to fall back to individual UTF-8 bytes:
+* ⚠️ **What Happens If You Ignore This?**
+  * Financial systems sending formatted currency strings with commas consume 5x more tokens than necessary. Furthermore, because digits are split inconsistently across digit boundaries, transformers struggle with multi-digit arithmetic without scratchpad reasoning.
+
+---
+
+### Idiosyncrasy 3: The Non-English Token Tax
+
+* 🧒 **The Analogy**:
+  * Imagine buying a train ticket. If you speak English, the ticket costs 1 token.
+  * If you speak Spanish, the exact same ticket costs 2 tokens.
+  * If you speak Hindi, the exact same ticket costs **5.5 tokens**!
+  * You run out of travel budget 5 times faster simply because of the language you speak.
+
+* ⚙️ **The Engineering Mechanics**:
+  * Because training datasets for foundation models are predominantly English (typically 80%+), the tokenizer's merge table heavily favors English character sequences.
+  * Common English words are represented as single tokens. Non-Latin scripts often lack multi-byte merges, forcing the tokenizer to fall back to individual UTF-8 bytes:
 
 | Input Text | Language | Character Count | Token Count | Inflation vs. English |
 |---|---|---|---|---|
@@ -134,7 +203,8 @@ Common English words are represented as single tokens. Non-Latin scripts (such a
 | `"एंटरप्राइज आर्किटेक्चर"` | Hindi | 23 | 11 tokens | **5.5x** |
 | `"企业架构"` | Chinese | 4 | 4 tokens | **2.0x** |
 
-**Why this matters**: A global enterprise deploying an AI agent will pay **5.5 times more per request** for a Hindi or Arabic user than for an English user performing the identical task. Furthermore, the Hindi user will hit context window limits 5 times faster!
+* ⚠️ **What Happens If You Ignore This?**
+  * A global enterprise deploying an AI agent will pay **5.5 times more per request** for a Hindi user than for an English user performing the identical task. In addition, the Hindi user hits context window limits 5 times faster!
 
 ---
 
@@ -146,11 +216,43 @@ How does the serving engine convert these logits into the next output token?
 
 ```mermaid
 flowchart TD
-    Logits["Raw Output Logits: z_1, z_2, ..., z_V\n(Shape: [Vocabulary Size, e.g. 128,000])"] --> Temp["Apply Temperature Scaling:\nz_i' = z_i / Temperature"]
-    Temp --> Softmax["Softmax Layer:\nP(w_i) = exp(z_i') / Σ exp(z_j')"]
-    Softmax --> Dist["Normalized Probability Distribution (Sum = 1.0)"]
-    Dist --> Filter["Filter Candidates via Top-K and Top-P (Nucleus)"]
-    Filter --> Sample["Token Sampling:\n• Greedy (Argmax) if Temp = 0.0\n• Categorical Sampling if Temp > 0.0"]
+    subgraph SAMPLING["Next-Token Sampling Pipeline"]
+        direction TB
+
+        subgraph LOGITS["1. Raw Output"]
+            RawLogits["Raw Logits: z_1, z_2, ..., z_V<br>(Shape: [Vocab Size, e.g. 128,000])"]
+        end
+
+        subgraph SCALING["2. Temperature Scaling & Normalization"]
+            Temp["Apply Temperature Scaling:<br>z_i' = z_i / Temperature"]
+            Softmax["Softmax Layer:<br>P(w_i) = exp(z_i') / Σ exp(z_j')"]
+            Dist["Normalized Probability Distribution<br>(Sum of probabilities = 1.0)"]
+
+            RawLogits --> Temp
+            Temp --> Softmax
+            Softmax --> Dist
+        end
+
+        subgraph FILTER["3. Candidate Truncation"]
+            Filter["Filter Candidates via Top-K and Top-P (Nucleus)"]
+            Dist --> Filter
+        end
+
+        subgraph EMIT["4. Token Selection"]
+            Sample["Sample Next Token:<br>• Greedy (Argmax) if Temp = 0.0<br>• Categorical Sampling if Temp > 0.0"]
+            Filter --> Sample
+        end
+    end
+
+    style SAMPLING fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style LOGITS fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style SCALING fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+    style FILTER fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    style EMIT fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style RawLogits fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Dist fill:#ffffff,stroke:#b26b00,stroke-width:1px
+    style Sample fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### 1. Temperature (`T`)
@@ -160,13 +262,25 @@ P(token_i) = exp( z_i / Temperature ) / Σ [ exp( z_j / Temperature ) ]
 ```
 
 - **Temperature = 0.0 (Greedy Decoding / Argmax)**: The model deterministically selects the single token with the highest logit. Always use `T = 0` for code generation, JSON extraction, and mathematical calculations.
-- **Low Temperature (0.1 – 0.5)**: Sharpens the distribution. The top tokens receive almost all the probability mass. Output is focused and repeatable.
+- **Low Temperature (0.1 – 0.5)**: Sharpens the distribution. Top tokens receive almost all probability mass. Output is focused and repeatable.
 - **Medium Temperature (0.7 – 0.8)**: Balances coherence and vocabulary variety. Standard for conversational chat and creative drafting.
-- **High Temperature (≥ 1.0)**: Flattens the distribution, giving obscure, low-probability tokens a realistic chance of being picked. Often results in rambling or nonsensical output.
+- **High Temperature (≥ 1.0)**: Flattens the distribution, giving obscure, low-probability tokens a realistic chance of being picked. Often results in rambling or hallucinated output.
 
 ### 2. Top-K and Top-P (Nucleus) Filtering
 - **Top-K**: Truncates the candidate pool to the `K` most probable tokens (e.g. `K = 50`). All other tokens are discarded.
 - **Top-P (Nucleus Sampling)**: Dynamically selects the smallest set of tokens whose cumulative probability exceeds threshold `P` (e.g. `P = 0.90`). If one token has 95% probability, only that token is considered; if 20 tokens share probability equally, all 20 are considered.
+
+---
+
+### 📊 Naive Text Processing (2023) vs. Modern Tokenizer Engineering (2026)
+
+| Architectural Dimension | Naive Text Processing (2023) | Modern Tokenizer Engineering (2026) |
+| :--- | :--- | :--- |
+| **Document Chunking** | Blind string slicing (`text[:500]`) | **Tokenizer-aware chunking** on integer token arrays |
+| **Whitespace Handling** | Freeform template string interpolation | **Strict whitespace normalization** at prompt boundaries |
+| **Number Formatting** | Human comma-separated formats (`"$1,000,000"`) | **Compact plain formatting** (`"1000000"`) |
+| **Sampling for Schemas** | Default chat temperature (`0.7`) | **Greedy decoding (`temperature = 0.0`)** |
+| **Multilingual Strategy**| Single static token rate across all locales | **Language-aware token budgeting** & `o200k_base` / modern vocabularies |
 
 ---
 
@@ -289,7 +403,7 @@ if __name__ == "__main__":
 
 ### Anti-Pattern 1: Naive String Splitting on Token Boundaries
 - **The Mistake**: Splitting a document into 500-character chunks by blindly slicing `text[0:500]`.
-- **Why It Fails**: Slicing strings by characters frequently cuts multi-byte UTF-8 sequences or splits a subword token in half (e.g. splitting `"ing"` away from its root). When the tokenizer parses the cut fragment, it encodes it as invalid dangling bytes, generating garbage embeddings in RAG pipelines.
+- **Why It Fails**: Slicing strings by characters frequently cuts multi-byte UTF-8 sequences or splits a subword token in half (e.g. splitting `"ing"` away from its root). When the tokenizer parses the cut fragment, it encodes it as invalid dangling bytes, generating corrupted embeddings in RAG pipelines.
 - **Production Remedy**: Always tokenize the document first, and perform chunk slicing on the integer token ID array, or use tokenizer-aware text splitters.
 
 ### Anti-Pattern 2: Setting Temperature > 0 for Structured JSON Extraction
@@ -299,7 +413,28 @@ if __name__ == "__main__":
 
 ---
 
-## 10. Key Takeaways
+## 10. Quick Check to See if it Clicked
+
+> **Scenario**: A global FinTech company builds a customer support copilot. They set a hard budget cap of 1,000 tokens per user request across all regions.
+>
+> An English user submits a 600-word bank dispute letter and gets a complete answer using 780 tokens.
+>
+> A customer in Mumbai submits the exact same 600-word dispute written in Hindi. The API throws an immediate error: `ContextLengthExceededError: Request exceeded 1,000 tokens (received 3,300 tokens)`.
+>
+> The product manager assumes the Hindi translation service added 2,000 extra words.
+>
+> **Question**: Did the translation add 2,000 words? What is the root cause?
+>
+> **Answer**: 
+> 1. No, the translation did not add 2,000 words. The semantic length was identical.
+> 2. The root cause is the **Multilingual Token Tax**. The tokenizer's BPE merge table was trained predominantly on English corpora.
+> 3. English averages ~1.3 tokens per word (600 words × 1.3 ≈ 780 tokens).
+> 4. In Hindi (Devanagari script), most character combinations lack pre-merged tokens in older vocabularies, forcing the tokenizer to fall back to individual UTF-8 bytes (averaging ~5.5 tokens per word: 600 words × 5.5 = 3,300 tokens).
+> 5. To fix this, the team must switch to a modern multilingual tokenizer (such as OpenAI's `o200k_base` or LLaMA-3) or establish language-adjusted token budgets.
+
+---
+
+## 11. Key Takeaways
 
 1. **Tokens Are Integer Indices**: LLMs never see characters or words. Every text fragment is transformed into an integer token ID via Byte-Pair Encoding (BPE).
 2. **Leading Spaces Matter**: `" Hello"` and `"Hello"` are completely different tokens. Consistent spacing in prompt templates is mandatory.
@@ -308,10 +443,10 @@ if __name__ == "__main__":
 
 ---
 
-## 11. Verified Resources
+## 12. Verified Resources
 
 - **[Sennrich et al. (2015) — Neural Machine Translation of Rare Words with Subword Units](https://arxiv.org/abs/1508.07909)**: The original paper introducing Byte-Pair Encoding to natural language processing.
-- **[OpenAI Tiktoken Library](https://github.com/openai/tiktoken)**: High-performance open-source BPE tokeniser in Rust and Python.
+- **[OpenAI Tiktoken Library](https://github.com/openai/tiktoken)**: High-performance open-source BPE tokenizer in Rust and Python.
 - **[HuggingFace Tokenizers Library](https://github.com/huggingface/tokenizers)**: Fast tokenization engine supporting BPE, WordPiece, and Unigram.
 - **Previous Lesson**: [Lesson 01: Transformer Inference & Hardware Realities](./01-transformer-and-hardware-physics.md)
 - **Next Lesson**: [Lesson 03: KV-Cache Mechanics & Memory Sizing Math](./03-kv-cache-vram-and-bandwidth-physics.md)

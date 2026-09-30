@@ -1,8 +1,73 @@
 # Capstone Engineering Challenge: High-Throughput Token Budgeting Proxy
 
-**Objective:** Construct an enterprise API proxy in Python (FastAPI), TypeScript (Fastify/Node), or C# (ASP.NET Core) that intercepts LLM calls before provider dispatch to eliminate runaway inference costs, prevent GPU out-of-memory crashes, and enforce tenant SLAs.
+`🏆 Capstone Lab` · *Phase 00: Foundations & Token Mechanics* · *Hands-On Implementation*
 
-### Core Architectural Components & Implementation Steps:
+---
+
+### What is a Token Budgeting Proxy? (Explain Like I'm 10)
+
+* 🧒 **The Analogy (The Airport Baggage Checkpoint)**:
+  * Imagine a passenger plane (your GPU cluster) with strict weight limits.
+  * If passengers show up with 500-pound suitcases (massive 100k prompts) and the airline lets everyone on without checking, the plane will be too heavy to fly and crash (GPU Out-of-Memory).
+  * A **Token Budgeting Proxy** acts as the check-in counter and baggage scale:
+    1. It weighs each passenger's luggage before they reach the gate (profiles tokens).
+    2. It checks whether the cargo hold has enough space left (calculates available VRAM & KV-cache).
+    3. If a passenger brings too much luggage or the flight is full, the agent stops them at the counter with a courteous ticket change (`HTTP 429 Too Many Requests`), protecting the plane from crashing.
+
+* ⚙️ **The Engineering Reality**:
+  * An enterprise API proxy in Python (FastAPI), TypeScript (Fastify), or C# (ASP.NET Core) that intercepts LLM calls before provider dispatch to eliminate runaway inference costs, prevent GPU out-of-memory crashes, and enforce tenant SLAs.
+
+---
+
+## 🏛️ System Architecture
+
+```mermaid
+flowchart TD
+    subgraph CLIENT_TIER["1. Client Application Tier"]
+        Req["Incoming Client Request<br>(Prompt + User / System Tokens)"]
+    end
+
+    subgraph PROXY_TIER["2. Enterprise Token Budgeting Proxy"]
+        direction TB
+
+        T_Profile["Step 1: Multi-Model Token Profiler<br>• Count exact tokens (tiktoken / tokenizers)<br>• Add message framing overhead (+3/msg)"]
+        
+        KV_Calc["Step 2: Dynamic KV-Cache Estimator<br>• KV = 2 × 2 × L × H_KV × d_k × Context × Batch<br>• Check available VRAM against 85% safety ceiling"]
+        
+        TPM_Check["Step 3: Sliding-Window TPM Governor<br>• Track tenant 60-second token consumption<br>• Enforce per-tenant SLA quotas"]
+        
+        Breach{"Ceiling or Quota Breached?"}
+        
+        Err429["Return HTTP 429 / 400 (RFC 7807)<br>X-RateLimit-Reset & Retry-After Headers"]
+        Dispatch["Step 4: Dispatch Request to LLM Provider<br>(vLLM / Anthropic / OpenAI / Azure)"]
+
+        Req --> T_Profile
+        T_Profile --> KV_Calc
+        KV_Calc --> TPM_Check
+        TPM_Check --> Breach
+        Breach -- "Yes (Over Budget / OOM Risk)" --> Err429
+        Breach -- "No (Safe to Execute)" --> Dispatch
+    end
+
+    subgraph BACKEND_TIER["3. LLM Serving Tier"]
+        GPU_Cluster["GPU Cluster / Provider API<br>(NVIDIA H100 / Cloud Endpoint)"]
+        Dispatch --> GPU_Cluster
+    end
+
+    style CLIENT_TIER fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style PROXY_TIER fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style BACKEND_TIER fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style Req fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Breach fill:#ffffff,stroke:#b26b00,stroke-width:1px
+    style Err429 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style Dispatch fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style GPU_Cluster fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+```
+
+---
+
+## 🛠️ Core Architectural Components & Implementation Steps
 
 1. **Exact Multi-Model Token Profiler:**
    - Detect the target model family (`gpt-4.5`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
@@ -10,7 +75,10 @@
    - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
 
 2. **In-Flight GPU KV-Cache & VRAM Allocation Estimator:**
-   - Compute required KV-cache footprint using the formula: `2 × 2 × Layers × H_KV × d_k × Batch × TotalSequenceLen` (bytes).
+   - Compute required KV-cache footprint using the formula:
+     ```text
+     KV Cache (Bytes) = 2 × 2 bytes × Layers × Heads_KV × Head_Dim × Batch × Sequence_Length
+     ```
    - Maintain an in-memory concurrent allocation counter across running inferences.
    - If an incoming request pushes total GPU KV-cache allocation past threshold (e.g., 85% of available VRAM), enqueue or reject before invoking downstream providers.
 
@@ -22,11 +90,14 @@
    - Emit OpenTelemetry spans with attributes: `llm.provider`, `llm.model`, `llm.tokens.prompt`, `llm.cost.estimated_usd`.
    - On budget or rate limit breach, return HTTP 429 / 400 with an RFC 7807 compliant problem details JSON object.
 
-### Verification & Test Scenarios:
+---
+
+## 🧪 Verification & Test Scenarios
+
 - **Baseline Test:** Send 10 concurrent valid 500-token prompts and assert `HTTP 200` with correct token counts and estimated costs.
 - **TPM Ceiling Test:** Fire a burst of requests exceeding the 100,000 TPM limit; assert immediate `HTTP 429` with valid `Retry-After` header.
 - **KV-Cache Overflow Protection:** Simulate a 128k context request against a constrained budget; assert early rejection before dispatching to the upstream LLM API.
 
 ---
-[Return to Phase 00 Hub](../README.md)
 
+[Return to Phase 00 Hub](../README.md)

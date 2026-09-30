@@ -1,6 +1,6 @@
 # Lesson 03: KV-Cache Mechanics & Memory Sizing Math
 
-`🟡 Engineering Depth` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 15 minutes*
+`🟡 Engineering Depth` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 16 minutes*
 
 ---
 
@@ -10,7 +10,7 @@ By the end of this lesson, you will understand:
 - Why autoregressive text generation requires caching Key and Value activation vectors in GPU memory.
 - The fundamental duality between the compute-bound **Prefill Phase** and the memory-bound **Decode Phase**.
 - The exact mathematical derivation of KV-cache memory consumption.
-- The architectural evolution from Multi-Head Attention (MHA) to Multi-Query (MQA) and Grouped-Query Attention (GQA).
+- The architectural evolution from Multi-Head Attention (MHA) to Multi-Query (MQA), Grouped-Query Attention (GQA), and Multi-Head Latent Attention (MLA).
 - How PagedAttention applies OS virtual memory paging to eliminate KV-cache fragmentation.
 - How to build a production VRAM capacity planner to prevent out-of-memory crashes under concurrent load.
 
@@ -39,35 +39,26 @@ To operate LLM services reliably in production, you must understand the mechanic
 
 ---
 
-## 2. Why Naive Approaches Fail: The O(N^2) Recomputation Trap
+## 2. Systems Mental Model: The Memory Scratchpad
 
-Why do we need a KV-cache in the first place? Why can't we simply feed the entire conversation history into the model every time we want the next token?
+---
 
-### The Naive Recomputation Flow
-Suppose the model has already generated 1,000 tokens, and we need token 1,001:
-- We could pass all 1,000 previous tokens into the neural network again.
-- The transformer computes the self-attention of every token against every other token.
-- It emits token 1,001.
+### The Dynamic Bulletin Board
 
-Now we need token 1,002:
-- We pass all 1,001 tokens into the network again.
-- It recomputes attention across all 1,001 tokens from scratch.
-- It emits token 1,002.
+* 🧒 **The Analogy**:
+  * Imagine you are collaborating with a writer on a novel:
+    * **Without a Scratchpad (The Recomputation Trap)**: Every time the author writes one new word, you force them to re-read the entire manuscript from Chapter 1, Page 1! At 1,000 words, they re-read 1,000 words. At 2,000 words, they re-read 2,000 words. By evening, they spend 99% of their time re-reading words they already wrote.
+    * **With a Scratchpad (The KV-Cache)**: As each page is written, you pin a small index card to a bulletin board summarizing the clues (Keys) and descriptions (Values). When writing the next word, the author doesn't re-read the book; they just glance at the bulletin board!
+  * **The Catch**: That bulletin board has limited wall space. If 50 authors are writing chapters in the same room, the bulletin board fills up, and the room runs out of wall space (GPU Out-of-Memory).
 
-### Why This Destroys Performance
-Because self-attention requires pairwise dot products between all tokens in the sequence, computing attention for a sequence of length `N` takes `O(N^2)` operations.
+* ⚙️ **The Engineering Mechanics**:
+  * In autoregressive generation, past tokens are immutable. Their Key (`K`) and Value (`V`) projection vectors never change.
+  * Instead of recomputing them from scratch on every step (which would require quadratic `O(N^2)` operations), the GPU allocates a scratchpad buffer in VRAM called the **KV-Cache**.
+  * When generating the next token, the model computes only **one** new Query vector, retrieves the cached `K` and `V` vectors from memory, and computes attention in linear `O(N)` time.
 
-If you generate a 2,000-token response without caching:
-```text
-Total Operations = 1^2 + 2^2 + 3^2 + ... + 2000^2 ≈ (2000^3) / 3 ≈ 2.67 Billion Operations!
-```
-
-Generation latency degrades quadratically with every token generated. The first token takes 50 milliseconds; token 2,000 takes several seconds.
-
-### The Engineering Solution: Memoization via the KV-Cache
-In autoregressive generation, prior tokens are immutable. Their Key (`K`) and Value (`V`) vectors never change. 
-
-Instead of recomputing them, the GPU saves the calculated `K` and `V` vectors for all past tokens in VRAM. When generating the next token, the model computes only **one** new Query vector, retrieves the cached `K` and `V` vectors from memory, and computes attention in `O(N)` time.
+* ⚠️ **What Happens If You Ignore This?**
+  * If you don't cache activations, generating a 2,000-token answer requires over 2.6 billion redundant matrix operations; token 2,000 takes 100x longer to emit than token 1.
+  * Conversely, if you don't calculate the memory consumption of that cache, multi-turn user sessions quickly exhaust all remaining GPU VRAM, crashing your serving cluster.
 
 ---
 
@@ -104,13 +95,13 @@ sequenceDiagram
 1. **The Prefill Phase (Prompt Processing)**:
    - The entire user prompt (e.g. 2,048 tokens) is submitted at once.
    - The GPU processes all prompt tokens in parallel using large **General Matrix-Matrix Multiplication (GEMM)** operations.
-   - Arithmetic intensity is high. The GPU Tensor Cores are fully utilized.
+   - Arithmetic intensity is high. The GPU Tensor Cores are fully utilized (**Compute-Bound**).
    - This phase determines the **Time-To-First-Token (TTFT)** metric.
-   - All resulting Key and Value vectors are written to the KV-cache.
+   - All resulting Key and Value vectors are stored in the KV-cache.
 2. **The Decode Phase (Autoregressive Generation)**:
    - Output tokens are generated strictly one at a time.
    - The GPU performs **General Matrix-Vector Multiplication (GEMV)** operations.
-   - Arithmetic intensity drops to near zero (~1 FLOP/byte). The GPU compute cores spend most of their time idle, waiting for model weights and the KV-cache to be read from HBM.
+   - Arithmetic intensity drops to near zero (~1 FLOP/byte). The GPU compute cores spend most of their time idle, waiting for model weights and the KV-cache to be read from HBM (**Memory-Bandwidth-Bound**).
    - This phase determines the **Tokens-Per-Second (TPS)** throughput.
 
 ### Latency Formula:
@@ -130,7 +121,7 @@ For every token stored in the context window:
 3. This must be done across **every transformer layer** in the model (`L`).
 4. Each layer has a specific number of Key-Value attention heads (`H_KV`).
 5. Each attention head has a hidden dimensionality (`d_k`, typically 128 dimensions).
-6. Each floating-point number consumes bytes based on numerical precision (`P_bytes`, 2 bytes for FP16/BF16, 1 byte for FP8).
+6. Each floating-point number consumes bytes based on numerical precision (`P_bytes`: 2 bytes for FP16/BF16, 1 byte for FP8).
 
 ### The Master KV-Cache Sizing Formula:
 ```text
@@ -160,53 +151,63 @@ A single user conversation spanning 8,192 tokens consumes **2.68 GB of dedicated
 
 Early transformers used **Multi-Head Attention (MHA)**, where every Query head has its own dedicated Key head and Value head. As context lengths expanded to 32k and 128k, MHA's KV-cache became completely unsustainable.
 
-The AI industry evolved attention architectures to reduce the size of the scratchpad:
+The AI industry evolved attention architectures to shrink this scratchpad:
 
 ```mermaid
 flowchart TD
-    subgraph Traditional["Traditional & Extreme Compression"]
-        subgraph MHA["1. Multi-Head Attention (MHA)"]
+    subgraph ATTN_ARCH["Evolution of Attention Architectures"]
+        direction TB
+
+        subgraph MHA["1. Multi-Head Attention (MHA: 2017)"]
             direction TB
             Q_MHA["Query Heads (H = 8)"]
             K_MHA["Key Heads (H = 8)"]
             V_MHA["Value Heads (H = 8)"]
-            MHA_Note["Ratio: 1:1:1<br>KV-Cache: 100% (Baseline)"]
+            MHA_Note["Ratio: 1:1:1<br>KV-Cache: 100% (Baseline)<br>High VRAM Bottleneck"]
             Q_MHA --> K_MHA --> V_MHA --> MHA_Note
         end
 
-        subgraph MQA["2. Multi-Query Attention (MQA)"]
+        subgraph MQA["2. Multi-Query Attention (MQA: 2019)"]
             direction TB
             Q_MQA["Query Heads (H = 8)"]
             K_MQA["Key Head (H = 1)"]
             V_MQA["Value Head (H = 1)"]
-            MQA_Note["Ratio: 8:1:1<br>KV-Cache: 12.5% (8x saving)<br>Accuracy degradation"]
+            MQA_Note["Ratio: 8:1:1<br>KV-Cache: 12.5% (8x saving)<br>Degrades Multi-Hop Recall"]
             Q_MQA --> K_MQA --> V_MQA --> MQA_Note
         end
-    end
 
-    subgraph Modern["Modern Production Standards"]
-        subgraph GQA["3. Grouped-Query Attention (GQA)"]
+        subgraph GQA["3. Grouped-Query Attention (GQA: 2023)"]
             direction TB
-            Q_GQA["Query Heads (H = 8, 4 groups)"]
+            Q_GQA["Query Heads (H = 8, 2 groups)"]
             K_GQA["Key Heads (G = 2)"]
             V_GQA["Value Heads (G = 2)"]
-            GQA_Note["Ratio: 4:1:1<br>KV-Cache: 25% (4x saving)<br>Matches MHA accuracy"]
+            GQA_Note["Ratio: 4:1:1<br>KV-Cache: 25% (4x saving)<br>Matches MHA Accuracy!"]
             Q_GQA --> K_GQA --> V_GQA --> GQA_Note
         end
 
-        subgraph MLA["4. Multi-Head Latent Attention (MLA)"]
+        subgraph MLA["4. Multi-Head Latent Attention (MLA: 2024/2026)"]
             direction TB
             Q_MLA["Query Heads (H = 128)"]
             Latent["Latent Vector c_t (Dim: 512)"]
             Absorb["Matrix Absorption into W^Q / W^O"]
-            MLA_Note["Low-Rank Projection<br>KV-Cache: ~6.7% (15x saving)<br>Full MHA expressiveness"]
+            MLA_Note["Low-Rank Projection<br>KV-Cache: ~6.7% (15x saving)<br>Full MHA Expressiveness"]
             Q_MLA --> Latent --> Absorb --> MLA_Note
         end
+
+        MHA_Note -.->|"Group KV heads"| GQA
+        MQA_Note -.->|"Compress into latent space"| MLA
     end
 
-    %% Symmetrical connections between evolutionary generations
-    MHA_Note -->|"Group into shared KV"| GQA
-    MQA_Note -->|"Compress into latent vector"| MLA
+    style ATTN_ARCH fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style MHA fill:#fff5f5,stroke:#c62828,stroke-width:2px
+    style MQA fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+    style GQA fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style MLA fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+
+    style MHA_Note fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style MQA_Note fill:#ffffff,stroke:#b26b00,stroke-width:1px
+    style GQA_Note fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style MLA_Note fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
 ```
 
 ### Walkthrough of Attention Architectures:
@@ -230,6 +231,8 @@ flowchart TD
      ```
    - **Result**: Achieves a **93%+ memory reduction** (comparable to MQA) with zero loss in multi-head expressive capacity.
 
+---
+
 ### Attention Architecture Comparison Matrix
 
 | Dimension | Multi-Head Attention (MHA) | Multi-Query Attention (MQA) | Grouped-Query Attention (GQA) | Multi-Head Latent Attention (MLA) |
@@ -239,12 +242,6 @@ flowchart TD
 | **Model Expressiveness** | Maximum (Full multi-head) | Degraded on complex logic | Near-lossless (>99% MHA) | **Full MHA Equivalent (Absorbed)** |
 | **Inference Mechanism** | Standard tensor slicing | Single KV head broadcast | Grouped KV head broadcast | **Matrix absorption into Q & O** |
 | **Exemplar Models** | GPT-3, GPT-4 (original) | PaLM, Falcon | LLaMA 3, Mistral, Qwen 2.5 | **DeepSeek-V2, DeepSeek-V3, DeepSeek-R1** |
-
-### Memory Reduction Factor Formula:
-```text
-GQA Memory Reduction Factor = Total_Query_Heads / Total_KV_Heads
-MLA Memory Reduction Factor = (2 × n_heads × d_head) / d_c
-```
 
 ---
 
@@ -262,32 +259,52 @@ PagedAttention borrows the foundational concept of **OS Virtual Memory Paging**:
 
 ```mermaid
 flowchart TD
-    subgraph Logical["Logical KV-Cache (Contiguous Request Tokens)"]
-        L0["Logical Block 0 (Tokens 0 - 15)"]
-        L1["Logical Block 1 (Tokens 16 - 31)"]
-        L2["Logical Block 2 (Tokens 32 - 47)"]
+    subgraph PAGED["PagedAttention Memory Architecture"]
+        direction TB
+
+        subgraph LOGICAL["1. Logical KV-Cache (Contiguous Request Stream)"]
+            L0["Logical Block 0<br>(Tokens 0 - 15)"]
+            L1["Logical Block 1<br>(Tokens 16 - 31)"]
+            L2["Logical Block 2<br>(Tokens 32 - 47)"]
+        end
+
+        subgraph PAGETABLE["2. Virtual Page Table (Block Mapping)"]
+            T0["Block 0  →  Physical Frame 7"]
+            T1["Block 1  →  Physical Frame 2"]
+            T2["Block 2  →  Physical Frame 11"]
+        end
+
+        subgraph PHYSICAL["3. Physical GPU VRAM (Non-Contiguous Memory Frames)"]
+            P2["Frame 2 (Req A, Block 1)"]
+            P5["Frame 5 (Req B, Block 0)"]
+            P7["Frame 7 (Req A, Block 0)"]
+            P11["Frame 11 (Req A, Block 2)"]
+        end
+
+        L0 --> T0
+        L1 --> T1
+        L2 --> T2
+
+        T0 --> P7
+        T1 --> P2
+        T2 --> P11
     end
 
-    subgraph PageTable["Virtual Page Table (Block Mapping)"]
-        T0["Block 0  -->  Physical Frame 7"]
-        T1["Block 1  -->  Physical Frame 2"]
-        T2["Block 2  -->  Physical Frame 11"]
-    end
+    style PAGED fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style LOGICAL fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style PAGETABLE fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    style PHYSICAL fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 
-    subgraph Physical["Physical GPU VRAM (Non-Contiguous Frames)"]
-        P2["Frame 2 (Req A, Block 1)"]
-        P5["Frame 5 (Req B, Block 0)"]
-        P7["Frame 7 (Req A, Block 0)"]
-        P11["Frame 11 (Req A, Block 2)"]
-    end
-
-    L0 --> T0
-    L1 --> T1
-    L2 --> T2
-
-    T0 --> P7
-    T1 --> P2
-    T2 --> P11
+    style L0 fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style L1 fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style L2 fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style T0 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style T1 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style T2 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style P2 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style P5 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style P7 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style P11 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### Walkthrough of PagedAttention Paging:
@@ -296,6 +313,18 @@ flowchart TD
 3. **Non-Contiguous Storage**: As new tokens are generated, new physical blocks are allocated wherever space exists in VRAM. Physical memory does not need to be contiguous.
 4. **Virtual Block Table**: An OS-style page table translates logical sequence token offsets into physical memory pointers.
 5. **Zero-Copy Branching**: For multi-agent systems and parallel sampling, multiple requests can point to the same physical prompt blocks (Copy-on-Write), slashing memory usage for shared system prompts by up to 90%.
+
+---
+
+### 📊 Contiguous Static VRAM (2022) vs. PagedAttention & Modern Serving (2026)
+
+| Architectural Dimension | Contiguous Static VRAM (2022) | PagedAttention & Modern Serving (2026) |
+| :--- | :--- | :--- |
+| **Allocation Mechanism** | Worst-case pre-allocation (e.g. 8k tokens) | **Dynamic, non-contiguous block paging** (16-token frames) |
+| **Memory Waste** | 60% – 80% wasted due to internal fragmentation | **< 4% memory waste** |
+| **Shared Prefix Caching**| Duplicated across every user stream | **Zero-copy reference counting (Copy-on-Write)** |
+| **Attention Architecture**| Multi-Head Attention (MHA) | **Grouped-Query Attention (GQA)** or **MLA** |
+| **Serving Throughput** | 2x – 4x concurrent streams per GPU | **15x – 25x concurrent streams per GPU** |
 
 ---
 
@@ -494,7 +523,26 @@ If a 9th user submits a request, the cluster will OOM unless you implement Paged
 
 ---
 
-## 10. Key Takeaways
+## 10. Quick Check to See if it Clicked
+
+> **Scenario**: You are serving LLaMA-3.1-70B (FP16) on a 2x 80 GB NVIDIA H100 cluster (160 GB total). Model weights consume 131.5 GB. Runtime overhead takes 5 GB.
+>
+> You need to support **32 concurrent users** simultaneously analyzing 8,192-token contracts. 
+>
+> Currently, the script indicates you can safely support only **8 concurrent users** because each session takes 2.56 GB of KV-cache (8 streams × 2.56 GB = 20.48 GB, leaving ~3 GB buffer).
+>
+> **Question**: Without buying more GPUs, what two production levers can you configure to reach the 32-stream target?
+>
+> **Answer**: 
+> 1. **Model Weight Quantization (FP8 or INT4 AWQ)**:
+>    - Converting model weights from FP16 (131.5 GB) to FP8 (65.8 GB) instantly frees up **~65 GB of VRAM**.
+> 2. **KV-Cache Quantization (FP8)**:
+>    - Storing Key and Value vectors in FP8 (1 byte per element instead of 2 bytes) cuts the single-session cache from 2.56 GB down to **1.28 GB**.
+> 3. **The Result**: 32 streams × 1.28 GB = 40.96 GB of KV-cache. With FP8 weights (65.8 GB) + 41 GB KV cache + 5 GB runtime = **111.8 GB**, easily fitting into the 160 GB cluster with nearly 50 GB of safety buffer!
+
+---
+
+## 11. Key Takeaways
 
 1. **The KV-Cache Is Stateful Scratchpad Memory**: In autoregressive decode, past Key and Value vectors must be retained in VRAM to prevent quadratic O(N^2) recomputation.
 2. **Decode Is Memory-Bandwidth-Bound**: Generating tokens one at a time is bottlenecked by the speed of transferring model weights and KV activations across the HBM bus.
@@ -503,7 +551,7 @@ If a 9th user submits a request, the cluster will OOM unless you implement Paged
 
 ---
 
-## 11. Verified Resources
+## 12. Verified Resources
 
 - **[Ainslie et al. (2023) — GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245)**: The seminal research paper introducing Grouped-Query Attention.
 - **[Kwon et al. (2023) — Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)**: The foundational paper behind the vLLM serving engine.

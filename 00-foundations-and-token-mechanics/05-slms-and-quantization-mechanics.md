@@ -1,6 +1,6 @@
 # Lesson 05: Small Language Models & Model Quantization
 
-`🟡 Engineering Depth` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 14 minutes*
+`🟡 Engineering Depth` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 15 minutes*
 
 ---
 
@@ -55,14 +55,25 @@ Modern quantization algorithms do not treat all parameters equally. They protect
 
 ---
 
-## 3. Systems Mental Model: Audio Downsampling & Color Palettes
+## 3. Systems Mental Model: The Master Painting & The Custom Palette
 
-Think of quantization like **digital audio downsampling** or **image palette reduction**:
+---
 
-- **FP32 / FP16 (24-bit Lossless Studio Master Audio)**: Captures every microscopic dynamic nuance and sound frequency. Perfect for recording and mixing in the studio (pre-training and fine-tuning), but the file is 50 megabytes per song.
-- **INT4 Quantization (MP3 Compression or 8-bit GIF Palette)**: An MP3 file removes frequencies human ears barely detect. An 8-bit GIF reduces millions of colors to a custom 256-color palette that focuses on the exact shades present in that specific photo.
+### High-Res Oil Painting vs. Smart Color Palette
 
-Quantization does the exact same thing for neural network tensors: it identifies which weight magnitudes are essential to meaning, preserves those precisely, and compresses the rest into compact 4-bit or 8-bit integer slots.
+* 🧒 **The Analogy**:
+  * Imagine a master oil painting created with 16 million distinct paint shades (FP16/FP32). It captures every microscopic brush stroke, but the canvas is colossal and heavy (takes 140 GB to store).
+  * **The Dumb Way (Uniform Rounding)**: You restrict an artist to just 16 paint cans (INT4). 99% of the canvas is subtle blue sky, but there is one bright red lightning bolt. If the 16 cans are spaced evenly between dark blue and bright red, all the subtle blue sky shades get dumped into one single flat blue bucket. The sky turns into a hideous pixelated blob!
+  * **The Smart Way (Activation-Aware Quantization)**: The artist studies where human eyes look (activations). They notice the lightning bolt is critical, so they protect that channel with full detail. For the sky, they choose 16 custom shades of blue that perfectly match the painting. The file shrinks by **75%**, yet human eyes cannot tell the difference from the original!
+
+* ⚙️ **The Engineering Mechanics**:
+  * Modern Post-Training Quantization (PTQ) techniques (AWQ, GPTQ) analyze the mathematical sensitivity of weights during a small calibration pass:
+    1. **AWQ (Activation-aware Weight Quantization)**: Measures which weights experience the highest activation magnitudes and scales those channels up algebraically before 4-bit rounding, protecting them from quantization error.
+    2. **GPTQ (Generalized Post-Training Quantization)**: Computes the second-order Taylor expansion (inverse Hessian matrix) of the layer loss. As each weight is rounded to INT4, GPTQ dynamically adjusts the remaining unquantized weights to cancel out the rounding error.
+
+* ⚠️ **What Happens If You Ignore This?**
+  * You attempt naive integer quantization or use legacy uniform quantization tools on a 14B model.
+  * The model's perplexity explodes; it begins hallucinating syntax errors in code or repeating words indefinitely, rendering the model useless.
 
 ---
 
@@ -92,7 +103,7 @@ FP8 E5M2 (1 Byte):
 Wider dynamic range; used for gradient accumulation in training
 
 INT4 (Nibble, 0.5 Bytes):
-[1 Sign Bit] [3 Value Bits] -> 16 discrete integer levels (-8 to +7)
+[1 Sign Bit] [3 Value Bits] → 16 discrete integer levels (-8 to +7)
 Standard for edge deployment and local SLMs
 ```
 
@@ -112,23 +123,41 @@ How do we compress a model from 16 bits to 4 bits without destroying its accurac
 
 ```mermaid
 flowchart TD
-    Weights["Pre-Trained FP16 Weights (W)"] --> Analyze["Forward Pass Calibration Data\nObserve Activation Magnitudes (X)"]
-    
-    subgraph AWQ["Activation-aware Weight Quantization (AWQ)"]
-        FindSalient["Identify Top 1% Salient Weight Channels\n(Channels corresponding to highest activation magnitudes)"]
-        ScaleProtect["Per-Channel Scaling Transformation\nProtect salient weights from quantization noise"]
-        QuantizeLow["Quantize remaining 99% weights to INT4"]
-        AWQ_Out["AWQ 4-bit Packed Tensor\n• Near-zero loss on math & reasoning\n• Fast on NVIDIA Tensor Cores"]
+    subgraph CALIBRATION["1. Calibration & Analysis"]
+        Weights["Pre-Trained FP16 Weights (W)"]
+        Analyze["Forward Pass Calibration Data<br>Observe Activation Magnitudes (X)"]
+        Weights --> Analyze
     end
 
-    subgraph GPTQ["Generalized Post-Training Quantization (GPTQ)"]
-        Hessian["Compute Inverse Hessian Matrix (H^-1)\nQuantifies error sensitivity across layers"]
-        Compensate["Second-Order Error Compensation\nUpdate unquantized weights to offset rounding errors"]
-        GPTQ_Out["GPTQ 4-bit Packed Tensor\n• Optimized for GPU batch inference\n• Highly compressed"]
+    subgraph AWQ_BOX["2. Activation-Aware Quantization (AWQ)"]
+        direction TB
+        FindSalient["Identify Top 1% Salient Weight Channels<br>(Channels with highest activation magnitudes)"]
+        ScaleProtect["Per-Channel Scaling Transformation<br>Protect salient weights from quantization noise"]
+        QuantizeLow["Quantize remaining 99% weights to INT4"]
+        AWQ_Out["AWQ 4-bit Packed Tensor<br>• Preserves complex math & coding logic<br>• Fast on NVIDIA Tensor Cores"]
+
+        FindSalient --> ScaleProtect --> QuantizeLow --> AWQ_Out
     end
-    
-    Analyze --> AWQ
-    Analyze --> GPTQ
+
+    subgraph GPTQ_BOX["3. Generalized Post-Training Quantization (GPTQ)"]
+        direction TB
+        Hessian["Compute Inverse Hessian Matrix (H^-1)<br>Quantifies error sensitivity across layers"]
+        Compensate["Second-Order Error Compensation<br>Update unquantized weights to offset rounding errors"]
+        GPTQ_Out["GPTQ 4-bit Packed Tensor<br>• Optimized for large batch inference<br>• Highly compressed"]
+
+        Hessian --> Compensate --> GPTQ_Out
+    end
+
+    Analyze --> AWQ_BOX
+    Analyze --> GPTQ_BOX
+
+    style CALIBRATION fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style AWQ_BOX fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style GPTQ_BOX fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+
+    style Weights fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style AWQ_Out fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style GPTQ_Out fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
 ```
 
 ### Walkthrough of AWQ vs. GPTQ:
@@ -143,6 +172,18 @@ flowchart TD
    - Computes the inverse Hessian matrix (`H^-1`) of the weights.
    - When a specific weight is rounded to an INT4 value, GPTQ calculates the exact mathematical error introduced, and **adjusts the remaining unquantized weights** in that layer to compensate for the rounding error.
    - **Result**: Extremely fast quantization (quantizes a 70B model in under 4 hours on a single GPU) with minimal degradation.
+
+---
+
+### 📊 Uniform Quantization (2022) vs. Outlier-Aware Quantization & Frontier SLMs (2026)
+
+| Architectural Dimension | Uniform Quantization (2022) | Outlier-Aware Quantization & Frontier SLMs (2026) |
+| :--- | :--- | :--- |
+| **Outlier Handling** | Truncates or clamps outliers (causes perplexity collapse) | **Channel-specific scaling transformations (AWQ)** |
+| **Model Capability** | 7B models struggled with basic reasoning | **14B SLMs (Phi-4, Qwen 2.5 Coder, R1 Distill) beat older 70B models** |
+| **Hardware Deployment** | Multi-GPU enterprise servers required for inference | **Single consumer GPU (RTX 4090) or Apple Silicon edge** |
+| **Quantization Speed** | Days of computationally expensive retraining | **Sub-hour post-training calibration (PTQ)** |
+| **Latency Benefit** | Compute-bound on legacy architectures | **2.5x to 3.5x decode speedup via memory-bus bandwidth reduction** |
 
 ---
 
@@ -181,7 +222,7 @@ Precision Quantization Simulator & Hardware Sizing Engine.
 Calculates memory footprints for FP32, FP16, FP8, and INT4 across SLM architectures.
 """
 
-from typing import Literal
+from typing import Any
 from pydantic import BaseModel, Field
 
 
@@ -304,7 +345,7 @@ Notice the critical hardware threshold:
 ## 9. Common Failure Modes & Anti-Patterns
 
 ### Anti-Pattern 1: Quantizing Embedding & Output Head Matrices
-- **The Mistake**: Applying aggressive INT4 quantization uniformly across all model tensors, including the vocabulary embedding layer and final lm_head.
+- **The Mistake**: Applying aggressive INT4 quantization uniformly across all model tensors, including the vocabulary embedding layer and final `lm_head`.
 - **Why It Fails**: The input embedding and output classification layers contain direct semantic mappings over 128,000 distinct token IDs. Quantizing them to 4 bits introduces high reconstruction error that degrades token sampling.
 - **Production Remedy**: Always retain the embedding matrix and lm_head projection in 16-bit precision (FP16/BF16), quantizing only the internal transformer attention and MLP projection weights.
 
@@ -315,7 +356,28 @@ Notice the critical hardware threshold:
 
 ---
 
-## 10. Key Takeaways
+## 10. Quick Check to See if it Clicked
+
+> **Scenario**: A hospital IT department wants to deploy a medical summarization model on an air-gapped on-prem workstation equipped with a single 24 GB NVIDIA RTX 4090 GPU.
+>
+> They want to run the 14.7-billion parameter Microsoft Phi-4 model.
+>
+> At first, the engineer attempts to load the native FP16 model:
+> - Model Weights: 14.7B × 2 bytes = 29.4 GB.
+> - Result: The server throws `CUDA Out of Memory` before accepting any requests.
+>
+> **Question**: If the engineer converts the model to INT4 AWQ (0.5 bytes per parameter), how much memory will the weights consume, and how much VRAM is left for the dynamic KV-cache?
+>
+> **Answer**: 
+> 1. In INT4 AWQ: 14.7 billion parameters × 0.5 bytes = **7.35 GB of VRAM** for weights.
+> 2. Total VRAM capacity: 24.0 GB.
+> 3. Subtracting weights (7.35 GB) and CUDA runtime overhead (~2.0 GB):
+>    - `24.0 - 7.35 - 2.0 = 14.65 GB of free VRAM`.
+> 4. **Outcome**: The workstation now has **14.65 GB of memory dedicated entirely to the dynamic KV-cache**, comfortably serving dozens of concurrent patient records without hitting the cloud!
+
+---
+
+## 11. Key Takeaways
 
 1. **SLMs Enable Local Autonomy**: Quantized 8B to 14B models (Phi-4, Qwen 2.5, DeepSeek-R1 Distill) match previous 70B benchmarks while running air-gapped on commodity hardware.
 2. **Quantization Is Memory-Driven**: Because autoregressive decode is memory-bandwidth bound, cutting precision from 16 bits to 4 bits speeds up token generation by up to 3x while slashing VRAM requirements by 75%.
@@ -324,7 +386,7 @@ Notice the critical hardware threshold:
 
 ---
 
-## 11. Verified Resources
+## 12. Verified Resources
 
 - **[Lin et al. (2023) — AWQ: Activation-aware Weight Quantization for LLM Compression and Acceleration](https://arxiv.org/abs/2306.00978)**: Seminal research paper detailing activation-aware channel protection.
 - **[Frantar et al. (2022) — GPTQ: Accurate Post-Training Quantization for Generative Pre-trained Transformers](https://arxiv.org/abs/2210.17323)**: Mathematical derivation of inverse-Hessian error compensation.

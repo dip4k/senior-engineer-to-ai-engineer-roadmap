@@ -1,6 +1,6 @@
 # Lesson 04: Test-Time Compute & Reasoning Tokens
 
-`🔵 Advanced` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 16 minutes*
+`🔵 Advanced` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 17 minutes*
 
 ---
 
@@ -41,55 +41,82 @@ Before dedicated reasoning models, engineering teams attempted to force standard
 
 ---
 
-## 3. Systems Mental Model: The Math Student's Scratchpad
+## 3. Systems Mental Model: The Fast Buzzer vs. The Mathematician
 
-To understand test-time compute, compare an LLM to a student taking an advanced mathematics exam:
+---
 
-```text
-Standard LLM (The Impulsive Student):
-- Teacher asks: "What is 387 × 492?"
-- Rules: Zero scratch paper allowed. Must shout the answer in 0.2 seconds.
-- Student: Brain does a quick reflex estimate and blurts out "189,424".
-- Result: Sounds confident, ends in a 4, but is completely incorrect.
+### The Impulsive Contestant vs. The Scratchpad Thinker
 
-Reasoning Model (The Diligent Student with Scratch Paper):
-- Teacher asks: "What is 387 × 492?"
-- Rules: Unlimited scratch paper allowed. Take as long as you need.
-- Student: Stays silent for 30 seconds while writing on the scratchpad:
-    1. 387 × 400 = 154,800
-    2. 387 × 90  = 34,830
-    3. 387 × 2   = 774
-    4. Sum intermediate products: 154,800 + 34,830 = 189,630
-    5. Add final piece: 189,630 + 774 = 190,404
-    6. Sanity check: 400 × 500 = 200,000. 190,404 is close. Calculation verified.
-- Student looks up and speaks one word: "190,404".
-- Result: 100% correct, verified through internal reasoning steps.
-```
+* 🧒 **The Analogy**:
+  * Imagine two contestants on a high-stakes math quiz show:
+    * **Standard LLM (The Fast Buzzer Contestant)**: The host asks: *"What is 387 × 492?"* The rules forbid paper. The contestant must hit the buzzer in 0.1 seconds and speak immediately. They blurt out *"189,424!"* It sounds confident and ends in a 4, but it is completely wrong! Once the words leave their mouth, they cannot erase them.
+    * **Reasoning Model (The Mathematician with Scrap Paper)**: The host asks the same question. The mathematician takes a pencil and scrap paper. For 20 seconds, they work through partial products, spot an addition error, cross it out with a line (*"Wait, let me recalculate that column"*), verify the total, and then speak only one single word: *"190,404"*.
+  * The mathematician used 200 words of private scratchpad notes to emit a 1-word perfect answer. **Test-time compute trades inference latency and tokens for verified logical accuracy.**
 
-The student used 150 words of private scratchpad reasoning to produce a 1-word final output. **Test-time compute trades inference latency and token bandwidth for verified logical accuracy.**
+* ⚙️ **The Engineering Mechanics**:
+  * Test-time compute enables models to scale computational work at inference time rather than training time.
+  * Instead of following the highest-probability path blindly, the model navigates a search tree over candidate reasoning steps.
+  * Intermediate steps are scored by **Process-Supervised Reward Models (PRMs)** or deterministic verifiers (unit tests, math solvers).
+  * If a step is invalid, the model emits an internal backtracking token (e.g. `"Wait, that assumption causes a deadlock. Let me try a different lock ordering."`) and prunes the bad branch.
+
+* ⚠️ **What Happens If You Ignore This?**
+  * You treat reasoning models like standard conversational models.
+  * Because reasoning tokens are billed as output tokens at premium rates ($15/1M vs $3/1M input), a concise 20-word answer can quietly burn 5,000 hidden reasoning tokens—costing **100x more than expected** and blowing past API rate limits.
 
 ---
 
 ## 4. Mechanical Architecture of Test-Time Compute
 
-How do models like OpenAI o3, DeepSeek-R1, and Claude 3.7 Thinking execute this scratchpad process under the hood?
+How do frontier models like OpenAI o3, DeepSeek-R1, and Claude 3.7 Thinking execute this scratchpad process under the hood?
 
 ```mermaid
 flowchart TD
-    Prompt["1. User Request Received\n(e.g., Verify Distributed Consensus Invariant)"] --> PreFill["2. Prefill Phase\nCompute KV-cache for input prompt"]
-    
-    subgraph TestTimeLoop["3. Test-Time Search & Verification Loop (Hidden Scratchpad)"]
-        CoT["Generate Intermediate Reasoning Step (Hypothesis)"] --> Score["Process-Supervised Reward Model (PRM)\nEvaluates mathematical/logical validity of step"]
-        Score --> Valid{"Is step logically valid?"}
-        Valid -- "Yes" --> NextStep["Append Step to Scratchpad & Explore Next Branch"]
-        Valid -- "No" --> Backtrack["Backtrack: Discard branch & pivot hypothesis\n'Wait, that lock order causes deadlock. Let me rethink.'"]
-        NextStep --> CheckDone{"Solution Verified?"}
-        CheckDone -- "No" --> CoT
-        Backtrack --> CoT
+    subgraph TEST_TIME["Test-Time Search & Verification Loop"]
+        direction TB
+
+        subgraph INTAKE["1. Request Intake & Prefill"]
+            Prompt["User Request Received<br>(e.g. Verify Distributed Lock Invariants)"]
+            PreFill["Prefill Phase:<br>Compute KV-cache for input prompt"]
+            Prompt --> PreFill
+        end
+
+        subgraph SEARCH_LOOP["2. Search, Verification & Backtracking (Hidden Scratchpad)"]
+            CoT["Generate Candidate Reasoning Step<br>(Internal Hypothesis)"]
+            PRM["Process-Supervised Verifier (PRM)<br>Evaluates step logic & AST constraints"]
+            Valid{"Is step logically valid?"}
+            NextStep["Append Step to Scratchpad<br>& Explore Next Hypothesis"]
+            Backtrack["Backtrack & Prune Branch:<br>'Wait, that lock order deadlocks. Let me rethink.'"]
+            CheckDone{"Solution Fully Verified?"}
+
+            PreFill --> CoT
+            CoT --> PRM
+            PRM --> Valid
+            Valid -- "Yes" --> NextStep
+            Valid -- "No" --> Backtrack
+            Backtrack --> CoT
+            NextStep --> CheckDone
+            CheckDone -- "No" --> CoT
+        end
+
+        subgraph SYNTHESIS["3. Final Response Synthesis"]
+            FinalDecode["Synthesize Concise Final Output<br>(Discard or hide internal scratchpad)"]
+            Response["Stream Verified Answer to Client"]
+
+            CheckDone -- "Yes" --> FinalDecode
+            FinalDecode --> Response
+        end
     end
-    
-    CheckDone -- "Yes" --> FinalDecode["4. Visible Output Generation\nSynthesize concise, verified final response"]
-    FinalDecode --> Response["5. Stream Response to Client"]
+
+    style TEST_TIME fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style INTAKE fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style SEARCH_LOOP fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+    style SYNTHESIS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style Prompt fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style PRM fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style Backtrack fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style NextStep fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style Response fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### Walkthrough of the Reasoning Loop:
@@ -99,28 +126,37 @@ flowchart TD
 4. **Internal Self-Correction & Backtracking**: When a reasoning branch violates a constraint or reaches a contradiction, the model generates an internal pivot token (e.g. `"Wait, that assumption fails under edge condition X. Let me re-evaluate."`), pruning the bad branch and exploring alternative paths.
 5. **Final Synthesis**: Once the solution is internally verified, the model summarizes its conclusion into the final visible output.
 
+---
+
 ### The RL Training Paradigm: PPO vs. GRPO (DeepSeek-R1 Innovation)
 
-How do models learn this self-correcting behavior without supervised fine-tuning? The breakthrough lies in **Group Relative Policy Optimization (GRPO)** (arXiv:2501.12948):
+How do models learn this self-correcting behavior without supervised human traces? The breakthrough lies in **Group Relative Policy Optimization (GRPO)**:
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph PPO["Traditional PPO (Heavy VRAM Overhead)"]
         direction TB
-        Actor["Actor Policy (π_θ)"]
-        Ref["Reference Model (π_ref)"]
-        Reward["Reward Model (r_ψ)"]
-        Critic["Critic / Value Model (V_ϕ)\n(Consumes 100% Actor VRAM)"]
-        Actor --- Critic
+        P_Actor["Actor Policy Model (π_θ)"]
+        P_Critic["Critic / Value Model (V_ϕ)<br>(Consumes 100% Actor VRAM)"]
+        P_Reward["Neural Reward Model (r_ψ)"]
+        P_Actor <--> P_Critic
+        P_Reward --> P_Critic
     end
 
     subgraph GRPO["DeepSeek GRPO (Critic-Less Efficiency)"]
         direction TB
-        Prompt["Prompt q"] --> Group["Sample Group of G Outputs\n{o_1, o_2, ..., o_G}"]
-        Group --> RuleEval["Deterministic Rule-Based Verifiers\n(Unit Tests • Math Solvers • Syntax AST)"]
-        RuleEval --> RelAdv["Group Relative Advantage:\nA_i = (r_i - mean(r)) / std(r)"]
-        RelAdv --> Update["Direct Policy Update\n(Zero Critic Model in VRAM!)"]
+        G_Prompt["Input Prompt q"] --> G_Group["Sample Group of G Outputs<br>{o_1, o_2, ..., o_G}"]
+        G_Group --> G_Rule["Deterministic Rule Verifiers<br>(Unit Tests • Compilers • Math Proofs)"]
+        G_Rule --> G_Adv["Group Relative Advantage:<br>A_i = (r_i - Mean(r)) / StdDev(r)"]
+        G_Adv --> G_Update["Direct Policy Update<br>(Zero Critic Model in VRAM!)"]
     end
+
+    style PPO fill:#fff5f5,stroke:#c62828,stroke-width:2px
+    style GRPO fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style P_Critic fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style G_Rule fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style G_Update fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 #### Walkthrough of the PPO vs. GRPO Comparison:
@@ -136,8 +172,6 @@ flowchart LR
 ---
 
 ## 5. Frontier Reasoning Model Landscape
-
-The industry has converged on two distinct deployment architectures: pure reasoning models (fixed RL loops) and hybrid models (configurable thinking budgets).
 
 | Model | Provider | Architecture & Mechanism | Thinking Budget Control | Max Context / Output | Cost Profile (per 1M Tokens) | Primary Enterprise Production Use Case |
 |---|---|---|---|---|---|---|
@@ -181,6 +215,18 @@ The ratio of hidden thinking tokens to visible output was **187 to 1**!
 In standard LLM serving, if 1,000 users send the same system prompt, you can use **Prefix KV-Caching** to get a 90% discount on input tokens.
 
 **You cannot pre-cache reasoning tokens across separate user queries.** Every reasoning trajectory is non-deterministic and dynamic. The scratchpad is generated autoregressively in response to the specific nuances of that single input, consuming full GPU memory bandwidth on every run.
+
+---
+
+### 📊 Prompt Begging (2023) vs. Native Test-Time Reasoning (2026)
+
+| Architectural Dimension | Prompt Begging (2023) | Native Test-Time Reasoning (2026) |
+| :--- | :--- | :--- |
+| **Trigger Mechanism** | Magic phrases (*"Think step-by-step"*) | **Native RL policies & token budgets** (`budget_tokens: 4096`) |
+| **Search Space** | Single forward-pass greedy trajectory | **Multi-branch exploration with backtracking & PRMs** |
+| **Cost Predictability** | Linear with prompt & output length | **Asymmetric 50:1 thinking bursts; requires token governors** |
+| **Prefix Caching** | High hit rate on fixed prompts | **Zero caching on intermediate thinking trajectories** |
+| **Failure Recovery** | Hallucinates plausible incorrect reasoning | **Internal pivot tokens prune failed hypotheses before output** |
 
 ---
 
@@ -364,21 +410,36 @@ Use this decision matrix to determine when to route requests to reasoning models
 
 ```mermaid
 flowchart TD
-    Start(["Incoming Engineering Task"]) --> LatencyCheck{"Strict Latency SLA?\n(e.g., TTFT < 1.5s or Interactive UI)"}
-    
-    LatencyCheck -- "Yes (< 1.5s)" --> FastPath["Deploy Standard LLM or SLM\n(Claude 3.5 Sonnet, GPT-4o, Phi-4)"]
-    LatencyCheck -- "No (Async / Worker / Queue)" --> TaskType{"Problem Nature & Complexity?"}
-    
-    TaskType -- "Document Summary / Extraction / Rewriting" --> FastPath
-    TaskType -- "Standard CRUD API / Simple JSON Mapping" --> FastPath
-    
-    TaskType -- "Algorithmic Code / Multi-Hop Math / Security Audit" --> AccuracyCheck{"Can Standard Model with Few-Shot CoT\nachieve >= 98% accuracy in evals?"}
-    
-    AccuracyCheck -- "Yes (Sufficient)" --> FastPath
-    AccuracyCheck -- "No (Hallucinates subtle logic flaws)" --> BudgetCheck{"Can Budget Absorb 10x-50x Token Cost\n& 10s-30s Time-To-First-Token?"}
-    
-    BudgetCheck -- "Yes" --> ReasoningTier["Deploy Reasoning Model with Test-Time Compute\n(Claude 3.7 Thinking, o3, DeepSeek-R1)"]
-    BudgetCheck -- "No" --> DistillTier["Deploy Distilled Reasoning SLM\n(DeepSeek-R1-Distill-Qwen-14B / Phi-4)"]
+    subgraph ROUTER["Reasoning vs Standard Model Routing Decision Tree"]
+        direction TB
+
+        Start(["Incoming Engineering Task"]) --> LatencyCheck{"Strict Latency SLA?<br>(TTFT < 1.5s or Real-Time UI)"}
+        
+        LatencyCheck -- "Yes (< 1.5s)" --> FastPath["Deploy Standard LLM or SLM<br>(Claude 3.5 Sonnet, GPT-4o, Phi-4)"]
+        LatencyCheck -- "No (Async / Worker / Queue)" --> TaskType{"Problem Nature & Complexity?"}
+        
+        TaskType -- "Document Summary / Extraction / Rewriting" --> FastPath
+        TaskType -- "Standard CRUD API / Simple JSON Mapping" --> FastPath
+        
+        TaskType -- "Algorithmic Code / Math / Security Audit" --> AccuracyCheck{"Can Standard Model with Few-Shot CoT<br>achieve ≥ 98% accuracy in evals?"}
+        
+        AccuracyCheck -- "Yes (Sufficient)" --> FastPath
+        AccuracyCheck -- "No (Hallucinates subtle logic flaws)" --> BudgetCheck{"Can Budget Absorb 10x-50x Token Cost<br>& 10s-30s Time-To-First-Token?"}
+        
+        BudgetCheck -- "Yes" --> ReasoningTier["Deploy Reasoning Model with Test-Time Compute<br>(Claude 3.7 Thinking, o3, DeepSeek-R1)"]
+        BudgetCheck -- "No" --> DistillTier["Deploy Distilled Reasoning SLM<br>(DeepSeek-R1-Distill-Qwen-14B / Phi-4)"]
+    end
+
+    style ROUTER fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style FastPath fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style ReasoningTier fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    style DistillTier fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+
+    style Start fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style LatencyCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style TaskType fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style AccuracyCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style BudgetCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
 ```
 
 ### The Architect's Golden Rule:
@@ -400,7 +461,29 @@ flowchart TD
 
 ---
 
-## 11. Key Takeaways
+## 11. Quick Check to See if it Clicked
+
+> **Scenario**: An engineering team hooks an automated queue worker to a reasoning model with a 16,000 thinking token budget. The prompt asks: *"Verify if this 20-line SQL query meets SOC2 data segregation rules. Answer strictly with YES or NO."*
+>
+> The worker processes 1,000 SQL queries. The visible output for all queries is a single word: `"YES"`.
+>
+> When the cloud invoice arrives, the team is shocked to discover the 1,000 single-word answers cost **$180.00** instead of the anticipated $0.05.
+>
+> **Question**: Why did emitting 1,000 words cost $180.00, and how do you protect the architecture?
+>
+> **Answer**: 
+> 1. All hidden thinking tokens are billed as **output tokens** at premium rates ($15.00 per 1M tokens).
+> 2. The reasoning model spent ~12,000 thinking tokens exploring permissions, row-level security, and edge cases before outputting the 1-word `"YES"`:
+>    - 1,000 requests × 12,000 output tokens = **12,000,000 output tokens**.
+>    - 12M tokens × $15/1M = **$180.00**.
+>    - The asymmetry ratio was **12,000 to 1**!
+> 3. **Architectural Protection**:
+>    - Add a **Token Governor** that caps thinking budget for simple verification to 1,024 tokens.
+>    - Or route this task to a distilled SLM or standard model with few-shot examples, dropping the cost to under $0.50.
+
+---
+
+## 12. Key Takeaways
 
 1. **Test-Time Compute Decouples Capability from Size**: Decouples intelligence from model parameter count by trading latency and tokens for search, verification, and backtracking.
 2. **Beware the 50:1 Asymmetry**: Thinking tokens are billed at premium output rates. A concise 30-token final answer can quietly consume 5,000+ billed tokens.
@@ -409,7 +492,7 @@ flowchart TD
 
 ---
 
-## 12. Verified Resources
+## 13. Verified Resources
 
 - **[Snell et al. (2024) — Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters](https://arxiv.org/abs/2408.03314)**: Groundbreaking research proving test-time compute scaling laws.
 - **[Lightman et al. (2023) — Let's Verify Step by Step](https://arxiv.org/abs/2305.20050)**: Seminal paper introducing Process-Supervised Reward Models (PRMs) for intermediate reasoning verification.

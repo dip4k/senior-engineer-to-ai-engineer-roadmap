@@ -1,6 +1,6 @@
 # Lesson 01: Transformer Inference & Hardware Realities
 
-`HIGH ROI / CORE` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 12 minutes*
+`HIGH ROI / CORE` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 13 minutes*
 
 ---
 
@@ -11,7 +11,8 @@ By the end of this lesson, you will understand:
 - The physical memory hierarchy of modern AI accelerators (HBM3 vs. on-chip SRAM).
 - The arithmetic intensity of transformer operations and the Roofline Model.
 - How the scaled dot-product attention mechanism maps to hardware tensors.
-- Why standard attention suffers from memory thrashing and how FlashAttention resolves it.
+- Why standard attention suffers from catastrophic memory thrashing and how FlashAttention resolves it.
+- How to profile arithmetic intensity and predict whether your workload will be compute-bound or memory-bound.
 
 ---
 
@@ -48,21 +49,42 @@ When senior backend engineers first encounter LLM performance issues, they typic
 
 ---
 
-## 3. Why the Problem Exists: The Memory Bandwidth Wall
+## 3. Systems Mental Model & The Memory Bandwidth Wall
 
-To understand GPU performance, systems architects rely on the **Roofline Model**, which relates two fundamental quantities:
+---
 
-1. **Arithmetic Intensity**: The ratio of calculations performed to the amount of memory transferred.
-   ```text
-   Arithmetic Intensity = Total Calculations (FLOPs) / Total Memory Transferred (Bytes)
-   ```
-2. **Compute-Bound vs. Memory-Bound**:
-   - If a task requires many calculations for every byte of data loaded from memory (high arithmetic intensity), the GPU processors stay busy. The task's speed is limited by how fast the GPU can calculate. This is called being **compute-bound**.
-   - If a task requires very few calculations per byte of data (low arithmetic intensity), the processors finish their math instantly and spend 95% of their time idle, waiting for the next batch of numbers to arrive from memory. The task's speed is limited by how fast data can move across the memory bus. This is called being **memory-bound**.
+### The Super-Fast Chef & The Narrow Pantry Doorway
 
-### The GPU Silicon Hierarchy
+* 🧒 **The Analogy**:
+  * Imagine a master chef who can chop vegetables and dice meat at superhuman speed (finishing any task in 0.001 seconds).
+  * However, every single ingredient is kept down a long hallway in a deep-freeze pantry.
+  * Every time the chef needs to cook one pea (emit one token), an assistant must run down the hallway, load a 140-kilogram cart of cookbooks and raw ingredients, push it through a narrow doorway, let the chef glance at it for a microsecond, and haul it all back.
+  * The chef is not tired; the chef is bored out of their mind waiting for the cart to arrive! That narrow hallway is your **GPU Memory Bus**.
 
-A modern GPU is not a monolithic block of silicon. It is a hierarchical memory engine:
+* ⚙️ **The Engineering Mechanics**:
+  * Systems architects evaluate hardware performance using the **Roofline Model**, which compares two values:
+    1. **Peak Compute Throughput**: How many floating-point operations the GPU cores can execute per second (TFLOPS).
+    2. **Peak Memory Bandwidth**: How many bytes the GPU memory bus can transfer per second (TB/s).
+  * The ratio between the two defines the **Operational Intensity Balance Point**:
+    ```text
+    Balance Point (FLOPs / Byte) = Peak Theoretical TFLOPS / Peak Memory Bandwidth (TB/s)
+    ```
+  * For an NVIDIA H100 SXM5:
+    ```text
+    Balance Point = 1,979 TFLOPS / 3.35 TB/s ≈ 590.7 FLOPs per Byte
+    ```
+  * **Compute-Bound**: If your calculation performs **more than 591 math operations** for every byte of data loaded from VRAM, the GPU tensor cores are the bottleneck. Math speed limits execution.
+  * **Memory-Bound**: If your calculation performs **fewer than 591 math operations** for every byte loaded, the memory bus is the bottleneck. The compute cores spend over 95% of their time idling.
+
+* ⚠️ **What Happens If You Ignore This?**
+  * You spend thousands of dollars upgrading to a GPU with 10x more compute cores (TFLOPS), expecting your single-user chatbot to stream 10x faster.
+  * Instead, generation speed barely budges because single-token autoregressive decoding has an arithmetic intensity of roughly **1.0 FLOP/Byte**—orders of magnitude below the 591 FLOPs/Byte threshold. It is 100% memory-bandwidth bound!
+
+---
+
+## 4. The Silicon Hierarchy: SRAM vs. HBM3
+
+A modern GPU is not a uniform block of silicon. It is a strictly tiered memory engine:
 
 ```text
 +-----------------------------------------------------------------------+
@@ -87,10 +109,10 @@ A modern GPU is not a monolithic block of silicon. It is a hierarchical memory e
 
 | Memory Tier | Typical Capacity | Peak Bandwidth | Relative Latency | Role in LLM Serving |
 |---|---|---|---|---|
-| **Register File / SRAM** | ~50 MB – 100 MB | ~30 TB/s | ~1 ns (1 clock cycle) | Holds active tiles for matrix multiplication |
+| **Register File / SRAM** | ~50 MB – 100 MB | ~30 TB/s | ~1 ns (1 clock cycle) | Holds active tiles for immediate matrix math |
 | **High-Bandwidth Memory (HBM3)** | 80 GB – 144 GB | ~3.35 TB/s | ~100–200 ns | Stores static model weights and dynamic KV cache |
-| **Host CPU RAM (DDR5)** | 512 GB – 2 TB | ~100–200 GB/s | ~100 ns (plus PCIe bus) | Offloading cold weights or paged optimizer states |
-| **PCIe Bus (Gen 5 x16)** | N/A | ~64 GB/s | High serialization | Moving prompts and tokens between CPU host and GPU |
+| **Host CPU RAM (DDR5)** | 512 GB – 2 TB | ~100–200 GB/s | ~100 ns (plus PCIe bus) | Offloads cold weights or system buffers |
+| **PCIe Bus (Gen 5 x16)** | N/A | ~64 GB/s | High serialization | Moves prompts and generated tokens between host and GPU |
 
 When an LLM generates text one token at a time (the **decode phase**), it must load every single parameter of the model from HBM into the compute registers just to calculate the probabilities for that one token. 
 
@@ -106,106 +128,166 @@ Notice that we did not even mention how many FLOPs the GPU can execute! The comp
 
 ---
 
-## 4. Systems Mental Model: The Restaurant Kitchen and Pantry
-
-To bridge this to software systems architecture, think of GPU inference like an industrial restaurant kitchen:
-
-- **The Chef (Streaming Multiprocessors / Tensor Cores)**: Can chop ingredients and assemble dishes at superhuman speed (thousands of operations per millisecond).
-- **The Cutting Board (On-Chip SRAM)**: Right in front of the chef. Items on the cutting board can be manipulated instantly, but the board only holds 50 megabytes of ingredients.
-- **The Deep Freeze Pantry (HBM3 VRAM)**: Down the hall. It holds 80 gigabytes of supplies, but the chef's assistant has to walk down the hall and push a cart back every time a new recipe step begins.
-
-In standard programming, caching 50 MB is easy. But in LLM inference, if the chef needs to look up a recipe step for every individual pea on the plate (each output token), the assistant spends 99% of the night running back and forth to the pantry.
-
----
-
-## 5. Mechanical Flow: The Scaled Dot-Product Attention Pipeline
+## 5. The Scaled Dot-Product Attention Pipeline
 
 At the core of the transformer architecture (Vaswani et al., 2017) is the attention mechanism. It allows every token in an input sequence to dynamically compare itself against every other token in the sequence.
 
+---
+
+### The Flashlight in a Dark Room
+
+* 🧒 **The Analogy**:
+  * Imagine you are reading a mystery novel in a pitch-black room with a small flashlight.
+  * When you encounter the word *"She"*, you shine your flashlight back across previous sentences to see which character it points to: *"Alice"*, *"the detective"*, or *"the suspect"*.
+  * The brighter you shine your light on *"Alice"*, the more of Alice's context you pull into understanding what *"She"* is doing.
+  * In a transformer, the **Query** is the flashlight beam, the **Key** is the reflective badge each word wears, and the **Value** is the actual meaning stored behind that badge.
+
+* ⚙️ **The Engineering Mechanics**:
+  * The input token activations (`X`) are projected into three separate tensors via learned weight matrices (`W_Q`, `W_K`, `W_V`):
+    1. **Query (Q)**: What each token is currently searching for.
+    2. **Key (K)**: What descriptors each token advertises to others.
+    3. **Value (V)**: The semantic content each token delivers if matched.
+
 ```mermaid
 flowchart TD
-    subgraph AttentionCore["Scaled Dot-Product Attention Pipeline"]
-        X["Token Embeddings + Positional Vector (X)"] --> WQ["W_Q Projection Matrix"]
-        X --> WK["W_K Projection Matrix"]
-        X --> WV["W_V Projection Matrix"]
-        
-        WQ --> Q["Query Matrix (Q: Sequence × d_k)"]
-        WK --> K["Key Matrix (K: Sequence × d_k)"]
-        WV --> V["Value Matrix (V: Sequence × d_v)"]
-        
-        Q & K --> MatMul1["Matrix Multiplication: Q · K^T"]
-        MatMul1 --> Scale["Scale: Multiply by 1 / sqrt(d_k)"]
-        Scale --> Mask["Apply Causal Mask (Upper triangle = -infinity)"]
-        Mask --> Softmax["Softmax along rows -> Attention Weights (A: Seq × Seq)"]
-        Softmax & V --> MatMul2["Matrix Multiplication: A · V"]
-        MatMul2 --> Out["Output Linear Projection (W_O)"]
+    subgraph ATTN["Scaled Dot-Product Attention Pipeline"]
+        direction TB
+
+        subgraph INPUTS["1. Input Projections"]
+            X["Token Embeddings + Positional Vector (X)"]
+            WQ["W_Q Projection Matrix"]
+            WK["W_K Projection Matrix"]
+            WV["W_V Projection Matrix"]
+            
+            X --> WQ & WK & WV
+            WQ --> Q["Query Matrix (Q: Seq × d_k)"]
+            WK --> K["Key Matrix (K: Seq × d_k)"]
+            WV --> V["Value Matrix (V: Seq × d_v)"]
+        end
+
+        subgraph SIMILARITY["2. Pairwise Affinity & Masking"]
+            Q & K --> MatMul1["Matrix Multiplication: Q · K^T<br>(Pairwise Token Similarity)"]
+            MatMul1 --> Scale["Scale: Multiply by 1 / sqrt(d_k)"]
+            Scale --> Mask["Apply Causal Mask<br>(Future tokens set to -infinity)"]
+        end
+
+        subgraph NORMALIZATION["3. Softmax & Value Aggregation"]
+            Mask --> Softmax["Softmax along rows<br>Attention Weights (A: Seq × Seq)"]
+            Softmax & V --> MatMul2["Matrix Multiplication: A · V<br>(Weighted Context Aggregation)"]
+            MatMul2 --> Out["Output Linear Projection (W_O)"]
+        end
     end
+
+    style ATTN fill:#ffffff,stroke:#1e293b,stroke-width:2px
+    style INPUTS fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style SIMILARITY fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+    style NORMALIZATION fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style X fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Q fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style K fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style V fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Out fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### Walkthrough of the Attention Pipeline:
-1. **Projection**: The input activation matrix `X` is multiplied by three learned projection weight matrices (`W_Q`, `W_K`, `W_V`) to yield the Query (`Q`), Key (`K`), and Value (`V`) tensors.
-2. **Similarity Scoring (`Q · K^T`)**: The queries and keys are multiplied together. For a sequence of length `N`, this produces an `N × N` square score matrix containing the pairwise dot-product affinity between all tokens.
-3. **Scaling & Causal Masking**: The scores are divided by the square root of the head dimension (`sqrt(d_k)`) to prevent large values from saturating the softmax function. In autoregressive models, an upper-triangular causal mask sets future token positions to `-infinity` so a token cannot "cheat" by looking at future answers.
-4. **Softmax & Value Aggregation**: The softmax function converts each row of masked scores into a normalized probability distribution (`A`). This probability matrix is multiplied by the Value tensor `V`, producing context-weighted vector representations for every token.
+1. **Projection**: The input activation matrix `X` is multiplied by three learned projection matrices (`W_Q`, `W_K`, `W_V`) to yield the Query (`Q`), Key (`K`), and Value (`V`) tensors.
+2. **Similarity Scoring (`Q · K^T`)**: Queries and keys are multiplied together. For a sequence of length `N`, this produces an `N × N` square score matrix containing pairwise affinities between all tokens.
+3. **Scaling & Causal Masking**: Scores are divided by `sqrt(d_k)` to prevent large values from saturating the softmax function. In autoregressive models, an upper-triangular causal mask sets future token positions to `-infinity` so tokens cannot see future answers.
+4. **Softmax & Value Aggregation**: Softmax converts each row of masked scores into normalized probabilities (`A`). Multiplying `A` by `V` produces the final context-weighted vector representation for every token.
 
 ### The Attention Formula:
 ```text
 Attention(Q, K, V) = softmax( (Q · K^T) / sqrt(d_k) + Mask ) · V
 ```
 
-Where:
-- `Q` (Query): Search vector of current tokens (`Shape: [Batch, Sequence_Len, d_k]`).
-- `K` (Key): Indexable descriptors of all prior tokens (`Shape: [Batch, Sequence_Len, d_k]`).
-- `V` (Value): The semantic information payload (`Shape: [Batch, Sequence_Len, d_v]`).
-- `d_k`: Dimensionality of each attention head (typically 64 or 128).
+* ⚠️ **What Happens If You Ignore This?**
+  * Notice the `N × N` square matrix created in Step 2. If your sequence length `N` is 32,768 tokens, `N × N` equals **1.07 billion numbers per attention head**.
+  * Across 32 attention heads, just writing down these temporary score tables consumes **68.5 Gigabytes of VRAM** for a single request!
 
 ---
 
 ## 6. FlashAttention: IO-Aware Tiling
 
-Notice the critical bottleneck in step 2 and step 4 above: the `N × N` attention score matrix.
+Notice the critical hardware bottleneck identified above: the `N × N` attention score matrix.
 
-If your sequence length `N` is 32,768 tokens (a standard document size):
-```text
-N × N = 32,768 × 32,768 = 1,073,741,824 elements
-In FP16 (2 bytes): 1.07 billion × 2 bytes ≈ 2.14 Gigabytes per attention head!
-Across 32 attention heads: 2.14 GB × 32 = 68.5 Gigabytes of VRAM!
-```
+In standard PyTorch implementations prior to 2022, the GPU repeatedly wrote and read these massive `N × N` matrices back and forth between High-Bandwidth Memory (HBM) and SRAM, causing catastrophic memory thrashing.
 
-Just writing down the temporary intermediate attention weights for a single request requires **68.5 GB of VRAM**, even before considering model weights or activations!
+---
 
-In standard PyTorch implementations (prior to 2022), the GPU repeatedly copied these massive `N × N` matrices back and forth between High-Bandwidth Memory (HBM) and SRAM, causing catastrophic memory thrashing.
+### Doing Scratch Math on a Sticky Note
+
+* 🧒 **The Analogy**:
+  * Imagine you have to multiply two 1,000-page ledgers of numbers.
+  * **The Dumb Way (Standard Attention)**: For every single calculation, you write down a 1,000-page intermediate notebook on the desk, carry the whole notebook down the hall to the filing cabinet, file it, immediately walk back to the filing cabinet, pull it back out, and read it again. You spend all your time walking down the hall.
+  * **The Smart Way (FlashAttention)**: You bring a small sticky note to your desk. You take 10 numbers at a time, do the math directly on the sticky note, keep a running total, erase the sticky note, and only write down the final answer in the master archive!
+
+* ⚙️ **The Engineering Mechanics**:
+  * FlashAttention (Dao et al., 2022) introduces **IO-Aware Tiling** and **Online Softmax**:
+    1. It breaks the `Q`, `K`, and `V` matrices into small blocks that fit entirely inside the ultra-fast on-chip SRAM (e.g. 128 × 128 elements).
+    2. Instead of computing the global softmax over the entire `N × N` matrix at once, it computes an incremental running softmax normalization in SRAM.
+    3. It aggregates the Value vectors on the fly and writes **only the final output** back to HBM.
+    4. Intermediate `N × N` attention score matrices are **never materialized in GPU HBM**.
 
 ```mermaid
 flowchart TD
-    subgraph StandardAttention["Standard Attention (Memory Thrashing)"]
-        HBM1["GPU HBM (Slow, Large)"] -->|"Load Q, K"| SRAM1["GPU SRAM (Fast, 100KB/SM)"]
-        SRAM1 -->|"Write N×N Softmax Matrix"| HBM2["GPU HBM"]
-        HBM2 -->|"Read N×N Matrix + V"| SRAM2["GPU SRAM"]
-        SRAM2 -->|"Write Output"| HBM3["GPU HBM"]
+    subgraph STANDARD["Standard PyTorch Attention (Memory Thrashing)"]
+        direction TB
+        HBM1["GPU HBM (Slow, High Capacity)"] -->|"1. Load Q, K"| SRAM1["GPU SRAM (Fast, 100 KB/SM)"]
+        SRAM1 -->|"2. Write N×N Intermediate Score Matrix (68 GB!)"| HBM2["GPU HBM"]
+        HBM2 -->|"3. Read N×N Matrix back for Softmax"| SRAM2["GPU SRAM"]
+        SRAM2 -->|"4. Write N×N Normalized Probabilities"| HBM3["GPU HBM"]
+        HBM3 -->|"5. Read Probabilities + V"| SRAM3["GPU SRAM"]
+        SRAM3 -->|"6. Write Final Output"| HBM4["GPU HBM"]
     end
 
-    subgraph FlashAttentionBlock["FlashAttention (Kernel Fusion & Tiling)"]
-        HBM_Fast["GPU HBM"] -->|"Load Block Q_i, K_j"| SRAM_Tile["SRAM Block Tiling"]
-        SRAM_Tile -->|"Compute Online Softmax & Multiply V_j in SRAM"| SRAM_Tile
-        SRAM_Tile -->|"Write Final Output Only"| HBM_Out["GPU HBM (Zero N×N Intermediate Writes)"]
+    subgraph FLASH["FlashAttention-2 / 3 (SRAM Tiling & Kernel Fusion)"]
+        direction TB
+        F_HBM["GPU HBM (Model Weights & KV-Cache)"] -->|"1. Load Small Block Tiles (Q_i, K_j, V_j)"| F_SRAM["On-Chip SRAM Block Tiling"]
+        F_SRAM -->|"2. Compute Online Softmax & Scale In-Place inside SRAM"| F_SRAM
+        F_SRAM -->|"3. Write FINAL Output Only<br>(Zero N×N Intermediate Writes!)"| F_OUT["GPU HBM (Final Output Tensor)"]
     end
 
-    HBM3 ~~~ HBM_Fast
+    style STANDARD fill:#fff5f5,stroke:#c62828,stroke-width:2px
+    style FLASH fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+
+    style HBM1 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style HBM2 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style HBM3 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style HBM4 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style SRAM1 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style SRAM2 fill:#ffffff,stroke:#c62828,stroke-width:1px
+    style SRAM3 fill:#ffffff,stroke:#c62828,stroke-width:1px
+
+    style F_HBM fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style F_SRAM fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style F_OUT fill:#ffffff,stroke:#2e7d32,stroke-width:1px
 ```
 
 ### Walkthrough of the Memory Comparison:
 1. **Standard Attention Thrashing**:
    - The GPU reads `Q` and `K` from HBM into SRAM.
    - It computes the `N × N` dot products and writes the full 68.5 GB matrix back to HBM.
-   - It reads the 68.5 GB matrix from HBM back to SRAM to apply the softmax operation, and writes it back to HBM.
-   - It reads the normalized weights back from HBM along with `V`, performs the final multiplication, and writes the output back to HBM.
+   - It reads the 68.5 GB matrix from HBM back to SRAM to apply softmax, and writes it back to HBM.
+   - It reads the normalized weights back along with `V`, performs the final multiplication, and writes the output back to HBM.
    - **Cost**: `O(N^2)` memory traffic crossing the memory bus, completely saturating bandwidth.
-2. **FlashAttention IO-Aware Tiling** (Dao et al., 2022):
-   - Divides `Q`, `K`, and `V` into small tiles that fit entirely inside the fast on-chip SRAM (e.g. 128 × 128 elements).
-   - Utilizes an algorithmic technique called **Online Softmax** to incrementally compute the softmax normalization without ever materializing the global `N × N` matrix.
+2. **FlashAttention IO-Aware Tiling**:
+   - Divides `Q`, `K`, and `V` into small tiles that fit entirely inside fast SRAM.
+   - Utilizes **Online Softmax** to incrementally compute normalization without ever materializing the global `N × N` matrix.
    - Computes the attention output locally in SRAM and writes **only the final result** back to HBM.
-   - **Result**: Cuts memory accesses from `O(N^2)` to `O(N)`, providing a 2x to 4x real-world speedup and enabling 128k+ context windows.
+   - **Result**: Drops memory traffic from `O(N^2)` to `O(N)`, providing a **2x to 4x real-world speedup** and enabling 128k+ context windows.
+
+---
+
+### 📊 Standard Attention (2020) vs. FlashAttention-2 / 3 (2026)
+
+| Architectural Dimension | Standard PyTorch Attention (2020) | FlashAttention-2 / 3 (2026) |
+| :--- | :--- | :--- |
+| **Intermediate Memory Traffic** | `O(N^2)` reads and writes crossing HBM bus | **`O(N)` reads/writes** (fused in SRAM) |
+| **Intermediate VRAM Allocation** | Massive (68.5 GB for 32k context) | **Zero** (no intermediate matrices materialized) |
+| **Prefill Speed (TTFT)** | Baseline (bottlenecked by memory writes) | **2x to 4x faster** execution |
+| **Max Context Feasibility** | Hard ceiling at 4,000 – 8,000 tokens | **128,000 to 1,000,000+ tokens** |
+| **Hardware Requirement** | Any GPU | Modern Tensor Core architectures (Ampere, Hopper, Blackwell) |
 
 ---
 
@@ -387,7 +469,27 @@ Look closely at the decode phase output:
 
 ---
 
-## 10. Key Takeaways
+## 10. Quick Check to See if it Clicked
+
+> **Scenario**: An engineering team replaces an NVIDIA A10G GPU (31 TFLOPS FP16, 600 GB/s bandwidth) with an NVIDIA H100 GPU (1,979 TFLOPS FP16, 3,350 GB/s bandwidth) to run a single-user coding copilot with a 70B model.
+>
+> The team expects a **63x speedup** in token streaming generation speed because peak compute increased from 31 to 1,979 TFLOPS.
+>
+> In reality, single-user generation speed only increases from ~4.3 tokens/second to ~24 tokens/second (a **5.5x speedup**). The lead developer files a bug claiming the H100 is defective.
+>
+> **Question**: Is the GPU defective? Why did the streaming speed increase by only 5.5x instead of 63x?
+>
+> **Answer**: 
+> 1. No, the GPU is functioning perfectly.
+> 2. Single-user token decode has an arithmetic intensity of ~1.0 FLOP/Byte. It is 100% **memory-bandwidth bound**.
+> 3. The math calculation takes virtually zero time; the generation speed is strictly constrained by how fast the 140 GB of model weights can be read from memory:
+>    - A10G bandwidth: 600 GB/s → Max speed: 600 / 140 ≈ 4.3 tokens/sec.
+>    - H100 bandwidth: 3,350 GB/s → Max speed: 3,350 / 140 ≈ 24 tokens/sec.
+> 4. The speedup matches the memory bandwidth ratio exactly: `3,350 / 600 ≈ 5.58x`. The 63x compute increase is completely irrelevant for single-user decoding!
+
+---
+
+## 11. Key Takeaways
 
 1. **Memory Bandwidth Governs Decode**: Generating text one token at a time requires loading all model weights from HBM to SRAM for every single token step. Single-stream decode is heavily memory-bound.
 2. **Prefill vs. Decode Duality**: Prefill (reading the prompt) is parallel and compute-bound; decode (emitting tokens) is serial and memory-bandwidth-bound. You cannot optimize both with the same knob.
@@ -396,9 +498,10 @@ Look closely at the decode phase output:
 
 ---
 
-## 11. Verified Resources
+## 12. Verified Resources
 
 - **[Vaswani et al. (2017) — Attention Is All You Need](https://arxiv.org/abs/1706.03762)**: The foundational transformer paper detailing the scaled dot-product attention formulation.
 - **[Dao et al. (2022) — FlashAttention: Fast and Memory-Efficient Exact Attention with IO-Awareness](https://arxiv.org/abs/2205.14135)**: Seminal paper detailing SRAM tiling and the elimination of intermediate attention matrices.
 - **[Williams et al. (2009) — The Roofline Model](https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=10.1.1.157.9404)**: The theoretical foundation of arithmetic intensity and compute vs. memory bounds in hardware architectures.
+- **Previous Lesson**: *None (Lesson 01 is the curriculum starting point)*
 - **Next Lesson**: [Lesson 02: Tokenization & Byte-Pair Encoding (BPE)](./02-tokenization-and-bpe-mechanics.md)
