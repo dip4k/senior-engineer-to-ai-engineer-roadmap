@@ -1,8 +1,8 @@
-# Capstone Engineering Challenge: Establish an Enterprise AI-Native Repository Framework [MUST-HAVE] 🔴
+# Capstone Engineering Challenge: Establish an Enterprise AI-Native Repository Framework
 
 > **Architectural Capstone**: Transform an enterprise repository into a fully autonomous, context-engineered software development environment with machine-readable directives, automated CI code review bots, and continuous invariant verification.
 >
-> [← Back to Module 08: AI-Augmented SDLC](../README.md) • [Curriculum Overview](../../README.md)
+> [← Back to Phase 08 Hub](../README.md) • [Master Curriculum Overview](../../README.md)
 
 ---
 
@@ -29,6 +29,11 @@ flowchart TD
     AgentLoop --> CIReview
 ```
 
+### Visual Walkthrough of the Capstone Flow
+1. **Context Engineering Tier**: The repository root establishes explicit machine-readable constraints (`AGENT.md`), defining build commands, architectural boundaries, and dependency allowlists.
+2. **Autonomous Execution Loop**: The coding agent ingests user stories, writes failing test suites first (RED), implements minimal compliant code (GREEN), and verifies via deterministic CLI tools.
+3. **Automated Review & Gating**: Headless CI review bots inspect pull request diffs for security and boundary violations, automatically blocking merge if blockers exist.
+
 ---
 
 ## Objective
@@ -45,7 +50,7 @@ Create a comprehensive `/AGENT.md` at the repository root guiding autonomous cod
 2. **Hexagonal Architecture Rules**: Strict directional dependencies (`Domain` has zero dependencies; `Application` references `Domain`; `Infrastructure` references `Application`/`Domain`; `Api` references `Application`/`Infrastructure`).
 3. **Typing & Immutability Invariants**: Enforce `<Nullable>enable</Nullable>`, C# records for DTOs/commands/queries, and explicit value object patterns with zero tolerance for `dynamic`.
 4. **Dependency Governance**: Explicit allowlist (`FluentValidation`, `Mapperly`, `Testcontainers`, `System.Text.Json`) and strict denylist (ban `AutoMapper`, `Newtonsoft.Json`, unparameterized SQL clients).
-5. **Agent Execution Protocol**: Step-by-step TDD workflow: inspect domain $\to$ write failing tests (RED) $\to$ implement minimal code (GREEN) $\to$ refactor with verification $\to$ run linter.
+5. **Agent Execution Protocol**: Step-by-step TDD workflow: inspect domain → write failing tests (RED) → implement minimal code (GREEN) → refactor with verification → run linter.
 
 ### Task 2: Automated GitHub Actions PR Review Bot
 Implement an automated architectural review workflow (`.github/workflows/ai-pr-review.yml`) and review evaluation prompt:
@@ -56,7 +61,7 @@ Implement an automated architectural review workflow (`.github/workflows/ai-pr-r
    - Database query performance (missing indexes on foreign keys, unpaginated collections, async-over-sync deadlocks).
    - Breaking API contracts (unversioned removals or alterations to public endpoints).
 3. **Structured PR Commentary**: Automatically post inline comments citing file names, line numbers, and concrete remediation code diffs.
-4. **CI Enforcement Gate**: Return exit code 1 to block PR merging if any `[BLOCKER]` severity issue is discovered.
+4. **CI Enforcement Gate**: Return exit code 1 to block PR merging if any blocker severity issue is discovered.
 
 ### Task 3: AI-Assisted Architectural Decision Record (ADR) Workflow
 Implement an automated CLI script or agent workflow (`scripts/generate-adr.py` or `.agent/workflows/adr.md`):
@@ -72,7 +77,7 @@ Implement an automated CLI script or agent workflow (`scripts/generate-adr.py` o
 | Milestone | Deliverable | Production Verification Standard |
 |---|---|---|
 | **M1: Directives & Constraints** | Root `AGENT.md` | Autonomous agent correctly parses commands, executes TDD workflow, and rejects requests to add banned dependencies (`Newtonsoft.Json`). |
-| **M2: PR Review Bot & Gating** | `.github/workflows/ai-pr-review.yml` | Injected anti-patterns (unindexed foreign key query, domain layer EF reference) trigger automated `[BLOCKER]` verdicts and block CI merge. |
+| **M2: PR Review Bot & Gating** | `.github/workflows/ai-pr-review.yml` | Injected anti-patterns (unindexed foreign key query, domain layer EF reference) trigger automated blocker verdicts and block CI merge. |
 | **M3: TDD Specification Loop** | Unit & Integration Test Suites | Agent executes Red-Green-Refactor loop: tests fail before implementation, pass after implementation, and maintain 100% layer isolation. |
 | **M4: Automated ADR Engine** | ADR Generator Workflow | Ingests partitioned telemetry design problem; produces compliant Michael Nygard ADR with trade-off matrix and updates ADR catalog. |
 
@@ -92,4 +97,11 @@ Implement an automated CLI script or agent workflow (`scripts/generate-adr.py` o
 
 ---
 
-👉 **[Return to Module 08: AI-Augmented SDLC & Leadership](../README.md#9-capstone-challenge-establish-an-enterprise-ai-native-repository-framework-)**
+## 🧭 Navigation
+
+| Role | Target Resource |
+|---|---|
+| **Phase Overview** | [Phase 08 Hub: AI-Augmented SDLC & Leadership](../README.md) |
+| **Lesson 01** | [Lesson 01: The AI-Native SDLC Paradigm & Toolchains](../01-ai-native-sdlc-paradigm-and-toolchain.md) |
+| **Lesson 02** | [Lesson 02: Spec-Driven Development & Codebase Contracts](../02-spec-driven-development-and-codebase-contracts.md) |
+| **Lesson 07** | [Lesson 07: Enterprise AI Delivery Governance & Accelerators](../07-enterprise-ai-delivery-governance-and-accelerators.md) |
