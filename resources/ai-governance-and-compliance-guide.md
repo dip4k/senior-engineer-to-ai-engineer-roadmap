@@ -43,46 +43,22 @@ flowchart TD
 ## 📑 Table of Contents
 
 1. [Why Engineers Need to Care](#1-why-engineers-need-to-care)
-2. [EU AI Act Timeline & Enforcement Milestones](#2-eu-ai-act-timeline--enforcement-milestones)
+2. [EU AI Act Timeline & Enforcement Milestones](#2-eu-ai-act-timeline-enforcement-milestones)
 3. [The 4-Tier Risk Classification Taxonomy](#3-the-4-tier-risk-classification-taxonomy)
-4. [General-Purpose AI (GPAI) & Foundation Model Obligations](#4-general-purpose-ai-gpai--foundation-model-obligations)
+4. [General-Purpose AI (GPAI) & Foundation Model Obligations](#4-general-purpose-ai-gpai-foundation-model-obligations)
 5. [The Production AI Engineering Compliance Checklist](#5-the-production-ai-engineering-compliance-checklist)
-6. [Long-Term Memory & Data Governance Under GDPR](#6-long-term-memory--data-governance-under-gdpr)
+6. [Long-Term Memory & Data Governance Under GDPR](#6-long-term-memory-data-governance-under-gdpr)
 7. [Enterprise Responsible AI Frameworks: The Big Four Compared](#7-enterprise-responsible-ai-frameworks-the-big-four-compared)
 8. [War Stories from the Compliance Trenches](#8-war-stories-from-the-compliance-trenches)
-9. [Curated Reference Index & Legal Portals](#9-curated-reference-index--legal-portals)
+9. [Curated Reference Index & Legal Portals](#9-curated-reference-index-legal-portals)
 
 ---
 
 ## 1. Why Engineers Need to Care
 
-### The Construction Site Analogy (ELI10)
+### The Shift to Regulated AI Engineering
 
-Imagine building a three-story residential apartment building.
-
-In the wild west days of 19th-century construction, builders threw up brick walls, hooked up gas pipes with whatever threaded iron was lying around, and didn't bother with fire exits. If the foundation settled unevenly or a gas line leaked, the building collapsed or burned down. Nobody went to jail unless gross fraud was proven.
-
-Then modern **civil engineering and municipal building codes** arrived. Today:
-* You cannot pour structural concrete without slump testing and certified rebar reinforcement.
-* You cannot wire an electrical breaker box without arc-fault circuit interrupters (AFCI).
-* You cannot hand over the keys without an occupancy certificate signed by a municipal building inspector.
-
-If a building collapses because the lead civil engineer ignored load calculations, that engineer loses their license and faces criminal negligence charges.
-
-```mermaid
-flowchart LR
-    subgraph Past["THE WILD WEST ERA (2020-2023)"]
-        Hype["'Move Fast and Break Things'\nShip raw completions to production\nNo eval datasets • Unchecked agent tools"]
-    end
-
-    subgraph Present["THE CIVIL ENGINEERING ERA (2024-2027+)"]
-        Codes["EU AI Act • NIST AI RMF • ISO 42001\nSlump tests = Model evals & bias checks\nFire doors = HITL circuit breakers\nBuilding permits = CE conformity marks"]
-    end
-
-    Past -->|Regulatory Shift| Present
-```
-
-For the last three years, generative AI engineering has operated in the Wild West era. Engineers piped user inputs directly into OpenAI or Anthropic API endpoints, wired LLMs straight to production SQL write databases with zero authorization boundaries, and joked about hallucinations over Slack.
+For the last three years, generative AI engineering has operated in a "Wild West" era. Engineers piped user inputs directly into model endpoints, wired LLMs straight to production databases with zero authorization boundaries, and shipped code based on "vibe checks."
 
 **That era is officially over.** 
 

@@ -1,41 +1,41 @@
-# Lesson 01: Function Calling & JSON-RPC 2.0 Wire Protocols
+# Lesson 01: Function Calling & JSON-RPC Wire Protocols
 
-> **Tier**: `🟢 Tier 1: Core Systems Concept`  
+> **Tier**: `HIGH ROI / CORE`  
 > **Estimated Reading Time**: 40 minutes  
 > **Prerequisites**: Phase 00 (Tokenization, Inference Latency), Phase 01 (Structured Outputs, Prompt Templates)  
 > **Target Audience**: Senior Software Engineers, Systems Architects  
 
 ---
 
-> **Core Concept**: Language models generate text — they cannot directly execute code, call APIs, or query databases. **Function calling** (also called tool calling) is the mechanism that bridges this gap. The model generates a structured JSON request describing which function it wants to call and with what parameters. Your application code then executes that function and feeds the result back. Under the hood, this communication follows the **JSON-RPC 2.0** wire protocol — the same standard used in Ethereum, VS Code's Language Server Protocol (LSP), and many microservice systems you already know.
+> **Core Concept**: Language models generate text — they cannot directly execute code, call APIs, or query databases. **Function calling** (also called tool calling) bridges this gap. The model generates a structured JSON request describing which function it wants to call and its parameters. Your application code executes that function and feeds the result back to the model. Under the hood, this communication often follows the **JSON-RPC 2.0** standard.
 
 ---
 
 ## 1. Conceptual Foundation & Mental Model
 
-In traditional software systems, a function call is a deterministic, compiler-enforced jump: arguments are pushed onto the execution stack, instruction pointers advance to a resolved memory address, and a typed value is returned.
+In traditional software systems, a function call is direct and deterministic: arguments are passed, instructions run, and a value returns.
 
-Large Language Models (LLMs) possess neither an execution stack nor direct access to CPU registers. At inference time, an LLM is purely a statistical next-token predictor. To enable a model to interact with the external world—querying a database, invoking a REST endpoint, or inspecting a filesystem—we must bridge the non-deterministic probabilistic text space with deterministic runtime execution.
+Large Language Models (LLMs) do not have direct access to your CPU or systems. An LLM simply predicts the next word. To enable a model to interact with the external world—like querying a database or calling a REST API—we must bridge its text generation with your deterministic runtime code.
 
-This bridge is **Function Calling** (also termed *Tool Calling*). 
+This bridge is **Function Calling** (or *Tool Calling*). 
 
 ```text
-Probabilistic World (LLM)                   Deterministic World (Runtime)
+Language Model World                        Application Code World
 +-------------------------+                 +---------------------------+
-| Generates tokens:       |   JSON-RPC 2.0  | Executes compiled binary: |
-| '{"name": "fetch_user", | --------------> | fn fetch_user(id: UUID)   |
-|   "args": {"id": 104}}' |                 | returns SQL result tuple  |
+| Generates JSON:         |   JSON-RPC 2.0  | Executes real function:   |
+| '{"name": "fetch_user", | --------------> | def fetch_user(id):       |
+|   "args": {"id": 104}}' |                 |     return user_data      |
 +-------------------------+                 +---------------------------+
 ```
 
 ### The Remote Procedure Call (RPC) Mental Model
-Think of function calling not as "the model executing code," but as an **asynchronous Remote Procedure Call (RPC) negotiation**:
-1. The **Client/Host** sends a catalog of callable interfaces (described as JSON Schemas) to the model.
-2. The **Model** decides whether to emit natural language or serialize an **intent to invoke** a tool matching one of those schemas.
-3. The **Host Application** intercepts this serialization, validates its arguments, executes the actual code in a controlled runtime environment, and appends the result back into the model's conversation history.
-4. The **Model** reads the result and produces a grounded, natural language response or initiates a subsequent tool call.
+Think of function calling as an asynchronous **Remote Procedure Call (RPC)**:
+1. The **Application** sends a list of available tools (described as JSON Schemas) to the model.
+2. The **Model** decides whether to respond with regular text, or request to call one of the tools.
+3. The **Application** receives this request, validates the arguments, runs the actual code, and sends the result back into the model's chat history.
+4. The **Model** reads the result and uses it to generate a final natural language response or trigger another tool.
 
-The foundational wire protocol powering this communication across distributed processes is **JSON-RPC 2.0**.
+The common wire protocol powering this communication is **JSON-RPC 2.0**.
 
 ---
 
@@ -45,7 +45,7 @@ The single-turn tool invocation loop establishes a clear boundary between model 
 
 ```mermaid
 flowchart TD
-    User(["Human / API Client"]) -->|1. Prompt Input| Host["Host Orchestration Runtime"]
+    User(["Human / API Client"]) -->|1. Prompt Input| Host["Host Application"]
     
     subgraph ContextAssembly["Context Preparation"]
         Host -->|2. Assemble System Prompt + Tool Declarations| PromptBuilder["Context Engine"]

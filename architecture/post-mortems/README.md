@@ -23,9 +23,10 @@ These post-mortems provide **unvarnished, detailed architectural retrospectives*
 
 | Incident ID | Incident Name | Severity | Primary Failure Mode | Financial / Latency Blast Radius |
 | :---: | :--- | :---: | :--- | :--- |
-| [**INCIDENT-001**](./INCIDENT-001-cascading-kv-cache-stampede.md) | **The Cascading KV-Cache Stampede** | `SEV-1` | Dynamic timestamp prefix invalidating Radix tree across 64 GPUs. | P99 TTFT spiked from 90ms to 4,800ms; \$38,000 in redundant prefill compute. |
-| [**INCIDENT-002**](./INCIDENT-002-silent-target-leakage-in-feature-pipeline.md) | **Silent Temporal Target Leakage** | `SEV-1` | Mutable operational database table contaminating training features. | \$1.4M credit write-offs across 90-day merchant cohorts; 3-month silent failure. |
-| [**INCIDENT-003**](./INCIDENT-003-multi-agent-cyclic-handoff-deadlock.md) | **Multi-Agent Cyclic Handoff Deadlock** | `SEV-2` | Unbounded conversational ping-pong loop between two autonomous agents. | \$1,200 burned in 14 minutes; 45,000 recursive tokens per session. |
+| [**INCIDENT-001**](./INCIDENT-001-cascading-kv-cache-stampede.md) | **The Cascading KV-Cache Stampede** | `SEV-1` | Dynamic timestamp prefix invalidating Radix tree across 64 GPUs. | P99 TTFT spiked from 90ms to 4,800ms; $38,000 in redundant prefill compute. |
+| [**INCIDENT-002**](./INCIDENT-002-silent-target-leakage-in-feature-pipeline.md) | **Silent Temporal Target Leakage** | `SEV-1` | Mutable operational database table contaminating training features. | $1.4M credit write-offs across 90-day merchant cohorts; 3-month silent failure. |
+| [**INCIDENT-003**](./INCIDENT-003-multi-agent-cyclic-handoff-deadlock.md) | **Multi-Agent Cyclic Handoff Deadlock** | `SEV-2` | Unbounded conversational ping-pong loop between two autonomous agents. | $1,200 burned in 14 minutes; 45,000 recursive tokens per session. |
+| [**INCIDENT-004**](./INCIDENT-004-zombie-token-runaway-and-socket-buffer-bloat.md) | **Zombie Token Runaway & Socket Buffer Bloat** | `SEV-1` | Disconnected client SSE streams generating tokens to completion on GPUs. | P99 TTFT spiked to 32.5s; $38,400 in ghost compute; gateway OOM crashes. |
 
 ---
 

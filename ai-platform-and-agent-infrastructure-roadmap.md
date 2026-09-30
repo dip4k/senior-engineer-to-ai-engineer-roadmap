@@ -1,8 +1,8 @@
 # 🏗️ The Senior AI Platform & Agent Infrastructure Roadmap
 ### From Traditional Distributed Systems to Autonomous Agent Runtimes & Vector Platforms
 
-[![Target Level: Senior / Staff AI Platform Engineer](https://img.shields.io/badge/Target%20Level-Senior%20%2F%20Staff%20AI%20Platform-blue.svg)](#-the-unified-mental-model)
-[![Status: Verified September 2026](https://img.shields.io/badge/Verified-September%202026-brightgreen.svg)](#-the-paradigm-shift)
+[![Target Level: Senior / Staff AI Platform Engineer](https://img.shields.io/badge/Target%20Level-Senior%20%2F%20Staff%20AI%20Platform-blue.svg)](#the-big-picture-two-roles-one-architecture)
+[![Status: Verified September 2026](https://img.shields.io/badge/Verified-September%202026-brightgreen.svg)](#the-paradigm-shift-from-framework-first-to-systems-first)
 [![Implementation: AgentForge MVP](./agent-forge)](./agent-forge)
 
 > **For Tech Leads and Distributed Systems Engineers**: How to master the AI infrastructure plane—agent loops, durable state machines, Model Context Protocol (MCP), vector retrieval internals (HNSW/ACORN), and OpenTelemetry GenAI observability—without getting trapped in toy chatbot tutorials.
@@ -29,6 +29,7 @@
 
 ---
 
+<a id="the-big-picture-two-roles-one-architecture"></a>
 ## 🎯 The Big Picture: Two Roles, One Architecture
 
 If you examine senior job descriptions across top-tier AI companies, they usually present as two distinct specializations:
@@ -66,6 +67,7 @@ flowchart TD
 
 ---
 
+<a id="the-paradigm-shift-from-framework-first-to-systems-first"></a>
 ## 💡 The Paradigm Shift: From Framework-First to Systems-First
 
 Most developers approach AI engineering backward:
@@ -92,6 +94,7 @@ When you understand how to build the primitives yourself, you can confidently ex
 
 ---
 
+<a id="the-9-phase-master-curriculum"></a>
 ## 🗺️ The 9-Phase Master Curriculum
 
 > [!NOTE]
@@ -136,6 +139,12 @@ Frontier providers (Gemini, Claude, OpenAI) support **Context / Prompt Caching**
 * Up to **50–75% lower input token costs**.
 
 **The Engineering Rule:** *Keep your static system instructions and tool definitions strictly at the top of your prompt envelope. Never inject dynamic timestamps or randomized UUIDs into the prefix.*
+
+#### Silicon & Serving Hardware Realities: Native FP8 & Latent Attention
+Senior platform engineers must understand the physical hardware constraints of LLM serving clusters (vLLM, SGLang, TensorRT-LLM):
+* **Native FP8 Precision (E4M3 / E5M2):** On modern datacenter GPUs (NVIDIA Hopper H100/H200 and Blackwell B200), native FP8 Tensor Cores double GEMM compute throughput over FP16 with zero dequantization register stalls, replacing legacy 4-bit weight quantization schemes (AWQ/GPTQ) in enterprise serving clusters.
+* **Multi-Head Latent Attention (MLA):** Modern architectures (e.g., DeepSeek V3/R1) compress Key-Value (KV) cache tensors into low-dimensional latent vectors, reducing KV-cache VRAM consumption by 70–80% and allowing 4× higher concurrency per GPU node.
+* **RadixAttention Shared Prefill Trees:** Serving runtimes manage GPU memory as a dynamic Radix Tree, matching token prefixes across multi-turn sessions to eliminate redundant prefill compute.
 
 #### Practical Project: The Resilient AI Gateway
 Build a proxy service that sits between your applications and upstream LLM providers:
@@ -488,6 +497,7 @@ flowchart TD
 
 ---
 
+<a id="your-systems-advantage-bridging-netazure-distributed-systems"></a>
 ## 💼 Your Systems Advantage: Bridging .NET/Azure & Distributed Systems
 
 If you come from a strong background in **C# / .NET, Azure, and distributed systems**, you possess an enormous unfair advantage. Most AI practitioners know how to write a Python prompt script, but have zero experience designing high-throughput, fault-tolerant platforms.
@@ -504,6 +514,7 @@ Here is how your background directly maps to the senior AI platform stack:
 
 ---
 
+<a id="the-hands-on-portfolio-agentforge-architecture"></a>
 ## 🛠️ The Hands-On Portfolio: AgentForge Architecture
 
 To prove these skills conclusively, explore the **`agent-forge/`** directory in this repository. It provides an end-to-end, runnable implementation of the concepts discussed in this guide:
@@ -547,6 +558,7 @@ python demo.py
 
 ---
 
+<a id="whiteboard-interview-battlecards"></a>
 ## 🎯 Whiteboard Interview Battlecards
 
 Prepare for these high-signal architecture interview questions:

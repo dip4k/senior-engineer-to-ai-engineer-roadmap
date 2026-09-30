@@ -19,10 +19,10 @@ This repository is not a collection of surface-level tutorials or marketing buzz
 > [!NOTE]
 > **Calibrated Depth: The 4-Tier Model**
 > This repository is a comprehensive masterclass spanning the entire modern AI engineering landscape. Every lesson is calibrated using our **[4-Tier Lesson Depth Model](#architectural-mastery-tiers)**:
-> - **Tier 1: 🟢 Core**: Universal architectural principles (KV-cache physical realities, Context AST, late chunking, MCP wire protocol, WAL crash resilience, binary evals, OTel GenAI telemetry) that every senior AI engineer must master.
-> - **Tier 2: 🟡 Engineering Depth**: Production systems engineering, failure modes, concurrency, latency ceilings, rate limiting, and defensive quarantine.
-> - **Tier 3: 🔵 Advanced**: High-scale distributed patterns, multi-agent sagas, platform-specific enterprise implementations (Azure AI Search, AWS Bedrock, GCP Vertex), and specialized agent swarms.
-> - **Tier 4: ⚫ Deep Dive**: Hardware memory hierarchy, GPU bandwidth, mathematical proofs, and custom kernel optimizations.
+> - **Tier 1: 🟢 HIGH ROI / CORE**: Essential concepts providing the highest practical ROI for enterprise applications (e.g., LLM APIs, prompt design, tokens/context, RAG, tool calling, MCP). Master these first. Everything else becomes significantly easier afterward.
+> - **Tier 2: 🟡 IMPORTANT / NEXT**: Next-level production concerns like stateful agents, context/session management, security guardrails, evaluation, and observability.
+> - **Tier 3: 🔵 ADVANCED / SPECIALIZED**: Complex architectures, multi-agent sagas, vector search optimization, scale limits, and platform-specific enterprise implementations.
+> - **Tier 4: ⚫ REFERENCE / AWARENESS**: Foundational hardware physics, memory hierarchy, mathematical proofs, and internal wire protocol details—good to know, but not strictly required for daily engineering.
 >
 > Check the **[Recommended Learning Paths](#recommended-learning-paths)** to follow the curriculum tailored directly to your role (e.g., RAG Architect, Autonomous Agent Engineer, Platform Engineer, or Enterprise AI Lead).
 
@@ -86,7 +86,7 @@ flowchart LR
 | **Multi-Agent Systems** | Uncontrolled conversational chatter | **Tri-Protocol Stack** (MCP + Google A2A + AG-UI) |
 | **Reasoning Engine** | Manual Chain-of-Thought prompts | **Native Thinking Tokens** (o3/o4-mini, Claude Thinking, Grok-3 Thinking, DeepSeek-R1) |
 | **Context Ceilings** | 8K–128K tokens (frequent OOMs) | **200K–2M+ tokens** (MECW awareness, Llama 3.x 128K, prompt caching) |
-| **Cost Profile** | \$30–60 / 1M tokens (GPT-4) | **\$0.075–3.00 / 1M tokens** (200x spread, 50% off Batch APIs) |
+| **Cost Profile** | 30–60 USD / 1M tokens (GPT-4) | **0.075–3.00 USD / 1M tokens** (200x spread, 50% off Batch APIs) |
 | **Regulatory Compliance** | Voluntary best practices | **EU AI Act Enforced** (GPAI obligations, crypto-shredding) |
 | **Coding Workflow** | Single-line tab autocomplete | **Autonomous Agentic Coding** (Claude Code CLI, Cursor, Windsurf) |
 
@@ -304,10 +304,10 @@ flowchart LR
 
 Every topic and lesson across the curriculum is classified using the **4-Tier Lesson Depth Model** so you can calibrate depth, prerequisites, and pacing:
 
-* **Tier 1: 🟢 Core**: Non-negotiable foundation every engineer must master. Establishes primary mental models, basic mechanics, failure modes of the naive approach, and working reference implementations (~800–1,500 words).
-* **Tier 2: 🟡 Engineering Depth**: Production systems engineering. Covers edge cases, concurrency, failure modes, memory budgeting, latency limits, and OpenTelemetry instrumentation (~1,200–2,500 words).
-* **Tier 3: 🔵 Advanced**: High-scale distributed patterns, specialized enterprise extensions (e.g., GraphRAG, multi-agent sagas, speculative decoding, custom kernel optimizations) (~1,500–3,000 words).
-* **Tier 4: ⚫ Deep Dive**: Zero-abstraction systems internals, mathematical proofs, hardware physics, wire protocol specifications, and memory layouts (e.g., PagedAttention block tables, BPE merge trees, RRF harmonic rank distributions) (~1,500–3,000 words).
+* **Tier 1: 🟢 HIGH ROI / CORE**: Essential concepts providing the highest practical ROI for enterprise applications. This includes LLM APIs, prompt/instruction design, tokens/context, structured output, embeddings, basic RAG, tool calling, and MCP. Master these first. Everything else becomes significantly easier afterward.
+* **Tier 2: 🟡 IMPORTANT / NEXT**: Next-level production concerns. Includes stateful agents, context and session management, security guardrails, evaluation pipelines, and observability. Critical for reliable production deployments.
+* **Tier 3: 🔵 ADVANCED / SPECIALIZED**: Complex architectures and scale optimizations. Covers multi-agent sagas, advanced vector search algorithms (e.g., GraphRAG, DiskANN), latency tuning, and platform-specific enterprise implementations.
+* **Tier 4: ⚫ REFERENCE / AWARENESS**: Foundational mechanics and internals. Includes hardware physics, memory layouts (PagedAttention, KV-cache sizing), mathematical proofs, and wire protocol specifications. Good for deep understanding but not strictly required for daily engineering.
 
 ---
 

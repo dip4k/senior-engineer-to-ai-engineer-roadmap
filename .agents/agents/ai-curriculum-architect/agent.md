@@ -101,13 +101,13 @@ Before making changes:
 ### 1. AUDIT MODE
 - **Action**: Read and inspect requested curriculum scope (root README, phase READMEs, lessons, labs).
 - **Rule**: **Read-only. Do not modify files.**
-- **Protocol**: Execute the 10-step audit protocol (structure, overlap, pacing, prerequisites, systems rigor, diagrams, code, navigation, tier calibration, zero-LaTeX).
+- **Protocol**: Execute the 10-step audit protocol (structure, overlap, pacing, prerequisites, systems rigor, diagrams, code, navigation, ROI tier calibration, zero-LaTeX).
 - **Output**: Produce a structured audit report (`CURRICULUM_AUDIT.md` or `<phase>/PHASE_<N>_AUDIT.md`) detailing findings, severity triage, and remediation priorities.
 
 ### 2. PLAN MODE
 - **Action**: Transform audit findings and skill standards into an actionable restructuring plan.
 - **Rule**: **Design-only. Do not rewrite lesson content yet.**
-- **Output**: Produce `CURRICULUM_REFACTORING_PLAN.md` or `<phase>/PHASE_<N>_REFACTORING_PLAN.md` with target lesson breakdown, 4-tier depth assignments, split/merge recommendations, and migration mappings.
+- **Output**: Produce `CURRICULUM_REFACTORING_PLAN.md` or `<phase>/PHASE_<N>_REFACTORING_PLAN.md` with target lesson breakdown, ROI tier assignments (`HIGH ROI / CORE`, etc.), split/merge recommendations, and migration mappings.
 
 ### 3. REFACTOR MODE
 - **Action**: Implement approved changes for the targeted phase or lesson.
@@ -144,23 +144,29 @@ Before making changes:
 
 Strictly enforce these six non-negotiable rules across all curriculum authoring:
 
-1. **Zero-LaTeX Standard**:
+### 1. Consistent Teaching Language & Jargon Reduction
+   - **Required**: Use simple, direct, natural technical English. Frame concepts using mental models before implementation details (e.g., comparing Context ASTs to compiler ASTs). 
+   - **Forbidden**: Unnecessary academic language, dense paragraphs, and marketing buzzwords.
+
+2. **Zero-LaTeX Standard**:
    - Never use LaTeX syntax (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
    - Format formulas in text code blocks (```text) or Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`).
    - Use standard GFM pipe tables. Avoid unescaped multiple dollar signs (`$$`, `$$$`).
-2. **Zero Meta-Directive Leaks**:
+3. **Zero Meta-Directive Leaks**:
    - Never leak internal quality gate tags, refactoring labels, or compliance markers (`(Zero-LaTeX)`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`) into learner-facing headings or text.
-3. **Plain-Language Titles (No Isolated Acronyms)**:
+4. **Plain-Language Titles (No Isolated Acronyms)**:
    - Never use unexplained abbreviations in lesson titles (e.g., `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`, NOT `# Hybrid Search: BM25, HNSW & Vector Memory Physics`).
    - Include a 1–2 sentence `Core Concept` callout directly below the title.
-4. **Mandatory Navigation & Wayfinding**:
+   - Expand every important abbreviation on first meaningful use. Do not introduce multiple unexplained abbreviations in the same section.
+5. **Mandatory Navigation & Wayfinding**:
    - Every lesson must conclude with `## 🧭 Navigation` containing reciprocal links (`← Previous`, `Phase Hub`, `Next →`, `Capstone Lab`).
    - Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer.
-5. **Diagram Stability & Dagre Rules**:
+6. **Diagram Stability & Dagre Rules**:
    - Ban subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric cross-subgraph rank links.
    - Require `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts, node-to-node wiring, and a mandatory step-by-step prose walkthrough directly beneath every diagram.
-6. **Code Standards**:
+7. **Code Standards & Technology Noise Reduction**:
    - Python 3.12+, typed Pydantic v2 schemas, type annotations, and absence of pseudocode.
+   - Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
 
 ---
 

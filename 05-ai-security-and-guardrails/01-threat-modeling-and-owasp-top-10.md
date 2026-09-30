@@ -1,27 +1,49 @@
-# AI Threat Modeling: Von Neumann Attention Duality & OWASP Top 10 (2026)
+# Lesson 01: AI Threat Modeling & OWASP Top 10
 
-> **Tier:** 🟢 Core | **Est. Time:** 45 min | **Prerequisites:** Phase 00 (Tokenization & Attention Mechanics), Phase 01 (Context Windows & Prompts), Phase 03 (Tool Calling)
+> **Tier:** `HIGH ROI / CORE` | **Est. Time:** 45 min | **Prerequisites:** Phase 00 (Tokenization), Phase 01 (Context Windows), Phase 03 (Tool Calling)
 >
-> **Core Concept:** Large Language Models violate the fundamental security separation between executable instructions and untrusted data by processing both inside a single shared token sequence. Securing AI systems requires shifting from deterministic perimeter defense to probabilistic runtime defense-in-depth.
+> **Core Concept:** Large Language Models (LLMs) mix your system instructions and untrusted user data into a single text stream. This makes them vulnerable to attacks where users trick the model into following malicious instructions instead of yours. Securing AI systems requires defense-in-depth, treating the model as an untrusted reasoning engine.
 
 ---
 
-## 1. The Systems Problem: The Collapse of the Deterministic Perimeter
+## 1. The Systems Problem: Mixing Code and Data
 
-In traditional software engineering (Software 2.0), application security rests on deterministic boundaries enforced by compilers, operating systems, and network firewalls:
+In traditional software engineering, security relies on strictly separating code from data:
 
-* **Memory Segmentation**: Hardware rings (Ring 0 supervisor vs. Ring 3 user space) and virtual address spaces ensure that user inputs cannot overwrite executable machine code.
-* **Instruction / Data Decoupling**: When a web service queries a relational database, parameterized queries (prepared statements) ensure that user data is parsed strictly as a literal value, never as a control-flow token:
+* **Memory Separation**: Operating systems ensure user inputs cannot overwrite executable code.
+* **Database Parameterization**: When querying a database, parameters ensure data is treated as literal values, never as SQL commands:
   ```sql
-  -- The database engine's Abstract Syntax Tree (AST) never evaluates $1 as code
+  -- The database engine never evaluates $1 as code
   SELECT id, email, balance FROM accounts WHERE user_id = $1;
   ```
-  If an attacker submits `' OR '1'='1`, the database parser does not execute it. It queries for an account literally named `' OR '1'='1`.
-* **Access Control**: Identity and Access Management (IAM), OAuth 2.0 bearer tokens, and Mutual Transport Layer Security (mTLS) deterministically police network ingress and egress.
+  If an attacker submits `' OR '1'='1`, the database looks for a user with that exact literal name; it doesn't run the injection.
 
-Large Language Models (LLMs) fundamentally shatter this model.
+Large Language Models (LLMs) break this security model.
 
-When an LLM processes an enterprise prompt, system instructions, retrieval-augmented documents, chat history, and untrusted user inputs are serialized into a **single, homogeneous sequence of tokens**.
+When an LLM processes a prompt, your system instructions, retrieved documents, and untrusted user inputs are all combined into a **single sequence of text tokens**.
+
+```mermaid
+flowchart TD
+    subgraph Traditional["Traditional Computing (Separated)"]
+        direction LR
+        Code["Compiled Instructions (Code)"] --> CPU["Execution"]
+        Data1["Untrusted Inputs (Data)"] --> CPU
+    end
+    
+    subgraph LLM["Large Language Model (Mixed)"]
+        direction LR
+        Inst["System Instructions (Code)"] --> Stream["Single Text Stream"]
+        RAG["Retrieved Documents (Data)"] --> Stream
+        User["User Prompt (Untrusted Data)"] --> Stream
+        Stream --> Attn["LLM Processing"]
+    end
+```
+
+### Why this causes vulnerabilities:
+1. **Traditional Separation**: Instructions and data are separate.
+2. **Unified Stream in LLMs**: Everything is just text tokens to the model.
+3. **No Intrinsic Authority**: The model treats a user's prompt with the same structural validity as your system prompt. 
+4. **Control Hijack**: Untrusted data can contain commands (like "Ignore all previous instructions") that trick the model into doing the attacker's bidding. This is known as **Prompt Injection**.
 
 ```mermaid
 flowchart TD

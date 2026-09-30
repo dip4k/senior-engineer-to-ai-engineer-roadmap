@@ -46,11 +46,11 @@ flowchart TD
 
 | Lesson | Depth Tier | Target Words | Core Systems Focus |
 |---|:---:|:---:|---|
-| **[01. Transformer Inference & Hardware Realities](./01-transformer-and-hardware-physics.md)** | `🟢 Core` | ~1,400 | GPU memory bandwidth wall, HBM3 vs. SRAM hierarchy, arithmetic intensity, Roofline Model, FlashAttention IO-aware tiling. |
-| **[02. Tokenization & Byte-Pair Encoding (BPE)](./02-tokenization-and-bpe-mechanics.md)** | `🟢 Core` | ~1,200 | BPE merge trees, token boundary fragmentation, whitespace sensitivity, number shredding, non-English token penalties, sampling mechanics. |
-| **[03. KV-Cache Mechanics & Memory Sizing Math](./03-kv-cache-vram-and-bandwidth-physics.md)** | `🟡 Engineering Depth` | ~2,000 | Autoregressive decoding, Prefill (TTFT) vs. Decode (TPS), KV-cache growth math, MHA vs. GQA vs. MQA, PagedAttention block tables. |
-| **[04. Test-Time Compute & Reasoning Tokens](./04-test-time-compute-and-reasoning-models.md)** | `🔵 Advanced` | ~1,800 | Test-time compute scaling, reasoning models (o3, Claude 3.7 Thinking, DeepSeek-R1), 50:1 thinking token asymmetry, token governors, runaway billing defense. |
-| **[05. Small Language Models & Model Quantization](./05-slms-and-quantization-mechanics.md)** | `🟡 Engineering Depth` | ~1,600 | Edge SLMs (Phi-4, Gemma 2, Qwen 2.5 Coder), precision formats (FP16, FP8, INT4), AWQ vs. GPTQ algorithms, hardware deployment matrix. |
+| **[01. Transformer Inference & Hardware Realities](./01-transformer-and-hardware-physics.md)** | `HIGH ROI / CORE` | ~1,400 | GPU memory bandwidth wall, HBM3 vs. SRAM hierarchy, arithmetic intensity, Roofline Model, FlashAttention IO-aware tiling. |
+| **[02. Tokenization & Byte-Pair Encoding (BPE)](./02-tokenization-and-bpe-mechanics.md)** | `HIGH ROI / CORE` | ~1,200 | BPE merge trees, token boundary fragmentation, whitespace sensitivity, number shredding, non-English token penalties, sampling mechanics. |
+| **[03. KV-Cache Mechanics & Memory Sizing Math](./03-kv-cache-vram-and-bandwidth-physics.md)** | `IMPORTANT / NEXT` | ~2,000 | Autoregressive decoding, Prefill (TTFT) vs. Decode (TPS), KV-cache growth math, MHA vs. GQA vs. MQA, PagedAttention block tables. |
+| **[04. Test-Time Compute & Reasoning Tokens](./04-test-time-compute-and-reasoning-models.md)** | `ADVANCED / SPECIALIZED` | ~1,800 | Test-time compute scaling, reasoning models (o3, Claude 3.7 Thinking, DeepSeek-R1), 50:1 thinking token asymmetry, token governors, runaway billing defense. |
+| **[05. Small Language Models & Model Quantization](./05-slms-and-quantization-mechanics.md)** | `IMPORTANT / NEXT` | ~1,600 | Edge SLMs (Phi-4, Gemma 2, Qwen 2.5 Coder), precision formats (FP16, FP8, INT4), AWQ vs. GPTQ algorithms, hardware deployment matrix. |
 
 ---
 

@@ -13,7 +13,7 @@ In early AI agent prototypes, developers frequently gave foundation models direc
 In production enterprise systems, this approach creates catastrophic vulnerabilities:
 1. **The Confused Deputy Attack**: A model tricked by indirect prompt injection invokes high-privilege tools (e.g. `admin_drop_database` or unauthorized credit transfers) because the execution environment trusts the model rather than enforcing user identity and authorization boundaries.
 2. **Missing Transactional Limits**: Without deterministic policy guardrails, an autonomous agent can execute multiple financial transactions exceeding corporate spending authority in seconds.
-3. **Integration Sprawl**: Connecting $M$ models to $N$ internal tools without a standardized wire protocol creates $M \times N$ custom integration glue code.
+3. **Integration Sprawl**: Connecting M models to N internal tools without a standardized wire protocol creates M × N custom integration glue code.
 
 This lab delivers a production-grade **Model Context Protocol (MCP) Tool Execution Engine** governed by an **Attribute-Based Access Control (ABAC) Policy Engine**. It exposes strongly-typed tools via standardized JSON-RPC 2.0 schemas, enforces automated dollar-limit safety tiers, routes high-value transactions to Human-in-the-Loop (HITL) approval, and strictly denies unauthorized administrative operations.
 
@@ -52,8 +52,8 @@ flowchart TD
    - Return structured `PolicyDecision` objects containing `status` (`PERMITTED`, `REQUIRES_APPROVAL`, `DENIED`) and diagnostic reason strings.
 3. **Financial Safety Limits**:
    - Support configurable auto-refund limits (default: `$100.00`).
-   - Refunds $\le \$100.00$ must evaluate to `PERMITTED`.
-   - Refunds $> \$100.00$ must evaluate to `REQUIRES_APPROVAL`.
+   - Refunds <= $100.00 must evaluate to `PERMITTED`.
+   - Refunds > $100.00 must evaluate to `REQUIRES_APPROVAL`.
 4. **Zero-Trust Administrative Protection**:
    - Unauthorized tools (e.g. `admin_drop_database`) must evaluate to `DENIED` unconditionally.
 

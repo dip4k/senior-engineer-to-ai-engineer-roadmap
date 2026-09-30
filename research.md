@@ -144,7 +144,7 @@ Every research finding is classified according to the skill's taxonomy:
     - Trie-based data structures maintaining KV-cache blocks across multiple requests.
     - Automatic prefix matching for system prompts, few-shot examples, and multi-turn agent histories without explicit client cache tokens.
 *   **Speculative Decoding with EAGLE-3 & P-EAGLE**:
-    - Traditional speculative decoding: Autoregressive draft model generates $K$ tokens sequentially (limited by draft model memory bandwidth) -> Target model verifies in parallel.
+    - Traditional speculative decoding: Autoregressive draft model generates K tokens sequentially (limited by draft model memory bandwidth) -> Target model verifies in parallel.
     - P-EAGLE (Parallel EAGLE): Generates multiple draft tokens in a **single forward pass** using feature-level representations -> Eliminates draft sequential overhead, achieving 2.5–3.5x wall-clock speedups on Hopper/Blackwell GPUs.
 *   **Dynamic Multi-LoRA Serving (S-LoRA)**:
     - Host unified 70B base model while dynamically swapping 100+ low-rank LoRA adapter matrices in unified GPU memory.

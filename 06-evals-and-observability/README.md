@@ -15,7 +15,7 @@ This causes three catastrophic failure modes in production:
 
 ```mermaid
 flowchart TD
-    A["THE CONTINUOUS EVALUATION FLYWHEEL<br/>Trace Logs • Edge Cases • Golden Sets • CI/CD Gates"]
+    A["THE CONTINUOUS EVALUATION FLYWHEEL<br/>Trace Logs • Edge Cases • Golden Sets • Continuous Integration/Continuous Deployment (CI/CD) Gates"]
     
     A --> B["OBSERVABILITY<br/>• OpenTelemetry Spans<br/>• TTFT & Token Rates<br/>• Cache Hit Tracking<br/>• Distributed Traces"]
     A --> C["EVALUATIONS<br/>• Level 1: Unit Tests<br/>• Level 2: LLM-as-Judge<br/>• Level 3: Online User<br/>• Trajectory Analysis"]
@@ -35,7 +35,7 @@ flowchart TD
 ### The Core Architectural Tenet
 
 ```text
-Stochastic Neural Networks REQUIRE Deterministic Software Harnesses.
+AI Models REQUIRE Deterministic Software Testing.
 ```
 
 > You cannot control the non-deterministic output of neural networks through prompt optimism. You control it through continuous regression matrices, golden datasets harvested from production anomalies, and distributed OpenTelemetry tracing with strict latency and cost SLAs.
@@ -56,45 +56,45 @@ Tech leads and architects are accountable for system stability, cost envelopes, 
 
 | # | Lesson Title | Depth Tier | Est. Time | Core Systems & AI Engineering Concepts |
 |---|---|:---:|:---:|---|
-| **01** | **[Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)** | `🟢 Tier 1: Core` | 40–50 min | The Hamel Husain 3-level evaluation hierarchy; Level 1 deterministic code assertions (Pydantic v2 schemas, regex bounds, latency/token ceilings, AST parsing for code/SQL); DeepEval pytest integration; Production failure mode: Silent schema breakages. |
-| **02** | **[Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)** | `🟡 Tier 2: Depth` | 50–60 min | The failure of 1-to-5 Likert scales; Discrete binary pass/fail rubrics; G-Eval Chain-of-Thought (CoT) reasoning; Reference-based vs. Reference-free scoring (RAGAS triad); Position and verbosity bias mitigations; Chance-adjusted statistical calibration (**Cohen's Kappa** $\ge 0.8$, **Krippendorff's Alpha**); Specialized open-weight judges (**Prometheus-2**). |
-| **03** | **[Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)** | `🟡 Tier 2: Depth` | 50–60 min | Why single-turn grading fails on autonomous agents; Trajectory evaluation dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, loop/thrashing detection; Physical environment state mutation verification; Modern agent benchmarks: **SWE-bench Verified**, **TAU-bench**, **GAIA**, and **UK AISI Inspect AI**. |
-| **04** | **[Evaluation Datasets & Synthetic Data Curation](./04-evaluation-datasets-and-synthetic-data-curation.md)** | `🟡 Tier 2: Depth` | 45–55 min | Anatomy of an Enterprise Golden Dataset: 50/25/15/10 operational quadrant distribution (Happy Path, Edge Cases, Adversarial, Production Regressions); Automated anomaly harvesting flywheel; Synthetic generation using teacher models via **Evol-Instruct**; Defending against Goodhart's Law; Test set contamination prevention and **Canary Strings**; Train/Dev vs. Held-Out test splits. |
-| **05** | **[OpenTelemetry Distributed Tracing & Agent Spans](./05-opentelemetry-distributed-tracing-and-agent-spans.md)** | `🟡 Tier 2: Depth` | 50–60 min | Distributed tracing fundamentals for AI systems; OpenTelemetry mid-2026 dedicated registry (`semantic-conventions-genai` v1.42.0+); Standardized `gen_ai.*` attributes; Official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`); Multi-step agent trace span hierarchy; Context propagation via W3C `traceparent` across HTTP, message queues, and Model Context Protocol (MCP) channels; Observability platforms compared (**Langfuse**, **Arize Phoenix**, **LangSmith**, **Cloud APM**). |
-| **06** | **[Telemetry Metrics, Cost Governance & Golden Signals](./06-telemetry-metrics-cost-governance-and-golden-signals.md)** | `🟡 Tier 2: Depth` | 45–55 min | The Six Golden Signals of GenAI Systems: Time To First Token (TTFT), Tokens Per Second (TPS), Prompt vs Completion Token Ratio, Prompt Cache Hit Ratio, Model Fallback Rate, Fully Burdened Cost Per Task; Streaming latency dynamics: Inter-Token Latency (ITL) variance, TTFC vs TTFT; Prefix caching economics (75–90% cost savings); Production cost governance SLAs. |
-| **07** | **[Continuous Monitoring, Drift Detection & Canaries](./07-continuous-monitoring-drift-detection-and-canaries.md)** | `🔵 Tier 3: Advanced` | 55–65 min | Disentangling Tri-Partite Drift: Data Drift ($P(X)$), Concept Drift ($P(Y \mid X)$), and Prompt/Vendor Drift ($P(\text{Tokens} \mid \text{Prompt})$); Tabular Population Stability Index (PSI) formula and thresholds; Embedding centroid drift via Maximum Mean Discrepancy (MMD); Delayed ground-truth feedback loops; The silent provider upgrade trap; Automated hourly LLM canary probes; Unifying classical ML (**MLflow**) with GenAI distributed traces (**OpenTelemetry** bridge). |
-| **CAP** | **[Capstone Challenge: CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)** | `🟡 Capstone Lab` | 60–90 min | Build and execute an enterprise-grade CI/CD evaluation gate inside GitHub Actions running a 50-test benchmark across core, edge, and adversarial cases; Level 1 schema and latency assertions; Level 2 LLM-as-a-judge scoring with binary rubrics; Aggregate pass-rate and cost regression gating; Modernized to Python 3.12+ and clean async execution. |
+| **01** | **[Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)** | `🟢 HIGH ROI / CORE` | 40–50 min | The Hamel Husain 3-level evaluation hierarchy; Level 1 deterministic code assertions (Pydantic v2 schemas, regex bounds, latency/token ceilings, AST parsing for code/SQL); DeepEval pytest integration; Production failure mode: Silent schema breakages. |
+| **02** | **[Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)** | `🟡 IMPORTANT / NEXT` | 50–60 min | The failure of 1-to-5 Likert scales; Discrete binary pass/fail rubrics; G-Eval Chain-of-Thought (CoT) reasoning; Reference-based vs. Reference-free scoring (RAGAS triad); Position and verbosity bias mitigations; Chance-adjusted statistical calibration (**Cohen's Kappa** $\ge 0.8$, **Krippendorff's Alpha**); Specialized open-weight judges (**Prometheus-2**). |
+| **03** | **[Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)** | `🟡 IMPORTANT / NEXT` | 50–60 min | Why single-turn grading fails on autonomous agents; Trajectory evaluation dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, loop/thrashing detection; Physical environment state mutation verification; Modern agent benchmarks. |
+| **04** | **[Evaluation Datasets & Synthetic Data Curation](./04-evaluation-datasets-and-synthetic-data-curation.md)** | `🟡 IMPORTANT / NEXT` | 45–55 min | Anatomy of an Enterprise Golden Dataset: 50/25/15/10 operational quadrant distribution (Happy Path, Edge Cases, Adversarial, Production Regressions); Automated anomaly harvesting flywheel; Synthetic generation using teacher models (synthetic generation); Defending against Goodhart's Law; Test set contamination prevention and **Canary Strings**; Train/Dev vs. Held-Out test splits. |
+| **05** | **[OpenTelemetry Distributed Tracing & Agent Spans](./05-opentelemetry-distributed-tracing-and-agent-spans.md)** | `🟡 IMPORTANT / NEXT` | 50–60 min | Distributed tracing fundamentals for AI systems; OpenTelemetry mid-2026 dedicated registry (`semantic-conventions-genai` v1.42.0+); Standardized `gen_ai.*` attributes; Official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`); Multi-step agent trace span hierarchy; Context propagation via W3C `traceparent` across HTTP, message queues, and Model Context Protocol (MCP) channels; Observability platforms compared (using industry-standard telemetry systems). |
+| **06** | **[Telemetry Metrics, Cost Governance & Golden Signals](./06-telemetry-metrics-cost-governance-and-golden-signals.md)** | `🟡 IMPORTANT / NEXT` | 45–55 min | The Six Golden Signals of GenAI Systems: Time To First Token (TTFT), Tokens Per Second (TPS), Prompt vs Completion Token Ratio, Prompt Cache Hit Ratio, Model Fallback Rate, Fully Burdened Cost Per Task; Streaming latency dynamics: Inter-Token Latency (ITL) variance, TTFC vs TTFT; Prefix caching economics (75–90% cost savings); Production cost governance SLAs. |
+| **07** | **[Continuous Monitoring, Drift Detection & Canaries](./07-continuous-monitoring-drift-detection-and-canaries.md)** | `🔵 ADVANCED / SPECIALIZED` | 55–65 min | Disentangling Tri-Partite Drift: Data Drift ($P(X)$), Concept Drift ($P(Y \mid X)$), and Prompt/Vendor Drift ($P(\text{Tokens} \mid \text{Prompt})$); Tabular Population Stability Index (PSI) formula and thresholds; Embedding centroid drift via Maximum Mean Discrepancy (MMD); Delayed ground-truth feedback loops; The silent provider upgrade trap; Automated hourly LLM canary probes; Unifying classical ML (**MLflow**) with GenAI distributed traces (**OpenTelemetry** bridge). |
+| **CAP** | **[Capstone Challenge: Continuous Integration/Continuous Deployment (CI/CD) Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)** | `🟡 Capstone Lab` | 60–90 min | Build and execute an enterprise-grade Continuous Integration/Continuous Deployment (CI/CD) evaluation gate inside GitHub Actions running a 50-test benchmark across core, edge, and adversarial cases; Level 1 schema and latency assertions; Level 2 LLM-as-a-judge scoring with binary rubrics; Aggregate pass-rate and cost regression gating; Modernized to Python 3.12+ and clean async execution. |
 
 ---
 
 ## 🗂️ Direct Chapter & Lesson Directory
 
 ### [Lesson 01: Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)
-* **Tier**: `🟢 Core`
+* **Tier**: `🟢 HIGH ROI / CORE`
 * **Focus**: Establishes the foundational Hamel Husain 3-level evaluation hierarchy. Details Level 1 deterministic code assertions that execute on CPU in under 1ms with zero API cost: Pydantic v2 JSON Schema adherence, regex syntax bounds, operational latency and token ceilings, and Abstract Syntax Tree (AST) validation for generated code and SQL. Introduces DeepEval pytest integration for developer-first workflows.
 
 ### [Lesson 02: Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)
-* **Tier**: `🟡 Engineering Depth`
+* **Tier**: `🟡 IMPORTANT / NEXT`
 * **Focus**: Deconstructs why continuous 1-to-5 Likert scales fail in production. Establishes discrete binary pass/fail rubrics and the G-Eval Chain-of-Thought (CoT) framework. Explains reference-based vs. reference-free evaluation (the RAGAS triad: Faithfulness, Answer Relevance, Context Precision). Covers systematic judge bias mitigations (position swapping and verbosity penalties), chance-adjusted statistical calibration (**Cohen's Kappa** $\ge 0.8$, **Krippendorff's Alpha**), and specialized open-weight judge models (**Prometheus-2**).
 
 ### [Lesson 03: Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)
-* **Tier**: `🟡 Engineering Depth`
-* **Focus**: Shifting evaluation from single-turn response grading to multi-turn intermediate trajectory analysis. Explains the 4 core trajectory dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, and loop/thrashing detection. Details environment-state mutation verification (checking database rows, git diffs, and API responses). Introduces modern 2026 benchmarks: **SWE-bench Verified**, **TAU-bench**, **GAIA**, and the **UK AISI Inspect AI** framework.
+* **Tier**: `🟡 IMPORTANT / NEXT`
+* **Focus**: Shifting evaluation from single-turn response grading to multi-turn intermediate trajectory analysis. Explains the 4 core trajectory dimensions: Tool selection precision and recall, argument schema adherence, trajectory step efficiency, and loop/thrashing detection. Details environment-state mutation verification (checking database rows, git diffs, and API responses). Introduces modern agent benchmarks.
 
 ### [Lesson 04: Evaluation Datasets & Synthetic Data Curation](./04-evaluation-datasets-and-synthetic-data-curation.md)
-* **Tier**: `🟡 Engineering Depth`
-* **Focus**: Structuring an enterprise Golden Evaluation Dataset across the 50/25/15/10 operational quadrants (Core Happy Path, Edge Cases, Adversarial Attacks, and Production Regressions). Covers the automated data quality flywheel harvesting real production anomalies into permanent regression tests. Explains teacher-model synthetic generation via **Evol-Instruct** (in-depth and in-breadth mutation), defending against Goodhart's Law, test set contamination prevention, and **Canary String** insertion.
+* **Tier**: `🟡 IMPORTANT / NEXT`
+* **Focus**: Structuring an enterprise Golden Evaluation Dataset across the 50/25/15/10 operational quadrants (Core Happy Path, Edge Cases, Adversarial Attacks, and Production Regressions). Covers the automated data quality flywheel harvesting real production anomalies into permanent regression tests. Explains teacher-model synthetic generation (synthetic generation) (in-depth and in-breadth mutation), defending against Goodhart's Law, test set contamination prevention, and **Canary String** insertion.
 
 ### [Lesson 05: OpenTelemetry Distributed Tracing & Agent Spans](./05-opentelemetry-distributed-tracing-and-agent-spans.md)
-* **Tier**: `🟡 Engineering Depth`
-* **Focus**: Upgrading distributed systems APM to generative AI architectures. Implements the mid-2026 dedicated **`semantic-conventions-genai`** (v1.42.0+) specification and official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`). Maps the multi-step agent trace span hierarchy and context propagation via W3C `traceparent` across HTTP, asynchronous message brokers (Redis/Celery), and Model Context Protocol (MCP) stdio/SSE channels. Compares leading observability engines (**Langfuse**, **Arize Phoenix**, **LangSmith**, and **Cloud-Native APMs**).
+* **Tier**: `🟡 IMPORTANT / NEXT`
+* **Focus**: Upgrading distributed systems APM to generative AI architectures. Implements the mid-2026 dedicated **`semantic-conventions-genai`** (v1.42.0+) specification and official Agent attributes (`gen_ai.agent.name`, `id`, `version`, `description`). Maps the multi-step agent trace span hierarchy and context propagation via W3C `traceparent` across HTTP, asynchronous message brokers (Redis/Celery), and Model Context Protocol (MCP) stdio/SSE channels. Compares leading observability engines (using standard observability systems).
 
 ### [Lesson 06: Telemetry Metrics, Cost Governance & Golden Signals](./06-telemetry-metrics-cost-governance-and-golden-signals.md)
-* **Tier**: `🟡 Engineering Depth`
+* **Tier**: `🟡 IMPORTANT / NEXT`
 * **Focus**: The Six Golden Signals of GenAI Systems: Time To First Token (TTFT), Tokens Per Second (TPS), Prompt vs Completion Token Ratio, Prompt Cache Hit Ratio, Model Fallback Rate, and Fully Burdened Cost Per Task. Explores streaming latency dynamics, Inter-Token Latency (ITL) variance, and TTFC vs TTFT behind reverse proxies. Analyzes prefix prompt caching economics (75–90% cost savings on Anthropic, OpenAI, Gemini) and operational cost governance SLAs.
 
 ### [Lesson 07: Continuous Monitoring, Drift Detection & Canaries](./07-continuous-monitoring-drift-detection-and-canaries.md)
-* **Tier**: `🔵 Advanced`
+* **Tier**: `🔵 ADVANCED / SPECIALIZED`
 * **Focus**: Disentangling the Tri-Partite Drift model in production: Data Drift ($P(X)$), Concept Drift ($P(Y \mid X)$), and Prompt/Vendor Drift ($P(\text{Tokens} \mid \text{Prompt})$). Explains Population Stability Index (PSI) math and embedding centroid drift via Maximum Mean Discrepancy (MMD). Covers delayed ground-truth feedback loops and defense against the silent cloud provider update trap using **Automated Hourly Canary Probes**. Integrates classical MLflow model tracking with online OpenTelemetry GenAI traces.
 
 ---
@@ -106,13 +106,13 @@ Runnable production evaluation runners and automated test suites are available i
 | Implementation | Framework & Language | Core Architecture & Engineering Highlights |
 |---|---|---|
 | **[`production_eval_runner.py`](./examples/production_eval_runner.py)** | Python 3.12+ / Pydantic v2 / Langfuse | Production Level 2 LLM-as-a-Judge test runner implementing G-Eval binary pass/fail rubrics, Pydantic structured output enforcement, and full OpenTelemetry instrumentation via Langfuse. |
-| **[`EvalHarnessTests.cs`](./examples/EvalHarnessTests.cs)** | C# / .NET 9 / xUnit / Semantic Kernel | Enterprise automated xUnit evaluation suite executing Level 1 deterministic schema checks and Level 2 semantic embedding similarity assertions as a mandatory gate in CI/CD pipelines. |
+| **[`EvalHarnessTests.cs`](./examples/EvalHarnessTests.cs)** | C# / .NET 9 / xUnit / Semantic Kernel | Enterprise automated xUnit evaluation suite executing Level 1 deterministic schema checks and Level 2 semantic embedding similarity assertions as a mandatory gate in Continuous Integration/Continuous Deployment (CI/CD) pipelines. |
 
 ---
 
-## 🏆 Capstone Challenge: Automated CI/CD Evaluation Pipeline
+## 🏆 Capstone Challenge: Automated Continuous Integration/Continuous Deployment (CI/CD) Evaluation Pipeline
 
-Build and configure a fully automated, production-grade CI/CD Evaluation Pipeline that runs a **50-test benchmark** against an enterprise customer support agent on every GitHub Pull Request.
+Build and configure a fully automated, production-grade Continuous Integration/Continuous Deployment (CI/CD) Evaluation Pipeline that runs a **50-test benchmark** against an enterprise customer support agent on every GitHub Pull Request.
 
 👉 **[Launch the Capstone Challenge](./labs/capstone-cicd-evaluation-pipeline.md)**
 
@@ -181,7 +181,7 @@ Before advancing to **[Phase 07: Production Deployment & LLMOps](../07-productio
 - [ ] **Binary Rubric Scoring**: Have you completely eradicated subjective 1-to-5 Likert scales in favor of discrete binary pass/fail rubrics with step-by-step reasoning?
 - [ ] **Trajectory Visibility**: Can your observability platform reconstruct the complete parent-child span tree of an agent's multi-step tool calls, arguments, and intermediate thoughts?
 - [ ] **Golden Dataset in Version Control**: Do you have a versioned suite of core, edge, and adversarial test cases harvested directly from real production anomalies?
-- [ ] **Automated CI/CD Gating**: Does your pull request pipeline automatically block merges if model accuracy drops below 95% or token cost regresses by more than 15%?
+- [ ] **Automated Continuous Integration/Continuous Deployment (CI/CD) Gating**: Does your pull request pipeline automatically block merges if model accuracy drops below 95% or token cost regresses by more than 15%?
 - [ ] **OpenTelemetry Compliance**: Are all GenAI spans emitting standard `gen_ai.operation.name`, `gen_ai.agent.name`, and token usage attributes?
 - [ ] **Hourly Canary Monitoring**: Does a background worker dispatch golden canary probes to cloud endpoints every 60 minutes to catch silent provider updates?
 

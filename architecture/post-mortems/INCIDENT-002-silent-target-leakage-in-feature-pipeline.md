@@ -88,7 +88,7 @@ We migrated all ML feature pipelines to an immutable, event-sourced feature stor
 Every new feature definition must pass an automated temporal verification test in CI/CD:
 * Compute feature values on a frozen 30-day historical snapshot.
 * Compare those values against live streaming values captured in shadow production over the same period.
-* If any discrepancy exists ($\Delta > 0$), the PR is blocked.
+* If any discrepancy exists (Δ > 0), the PR is blocked.
 
 ### 3. The "Too Good to Be True" Policy Gate
 We instituted an organizational rule in our ML RFC process: **Any model achieving ROC-AUC > 0.90 on tabular risk data triggers a mandatory 3-person peer review specifically searching for target leakage.**

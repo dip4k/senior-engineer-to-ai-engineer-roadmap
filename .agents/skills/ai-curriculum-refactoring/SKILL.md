@@ -30,16 +30,16 @@ The learner is a **Senior / Staff Software Engineer or Solutions Architect (7–
 
 ---
 
-## 🏷️ The 4-Tier Lesson Depth Model
+## 🏷️ Effort vs ROI Depth Alignment
 
-Every lesson across all phases must declare its target depth tier in its header metadata:
+Every lesson across all phases must declare its target depth tier in its header metadata, categorizing topics by their true enterprise ROI:
 
 | Tier | Badge | Scope & Word Budget | Target Audience |
 |---|---|---|---|
-| **Tier 1** | `🟢 Core` | Foundational entry point; primary mental model; failure of naive approach; working baseline. (~800–1,500 words). | All learners. Foundational phase entry. |
-| **Tier 2** | `🟡 Engineering Depth` | Production systems view; edge cases; failure modes; scale limits; OTel telemetry. (~1,200–2,500 words). | Engineers deploying to production. Architectural core. |
-| **Tier 3** | `🔵 Advanced` | Specialized high-scale patterns (e.g., speculative decoding, GraphRAG, multi-agent sagas). (~1,500–3,000 words). | Senior & Staff engineers tackling specialized domains. |
-| **Tier 4** | `⚫ Deep Dive` | Internal mechanics; mathematical proofs; hardware memory layouts; wire protocols. (~1,500–3,000 words). | Architects needing zero-abstraction clarity. |
+| **Tier 1** | `HIGH ROI / CORE` | Essential concepts providing the highest practical ROI for enterprise applications (e.g., LLM APIs, prompt design, tokens/context, RAG, tool calling, MCP). Master these first. (~800–1,500 words). | All learners. Foundational phase entry. |
+| **Tier 2** | `IMPORTANT / NEXT` | Next-level production concerns like stateful agents, context/session management, security guardrails, evaluation, and observability. (~1,200–2,500 words). | Engineers deploying to production. Architectural core. |
+| **Tier 3** | `ADVANCED / SPECIALIZED` | Complex architectures, multi-agent sagas, vector search optimization, scale limits, and platform-specific enterprise implementations. (~1,500–3,000 words). | Senior & Staff engineers tackling specialized domains. |
+| **Tier 4** | `REFERENCE / AWARENESS` | Foundational hardware physics, memory hierarchy, mathematical proofs, and internal wire protocol details—good to know, but not strictly required for daily engineering. (~1,500–3,000 words). | Architects needing zero-abstraction clarity. |
 
 *Detailed tier parameters and split/merge thresholds are specified in [references/lesson-template.md](references/lesson-template.md).*
 
@@ -93,28 +93,33 @@ When auditing or refactoring existing content, classify every element into one o
 
 These rules are strictly enforced during refactoring and validation. Violations block merge approval:
 
-### 1. Zero-LaTeX & Clean GFM Standard
+### 1. Consistent Teaching Language & Jargon Reduction
+- **Required**: Use simple, direct, natural technical English. Frame concepts using mental models before implementation details (e.g., comparing Context ASTs to compiler ASTs). 
+- **Forbidden**: Unnecessary academic language, dense paragraphs, and marketing buzzwords.
+
+### 2. Zero-LaTeX & Clean GFM Standard
 - **Forbidden**: Never use LaTeX math delimiters (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
 - **Required**: Clean text code blocks (```text), native Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`), standard `O(N)` monospace text, and GFM pipe tables. Avoid unescaped multiple dollar signs (`$$`, `$$$`).
 
-### 2. Zero Meta-Directive Leaks
+### 3. Zero Meta-Directive Leaks
 - **Forbidden**: Internal refactoring directives, compliance labels, or checklist tags in learner-facing text (e.g., `### Section (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`).
 - **Required**: Clean, professional, authoritative headings and prose without exposing the authoring checklist.
 
-### 3. Plain-Language Titles (No Isolated Acronyms)
-- **Forbidden**: Isolated abbreviations in titles/headings (e.g., `# BM25 and HNSW`).
-- **Required**: Plain-language systems descriptor first, acronym in parentheses (e.g., `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`), plus a 1–2 sentence `Core Concept` callout below the title. See [references/terminology-guidelines.md](references/terminology-guidelines.md).
+### 4. Plain-Language Titles (No Isolated Acronyms)
+- **Forbidden**: Isolated abbreviations in titles/headings (e.g., `# BM25 and HNSW`). Do not introduce multiple unexplained abbreviations in the same section.
+- **Required**: Plain-language systems descriptor first, acronym in parentheses (e.g., `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`), plus a 1–2 sentence `Core Concept` callout below the title. Expand every important abbreviation on first meaningful use.
 
-### 4. Mandatory Navigation & Wayfinding
+### 5. Mandatory Navigation & Wayfinding
 - **Lessons**: Every lesson file must conclude with `## 🧭 Navigation` containing reciprocal links (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Capstone Lab]`).
 - **Phase Hubs**: Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer. See [references/phase-template.md](references/phase-template.md).
 
-### 5. Diagram Stability & Dagre Rules
+### 6. Diagram Stability & Dagre Rules
 - **Forbidden**: Subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric rank links (`RightNode ~~~ LeftNode`).
 - **Required**: `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts, node-to-node wiring, and mandatory step-by-step prose walkthroughs directly below every diagram. See [references/diagram-guidelines.md](references/diagram-guidelines.md).
 
-### 6. Production Code Standards
+### 7. Production Code Standards & Technology Noise Reduction
 - **Required**: Python 3.12+, typed Pydantic v2 schemas, type annotations, real error handling, and zero framework magic or pseudocode.
+- **Rule**: Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
 
 ---
 

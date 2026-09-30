@@ -1,34 +1,32 @@
-# Workflows vs. Autonomous Agents: Deterministic Orchestration Patterns & Reliability Physics
+# Lesson 01: Workflows vs. Autonomous Agents & Orchestration Patterns
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟢 Tier 1: Core` | Estimated Reading Time: 40 min
+> **Tier**: `HIGH ROI / CORE` | Estimated Reading Time: 40 min
 >
 > **Prerequisites**: [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md), [Phase 02: Enterprise Retrieval & Knowledge Systems](../02-rag-and-knowledge-systems/README.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
 
-> **Core Concept**: Autonomous systems exist on a spectrum. On one side are deterministic workflows—step-by-step pipelines where regular software code directs the execution path. On the other side are autonomous agents—where the language model itself chooses which tools to run, in what order, and when to stop. For enterprise systems, reliability begins by keeping the control plane in code, using the language model as a specialized reasoning engine, and guarding against compounding errors.
+> **Core Concept**: Autonomous AI systems exist on a spectrum. On one side are deterministic workflows—step-by-step pipelines directed by regular software code. On the other side are autonomous agents—where the language model itself chooses which tools to run and when to stop. For enterprise systems, reliability means keeping the control flow in code, using the language model as a reasoning engine, and guarding against compounding errors.
 
-### Key AI Terms for This Lesson
+### Key Terms
 
-Before diving in, here are the core AI terms used throughout this lesson:
-
-* **Language Model (Large Language Model / LLM / Foundation Model)**: A neural network trained on massive text datasets. Given an input prompt (a block of text), it predicts the statistically most likely next words—one piece at a time—without any built-in memory, database connections, or ability to execute code on its own. Think of it as a very sophisticated text-completion engine.
-* **Token**: The basic unit that a language model reads and generates. Tokens are not whole words—they are sub-word fragments. For example, the word "embedding" becomes two tokens: "embed" + "ding". Models charge per token (both input and output), so managing token counts directly controls cost and latency. A rough rule of thumb: 1,000 tokens ≈ 750 English words.
-* **Context Window**: The maximum amount of text (measured in tokens) that a model can process in a single request. Think of it as the model's short-term working memory—everything beyond this limit is invisible to the model. Current models range from 8,000 to 2 million tokens. Managing what goes into this window is one of the most critical AI engineering tasks.
-* **Hallucination**: When a model generates text that appears confident and plausible but is factually wrong. This is not a bug—it is a fundamental property of how language models work. Because they predict statistically likely words rather than looking up verified facts, they can confidently "invent" database IDs, API parameter names, or function signatures that do not exist.
-* **AI Agent**: A software system that uses a language model to autonomously decide which actions to take in pursuit of a goal. Unlike a simple chatbot that responds once, an agent operates in a loop: it reasons about what to do next, executes an action (like calling an API or querying a database), observes the result, and decides whether to continue or stop.
+* **Language Model**: A model trained on massive text datasets. Given a prompt, it predicts the next words. It has no built-in memory or ability to execute code.
+* **Token**: The basic unit a language model reads and generates (roughly 3/4 of a word). Models charge per token.
+* **Context Window**: The maximum amount of text (in tokens) a model can process in one request. Everything beyond this is invisible to the model.
+* **Hallucination**: When a model generates text that appears confident but is factually wrong (like inventing database IDs).
+* **AI Agent**: A system that uses a language model in a loop to autonomously decide actions, observe results, and iterate towards a goal.
 
 ---
 
 ## 1. The Real-World Problem: The Illusion of Autonomous Control
 
-When you watch demonstrations of AI agents, they often look almost magical: an agent is given a vague goal, browses the web, queries a database, writes some code, and resolves an outage without any human intervention.
+When you watch demonstrations of AI agents, they often look magical: an agent is given a vague goal, browses the web, queries a database, writes some code, and resolves an issue without human intervention.
 
-In real-world software engineering, giving a language model full control over your application's execution logic quickly leads to production failures:
-* **Invented Parameters (Hallucination)**: The model generates statistically plausible but non-existent database IDs or API parameters—a behavior called hallucination. Because the model predicts likely-looking text rather than looking up real values, it produces output that sounds correct but fails at runtime.
-* **Infinite Loops**: When an API returns an error, the model continues generating tool calls to the same endpoint with slightly different wording, wasting API credits without making progress.
-* **Cascading Errors**: A small erroneous inference in step 2 snowballs into a completely wrong action by step 5.
-* **Runaway Costs**: Re-sending conversation histories on every turn causes the number of input tokens to balloon, resulting in unexpected API bills.
+In real-world software engineering, giving a language model full control over your application's logic quickly leads to failures:
+* **Invented Parameters (Hallucination)**: The model guesses plausible but non-existent database IDs or API parameters.
+* **Infinite Loops**: When an API returns an error, the model repeatedly calls it with slight variations, wasting money.
+* **Cascading Errors**: A small mistake early on snowballs into a completely wrong action.
+* **Runaway Costs**: Sending long conversation histories on every turn causes token costs to balloon.
 
-To build reliable systems, we must separate two distinct parts of the architecture: the **Control Plane** and the **Compute Plane**.
+To build reliable systems, we must separate the **Control Plane** (your code) from the **Compute Plane** (the model).
 
 ```mermaid
 flowchart TD

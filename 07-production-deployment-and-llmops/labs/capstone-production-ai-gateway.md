@@ -1,7 +1,7 @@
-# Capstone Challenge: Production Multi-Provider Resilient AI Gateway
+# Capstone Lab: Production Multi-Provider Resilient AI Gateway
 
-> **Architectural Level:** `[MUST-HAVE]` 🔴  
-> **Parent Module:** [Phase 07: Production Deployment & LLMOps](../README.md)
+> **[Tier: 🟡 Engineering Depth — Capstone Lab]**  
+> **Parent Module:** [Phase 07: High-Throughput Serving & LLMOps](../README.md)
 
 ---
 
@@ -27,21 +27,31 @@ flowchart TD
     Scope --> C6
 ```
 
+#### Diagram Walkthrough
+The capstone architecture integrates six production systems capabilities into a single gateway pipeline:
+1. **Dual-Tier Cache**: Checks sub-5ms exact SHA-256 hashes first, falling back to semantic vector cosine similarity.
+2. **Distributed Rate Limiter**: Enforces two-phase token reservation and post-stream settlement against Redis.
+3. **Tiered Fallback**: Automated circuit breaker that trips to secondary providers on HTTP 429 or 5xx outages.
+4. **SSE Streaming**: Unbuffered Server-Sent Events flow directly to clients with `X-Accel-Buffering: no`.
+5. **Cancellation Propagation**: Immediate termination of upstream generation when clients disconnect.
+6. **OpenTelemetry Tracing**: Emits standardized `gen_ai.*` span attributes and latency metrics.
+
 ---
 
 ### 📐 Architectural & Functional Requirements
 
 1. **Dual-Tier Cache Engine**:
    - **Tier 1**: Exact string hash matching (`SHA-256`) against Redis with TTL = 24 hours.
-   - **Tier 2**: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity $\ge 0.92$, serve cached content immediately.
+   - **Tier 2**: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity ≥ 0.92, serve cached content immediately.
 2. **Dynamic Tiered Resilience Router**:
-   - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4.5 / o3.
-   - **Secondary Model**: Google Cloud Vertex AI Gemini 1.5 Pro.
-   - **Tertiary Model (Degraded)**: Gemini 2.5 Flash or Claude 3.5 Haiku.
+   - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4o / o3.
+   - **Secondary Model**: Google Cloud Vertex AI Gemini 2.0 Flash.
+   - **Tertiary Model (Degraded)**: Claude 3.5 Haiku or Local vLLM SLM.
    - Configure a circuit breaker: If the primary provider fails 5 times consecutively or returns HTTP 429, trip the circuit into `OPEN` state for 30 seconds and route traffic directly to the secondary provider.
 3. **Token Budget & Rate Limiting**:
    - Enforce a tenant quota: 100,000 tokens per tenant per day.
    - Maintain a sliding window rate limiter: Max 30 requests per minute per user.
+   - Implement two-phase reservation: atomical reservation before generation and post-stream settlement.
 4. **Streaming Protocol**:
    - Expose endpoint `POST /v1/gateway/chat/stream`.
    - Stream tokens formatted as standard SSE (`data: {...}\n\n`).
@@ -66,7 +76,7 @@ Your capstone implementation must pass the following simulated production chaos 
 - [ ] **Test Case 3: Primary Provider 429 Outage Simulation**:
   - Inject a mock or proxy rule forcing the Primary Model to return `HTTP 429 Too Many Requests`.
   - Dispatch 5 requests.
-  - **Assertion**: The Gateway automatically catches the 429, logs the incident, falls back to the Secondary Provider (Gemini 1.5 Pro), and the end user receives an unbroken SSE token stream without seeing an error.
+  - **Assertion**: The Gateway automatically catches the 429, logs the incident, falls back to the Secondary Provider (Gemini 2.0 Flash), and the end user receives an unbroken SSE token stream without seeing an error.
 - [ ] **Test Case 4: Client Disconnect Cancellation**:
   - Initiate a generation requiring 2,000 tokens.
   - Terminate the client socket after receiving 50 tokens.
@@ -74,17 +84,21 @@ Your capstone implementation must pass the following simulated production chaos 
 - [ ] **Test Case 5: Tenant Quota Enforcement**:
   - Exhaust a test tenant's token budget.
   - Dispatch an additional request.
-  - **Assertion**: Gateway immediately returns `HTTP 429 / 402 Quota Exceeded` before executing vector search or calling any cloud models.
+  - **Assertion**: Gateway immediately returns `HTTP 429 Quota Exceeded` before executing vector search or calling any cloud models.
 
 ---
 
 ### 🔗 Architecture & Implementation References
-- [Enterprise Multi-Provider AI Gateway Architecture](../README.md#enterprise-multi-provider-ai-gateway-architecture)
-- [Python: Production FastAPI Gateway Implementation](../README.md#python-production-fastapi-gateway-with-litellm-router-semantic-redis-cache--sse)
-- [C# / .NET 9: Enterprise Resilient Agent Service Implementation](../README.md#c--net-9-enterprise-resilient-agent-service-with-polly-v8--sse-streaming)
-- [Handling HTTP 429 with Decorrelated Jitter](../README.md#handling-http-429-exponential-backoff-with-decorrelated-jitter)
-- [Exact Hash Matching vs. Embedding-Based Semantic Caching](../README.md#exact-hash-matching-vs-embedding-based-semantic-caching)
+- [Lesson 01: Multi-Provider AI Gateways & Rate Limiting](../01-resilient-ai-gateways-and-rate-limiting.md)
+- [Lesson 02: High-Performance Token Streaming & Backpressure](../02-high-performance-token-streaming-and-backpressure.md)
+- [Lesson 03: Dual-Tier Caching & Asynchronous Batch APIs](../03-dual-tier-caching-and-batch-apis.md)
+- [Lesson 04: Continuous Batching, PagedAttention & RadixAttention](../04-vllm-continuous-batching-and-radixattention.md)
+- [Reference Implementation: FastAPI Gateway Service](../../agent-forge/gateway/)
 
 ---
 
-[Return to Phase 07: Production Deployment & LLMOps](../README.md)
+## 🧭 Navigation
+
+- **[← Phase 07 Hub: Orientation & Navigation](../README.md)**
+- **[Lesson 01: Multi-Provider AI Gateways & Rate Limiting](../01-resilient-ai-gateways-and-rate-limiting.md)**
+- **[Next Phase: Phase 08 — AI-Augmented SDLC & Leadership →](../../08-ai-augmented-sdlc-and-leadership/README.md)**

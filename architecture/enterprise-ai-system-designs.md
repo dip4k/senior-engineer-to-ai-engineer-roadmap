@@ -106,6 +106,12 @@ flowchart TD
     Verify -- "Hallucinated" --> Fallback["Abstain / Refine Query"]
 ```
 
+#### Architectural Walkthrough:
+1. **Authenticated Ingress & ACL Filtering**: The incoming user query passes through identity extraction to determine the caller's tenant ID and security groups before vector/graph index search.
+2. **Intent Routing**: Specific localized lookups route to multi-tenant hybrid search (Dense HNSW + BM25), while broad thematic or global questions route to GraphRAG hierarchical community summaries.
+3. **Fusion & Cross-Encoder Reranking**: Hybrid candidates are merged via Reciprocal Rank Fusion (RRF) and scored through a cross-encoder reranker to select the top 5 highest-relevance passages.
+4. **Synthesis & Citation Verification**: The synthesis model drafts a response grounded in retrieved chunks. The citation asserter validates character spans against source documents; if hallucinated citations are detected, the response is rejected or rewritten.
+
 ### 2.5 Senior / Architect Notes
 - **Tenancy Invariant**: Never filter multi-tenant data post-retrieval in application code. Post-filtering leaks metadata and degrades top-K recall. Always enforce metadata pre-filtering at the database index layer.
 - **Reranker Latency**: Cross-encoders add 80–150ms of CPU/GPU latency. Bound reranker candidate pools to N = 50 candidates maximum.
@@ -149,6 +155,12 @@ flowchart TD
     Verify --> PostMortem["Auto-Generate Post-Mortem ADR"]
 ```
 
+#### Architectural Walkthrough:
+1. **Telemetry Ingestion & Diagnostic Triage**: Production alerts trigger the diagnostic agent, which queries OpenTelemetry spans and Kubernetes logs using strictly read-only IAM credentials.
+2. **Root Cause Analysis (RCA)**: The diagnostic agent correlates stack traces, memory metrics, and deployment events to isolate the root failure (e.g., OOMKilled in Service B).
+3. **Blast Radius Gate & HITL Step-Up**: The remediation planner proposes an automated runbook. Low-risk actions (pod restarts) proceed directly to sandboxed execution; high-risk actions (canary rollbacks or cluster resizing) pause for human SRE Slack approval via HMAC token.
+4. **Sandboxed Execution & Health Verification**: Mitigations execute inside an isolated container sandbox (gVisor). After completion, active metric probes monitor SLO recovery for 180 seconds before resolving the incident and generating a post-mortem ADR.
+
 ### 3.5 Senior / Architect Notes
 - **Principle of Least Agency**: The diagnostic agent must be physically isolated with read-only IAM credentials. It cannot hold write credentials under any circumstances.
 - **Canary Probing**: Never consider remediation complete when the tool execution finishes. Always poll Prometheus/Datadog for 180 seconds post-remediation to verify SLO recovery before closing the incident.
@@ -191,6 +203,12 @@ flowchart TD
     MergeGate -- "None" --> Approve["Mark Check Run: SUCCESS"]
     MergeGate -- "Violations" --> Block["Mark Check Run: FAILED (Actionable Fix Required)"]
 ```
+
+#### Architectural Walkthrough:
+1. **Webhook Ingress & Context Assembly**: GitHub Actions webhooks notify the agent worker on PR creation, extracting unified diffs, AST dependency trees, and repository architectural contracts (`AGENT.md`).
+2. **Autonomous TDD Synthesis**: The coding agent analyzes modified logic, writes targeted unit tests covering changed code branches, and runs them inside an isolated Docker sandbox.
+3. **Iterative Self-Correction**: If newly generated or existing tests fail, the agent iteratively patches its proposed diff and re-executes tests in the sandbox until assertions pass or max attempts are reached.
+4. **Deterministic Merge Gate**: Verified code reviews and diff suggestions post directly to GitHub. If architectural invariants or coverage gates fail, the CI check run is marked `FAILED` with actionable guidance.
 
 ### 4.5 Senior / Architect Notes
 - **Non-Bypassable CI Gates**: The agent must run as an independent GitHub App check suite. Developers cannot bypass agent review failures without explicit Tech Lead override.
@@ -237,6 +255,12 @@ flowchart TD
     
     FinalCheck --> Response["Deliver Verified Response to Customer"]
 ```
+
+#### Architectural Walkthrough:
+1. **Omnichannel Ingress & Fast Triage**: Customer messages from chat, email, or voice pass into a lightweight SLM classifier to determine customer intent and extract account identifiers.
+2. **A2A Task Envelope Handoff**: The triage model constructs a standardized Agent2Agent (A2A) task envelope containing the verified customer state and delegates work to the appropriate specialist agent (Billing, Technical, Identity).
+3. **Stateless Tool Execution via MCP**: The specialist agent queries domain-specific systems via Model Context Protocol (MCP) JSON-RPC calls with bounded token budgets and zero cross-tool permission leakage.
+4. **Resolution Assertion & Guardrail Gate**: Specialist tool responses pass through a final verification gate confirming policy compliance and response completeness before delivering the final answer to the customer.
 
 ### 5.5 Senior / Architect Notes
 - **Context Summarization Bridges**: Never forward the entire multi-turn conversation history across agent boundaries. The transferring agent must compile a compact, structured DTO (maximum 400 tokens) to prevent context rot.
@@ -288,6 +312,12 @@ flowchart TD
     
     Stream -.-> OTel[("OpenTelemetry GenAI Spans & Audit Ledger")]
 ```
+
+#### Architectural Walkthrough:
+1. **Tenant Quota & Ingress Control**: Applications send requests with tenant credentials; Redis token buckets verify monthly departmental budgets before allowing inference.
+2. **Dual-Tier Cache Lookups**: The gateway checks an L1 SHA-256 exact hash cache in Redis (<2ms). On miss, it evaluates an L2 semantic vector cache in pgvector (cosine similarity ≥ 0.92, <25ms), streaming cached responses immediately on hit.
+3. **Resilient Provider Cascade**: On cache miss, requests dispatch to the primary provider. If rate limits (HTTP 429) or outages trip the circuit breaker, traffic fails over automatically to secondary or local self-hosted models without user impact.
+4. **Asynchronous Telemetry & Caching**: Response streams multiplex tokens directly to the client while asynchronously updating OpenTelemetry GenAI spans and populating semantic cache stores in the background.
 
 ### 6.5 Senior / Architect Notes
 - **Streaming Multiplexing**: Semantic caching must cache the complete stream payload asynchronously in the background while streaming tokens directly to the client to avoid increasing Time To First Token (TTFT).
@@ -342,6 +372,12 @@ flowchart TD
     end
 ```
 
+#### Architectural Walkthrough:
+1. **Level 1 Fast Deterministic Asserters**: Candidate prompt and model PRs run through sub-second unit tests verifying JSON schemas, regex constraints, and token budget ceilings. Failures immediately block the PR.
+2. **Level 2 Binary LLM-as-a-Judge Rubrics**: Passing candidates execute against a 200-case versioned golden dataset evaluated by an independent judge model family. The judge outputs binary pass/fail scores with chain-of-thought rationale.
+3. **Automated CI/CD Quality Gate**: PRs must achieve ≥ 98% pass rate with zero regressions on safety and core capability test slices to unlock deployment to staging or production.
+4. **Level 3 Online Production Telemetry**: Live traffic streams OpenTelemetry GenAI spans to observability dashboards (Langfuse/Arize). Hard edge cases and low-scoring production sessions automatically feedback into the versioned golden test set.
+
 ### 7.5 Senior / Architect Notes
 - **Family Independence Rule**: Never evaluate a model using a judge from the same family. If your production agent uses OpenAI models, evaluate with Claude or Gemini to avoid shared blind spots and self-preference bias.
 - **Binary Over Likert**: Eliminate 1-to-5 Likert scales. They suffer from high variance and drift over time. Use strict binary boolean assertions (`1` or `0`) backed by step-by-step reasoning rubrics.
@@ -379,6 +415,12 @@ flowchart TD
     ControllerLLM --> MCP_Tools["Authorized MCP Tools<br>(Database, Refund API, Jira)"]
     MCP_Tools --> Result["Grounded Safe Execution"]
 ```
+
+#### Architectural Walkthrough:
+1. **Untrusted Data Isolation**: Untrusted external inputs (inbound emails, customer web uploads, scraped HTML) are routed exclusively to an unprivileged Reader LLM holding zero tool definitions and zero credentials.
+2. **Grammar-Constrained Schema Sanitization**: The Reader LLM parses raw text into strongly-typed JSON DTOs constrained by formal Context-Free Grammars, stripping away prompt injection attempts and unstructured instructions.
+3. **Canary Verification & SIEM Interceptor**: A verification gate checks extracted payloads for canary tokens, prompt leakage patterns, and schema non-compliance. Malicious payloads trigger immediate quarantine and SIEM alerts.
+4. **Privileged Controller Execution**: Only validated, sanitized data payloads reach the privileged Controller LLM, which plans and executes approved enterprise tools via authenticated MCP servers.
 
 ### 8.5 Senior / Architect Notes
 - **Zero Shared Memory**: Ensure the Reader LLM and Controller LLM do not share conversation memory buffers or KV-cache sessions. The boundary between them must be pure structured data.
@@ -426,6 +468,12 @@ flowchart TD
     CarrierConfirm -- "No" --> Rollback["Saga Rollback: Release Warehouse Reserve"]
 ```
 
+#### Architectural Walkthrough:
+1. **Event Stream Ingress & Specialist Dispatch**: Kafka streams sales velocities, warehouse sensor data, and inventory levels to specialized micro-agents (Demand, Freight, Warehouse Capacity).
+2. **Consensus Arbitration & Proposal Generation**: An Allocation Arbiter synthesizes SKU velocity forecasts, carrier rates, and storage constraints to generate a rebalancing proposal optimized via linear programming bounds.
+3. **Budget Gate & Escalation**: Rebalance proposals within budget (< $25,000 and ROI > 3.0) auto-execute; anomalies or large capital transfers escalate to the Supply Chain Director for review.
+4. **Saga Transaction Execution**: Approved transfers commit to the ERP via MCP tools with deterministic idempotency keys. If carrier booking fails, compensating transactions release warehouse capacity reservations automatically.
+
 ### 9.5 Senior / Architect Notes
 - **Pareto Efficiency Constraints**: Supply chain agent swarms must be bounded by linear programming constraints (simplex method or integer programming) to ensure proposals are mathematically feasible before LLM verification.
 - **Idempotency Keys**: Network retries across multi-warehouse transfers must use deterministic idempotency keys generated from `{sku_id, origin_wh, dest_wh, date_hour}` to prevent duplicate shipments.
@@ -465,6 +513,12 @@ flowchart TD
     DeToken --> CleanResponse["Rendered Private Response to Employee"]
     CleanResponse -.-> WORMAudit[("WORM Compliance Audit Storage")]
 ```
+
+#### Architectural Walkthrough:
+1. **Enclave Ingress & PII Tokenization**: Employee inquiries enter a secure corporate enclave where a tokenization vault masks sensitive data (SSNs, names, personal health information) with cryptographic surrogate placeholders.
+2. **Jurisdiction & Policy Routing**: The request routes to specific regional document partitions (e.g., EU GDPR vs. California labor standards) to guarantee applicable legal compliance.
+3. **Grounded Reasoning on Anonymized Context**: The compliance agent reasons over anonymized policy context retrieved from a local pgvector index, generating verified answers with surrogate placeholders.
+4. **De-Tokenization & Audit Archival**: Inside the corporate enclave, surrogate tokens are mapped back to actual employee values for browser rendering, while an anonymized audit trace is written to immutable WORM storage.
 
 ### 10.5 Senior / Architect Notes
 - **Enclave Boundary**: The PII Tokenization Vault must run inside the enterprise's private VPC/enclave. Unmasked PII must never touch public LLM endpoints or third-party vector databases.
@@ -574,6 +628,12 @@ flowchart TD
     MCP_Gateway -->|"Saga Commit"| ERPs
     MCP_Gateway -->|"Trace & Payload Signoff"| AuditLog
 ```
+
+#### Architectural Walkthrough:
+1. **Multi-Channel Requisition Ingestion**: Purchase intents from Slack, Microsoft Teams, or web portals flow into the Intake Agent, which extracts structured parameters and normalizes items against standard taxonomy embeddings.
+2. **Authoritative Semantic Layer Queries**: Specialist agents query the Shared Semantic Layer (Cube/MetricFlow) for metrics such as department spend, remaining budget, and vendor breach rates without generating brittle raw SQL.
+3. **Supplier Benchmarking & Spend Intelligence**: The Compare Agent benchmarks supplier bids across pricing, SLA, and risk, while SourceIQ continuously identifies tail-spend consolidation opportunities across subsidiaries.
+4. **Policy Step-Up & Saga Commit**: High-value requisitions require dual-key HMAC sign-off. Approved orders commit across ERPs through MCP tools using a distributed Saga pattern with compensating rollbacks and WORM audit archiving.
 
 ### 11.5 Senior / Architect Notes
 - **Strict Separation of Semantic Taxonomy from Agent Decision Loops**: Never permit autonomous LLMs to write raw, unconstrained SQL queries against transactional procurement databases. In production, raw SQL generation fails due to schema drift, undocumented joins, and inconsistent metric logic (e.g., whether taxes and shipping are factored into `total_spend`). By interposing an authoritative **Semantic Layer** (such as Cube or dbt Semantic Layer), the agent's action space is constrained to declaring high-level intent (`query_metrics(metrics=["realized_savings"], dimensions=["supplier.category", "time.quarter"], filters=[...])`). The semantic layer is responsible for compiling deterministic, performant, and RLS-filtered SQL.

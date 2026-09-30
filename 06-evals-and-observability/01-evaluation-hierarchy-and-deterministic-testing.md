@@ -1,7 +1,7 @@
 # Evaluation Hierarchy & Deterministic Testing: Building the Level 1 Safety Gate
 
-> **[Tier: 🟢 Core]**  
-> **Core Concept**: Large Language Models are stochastic neural networks whose non-deterministic outputs must be constrained by fast, zero-cost deterministic code assertions before escalating to expensive model-based evaluations.
+> **[Tier: 🟢 HIGH ROI / CORE]**  
+> **Core Concept**: Large Language Models are AI models whose unpredictable outputs must be constrained by fast, zero-cost deterministic code assertions before escalating to expensive model-based evaluations.
 
 ---
 
@@ -31,7 +31,7 @@ Traditional software fails loudly at compile time or during automated unit tests
 The fundamental architectural principle of AI engineering is straightforward:
 
 ```text
-Stochastic Neural Networks REQUIRE Deterministic Software Harnesses.
+AI Models REQUIRE Deterministic Software Testing.
 ```
 
 You cannot control the non-deterministic output of a large language model through prompt optimism. You control it through automated regression matrices, strict schema validation gates, and deterministic code assertions.

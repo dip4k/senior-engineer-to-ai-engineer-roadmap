@@ -131,10 +131,10 @@ If a node crashes, `event_store.rehydrate_session(session_id)` loads the latest 
 
 ### 2. Reciprocal Rank Fusion (RRF)
 Merging sparse BM25 scores (which range from 0 to 45+) and dense cosine similarities (which range from 0.0 to 1.0) with arbitrary weighting introduces bias. AgentForge implements Reciprocal Rank Fusion:
-\[
-\text{RRF\_Score}(d) = \sum_{m \in \{\text{dense}, \text{sparse}\}} \frac{1}{k + r_m(d)}
-\]
-By default, \( k = 60 \). Documents appearing near the top of both search indices receive exponential rank boosts without fragile score normalization.
+```text
+RRF_Score(d) = Σ [ 1 / (k + rank_m(d)) ]  for m in {dense, sparse}
+```
+By default, `k = 60`. Documents appearing near the top of both search indices receive exponential rank boosts without fragile score normalization.
 
 ### 3. OpenTelemetry GenAI Semantic Conventions
 Standard APM tools only monitor HTTP requests. AgentForge implements the dedicated `semantic-conventions-genai` taxonomy:

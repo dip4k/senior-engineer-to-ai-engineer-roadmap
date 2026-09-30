@@ -37,6 +37,12 @@ flowchart TD
     Guardrail -- "Hallucinated Reason" --> Quarantined["Reject Output & Fallback to Rule Template"]
 ```
 
+#### Diagram Walkthrough:
+1. **Deterministic Inference & Decisioning**: Applicant financial metrics and protected attributes flow into a deterministic tabular model (Logistic Regression or XGBoost) to generate calibrated probabilities and binary credit/procurement outcomes at threshold 0.5.
+2. **Fairlearn Statistical Bias Audit**: Before decisions propagate downstream, a bias auditing gate evaluates group selection rates, Disparate Impact (EEOC 80% Four-Fifths Rule), and Demographic Parity Difference. Fairness failures immediately halt deployment or trigger re-weighing mitigations.
+3. **SHAP Local Additive Attribution**: For adverse outcomes, the SHAP engine computes exact Shapley attributions, decomposing prediction variance from the base expected value and isolating the top negative financial drivers.
+4. **Guarded LLM Synthesis & Verification**: A GenAI model drafts an Adverse Action notice grounded strictly in the top SHAP drivers. An automated assertion guardrail inspects the letter: if any ungrounded factor is detected, the draft is quarantined and replaced with a deterministic fallback template.
+
 ---
 
 ## 🎯 Architectural Requirements

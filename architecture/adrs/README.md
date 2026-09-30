@@ -27,6 +27,8 @@ These ADRs provide **battle-tested, defensible decisions** ready for Architectur
 | [**ADR-002**](./ADR-002-model-context-protocol-vs-bespoke-api-integrations.md) | **Model Context Protocol (MCP) vs. Bespoke REST / gRPC Tool Bindings** | `ACCEPTED` | Vendor-neutral tool interoperability, client-side schema caching & microVM isolation. |
 | [**ADR-003**](./ADR-003-test-time-compute-vs-domain-slm-routing.md) | **Frontier Reasoning Models (Test-Time Compute) vs. Local Domain SLMs** | `ACCEPTED` | High-complexity System 2 verification vs. sub-50ms unit economics at scale. |
 | [**ADR-004**](./ADR-004-radixattention-kv-cache-vs-external-memory-stores.md) | **RadixAttention Shared KV-Cache Prefill vs. External Semantic Memory Stores** | `ACCEPTED` | Prefill latency & GPU bandwidth reduction vs. cross-session episodic knowledge persistence. |
+| [**ADR-005**](./ADR-005-agent-to-agent-a2a-vs-model-context-protocol-mcp.md) | **Agent-to-Agent (A2A) Protocol vs. Model Context Protocol (MCP) Boundary** | `ACCEPTED` | Horizontal inter-agent federation & capability cards vs. vertical deterministic tool execution. |
+| [**ADR-006**](./ADR-006-native-fp8-precision-vs-4bit-weight-quantization.md) | **Native FP8 Precision (E4M3/E5M2) vs. 4-Bit Weight Quantization (AWQ/GPTQ)** | `ACCEPTED` | Native Hopper/Blackwell Tensor Core throughput & FP8 KV-cache vs. 4-bit register unpack overhead. |
 
 ---
 
@@ -46,7 +48,7 @@ When authoring a new ADR for this repository or your enterprise organization, us
 
 ## Decision Drivers
 * Driver 1 (e.g., P99 Latency SLA < 200ms)
-* Driver 2 (e.g., Cloud token expenditure budget < \$0.005 per user interaction)
+* Driver 2 (e.g., Cloud token expenditure budget < $0.005 per user interaction)
 * Driver 3 (e.g., Operational overhead of running a dedicated database cluster)
 
 ## Considered Alternatives
@@ -66,8 +68,8 @@ When authoring a new ADR for this repository or your enterprise organization, us
 | Operational Complexity | ... | ... | ... |
 
 ## Negative Consequences & Mitigations
-* **Consequence 1:** [Downside] $\to$ **Mitigation:** [How we protect against it]
-* **Consequence 2:** [Downside] $\to$ **Mitigation:** [How we protect against it]
+* **Consequence 1:** [Downside] → **Mitigation:** [How we protect against it]
+* **Consequence 2:** [Downside] → **Mitigation:** [How we protect against it]
 
 ## References & Seminal Papers
 * [Link to benchmark, research paper, or RFC]

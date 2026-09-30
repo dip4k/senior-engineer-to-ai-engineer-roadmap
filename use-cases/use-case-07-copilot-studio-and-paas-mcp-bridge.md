@@ -381,7 +381,7 @@ components:
 | **Context & Grounding** | Naive SharePoint indexing | Custom RAG code in every endpoint | **Two-Stage Hybrid Azure AI Search with Turing Reranker** |
 | **Identity Propagation** | Basic connection credentials | Often degrades to shared service accounts | **Native Entra ID On-Behalf-Of (OBO) flow** |
 | **Reverse LLM Sampling** | Not supported | Not supported | **Native MCP `sampling/createMessage` support** |
-| **Maintenance Cost** | High ($M \times N$ connector proliferation) | High (Bespoke endpoints for every action) | **Lowest (Unified $M + N$ microservice tool bus)** |
+| **Maintenance Cost** | High (M × N connector proliferation) | High (Bespoke endpoints for every action) | **Lowest (Unified M + N microservice tool bus)** |
 
 ---
 

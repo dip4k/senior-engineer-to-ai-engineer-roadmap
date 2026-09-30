@@ -99,6 +99,6 @@ flowchart LR
 ## Negative Consequences & Mitigations
 
 * **Consequence 1: Network Overhead of Additional Sidecar Hops:** Adding an MCP proxy hop introduces 5–12ms of network latency.  
-  $\to$ **Mitigation:** Co-locate MCP servers in the same Kubernetes pod as the host application using `localhost` HTTP loopback.
+  → **Mitigation:** Co-locate MCP servers in the same Kubernetes pod as the host application using `localhost` HTTP loopback.
 * **Consequence 2: Dynamic Schema Invalidation:** If an underlying database schema changes, the cached MCP tool schema could become stale.  
-  $\to$ **Mitigation:** Implement automated MCP server notification webhooks (`notifications/tools/list_changed`) that force clients to refresh tool definitions dynamically.
+  → **Mitigation:** Implement automated MCP server notification webhooks (`notifications/tools/list_changed`) that force clients to refresh tool definitions dynamically.

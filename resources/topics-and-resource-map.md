@@ -4,6 +4,18 @@
 
 ---
 
+## 🧭 Curriculum-Wide Principle: Effort vs. Practical ROI
+
+Not all AI concepts are equally important for a software developer transitioning to AI Engineering. To maximize your time and build resilient systems, prioritize concepts based on their **practical Return on Investment (ROI)** in real enterprise applications. Do not assume you must first become a machine learning researcher.
+
+We categorize all topics into four practical tiers:
+- **HIGH ROI / CORE**: The foundation of real AI-enabled applications. Master these first: LLM APIs, prompt/instruction design, token mechanics, context assembly, structured output (JSON schemas), embeddings, basic RAG, tool/function calling, and the Model Context Protocol (MCP). *Mastering these makes everything else significantly easier.*
+- **IMPORTANT / NEXT**: Crucial for production reliability and complex behavior. Study these after the core: stateful agents, context/session management, AI security/guardrails, automated evaluation, observability, latency, cost control, and production architectures.
+- **ADVANCED / SPECIALIZED**: Complex optimizations and scale. Requires deeper study when you hit limits: multi-agent sagas, advanced vector search algorithms (GraphRAG), continuous batching, and platform-specific enterprise implementations.
+- **REFERENCE / AWARENESS**: Foundational mechanics and hardware physics. Treat as background knowledge: KV-cache VRAM math, mathematical attention proofs, and custom kernel optimizations.
+
+---
+
 ## 📑 Index of Curriculum Phases (Phases 00–08)
 
 | Phase | Domain | Primary Focus |

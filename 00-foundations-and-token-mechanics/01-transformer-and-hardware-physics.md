@@ -1,6 +1,6 @@
 # Lesson 01: Transformer Inference & Hardware Realities
 
-`🟢 Core` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 12 minutes*
+`HIGH ROI / CORE` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 12 minutes*
 
 ---
 
@@ -52,13 +52,13 @@ When senior backend engineers first encounter LLM performance issues, they typic
 
 To understand GPU performance, systems architects rely on the **Roofline Model**, which relates two fundamental quantities:
 
-1. **Arithmetic Intensity**: The ratio of compute work to memory traffic.
+1. **Arithmetic Intensity**: The ratio of calculations performed to the amount of memory transferred.
    ```text
-   Arithmetic Intensity = Total Floating-Point Operations (FLOPs) / Total Memory Transferred (Bytes)
+   Arithmetic Intensity = Total Calculations (FLOPs) / Total Memory Transferred (Bytes)
    ```
-2. **Compute vs. Memory Bound Regimes**:
-   - If an operation has **high** arithmetic intensity (hundreds of FLOPs per byte read), the GPU compute cores remain fully saturated. This is **compute-bound**.
-   - If an operation has **low** arithmetic intensity (e.g. 1 FLOP per byte read), the compute cores spend 95% of their clock cycles stalled, waiting for numbers to arrive from memory. This is **memory-bandwidth-bound**.
+2. **Compute-Bound vs. Memory-Bound**:
+   - If a task requires many calculations for every byte of data loaded from memory (high arithmetic intensity), the GPU processors stay busy. The task's speed is limited by how fast the GPU can calculate. This is called being **compute-bound**.
+   - If a task requires very few calculations per byte of data (low arithmetic intensity), the processors finish their math instantly and spend 95% of their time idle, waiting for the next batch of numbers to arrive from memory. The task's speed is limited by how fast data can move across the memory bus. This is called being **memory-bound**.
 
 ### The GPU Silicon Hierarchy
 

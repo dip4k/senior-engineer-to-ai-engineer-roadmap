@@ -1,6 +1,6 @@
 # Document Parsing & Structural Chunking Strategies
 
-> **Tier**: `🟢 Core` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/02-tokenization-and-bpe-mechanics.md), [Phase 01: Context AST](../01-prompt-and-context-engineering/01-context-ast-architecture.md)
+> **Tier**: `HIGH ROI / CORE` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/02-tokenization-and-bpe-mechanics.md), [Phase 01: Context AST](../01-prompt-and-context-engineering/01-context-ast-architecture.md)
 
 ---
 
@@ -43,9 +43,9 @@ flowchart TD
 
 ## 2. Systems Mental Model: The Relational Knowledge Normalizer
 
-Do not view document ingestion as "reading a text file." 
+Do not view document ingestion as simply "reading a text file." 
 
-View document ingestion as a **Relational Knowledge Normalizer**—an ETL compiler that parses heterogeneous, multi-modal, two-dimensional spatial artifacts and normalizes them into an Abstract Syntax Tree (AST) of structured semantic units with preserved parent-child relationships and metadata provenance.
+Instead, view document ingestion as a **Relational Knowledge Normalizer**. Think of it as an ETL (Extract, Transform, Load) pipeline that takes complex documents (like multi-column PDFs with tables and images) and converts them into structured data. It maintains the relationships between different parts of the document (like connecting a specific paragraph back to its parent section header) and preserves important metadata (like page numbers and document IDs).
 
 ```mermaid
 flowchart TD

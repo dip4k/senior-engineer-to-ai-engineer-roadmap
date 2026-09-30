@@ -1,6 +1,6 @@
 # Lesson 01: Context AST Architecture & Structured Composition
 
-`🟢 Core` · *Phase 01: Prompt & Context Engineering* · *Estimated Reading Time: 14 minutes*
+`HIGH ROI / CORE` · *Phase 01: Prompt & Context Engineering* · *Estimated Reading Time: 14 minutes*
 
 ---
 
@@ -42,12 +42,12 @@ In Software 3.0, treating the context window as an untyped text blob is the equi
 
 ## 2. The Core Idea: Context as a Compiled AST
 
-To achieve production reliability, we treat the context window not as a natural language chat prompt, but as a **compiled Abstract Syntax Tree (AST)**.
+To achieve production reliability, we must stop treating the LLM context window as a natural language chat prompt. Instead, we treat it as a **compiled Abstract Syntax Tree (AST)**.
 
-An **Abstract Syntax Tree** is a hierarchical tree representation of source structure used by compilers. When applied to AI context engineering:
-- Context is composed of distinct, typed nodes (System Directives, Few-Shot Demonstrations, Retrieved Context, Tool Schemas, Conversational History, User Input).
-- Each node declares its own metadata, privilege level, mutability class, and token budget.
-- A **Context Compiler** ingests the AST, sanitizes untrusted nodes, applies budget constraints, and marshals the tree into the target provider's wire protocol (OpenAI Chat Completions, Anthropic Messages API, or local vLLM endpoints).
+An **Abstract Syntax Tree** is a concept from software compilers: it is a tree-like data structure that breaks code down into distinct, logical parts. When we apply this idea to AI context engineering:
+- We break our prompt into distinct, typed components or "nodes" (e.g., System Rules, Examples, Retrieved Documents, User Input).
+- Each component defines its own metadata, security privilege level, and token size limits.
+- A **Context Compiler** (a software module we write) takes this tree, sanitizes untrusted user inputs, enforces size limits, and packages the data into the exact JSON format required by the AI provider (like the OpenAI or Anthropic API).
 
 ```text
 Unstructured Prompt Begging                Compiled Context AST

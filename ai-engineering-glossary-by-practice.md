@@ -35,11 +35,11 @@
 
 ## 1. LLM Fundamentals & Model Mechanics
 
-*Core mechanics of autoregressive foundation models, sampling behavior, physical compute constraints, and inference mechanics.*
+*Core mechanics of generative models (LLMs), sampling behavior, compute constraints, and inference mechanics.*
 
 | Term / Concept | 1–2 Sentence Explanation | Senior Engineering Context / Interview Takeaway |
 | :--- | :--- | :--- |
-| **Large Language Model (LLM)** | A deep neural network trained on massive corpora using self-attention to predict subsequent tokens in a sequence. It serves as a probabilistic reasoning and generation engine rather than a deterministic database. | Foundation runtime for enterprise agents and synthesis pipelines. |
+| **Large Language Model (LLM)** | A deep neural network trained on massive amounts of text to predict the next word (token) in a sequence. It serves as a reasoning and generation engine rather than a traditional database. | Foundation runtime for enterprise agents and text pipelines. |
 | **Token** | The atomic unit of text comprehension and generation in an LLM, typically representing 3–4 characters or a subword fragment. LLM pricing, compute latency, and memory consumption scale directly with total token count. | Governs API operating costs, throughput planning, and chunk sizing. |
 | **Next-Token Prediction** | The fundamental training and inference objective of autoregressive models, calculating a probability distribution over the entire vocabulary to output the single most probable next token. This statistical mechanism explains why models generate text sequentially rather than holistically. | Essential mental model: an LLM is a probabilistic token predictor, not a database. |
 | **Context Window** | The maximum token budget (prompt plus generated response) an LLM can process in a single inference call. Exceeding this boundary causes input truncation or catastrophic failure to retain earlier conversational details. | Requires active context pruning, chunking, or rolling memory. |
@@ -250,6 +250,7 @@
 | **Domain Specialization** | Restricting individual agents to narrow, highly defined functional areas (e.g., Billing Agent vs. Shipping Agent) with isolated tools and domain prompts. It prevents context bloat, improves accuracy, and reduces tool selection errors. | Mirrors microservices architecture principles in AI application design. |
 | **Security & Boundary Isolation** | Enforcing strict tenant, authentication, and permission perimeters between agents so one compromised agent cannot access unauthorized services. Each agent acts only within its verified caller identity and permissions. | Crucial for enterprise zero-trust security compliance. |
 | **Conflict Resolution & Consensus** | The protocol mechanisms used when multiple agents produce conflicting recommendations or hypotheses. A supervisor or voting arbiter evaluates arguments and renders a final decision based on weighted policies. | Applied in compliance checks, multi-source validation, and code review systems. |
+| **Agent-User Interface (AG-UI) Protocol** | An emerging open protocol standardizing how autonomous AI agents stream structured, interactive UI components (dynamic forms, graphs, approvals) to client frontends in real-time, superseding plain markdown streaming. | Bridges cognitive agent execution with rich generative frontends without proprietary UI glue code. |
 
 ---
 
@@ -327,6 +328,7 @@
 | **Circuit Breakers & Rate Limiting**| Infrastructure safeguards that throttle outbound requests to model providers and temporarily cut traffic when downstream error rates spike. It prevents cascading failures and insulates budgets from unexpected traffic spikes. | Essential resilience pattern implemented via libraries like Polly in .NET. |
 | **Queue-Decoupled Processing** | Decoupling long-running agent workflows from front-facing HTTP requests using persistent message brokers (Azure Service Bus, RabbitMQ, Kafka). The client receives an immediate job receipt while the agent executes asynchronously in the background. | Necessary for multi-step agent tasks that take 15 to 90 seconds to finish. |
 | **Model Fallback Routing** | Automatically failing over from a primary frontier model (e.g., Azure OpenAI) to an alternative provider or local model when encountering HTTP 429 (Rate Limit) or 5xx errors. It maintains continuous system availability during cloud provider outages. | Required for high-reliability 99.9% uptime enterprise SLAs. |
+| **Native FP8 Tensor Core GEMM** | Serving foundation models in native 8-bit floating point precision (E4M3/E5M2) directly on modern silicon (NVIDIA Hopper/Blackwell), doubling compute throughput over FP16 with zero register dequantization stalls. | Enterprise standard for low-latency datacenter serving; replaces 4-bit AWQ on modern GPU hardware. |
 
 ---
 
@@ -386,6 +388,8 @@
 | **Positional Encoding (RoPE)** | Mathematical vectors or rotary transformations (Rotary Position Embedding) applied to token embeddings so the attention mechanism understands token order and relative distance. Without it, the attention matrix would treat sequences as unordered bags of words. | RoPE allows modern models to extrapolate to context windows of 128k–1M+ tokens. |
 | **Encoder vs. Decoder Architectures**| Encoders (e.g., BERT) process the full sequence bidirectionally to output contextual embeddings for classification/search; decoders (e.g., GPT) process autoregressively with causal masking to generate text. Encoder-decoder models (e.g., T5) bridge both for sequence translation. | Encoders power embeddings and rerankers; decoders power generation and agents. |
 | **Autoregressive Decoding** | Generating text token-by-token, where each newly produced token is appended to the input sequence to predict the subsequent token. It explains why inference is sequential and throughput is bounded by memory bandwidth. | The underlying reason for token-based streaming and generation latencies. |
+| **Multi-Head Latent Attention (MLA)** | An attention mechanism introduced in DeepSeek V3/R1 that projects and compresses Key-Value (KV) cache tensors into low-dimensional latent vectors, slashing KV-cache VRAM footprint by 70–80% during inference. | Drastically increases max serving batch size and concurrency on memory-bandwidth-bound GPUs. |
+| **DeepSeekMoE & DualPipe** | An advanced Mixture-of-Experts architecture pairing fine-grained routed experts with isolated shared experts, synchronized via DualPipe bidirectional pipeline parallelism that completely overlaps communication and computation phases. | Enables cost-effective pre-training and high-throughput inference for 600B+ parameter reasoning models. |
 
 ---
 
