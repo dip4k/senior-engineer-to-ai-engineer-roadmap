@@ -1,12 +1,12 @@
-# Curriculum Principles & Senior Engineer Pedagogy
+# Curriculum Principles & Pedagogy for Software Engineers New to AI
 
-This document defines the foundational teaching principles for the AI-Native Engineer curriculum. It outlines how to instruct experienced engineers without treating them like beginners or overwhelming them with unstructured documentation dumps.
+This document defines the foundational teaching principles for the AI-Native Engineer curriculum. It outlines how to teach engineers who already know software engineering but have never met AI terminology: no re-teaching of software basics, and no assumed AI vocabulary.
 
 ---
 
 ## 🏛️ The 7 Golden Rules of AI Curriculum Engineering
 
-Every lesson in this repository must adhere to these seven non-negotiable pedagogical rules:
+Every lesson in this repository must adhere to these seven non-negotiable pedagogical rules. Rule 1 applies to every AI term.
 
 ### 1. Lead with Intuition & Plain-English Mental Models (Explain Like I'm 10 First)
 - **Bad**: *"Today we will study HNSW, BM25, and RRF to build an advanced hybrid RAG architecture using LangChain."* (Acronym soup, cognitive overload, zero intuition).
@@ -24,7 +24,7 @@ Every major systems component, algorithm, or block must follow a clear 3-part pr
 │ ⚠️ 3. Why It Breaks     → What catches fire if you skip this in prod?  │
 └────────────────────────────────────────────────────────────────────────┘
 ```
-This guarantees instant cognitive comprehension without sacrificing Staff-level systems depth.
+This guarantees instant cognitive comprehension without sacrificing engineering depth.
 
 ### 3. Show Why the Naive Approach Fails Before Introducing Complex Solutions
 - **Bad**: *"Here is how to configure a multi-agent Write-Ahead Log event store with saga rollbacks."* (Over-engineered solution presented without justification).
@@ -39,7 +39,7 @@ This guarantees instant cognitive comprehension without sacrificing Staff-level 
 
 ### 6. Make Trade-offs Explicit, Quantifiable, and Honest
 - **Bad**: *"Hybrid search with cross-encoders is the best practice for all RAG systems."*
-- **Better**: *"Cross-encoders deliver the highest recall (+12% over pure vector search), but introduce 80–200ms of GPU inference latency per query. For latency-critical autocomplete (<50ms budget), use BM25 + dense vector with RRF and skip the cross-encoder."*
+- **Better**: *"Cross-encoders deliver the highest recall over pure vector search on many benchmarks) but add a model call per candidate, so latency grows with the number of candidates reranked. For a latency-critical autocomplete box, use keyword plus vector search with rank fusion and skip the cross-encoder. Measure both on your own data before deciding."*
 
 ### 7. End Concepts with a "Quick Check to See if it Clicked"
 - Solidify intuition with a brief, high-impact scenario or challenge question (e.g., *"A user queries for error code 0x80070002. Why does dense vector search fail, and which block saves the day?"*). This transforms passive readers into active architectural evaluators.
@@ -73,27 +73,29 @@ Anchor every AI concept to a known distributed systems or software engineering e
 
 ---
 
-## 🚫 The 10 Anti-Patterns ("It Should NOT Feel Like...")
+## 🚫 The 11 Anti-Patterns ("It Should NOT Feel Like...")
 
-When writing or reviewing curriculum content, reject these 10 common failure modes:
+When writing or reviewing curriculum content, reject these 11 common failure modes:
 
 1. **A Vendor Marketing Brochure**: No uncritical promotion of proprietary APIs, closed ecosystems, or marketing hype.
-2. **A Beginner Programming Tutorial**: Never explain loops, basic git commands, elementary JSON parsing, or HTTP GET/POST basics.
-3. **The Academic Imposter Syndrome (Cognitive Gatekeeping)**: Dumping dense, compressed systems terminology ("asymmetric evidence synthesis engine", "parametric vs non-parametric memory") without first giving the learner a concrete, relatable mental model or real-world analogy.
-4. **A Superficial Listicle**: Avoid shallow bullet points that describe *what* something is without explaining *how it works mechanically*.
-5. **An Uncurated Documentation Dump**: Never copy-paste raw API reference tables without architectural narrative and context.
-6. **Transient Framework API Guides**: Avoid teaching wrapper libraries (e.g., LangChain syntax) over underlying wire protocols and data structures.
-7. **A Disconnected Recipe Book**: Every lesson must fit cleanly into the overarching learning journey of enterprise AI systems engineering.
-8. **An Unrendered Math Paper**: Never write dense LaTeX equations without intuitive systems grounding, text code blocks, and working Python code.
-9. **A Happy-Path-Only Demo**: Never present an AI component without showing how it fails under load, rate limits, network partitions, and adversarial inputs.
-10. **An Unedited LLM Essay**: Eliminate repetitive platitudes, passive voice padding, and generic summaries.
+2. **A Beginner Programming Tutorial**: Never explain loops, basic git commands, elementary JSON parsing, or HTTP GET/POST basics. (This applies to software engineering only. AI terms are always explained from zero.)
+3. **An AI Insider Monologue**: Never use an AI term (token, embedding, attention, agent, eval) as if the learner already knows it. Every AI term is defined in plain English on first use, in the lesson that owns it.
+4. **The Academic Imposter Syndrome (Cognitive Gatekeeping & Jargon Stacking)**: Dumping dense, compressed ML textbook vocabulary ("probabilistic autoregressive next-token prediction model", "asymmetric evidence synthesis engine", "parametric vs non-parametric memory") instead of clear software analogies. Depth is measured in failure modes, latency numbers, memory bottlenecks, and working code—never in academic adjectives.
+5. **A Superficial Listicle**: Avoid shallow bullet points that describe *what* something is without explaining *how it works mechanically*.
+6. **An Uncurated Documentation Dump**: Never copy-paste raw API reference tables without architectural narrative and context.
+7. **Transient Framework API Guides**: Avoid teaching wrapper libraries (e.g., LangChain syntax) over underlying wire protocols and data structures.
+8. **A Disconnected Recipe Book**: Every lesson must fit cleanly into the overarching learning journey of enterprise AI systems engineering.
+9. **An Unrendered Math Paper**: Never write dense LaTeX equations without intuitive systems grounding, text code blocks, and working Python code.
+10. **A Happy-Path-Only Demo**: Never present an AI component without showing how it fails under load, rate limits, network partitions, and adversarial inputs.
+11. **An Unedited LLM Essay**: Eliminate repetitive platitudes, passive voice padding, and generic summaries.
 
 ---
 
 ## 🎙️ Active Whiteboard Delivery & Sentence Stems
 
-Maintain the authoritative, engaging tone of a Principal AI Systems Architect conducting a technical whiteboard session:
+Maintain the authoritative, engaging tone of a Principal AI Systems Architect conducting a technical whiteboard session with a senior engineering peer:
 
+- **The Coffee Test**: Explain concepts as you would to a senior backend colleague over coffee. Use short, concrete, active sentences. Avoid stacking abstract AI adjectives.
 - *"The problem is..."*
 - *"🧒 The Analogy: Think of this like..."*
 - *"The simple approach works until..."*
@@ -107,7 +109,9 @@ Maintain the authoritative, engaging tone of a Principal AI Systems Architect co
 
 ## 📉 Decision-Oriented Tradeoff Matrices
 
-Senior and staff engineers are evaluated on their architectural decisions, not their ability to copy-paste code. Every major architecture choice must be framed as a trade-off.
+Engineers are evaluated on their architectural decisions, not their ability to copy-paste code. Every major architecture choice must be framed as a trade-off.
+
+> **Figures in the matrices below are illustrative orders of magnitude, not measurements.** In a lesson, every figure must be sourced, derived, or marked *(illustrative)* per [accuracy-policy.md](./accuracy-policy.md).
 
 ### Example A: Retrieval & Knowledge (Phase 02)
 | Pattern | Latency | Compute Cost | Precision / Recall | Engineering Complexity | Failure Mode |
@@ -129,14 +133,14 @@ Senior and staff engineers are evaluated on their architectural decisions, not t
 | Serving Strategy | Throughput (tok/s) | GPU Memory Footprint | TTFT Latency | Quality Trade-off | Best For |
 |---|---|---|---|---|---|
 | **Vanilla Sequential Serving** | Low | High (Wasteful static alloc) | High | None (Full FP16) | Single-user local development |
-| **Continuous Batching (vLLM)** | Very High (5-10x) | Low (Dynamic paging) | Low | None (Full FP16) | High-concurrency production APIs |
-| **4-bit AWQ Quantization** | Very High | Very Low (4x VRAM savings) | Low | Minimal (<1% perplexity hit) | Cost-sensitive edge/cloud serving |
-| **Speculative Decoding** | 2-3x Speedup | Medium (Requires draft model) | Very Low | Zero loss (Exact target tokens) | Latency-critical chat/code generation |
+| **Continuous Batching (vLLM)** | Very High *(illustrative)* | Low (Dynamic paging) | Low | None (Full FP16) | High-concurrency production APIs |
+| **4-bit AWQ Quantization** | Very High | Very Low (weights shrink with fewer bits) | Low | Small, measure per model | Cost-sensitive edge/cloud serving |
+| **Speculative Decoding** | Faster decode *(illustrative)* | Medium (Requires draft model) | Very Low | Zero loss (Exact target tokens) | Latency-critical chat/code generation |
 
 ---
 
 ## 🎯 Interview & Architectural Rigor
 
-The curriculum directly prepares engineers for **Staff AI Engineer and AI Systems Architect interviews**:
+The curriculum also prepares engineers for **AI Engineer and AI Systems Architect interviews** (Tier 2–3 lessons only):
 - System design questions require justifying trade-offs under strict constraints (e.g. *design a grounded search system for 10M confidential contracts with <100ms p99 latency and strict tenant isolation*).
 - Highlight interview design perspectives throughout the lessons to solidify architectural confidence.

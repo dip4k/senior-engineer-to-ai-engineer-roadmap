@@ -1,6 +1,6 @@
 # Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics
 
-> **Tier**: `🟢 Core` | **Estimated Read Time**: 20 min | **Prerequisites**: [Phase 00: Transformer Latent Spaces](../00-foundations-and-token-mechanics/01-transformer-and-hardware-physics.md), [Phase 02: Ingestion & Chunking](./01-document-parsing-and-chunking.md)  
+> **Tier**: `🟢 Core` | **Estimated Read Time**: 20 min | **Prerequisites**: [Phase 00: Transformer Latent Spaces](../00-foundations-and-token-mechanics/02-transformer-and-hardware-physics.md), [Phase 02: Ingestion & Chunking](./01-document-parsing-and-chunking.md)  
 > **Core Concept**: Why production search requires combining exact keyword matching (via **BM25**, an inverted index algorithm) with semantic concept proximity (via **HNSW**, a multi-layer vector graph), and how to calculate resident DRAM sizing.
 
 ---

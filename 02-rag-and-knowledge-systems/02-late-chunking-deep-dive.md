@@ -1,6 +1,6 @@
 # Late Chunking: Contextual Embeddings via Deferred Boundary Pooling
 
-> **Tier**: `⚫ Deep Dive` | **Estimated Read Time**: 22 min | **Prerequisites**: [Phase 00: Transformer & Latent Space](../00-foundations-and-token-mechanics/01-transformer-and-hardware-physics.md), [Phase 02: Document Parsing](./01-document-parsing-and-chunking.md)
+> **Tier**: `⚫ Deep Dive` | **Estimated Read Time**: 22 min | **Prerequisites**: [Phase 00: Transformer & Latent Space](../00-foundations-and-token-mechanics/02-transformer-and-hardware-physics.md), [Phase 02: Document Parsing](./01-document-parsing-and-chunking.md)
 
 ---
 

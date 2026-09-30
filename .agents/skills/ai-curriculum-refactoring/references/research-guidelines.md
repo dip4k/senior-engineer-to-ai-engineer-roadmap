@@ -24,7 +24,7 @@ Never permit an agent to directly rewrite curriculum files based on raw web sear
 
 ```mermaid
 flowchart TD
-    S1["1. Research<br>(search_web)"] --> S2["2. Verify<br>(Primary Sources)"]
+    S1["1. Research<br>(web search)"] --> S2["2. Verify<br>(Primary Sources)"]
     S2 --> S3["3. Classify<br>(Tag Finding)"]
     S3 --> S4["4. Evaluate<br>(Stability & Value)"]
     S4 --> S5["5. Recommend<br>(CURRICULUM_RESEARCH.md)"]
@@ -32,7 +32,7 @@ flowchart TD
     S6 --> S7["7. Integrate & Validate<br>(Refactor Lesson)"]
 ```
 
-1. **Research**: Use web search tools (`search_web`) to investigate emerging patterns, benchmark results, or protocol specifications.
+1. **Research**: Use the available web search tool to investigate emerging patterns, benchmark results, or protocol specifications.
 2. **Verify**: Cross-reference claims against primary documentation or upstream source code.
 3. **Classify**: Assign an explicit classification tag to the topic.
 4. **Evaluate**: Score the finding on architectural durability, prerequisite fit, and engineering value.
@@ -75,6 +75,14 @@ Before recommending an addition, evaluate:
 2. **Stability**: Is this a durable engineering concept, or will it be obsolete in 6 months?
 3. **Prerequisites**: Where does this fit in the learning progression (Phases 00–08)?
 4. **Duplication**: Does an existing lesson or `agent-forge` module already cover the underlying principle?
+
+---
+
+## 5b. Freshness Rules for Models, Protocols and Prices
+
+- Models, prices, context limits and protocol versions change monthly. Never write them from memory.
+- Every such fact must be verified against an official page in the current session and written with an "as of YYYY-MM" date. See [accuracy-policy.md](./accuracy-policy.md).
+- Lessons teach the durable concept; model tables are the only place version names belong.
 
 ---
 

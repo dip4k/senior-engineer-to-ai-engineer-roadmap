@@ -1,247 +1,179 @@
 # Standard Lesson Anatomy & Template Guide
 
-This document defines the **11-Part Default Lesson Structure**, depth tier parameters, word count budgets, and split/merge rules.  
-Remember: **This is a default structure, not a rigid checklist.** Omit or merge sections that do not add value for a specific topic.
+This document defines the **single tier system**, word budgets, split and merge rules, the required lesson header block, and the default lesson anatomy.
+Remember: **this is a default structure, not a rigid checklist.** Omit or merge sections that do not add value for a specific topic.
+
+The reader is a software engineer who knows software terms but is **new to every AI term**. Teach each AI term from zero (see [terminology-guidelines.md](./terminology-guidelines.md)).
 
 ---
 
-## 🏷️ Depth Tier Parameters & Word Count Budgets
+## 🏷️ The Single Tier System & Word Budgets
 
-Every lesson must target a specific depth tier and respect its cognitive word budget:
+Every lesson declares exactly one of these four tiers. No other badge format is valid.
 
-| Tier | Badge | Word Budget | Focus & Scope |
+| Tier | Badge | Prose Word Budget | Focus & Scope |
 |---|---|---|---|
-| **Tier 1** | `🟢 Core` | ~800–1,500 words | Single core concept, intuition, failure of naive approach, working baseline implementation. |
-| **Tier 2** | `🟡 Engineering Depth` | ~1,200–2,500 words | Architectural core: edge cases, failure modes, scale constraints, concurrency, and OTel telemetry. |
-| **Tier 3** | `🔵 Advanced` | ~1,500–3,000 words | High-scale or specialized production patterns (speculative decoding, GraphRAG, distributed sagas). |
-| **Tier 4** | `⚫ Deep Dive` | ~1,500–3,000 words | Internal mechanics, mathematical proofs, hardware memory layouts, wire protocols. |
+| **1** | `🟢 Core` | 800–1,500 | One core idea. Intuition, why the naive approach fails, a working baseline. Highest practical value for everyone. |
+| **2** | `🟡 Engineering Depth` | 1,200–2,500 | Production concerns: edge cases, failure modes, scale, concurrency, telemetry. |
+| **3** | `🔵 Advanced` | 1,500–3,000 | Specialised patterns: sagas, GraphRAG, speculative decoding, multi-agent coordination. |
+| **4** | `⚫ Deep Dive` | 1,500–3,000 | Internal mechanics, hardware layouts, wire-protocol details, proofs. Useful to know; not needed daily. |
+
+**Prose word count** excludes fenced code blocks, diagrams, and tables. The budgets are hard limits: a lesson over budget must be split (see below).
+
+**Legacy labels (migrate when touched):**
+
+| Legacy | Canonical |
+|---|---|
+| `HIGH ROI / CORE`, `Tier 1: Core Systems Concept` | `🟢 Core` |
+| `IMPORTANT / NEXT`, `Tier 2: Engineering Depth` | `🟡 Engineering Depth` |
+| `ADVANCED / SPECIALIZED`, `Tier 3/4: Advanced`, `Frontier` | `🔵 Advanced` |
+| `REFERENCE / AWARENESS`, `Deep Dive`, `Systems Deep Dive` | `⚫ Deep Dive` |
 
 ---
 
-## ✂️ Split & Merge Rules (Section 27 Standard)
+## ✂️ Split & Merge Rules
 
-To maintain optimal cognitive load and reading momentum:
+### Split a lesson when
+- Prose exceeds the tier budget.
+- It teaches two or more major mechanisms (for example BM25, HNSW and cross-encoders in one file).
+- **Strategy**: a short `🟢 Core` lesson that teaches the idea, followed by `🟡`/`⚫` lessons for the mechanics. Keep the depth; move it.
 
-### When to Split a Lesson:
-- **Word Count Exceeded**: The lesson exceeds ~3,500 words without justification.
-- **Multiple Core Primitives**: The lesson attempts to teach two or more major architectural primitives simultaneously (e.g. teaching BM25, HNSW, and Cross-Encoders in a single monolithic file).
-- **Split Strategy**: Divide into a `🟢 Core` conceptual introduction followed by one or more `🟡 Engineering Depth` or `⚫ Deep Dive` implementation files.
+### Merge lessons when
+- Adjacent files are under about 500 words and cover fragments of one idea.
+- Theory and code for the same idea live in separate disconnected files.
 
-### When to Merge Lessons:
-- **Fragmented Stubs**: Adjacent files are under ~500 words and cover trivial fragments of the same concept.
-- **Artificial Separation**: Splitting the "theory" and "code" into separate disconnected markdown files when they belong in the same unified narrative arc.
-- **Merge Strategy**: Consolidate into a single coherent `🟢 Core` or `🟡 Engineering Depth` lesson.
+---
 
-## 📋 The Parameterized 11-Part Anatomy
+## 🧱 Required Header Block
 
-> [!TIP]
-> **Not All Sections Are Mandatory!**  
-> The 11-part anatomy is an architectural reference blueprint, **not a rigid bureaucratic checklist**. Do not artificially inflate lessons with boilerplate text just to fill every numbered heading.  
-> - **Core Invariants (Always Include)**: Title + Core Concept, Mental Model (ELI10), Systems Mechanics, Runnable Typed Code/Schemas, Failure Modes / Trade-offs, and Navigation footer.
-> - **Flexible / Omittable**: Evolution tables (omit if the concept has no historical naive predecessor), architecture flowcharts (omit for small algorithmic or math utilities), full OTel span telemetry (omit for foundational syntax/token primers), and interview scenarios (omit when covered in a phase-level capstone or adjacent depth lesson).  
-> - **Rule**: Only include sections that actively advance learner comprehension or prevent real production outages. See [Structural Flexibility Guidelines](#%EF%B8%8F-structural-flexibility-guidelines) below.
+Every lesson starts with exactly this block, directly under the title:
 
 ```markdown
-# Lesson <XX>: <Plain-Language Systems Title (Acronym)>
+# Lesson <XX>: <Plain-Language Title (Acronym)>
 
-> **Tier**: `[🟢 Core | 🟡 Engineering Depth | 🔵 Advanced | ⚫ Deep Dive]` | **Est. Read Time**: ~XX min  
-> **Core Concept**: One to two sentence plain-English mental model defining the engineering objective without buzzwords.
+> **Tier**: `🟢 Core` | **Read time**: ~12 min | **Prerequisites**: [Lesson name](./path.md)  
+> **Core Concept**: One or two plain sentences saying what this lesson lets you do or understand.  
+> **New AI terms introduced**: token, tokenizer, context window  
+> **AI terms assumed from earlier lessons**: [prompt](../01-x/01-y.md)
+```
+
+Rules:
+- The ledger lists **AI terms only**. Software terms are not listed.
+- Every AI term used in the lesson appears in one of the two ledger lines. Assumed terms link to where they are taught.
+- Write `None` if a line is empty. Do not delete the line.
 
 ---
 
+## 📋 The Default Anatomy
+
+> [!TIP]
+> **Six invariants are always required**: (1) header block with term ledger, (2) plain-English mental model with its "where this analogy breaks" note, (3) systems depth with typed, executed code, (4) trade-offs and failure modes, (5) Quick Check, (6) navigation footer.
+> Everything else is omittable. Never pad a lesson to fill a heading.
+
+```markdown
 ## 🎯 What You Will Learn
-- Specific architectural capability (e.g., *Phase 00: Calculate KV cache memory footprint per concurrent session*, *Phase 02: Implement hybrid RRF retrieval*, *Phase 04: Build an event-sourced agent state machine*)
-- Specific failure mode avoided (e.g., *Prevent GPU memory allocation blowout*, *Prevent exact identifier loss in vector space*, *Prevent infinite agent loops and budget loss*)
-- Trade-off mastered (e.g., *Balance latency vs. precision*, *Token spend vs. context window size*, *Throughput vs. model perplexity*)
+3–4 outcomes: one capability, one failure avoided, one trade-off understood.
 
----
+## 1. The Problem
+A concrete scenario with a number or a symptom the reader can picture. What goes wrong with the obvious approach?
 
-## 1. The Problem & The Real-World Intuition
+## 2. The Mental Model (Explain Like I'm 10)
+A vivid analogy in plain English, a tiny example, then:
+**Where this analogy breaks**: one sentence.
 
-### The Problem Scenario
-Describe the concrete production scenario that necessitates this pattern:
-- What engineering requirement, traffic load, or business constraint triggers the need?
-- What happens if we do nothing or rely on standard application logic?
-
-### 🧒 The Mental Model (Explain Like I'm 10)
-Demystify the concept with a vivid, relatable real-world analogy before introducing code or algorithms:
-- Example: *The closed-book exam (hallucination) vs. open-book exam with a super-fast librarian helper (RAG).*
-- Example: *The Idea Catalog (vector embeddings) vs. The Exact-Word Catalog (BM25 keywords).*
-
----
-
-## 2. The Architectural Blueprint (Modern Visual Flowchart)
-
-Provide a clean, modern Mermaid flowchart using semantic color styling and clear typography:
-
-```mermaid
-flowchart TD
-    subgraph PHASE1["Phase 1: Ingestion & Preparation"]
-        D["1. Source Documents<br>(PDFs, Docs, Sheets)"] --> CC["2. Contextual Chunking<br>(Index cards + summary note)"]
-        CC --> E1["Dense Vectors<br>(Concepts & Meaning)"]
-        CC --> E2["Sparse Index<br>(Exact Word BM25)"]
-        E1 --> VDB[("Vector Database")]
-        E2 --> KDB[("Keyword Index")]
-    end
-
-    subgraph PHASE2["Phase 2: Querying & Answering"]
-        UQ["User Query"] --> QR["3. Query Rewriter<br>(HyDE & expansion)"]
-        QR --> H1["Dense Search"]
-        QR --> H2["BM25 Search"]
-        VDB -.-> H1
-        KDB -.-> H2
-        H1 --> RRF["4. RRF Rank Fusion<br>(Fair voting without score bias)"]
-        H2 --> RRF
-        RRF --> RR["5. Deep Reranker<br>(Cross-Encoder evaluates top 25)"]
-        RR --> LLM["6. Generator LLM<br>(Synthesizes answer with citations)"]
-        LLM --> GD{"7. Fact-Check Gate<br>Is response grounded?"}
-        GD -- "Yes" --> ANS["Final Verified Answer"]
-        GD -- "No" --> ABSTAIN["Quarantine & Abstain"]
-    end
-
-    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
-    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
-
-    style GD stroke:#d97706,stroke-width:2px
-    style ANS stroke:#16a34a,stroke-width:2px
-    style ABSTAIN stroke:#dc2626,stroke-width:2px
-    style LLM stroke:#7c3aed,stroke-width:2px
-```
-
-### Visual Architecture Walkthrough:
-1. **Step 1**: Ingestion flow description.
-2. **Step 2**: Intermediate transformation.
-3. **Step 3**: Parallel or branched processing.
-4. **Step 4**: Decision gate or verification step.
-
----
-
-## 3. Explaining Every Block (The Tripartite Pedagogy)
-
-For each major systems block, apply the 3-part rhythm:
-
-### Block 1: <Block Title>
-* 🧒 **The Analogy**: Relatable real-world metaphor explaining what this block does in simple terms.
-* ⚙️ **The Engineering**: Technical mechanics, data structures, algorithms, formulas in text code blocks, and protocols.
-* ⚠️ **What happens if you skip this?**: The exact production failure, bug, or outage that occurs if this component is omitted.
-
-### Block 2: <Block Title>
+## 3. How It Works, One Term at a Time
+For each of the 2–4 core mechanisms:
+### <Mechanism name>
 * 🧒 **The Analogy**: ...
-* ⚙️ **The Engineering**: ...
-* ⚠️ **What happens if you skip this?**: ...
+* ⚙️ **The Engineering**: mechanics, data structures, formulas in `text` blocks
+* ⚠️ **What happens if you skip this?**: the concrete production failure
 
----
+(Diagram here if it helps. 4–8 nodes. Numbered walkthrough directly beneath.)
 
-## 4. Evolution: Old/Naive vs. Modern Production
+## 4. Try It (Runnable, Offline)
+Typed Python 3.12+ with Pydantic v2. Show the command and the real output.
 
-A side-by-side comparison table showing how this architecture evolved from early prototypes to modern production standards:
+## 5. Trade-Offs
+A small table: latency, cost, memory, quality, complexity. Every number labelled per the accuracy policy.
 
-| Feature / Dimension | Naive Approach (Early Prototype) | Modern Production Architecture (Current Standard) |
-|---|---|---|
-| **Chunking / Ingestion** | Fixed character slices | Semantic boundaries + Contextual summary prepending |
-| **Search Engine** | Dense vector search only | **Hybrid**: Dense Vectors + BM25 Lexical Index |
-| **Rank Merging** | Arbitrary score threshold guessing | **RRF (Reciprocal Rank Fusion)** |
-| **Precision Filtering** | Raw top-k returned directly | **Cross-Encoder Reranker** |
-| **Safety / Reliability** | Unchecked model output ("trust the vibes") | **Groundedness & Faithfulness Verification Gate** |
+## 6. Failure Modes & Anti-Patterns
+Symptom → root cause → fix.
 
----
+## 7. Evolution: Naive vs. Modern (optional)
+Only when the concept replaced a real predecessor.
 
-## 5. Concrete Production Implementation (Runnable Python)
-
-Clean, type-annotated Python 3.12+ implementation using typed Pydantic v2 schemas:
-- No bloated wrapper frameworks; show the raw data structures and transformations.
-- Explicit error handling, validation, and idempotency considerations.
-
-```python
-from pydantic import BaseModel, Field
-
-class VerifiedPayload(BaseModel):
-    id: str = Field(..., description="Unique entity identifier")
-    score: float = Field(ge=0.0, le=1.0)
-    # Production implementation...
-```
-
----
-
-## 6. Decision-Oriented Trade-Off Matrix
-
-Explicitly evaluate trade-offs across latency, compute cost, memory footprint, precision, and operational complexity:
-
-| Architecture Pattern | Latency (p95) | Compute Cost | Precision / Recall | Engineering Complexity | Production Failure Mode |
-|---|---|---|---|---|---|
-| **Pattern A** | Low (<20ms) | Low | Medium | Low | Fails on exact identifiers |
-| **Pattern B** | Medium (<50ms) | Medium | High | Medium | Index synchronization lag |
-| **Pattern C** | High (150-300ms) | High | Very High | High | GPU latency bottleneck |
-
----
-
-## 7. Common Failure Modes & Anti-Patterns
-
-A structured review of real-world landmines:
-- **Anti-Pattern 1**: Description, root cause, and engineering fix.
-- **Anti-Pattern 2**: Description, root cause, and engineering fix.
-
----
-
-## 8. OpenTelemetry Tracing & Telemetry View
-
-Code snippet and explanation demonstrating OTel GenAI semantic conventions in practice:
-- Tracking latency, candidate counts, token spend, and cache hits.
-
----
+## 8. Telemetry (optional)
+Only for production-service lessons. Use attribute names verified against the current OpenTelemetry GenAI conventions.
 
 ## 🧠 9. Quick Check to See if it Clicked
+A scenario question and a collapsible answer.
 
-Test the learner's architectural intuition with a concrete production scenario:
+## 10. Interview Perspective (optional)
+Only for Tier 2–3 lessons not covered by the phase capstone.
 
-> **Scenario**: A customer queries: *"Why is transaction tx_9941a failing with status code 504?"*  
-> If our system only used **Dense Vector Search**, why would it struggle to find the right document, and which block in our modern workflow saves the day?
+## 11. Key Takeaways & Verified Sources
+3–4 bullets. Only sources that were actually opened and read.
 
-*(Include a collapsible or inline explanation of the solution).*
-
----
-
-## 💡 10. Senior Architectural Interview Perspective
-
-3–5 senior architectural interview questions and defense strategies:
-- **Question**: *"How would you design a system that handles X constraint under Y load?"*
-- **Architectural Defense**: Clear defense of the trade-off, failure modes, and recovery strategies.
-
----
-
-## 11. Key Takeaways & Verified Resources
-- 3–4 bulleted principles to remember.
-- Authoritative primary source references (arXiv papers, official protocol specs, provider engineering blogs).
-
----
-
-## 🧭 Navigation (Mandatory)
-- **[← Previous Lesson: <Title>](./<prev-lesson>.md)**
-- **[Phase <XX> Hub](./README.md)**
-- **[Next Lesson: <Title> →](./<next-lesson>.md)**
-- **[Capstone Lab: <Title>](./labs/<lab-file>.md)**
+## 🧭 Navigation
 ```
+
+### Navigation footer (mandatory)
+
+```markdown
+## 🧭 Navigation
+- **[← Previous Lesson: <Title>](./<prev>.md)**
+- **[Phase <XX> Hub](./README.md)**
+- **[Next Lesson: <Title> →](./<next>.md)**
+- **[Capstone Lab: <Title>](./labs/<lab>.md)**
+```
+
+---
+
+## 🖼️ Diagram Sample (within budget)
+
+A correct diagram is small. This one has 6 nodes. Bigger flows are split into several diagrams (see [diagram-guidelines.md](./diagram-guidelines.md)).
+
+```mermaid
+flowchart LR
+    Q["User Query"] --> E["Embedding Model<br>(text → numbers)"]
+    E --> S["Vector Search<br>(nearest neighbours)"]
+    S --> G{"Score high enough?"}
+    G -- "Yes" --> A["Send Evidence to LLM"]
+    G -- "No" --> B["Abstain"]
+
+    style E stroke:#7c3aed,stroke-width:2px
+    style G stroke:#d97706,stroke-width:2px
+    style A stroke:#16a34a,stroke-width:2px
+    style B stroke:#dc2626,stroke-width:2px
+```
+
+### Visual Walkthrough
+1. **User Query**: the raw question arrives.
+2. **Embedding Model**: turns the question into a list of numbers that represents its meaning.
+3. **Vector Search**: finds stored items whose numbers are closest.
+4. **Score gate**: only confident matches move on.
+5. **Outcome**: evidence goes to the LLM, or the system says it doesn't know.
 
 ---
 
 ## ✂️ Structural Flexibility Guidelines
 
-| Section | Can be Omitted When... | Can be Merged When... |
+| Section | Can be omitted when... | Can be merged when... |
 |---|---|---|
-| **3. Mental Model** | The concept is a direct extension of an already-covered mental model. | Merged with **2. The Core Idea** for concise lessons. |
-| **Why Naive Fails** | The topic is an extension of an existing pattern rather than a replacement. | Merged with **1. The Problem** if the problem *is* the failure of the naive approach. |
-| **7. Architecture View** | The topic is an algorithmic or mathematical utility (e.g., BM25 formula) rather than a distributed service. | Integrated into **4. How It Works**. |
-| **9. Evaluation** | The component is purely infrastructural (e.g. token counting utility). | Merged with **7. Telemetry View**. |
-| **11. Interview Perspective** | The lesson is a brief reference or foundational primer. | Omitted in Tier 1 (`🟢 Core`) lessons when covered in adjacent engineering depth lessons. |
+| **Evolution table** | The concept has no real naive predecessor. | Folded into Trade-Offs. |
+| **Diagram** | The lesson is a small algorithm or formula. | Replaced by a `text` walkthrough. |
+| **Telemetry** | The component is a pure utility (for example a token counter). | Merged into Failure Modes. |
+| **Interview Perspective** | Tier 1 lessons, or covered by the capstone. | Not applicable. |
+| **Tripartite blocks** | Never omit for core mechanisms; do not apply to every paragraph. | Merge minor mechanisms into one block. |
 
 ---
 
 ## 🚫 Formatting & Math Guidelines (Zero LaTeX)
 
-All lesson markdown files must render without requiring KaTeX/MathJax plugins:
-- **No LaTeX Math Blocks**: Never use `$$...$$` or `$...$`.
-- **Formulas**: Place mathematical equations in fenced text blocks (```text).
-- **Symbols**: Use standard Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`, `×`, `Δ`).
-- **Complexity**: Write `O(N)` and `O(log N)` directly as monospace text.
-- **Tables**: Use standard Markdown pipe tables; avoid LaTeX arrays or unescaped `$$` cost indicators.
-- **Zero Meta-Directive Leaks**: Never include internal directives, quality gate reminders, or refactoring tags in learner-facing section titles or prose (e.g. do NOT name a section `### The Attention Formula (Zero-LaTeX):` or `### Step 1 (Refactored)`). Write clean, authoritative titles (`### The Attention Formula`).
+All lesson files must render without KaTeX or MathJax:
+- **No LaTeX**: never use `$$...$$` or `$...$`.
+- **Formulas**: place in fenced `text` blocks.
+- **Symbols**: use Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`, `×`, `Δ`).
+- **Complexity**: write `O(N)` and `O(log N)` as monospace text.
+- **Tables**: GFM pipe tables only. Avoid unescaped `$$` cost indicators.
+- **Zero meta-directive leaks**: never include internal directives, quality-gate reminders, or refactoring tags in learner-facing titles or prose (do not write `### The Attention Formula (Zero-LaTeX):`).

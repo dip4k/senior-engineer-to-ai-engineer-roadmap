@@ -3,6 +3,8 @@
 > **Purpose:** Demonstrates how to teach an AI engineering problem through failure modes, engineering options, trade-offs, and production decisions.
 >
 > This example intentionally focuses less on explaining a single technology and more on engineering judgment.
+>
+> Real lessons must also carry the header block with the term ledger, the canonical tier badge, every number sourced or marked illustrative, and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)). Define each AI term in plain English before using it.
 
 # Evaluating a RAG System
 

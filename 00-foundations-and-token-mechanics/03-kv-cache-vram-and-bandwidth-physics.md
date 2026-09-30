@@ -1,511 +1,365 @@
-# Lesson 03: KV-Cache Mechanics & Memory Sizing Math
+# Lesson 03: The Memory Notebook of a Language Model: Key-Value Cache, Prefill/Decode and Memory Sizing (KV Cache)
 
-`🟡 Engineering Depth` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 16 minutes*
-
----
-
-## What You Will Learn
-
-By the end of this lesson, you will understand:
-- Why autoregressive text generation requires caching Key and Value activation vectors in GPU memory.
-- The fundamental duality between the compute-bound **Prefill Phase** and the memory-bound **Decode Phase**.
-- The exact mathematical derivation of KV-cache memory consumption.
-- The architectural evolution from Multi-Head Attention (MHA) to Multi-Query (MQA), Grouped-Query Attention (GQA), and Multi-Head Latent Attention (MLA).
-- How PagedAttention applies OS virtual memory paging to eliminate KV-cache fragmentation.
-- How to build a production VRAM capacity planner to prevent out-of-memory crashes under concurrent load.
+> **Tier**: `🟡 Engineering Depth` | **Read time**: ~20 min | **Prerequisites**: [Lesson 02: Transformer Inference & Hardware Realities](./02-transformer-and-hardware-physics.md)  
+> **Core Concept**: While a model writes an answer it keeps a per-request notebook of what it already worked out about every earlier token, so it never redoes that work. That notebook lives in GPU memory, grows with every token and every user, and is what limits how many people one GPU can serve.  
+> **New AI terms introduced**: KV cache, prefill, decode, time to first token (TTFT), tokens per second (TPS), multi-head attention (MHA), multi-query attention (MQA), grouped-query attention (GQA), multi-head latent attention (MLA), PagedAttention, batching  
+> **AI terms assumed from earlier lessons**: [token](./00-what-is-an-llm.md), [context window](./00-what-is-an-llm.md), [inference](./00-what-is-an-llm.md), [logits](./01-tokenization-and-bpe-mechanics.md), [GPU, VRAM, HBM](./02-transformer-and-hardware-physics.md), [weights](./02-transformer-and-hardware-physics.md), [transformer](./02-transformer-and-hardware-physics.md), [attention](./02-transformer-and-hardware-physics.md), [compute-bound and memory-bound](./02-transformer-and-hardware-physics.md)
 
 ---
 
-## 1. The Problem: The Concurrency Wall
+## 🎯 What You Will Learn
 
-When designing traditional web microservices, scaling from 1 concurrent user to 100 concurrent users primarily increases CPU utilization and network sockets. Memory consumption per connection is negligible (often measured in kilobytes).
-
-In Large Language Model serving, **memory scales dynamically with every single token generated across every active connection**:
-
-```text
-Static GPU Footprint (LLaMA-3.1-70B FP16):
-├── Model Weights: 140 GB VRAM (Fixed)
-│
-Dynamic GPU Footprint (KV-Cache):
-├── 1 User   @ 8,000 tokens context  = + 1.25 GB VRAM
-├── 10 Users  @ 8,000 tokens context  = + 12.50 GB VRAM
-├── 50 Users  @ 8,000 tokens context  = + 62.50 GB VRAM
-└── 100 Users @ 8,000 tokens context  = + 125.00 GB VRAM (Instant Cluster OOM!)
-```
-
-Even if your GPUs have enough compute power to process 2,000 tokens per second, your service will crash the moment concurrent context allocations exhaust available High-Bandwidth Memory (HBM).
-
-To operate LLM services reliably in production, you must understand the mechanics of the **KV-Cache**.
+- Explain what the KV cache stores and why generation is unusably slow without it.
+- Split a request into its two phases, prefill and decode, and say which one a user feels as "waiting" and which as "typing speed".
+- Compute the KV cache size for any model from four numbers, and turn that into a maximum number of simultaneous users.
+- Compare the attention variants (MHA, MQA, GQA, MLA) by how much memory each one saves, and explain paged allocation.
 
 ---
 
-## 2. Systems Mental Model: The Memory Scratchpad
+## 1. The Problem
 
----
+You size a GPU server by looking at the model: the weights fit, the speed looks fine in a single-user test. Then real traffic arrives and the server runs out of GPU memory with no warning.
 
-### The Dynamic Bulletin Board
+Weights are a fixed cost. Whatever is left over after loading them is a shared pool, and every active conversation takes a slice of it that grows with every token. The bridge from what you know:
 
-* 🧒 **The Analogy**:
-  * Imagine you are collaborating with a writer on a novel:
-    * **Without a Scratchpad (The Recomputation Trap)**: Every time the author writes one new word, you force them to re-read the entire manuscript from Chapter 1, Page 1! At 1,000 words, they re-read 1,000 words. At 2,000 words, they re-read 2,000 words. By evening, they spend 99% of their time re-reading words they already wrote.
-    * **With a Scratchpad (The KV-Cache)**: As each page is written, you pin a small index card to a bulletin board summarizing the clues (Keys) and descriptions (Values). When writing the next word, the author doesn't re-read the book; they just glance at the bulletin board!
-  * **The Catch**: That bulletin board has limited wall space. If 50 authors are writing chapters in the same room, the bulletin board fills up, and the room runs out of wall space (GPU Out-of-Memory).
+| You know | LLM serving reality |
+|---|---|
+| Per-connection memory is tiny, so capacity is bound by CPU or sockets | Per-request memory is large and grows with every token, so capacity is bound by memory |
+| A cache speeds things up and can be dropped if memory is tight | The KV cache is required for speed, and dropping it means redoing the whole computation |
+| Allocating a worst-case buffer per request is wasteful but simple | Doing that with this cache can cut the number of users you can serve by a large factor |
 
-* ⚙️ **The Engineering Mechanics**:
-  * In autoregressive generation, past tokens are immutable. Their Key (`K`) and Value (`V`) projection vectors never change.
-  * Instead of recomputing them from scratch on every step (which would require quadratic `O(N^2)` operations), the GPU allocates a scratchpad buffer in VRAM called the **KV-Cache**.
-  * When generating the next token, the model computes only **one** new Query vector, retrieves the cached `K` and `V` vectors from memory, and computes attention in linear `O(N)` time.
+## 2. The Mental Model
 
-* ⚠️ **What Happens If You Ignore This?**
-  * If you don't cache activations, generating a 2,000-token answer requires over 2.6 billion redundant matrix operations; token 2,000 takes 100x longer to emit than token 1.
-  * Conversely, if you don't calculate the memory consumption of that cache, multi-turn user sessions quickly exhaust all remaining GPU VRAM, crashing your serving cluster.
+🧒 **Think of a writer who keeps a notebook.** To choose the next word the writer needs to consider everything written so far. Without a notebook, they reread the whole manuscript before every single word. With a notebook, they jot a short note per page once, then consult the notes. Writing is fast, but the notebook needs desk space, and a desk shared by 50 writers fills up.
 
----
+**Where this analogy breaks**: the notes are not summaries in words. They are lists of numbers with a fixed size per token, so the notebook grows by exactly the same amount for every token, never less for a dull page. 
 
-## 3. The Lifecycle: Prefill vs. Decode Duality
+## 3. How It Works, One Term at a Time
 
-LLM inference consists of two distinct physical phases with completely different performance characteristics:
+### The KV cache
 
-```mermaid
-sequenceDiagram
-    autonumber
-    actor Client
-    participant Engine as LLM Serving Engine (vLLM / TensorRT-LLM)
-    participant GPU as GPU HBM & Tensor Cores
+First, a quick recap of attention from Lesson 02. For each token, every transformer layer produces three lists of numbers: a **Query**, a **Key**, and a **Value**. The Query describes what this token is looking for. The Key labels what it offers. The Value holds the content it hands over when matched. To process a new token, attention compares its Query against earlier Keys and blends their Values.
 
-    Note over Client,GPU: 1. PREFILL PHASE (Parallel, Compute-Bound)
-    Client->>Engine: Send Request (Prompt: 2,048 tokens)
-    Engine->>GPU: Parallel forward pass over all 2,048 tokens
-    GPU->>GPU: Matrix-Matrix Multiply (GEMM) saturates Tensor Cores
-    GPU->>GPU: Compute & store K, V vectors in KV-Cache
-    GPU-->>Engine: Emit First Output Token Logits
-    Engine-->>Client: Stream First Token (Time-To-First-Token: ~350ms)
+The important fact: the Key and Value of an earlier token do not change when you add a new token after it. Recomputing them at every step is pure waste.
 
-    Note over Client,GPU: 2. DECODE PHASE (Serial, Memory-Bandwidth-Bound)
-    loop For Each Output Token (e.g., 200 iterations)
-        Engine->>GPU: Forward pass for 1 token + Fetch full KV-Cache
-        GPU->>GPU: Matrix-Vector Multiply (GEMV) across HBM bus
-        GPU->>GPU: Append 1 new (K, V) vector to KV-Cache
-        GPU-->>Engine: Emit Next Token Logit
-        Engine-->>Client: Stream Next Token (Inter-Token Latency: ~15ms = 66 TPS)
-    end
-```
+* 🧒 **The Analogy**: A memoization table. You computed the Key and Value for token 1,000 once; store them and look them up at step 1,001 instead of recomputing.
+* ⚙️ **The Engineering**: The **KV cache** (Key-Value cache) is the per-request store of every earlier token's Key and Value, for every layer, kept in GPU memory (VRAM). At each step the model computes the Query, Key and Value for only the newest token, appends the new Key and Value to the cache, and reads the whole cache to run attention. Without the cache, step N would reprocess all N tokens, so the total work to write an answer of N tokens grows with the square of N. With it, each step does a constant amount of new projection work plus a read that grows linearly with N.
+* ⚠️ **What happens if you skip this?** Generation slows down as the answer gets longer, because every new word pays for all the previous ones again. The cache is the fix, and it is also the reason memory becomes your capacity limit.
 
-### Walkthrough of the Two Phases:
-1. **The Prefill Phase (Prompt Processing)**:
-   - The entire user prompt (e.g. 2,048 tokens) is submitted at once.
-   - The GPU processes all prompt tokens in parallel using large **General Matrix-Matrix Multiplication (GEMM)** operations.
-   - Arithmetic intensity is high. The GPU Tensor Cores are fully utilized (**Compute-Bound**).
-   - This phase determines the **Time-To-First-Token (TTFT)** metric.
-   - All resulting Key and Value vectors are stored in the KV-cache.
-2. **The Decode Phase (Autoregressive Generation)**:
-   - Output tokens are generated strictly one at a time.
-   - The GPU performs **General Matrix-Vector Multiplication (GEMV)** operations.
-   - Arithmetic intensity drops to near zero (~1 FLOP/byte). The GPU compute cores spend most of their time idle, waiting for model weights and the KV-cache to be read from HBM (**Memory-Bandwidth-Bound**).
-   - This phase determines the **Tokens-Per-Second (TPS)** throughput.
+### Prefill and decode
 
-### Latency Formula:
-```text
-Total Request Latency = TTFT + ( Output_Tokens × (1 / TPS) )
-```
-
----
-
-## 4. The KV-Cache Memory Formula & Derivation
-
-How much GPU memory does an active request actually consume? Let's derive the formula from first principles:
-
-For every token stored in the context window:
-1. We must store its **Key vector** (`K`).
-2. We must store its **Value vector** (`V`).
-3. This must be done across **every transformer layer** in the model (`L`).
-4. Each layer has a specific number of Key-Value attention heads (`H_KV`).
-5. Each attention head has a hidden dimensionality (`d_k`, typically 128 dimensions).
-6. Each floating-point number consumes bytes based on numerical precision (`P_bytes`: 2 bytes for FP16/BF16, 1 byte for FP8).
-
-### The Master KV-Cache Sizing Formula:
-```text
-KV Cache (Bytes) = 2 (for K & V) × Precision_Bytes × Layers × Heads_KV × Head_Dim × Batch_Size × Sequence_Length
-```
-
-### Worked Enterprise Example: LLaMA-3.1-70B
-Let's calculate the KV-cache footprint for a production LLaMA-3.1-70B model serving a single request with an 8,192-token context:
-- **Precision**: 16-bit (2 bytes per element)
-- **Number of Layers (`L`)**: 80
-- **Number of KV Heads (`H_KV`)**: 8 (LLaMA-3 uses Grouped-Query Attention)
-- **Head Dimension (`d_k`)**: 128
-- **Sequence Length (`S`)**: 8,192 tokens
-- **Batch Size (`B`)**: 1
-
-```text
-KV Cache = 2 × 2 bytes × 80 layers × 8 heads × 128 dim × 1 batch × 8,192 sequence
-KV Cache = 4 × 80 × 8 × 128 × 8,192
-KV Cache = 320 × 1,024 × 8,192 = 2,684,354,560 Bytes ≈ 2.68 Gigabytes!
-```
-
-A single user conversation spanning 8,192 tokens consumes **2.68 GB of dedicated GPU VRAM**. If 20 users submit concurrent requests with 8k contexts, the KV-cache alone requires **53.6 GB of VRAM**, on top of the 140 GB needed for model weights!
-
----
-
-## 5. Attention Architectures: MHA vs. MQA vs. GQA vs. MLA
-
-Early transformers used **Multi-Head Attention (MHA)**, where every Query head has its own dedicated Key head and Value head. As context lengths expanded to 32k and 128k, MHA's KV-cache became completely unsustainable.
-
-The AI industry evolved attention architectures to shrink this scratchpad:
-
-#### The Scaling Dilemma: Multi-Head (MHA) vs. Multi-Query (MQA)
+A request has two phases with opposite hardware behaviour.
 
 ```mermaid
 flowchart LR
-    subgraph MHA["1. Multi-Head Attention (MHA: 2017)"]
-        MHA_Q["Query Heads (H = 64)"] --> MHA_KV["Key & Value Heads (H = 64)<br>1:1 Ratio · 100% KV Cache (Baseline)"]
-    end
+    P["Your prompt<br>(all tokens known)"] --> F["Prefill<br>(process all at once)"]
+    F --> C[("KV cache<br>filled")]
+    C --> D["Decode step<br>(one new token)"]
+    D --> A["Append new Key<br>and Value"]
+    A -.-> C
+    D --> O["Stream token<br>to the user"]
 
-    subgraph MQA["2. Multi-Query Attention (MQA: 2019)"]
-        MQA_Q["Query Heads (H = 64)"] --> MQA_KV["Single Shared KV Head (H = 1)<br>64:1 Ratio · 12.5% Cache (Degrades Logic)"]
-    end
-
-    style MHA fill:none,stroke:#dc2626,stroke-width:2px
-    style MQA fill:none,stroke:#d97706,stroke-width:2px
-    style MHA_Q stroke:#dc2626,stroke-width:1px
-    style MHA_KV stroke:#dc2626,stroke-width:1px
-    style MQA_Q stroke:#d97706,stroke-width:1px
-    style MQA_KV stroke:#d97706,stroke-width:1px
+    style F stroke:#2563eb,stroke-width:2px
+    style D stroke:#d97706,stroke-width:2px
+    style C stroke:#16a34a,stroke-width:2px
+    style O stroke:#7c3aed,stroke-width:2px
 ```
 
-*Walkthrough: MHA reserves a separate Key and Value head for every Query head, causing the KV cache to explode at long contexts. MQA forces all Query heads to share a single KV head, saving 8x–16x memory but degrading associative retrieval.*
+1. **Your prompt** is already fully known, so nothing forces the model to go one token at a time.
+2. **Prefill** processes every prompt token in one parallel pass and fills the cache. It does a lot of arithmetic per byte it reads, so it tends to be compute-bound. The wait until the first output token appears is the **time to first token (TTFT)**.
+3. **Decode** produces the answer one token at a time. Each step needs the next token, which depends on the previous one, so it cannot be parallelised across the answer. Each step reads all the model weights and the whole cache to compute a single token, so it tends to be memory-bound (Lesson 02). How fast tokens stream out is **tokens per second (TPS)**.
+4. **Append** adds the new token's Key and Value to the cache, and the loop repeats until the model stops.
 
----
+```text
+Total request time ≈ TTFT + (output tokens ÷ TPS)
+```
 
-#### Modern Production Standards: Grouped-Query (GQA) vs. Latent (MLA)
+* 🧒 **The Analogy**: Prefill is reading the question once, quickly, in one sitting. Decode is writing the answer one word at a time with the pen, where the pen speed, not your reading speed, is the limit.
+* ⚙️ **The Engineering**: The two phases stress different resources, so they are tuned differently. A long prompt mostly costs TTFT. A long answer mostly costs decode time, and each decode step re-reads a cache that is growing.
+* ⚠️ **What happens if you skip this?** You report one "latency" number and cannot tell whether a slow feature has a prompt problem (TTFT) or an answer-length problem (TPS). Measure them separately.
+
+
+### The memory formula
+
+How big is the notebook? Count what is stored per token.
+
+* ⚙️ **The Engineering**: For every token, the cache holds one Key and one Value (the factor 2) per layer. It stores these for each **KV head**. Attention runs as several parallel heads, and each KV head keeps its own Key and Value. Each head stores a list of `head_dim` numbers. Each number takes a fixed number of bytes. For example, FP16 uses 2 bytes per number (Lesson 05 covers other formats).
+
+```text
+KV cache bytes = 2 × layers × KV heads × head dim × bytes per value × tokens × concurrent requests
+```
+
+The model numbers below are from Table 3 of the Llama 3 paper (80 layers, 8,192 model dimension, 64 attention heads, 8 key/value heads for the 70B model). Head dim is derived: 8,192 ÷ 64 = 128.
+
+```text
+Per token (FP16):
+  2 × 80 layers × 8 KV heads × 128 head dim × 2 bytes
+  = 327,680 bytes ≈ 0.33 MB
+
+One 8,192-token session:
+  327,680 × 8,192 = 2,684,354,560 bytes ≈ 2.68 GB
+
+Weights for a 70-billion-parameter model in FP16:
+  70 × 10⁹ × 2 bytes = 140 GB
+```
+
+One conversation costs about 2% of the weights. Fifty conversations cost about 134 GB, nearly another copy of the model.
+
+* ⚠️ **What happens if you skip this?** You load-test with short prompts, see plenty of headroom, and go live. Real users send long documents and multi-turn chats, and the server hits the memory wall at a fraction of the concurrency you planned for.
+
+### Attention variants: fewer KV heads, smaller cache
+
+Look at the formula: the only architectural lever is `KV heads`. The variants below differ in how many KV heads the model keeps.
+
+* 🧒 **The Analogy**: A team of 64 analysts (the Query heads). Originally each keeps a private notebook. You can make them share: all sharing one notebook, or small groups sharing one each.
+* ⚙️ **The Engineering**:
+  - **Multi-head attention (MHA)**: every Query head has its own Key and Value head. Biggest cache, the original design.
+  - **Multi-query attention (MQA)**: all Query heads share one Key and Value head (Shazeer, 2019). Smallest cache and faster decoding, with a risk of quality loss.
+  - **Grouped-query attention (GQA)**: Query heads are split into groups, each group sharing one Key and Value head. It sits between the two. Ainslie et al. (2023) show it reaches quality close to MHA with speed comparable to MQA.
+  - **Multi-head latent attention (MLA)**: instead of caching full Keys and Values per head, cache one compressed "latent" vector per token and layer, and reconstruct what attention needs from it. The DeepSeek-V2 paper states that at inference the reconstruction matrices can be absorbed into the query and output projections, so full Keys and Values never need to be materialised. It reports a 93.3% KV cache reduction compared with its earlier 67B model.
+* ⚠️ **What happens if you skip this?** You compare models by parameter count alone and miss that one needs eight times more cache per user.
+
+The DeepSeek-V2 paper expresses cache size per token per layer as a formula. Here, `n_h` is head count, `n_g` is KV groups, and `d_h` is head dimension. Additionally, `d_c` is the latent dimension, and `d_h^R` is a small extra positional Key vector:
+
+| Variant | Cache elements per token per layer (source: DeepSeek-V2 paper) |
+|---|---|
+| MHA | 2 × n_h × d_h |
+| GQA | 2 × n_g × d_h |
+| MQA | 2 × d_h |
+| MLA | d_c + d_h^R (the paper states this is about 2.25 × d_h) |
+
+For the same 80-layer, 128-head-dim shape, changing only the KV head count gives (derived by the code in section 4):
+
+```text
+MHA, 64 KV heads: 2 × 80 × 64 × 128 × 2 B = 2,621,440 B per token
+GQA,  8 KV heads: 2 × 80 ×  8 × 128 × 2 B =   327,680 B per token  (8× smaller)
+MQA,  1 KV head : 2 × 80 ×  1 × 128 × 2 B =    40,960 B per token  (64× smaller)
+```
+
+As of 2026-09, examples of two designs (attention type checked against the source linked in each row):
+
+| Model | Attention design | Source |
+|---|---|---|
+| Llama 3.1 70B | GQA (8 KV heads, 64 query heads) | [Meta model card](https://huggingface.co/meta-llama/Llama-3.1-70B), [Llama 3 paper](https://arxiv.org/abs/2407.21783) |
+| DeepSeek-V2 | MLA | [DeepSeek-V2 paper](https://arxiv.org/abs/2405.04434) |
+
+### Paged allocation (PagedAttention) and batching
+
+A serving system runs many requests together. Running several requests through the model at once, so that one read of the weights serves all of them, is called **batching**. Batching is how a GPU makes decode worthwhile, because a memory-bound step is nearly as cheap for ten requests as for one. The limit on batch size is the cache: every request in the batch needs its own notebook.
+
+The naive way to give each request a notebook is to reserve one contiguous block sized for the longest answer you allow. Most requests stop far short of that, and the unused part of each block is stranded.
+
+* 🧒 **The Analogy**: A parking lot where every car is given a bay long enough for a bus. Most cars are short, so most of the lot sits empty while a queue forms outside.
+* ⚙️ **The Engineering**: **PagedAttention** (Kwon et al., 2023; the technique behind the vLLM serving engine) borrows virtual-memory paging. The cache is cut into small fixed-size blocks, each holding the Keys and Values of a fixed number of tokens. A per-request block table maps logical positions ("tokens 0 to 15") to whichever physical blocks are free, so a request takes blocks only as it grows and they need not be contiguous. The paper reports near-zero KV cache waste and, for the systems it compared against, 2-4× higher throughput at the same latency. It also enables sharing: requests with the same starting text (for example an identical system prompt) can point their block tables at the same physical blocks.
 
 ```mermaid
 flowchart LR
-    subgraph GQA["3. Grouped-Query Attention (GQA: LLaMA-3)"]
-        GQA_Q["Query Groups (8 Heads/Group)"] --> GQA_KV["Group Shared KV (8 Heads Total)<br>4x–8x Cache Cut · >99% MHA Quality"]
-    end
+    R["Request's tokens<br>(logical order)"] --> T["Block table<br>(logical to physical)"]
+    T --> B1["Physical block 7"]
+    T --> B2["Physical block 2"]
+    T --> B3["Physical block 11"]
 
-    subgraph MLA["4. Multi-Head Latent Attention (MLA: DeepSeek-R1)"]
-        MLA_Q["Query Heads (H = 128)"] --> MLA_LAT["Low-Rank Latent Vector (Dim = 512)<br>Matrix Absorbed into Q · 15x–20x Cache Cut"]
-    end
-
-    style GQA fill:none,stroke:#16a34a,stroke-width:2px
-    style MLA fill:none,stroke:#7c3aed,stroke-width:2px
-    style GQA_Q stroke:#16a34a,stroke-width:1px
-    style GQA_KV stroke:#16a34a,stroke-width:1px
-    style MLA_Q stroke:#7c3aed,stroke-width:1px
-    style MLA_LAT stroke:#7c3aed,stroke-width:1px
+    style T stroke:#7c3aed,stroke-width:2px
+    style B1 stroke:#16a34a,stroke-width:2px
+    style B2 stroke:#16a34a,stroke-width:2px
+    style B3 stroke:#16a34a,stroke-width:2px
 ```
 
-*Walkthrough: GQA groups queries to share Key-Value heads, striking the sweet spot between memory and accuracy. MLA down-projects KV heads into a compact latent vector, absorbing the up-projection matrix directly into Query weights during inference for a 93%+ memory reduction.*
+1. **The request's tokens** have a logical order: block 0, block 1, block 2 of the conversation.
+2. **The block table** is the page table. It records which physical block holds each logical block.
+3. **Physical blocks** can be anywhere in free GPU memory, and they are allocated one at a time as the request grows.
 
-### Walkthrough of Attention Architectures:
-1. **Multi-Head Attention (MHA)**:
-   - Standard 1:1:1 ratio. If there are 64 Query heads, there are 64 Key heads and 64 Value heads.
-   - Offers maximum representational expressiveness, but the KV cache scales linearly with the total number of attention heads (`2 × 2 × L × H × d_k × N × B`).
-2. **Multi-Query Attention (MQA)**:
-   - All Query heads share a single Key head and a single Value head.
-   - Reduces KV-cache memory by `H_Q` times (up to an 8x or 16x reduction).
-   - Drawback: Noticeable degradation in fine-grained associative recall and multi-hop reasoning.
-3. **Grouped-Query Attention (GQA)** (Ainslie et al., 2023):
-   - Divides Query heads into `G` groups, with each group sharing one Key and one Value head.
-   - For example, LLaMA-3-70B has 64 Query heads and 8 KV heads (8 Query heads per group).
-   - **Result**: Delivers 99%+ of MHA's benchmark accuracy while cutting KV-cache footprint by **8x**!
-4. **Multi-Head Latent Attention (MLA)** (DeepSeek-V2/V3/R1):
-   - Solves the fundamental dilemma: how to compress KV cache down to MQA levels while preserving full MHA multi-head expressiveness.
-   - **Low-Rank Compression**: Down-projects input representations into a compact latent vector `c_t^{KV}` of dimension `d_c` (e.g. 512), storing strictly `c_t^{KV}` in GPU memory.
-   - **Weight Matrix Absorption**: During inference decoding, the up-projection matrices (`W^{UK}` and `W^{UV}`) do NOT expand into large per-head tensors in VRAM. Instead, `W^{UK}` is mathematically absorbed directly into the Query projection matrix `W^Q`, allowing attention dot-products to execute against the compact latent vector:
-     ```text
-     q_t · (k_s)^T = (W^Q · h_t) · (W^{UK} · c_s^{KV})^T = (h_t · W^Q · (W^{UK})^T) · (c_s^{KV})^T
-     ```
-   - **Result**: Achieves a **93%+ memory reduction** (comparable to MQA) with zero loss in multi-head expressive capacity.
+* ⚠️ **What happens if you skip this?** With worst-case reservation, the number of users you can admit is set by the longest answer you allow, not by what users actually send. Memory sits reserved and idle while new requests wait.
 
----
+**Where the analogy breaks**: a block table adds an indirection on every cache read, so the attention code has to be written to follow it. That extra complexity is the cost of the saving. Block size is also a trade-off: bigger blocks mean fewer table entries but more stranded space in each request's last block.
 
-### Attention Architecture Comparison Matrix
+## 4. Try It (Runnable, Offline)
 
-| Dimension | Multi-Head Attention (MHA) | Multi-Query Attention (MQA) | Grouped-Query Attention (GQA) | Multi-Head Latent Attention (MLA) |
-|---|---|---|---|---|
-| **KV Cache Footprint** | 100% (Baseline) | ~6.2% – 12.5% (8x–16x reduction) | ~12.5% – 25% (4x–8x reduction) | **~5% – 7% (15x–20x reduction)** |
-| **KV Heads Ratio** | 1 : 1 (Query : KV) | N : 1 (All Q share 1 KV) | N : G (e.g. 8 Q share 1 KV) | Low-Rank Latent Vector (`d_c = 512`) |
-| **Model Expressiveness** | Maximum (Full multi-head) | Degraded on complex logic | Near-lossless (>99% MHA) | **Full MHA Equivalent (Absorbed)** |
-| **Inference Mechanism** | Standard tensor slicing | Single KV head broadcast | Grouped KV head broadcast | **Matrix absorption into Q & O** |
-| **Exemplar Models** | GPT-3, GPT-4 (original) | PaLM, Falcon | LLaMA 3, Mistral, Qwen 2.5 | **DeepSeek-V2, DeepSeek-V3, DeepSeek-R1** |
-
----
-
-## 6. PagedAttention: Virtual Memory for LLMs
-
-Before 2023, standard LLM serving systems allocated memory for the KV-cache as **contiguous physical chunks** sized to the absolute maximum potential context length (e.g. reserving 8,192 tokens of space even if the user only sent a 100-token prompt).
-
-This naive strategy caused catastrophic memory waste:
-- **Internal Fragmentation**: Reserving space for 8,192 tokens when the request only generates 500 tokens.
-- **External Fragmentation**: Memory gaps between requests that were too small to fit another worst-case allocation.
-- In practice, **60% to 80% of GPU VRAM was completely wasted sitting empty**.
-
-### The PagedAttention Revolution (Kwon et al., 2023 / vLLM)
-PagedAttention borrows the foundational concept of **OS Virtual Memory Paging**:
-
-```mermaid
-flowchart LR
-    L_REQ["1. Logical Context Stream<br>Contiguous Tokens (0 to 48)"] --> PT["2. Virtual Block Table<br>Dynamic Logical-to-Physical Map"]
-    PT --> P_MEM["3. Scattered Physical Frames<br>VRAM Frames 2, 7, 11 (Zero Waste)"]
-    PT -.-> COW["4. Shared Prefix Blocks<br>Zero-Copy Branching for System Prompts"]
-
-    style L_REQ stroke:#2563eb,stroke-width:2px
-    style PT stroke:#7c3aed,stroke-width:2px
-    style P_MEM stroke:#16a34a,stroke-width:2px
-    style COW stroke:#d97706,stroke-width:2px
-```
-
-### Walkthrough of PagedAttention Paging:
-1. **Fixed-Size Physical Blocks**: GPU memory is divided into fixed-size physical frames (typically 16 or 32 tokens each).
-2. **On-Demand Allocation**: When a request begins, only the blocks needed for the immediate prompt tokens are allocated.
-3. **Non-Contiguous Storage**: As new tokens are generated, new physical blocks are allocated wherever space exists in VRAM. Physical memory does not need to be contiguous.
-4. **Virtual Block Table**: An OS-style page table translates logical sequence token offsets into physical memory pointers.
-5. **Zero-Copy Branching**: For multi-agent systems and parallel sampling, multiple requests can point to the same physical prompt blocks (Copy-on-Write), slashing memory usage for shared system prompts by up to 90%.
-
----
-
-### 📊 Contiguous Static VRAM (2022) vs. PagedAttention & Modern Serving (2026)
-
-| Architectural Dimension | Contiguous Static VRAM (2022) | PagedAttention & Modern Serving (2026) |
-| :--- | :--- | :--- |
-| **Allocation Mechanism** | Worst-case pre-allocation (e.g. 8k tokens) | **Dynamic, non-contiguous block paging** (16-token frames) |
-| **Memory Waste** | 60% – 80% wasted due to internal fragmentation | **< 4% memory waste** |
-| **Shared Prefix Caching**| Duplicated across every user stream | **Zero-copy reference counting (Copy-on-Write)** |
-| **Attention Architecture**| Multi-Head Attention (MHA) | **Grouped-Query Attention (GQA)** or **MLA** |
-| **Serving Throughput** | 2x – 4x concurrent streams per GPU | **15x – 25x concurrent streams per GPU** |
-
----
-
-## 7. Concrete Implementation: GPU Capacity Planner
-
-The following Python 3.12 script implements an exact VRAM and KV-Cache Capacity Planner using Pydantic v2. Use this tool to calculate concurrency limits and predict OOM boundaries before deploying to production.
+Two short files. Both need Python 3.12+ and Pydantic v2, and use no network. The first computes cache size from a model shape you supply. Save it as `kv_sizing.py`:
 
 ```python
-"""
-Production GPU VRAM & KV-Cache Sizing Calculator.
-Determines maximum safe concurrency, static weight footprint, and dynamic cache limits.
-"""
-
-from typing import Literal
 from pydantic import BaseModel, Field
 
+GB = 1_000_000_000  # decimal gigabyte, to match GPU spec sheets
 
-class ModelConfig(BaseModel):
-    """Transformer architecture hyperparameters."""
+
+class ModelShape(BaseModel):
+    """The four numbers that decide KV cache size, plus the weight size."""
     name: str
-    total_parameters_billions: float
-    num_layers: int
-    num_query_heads: int
-    num_kv_heads: int
-    head_dimension: int = 128
-    default_precision: Literal["FP16", "BF16", "FP8", "INT4"] = "FP16"
+    layers: int = Field(gt=0)
+    kv_heads: int = Field(gt=0)
+    head_dim: int = Field(gt=0)
+    weight_params: float = Field(gt=0, description="total parameters")
 
-    @property
-    def bytes_per_weight(self) -> float:
-        mapping = {"FP16": 2.0, "BF16": 2.0, "FP8": 1.0, "INT4": 0.5}
-        return mapping[self.default_precision]
-
-    @property
-    def gqa_ratio(self) -> float:
-        """Memory reduction ratio over standard Multi-Head Attention."""
-        return self.num_query_heads / self.num_kv_heads
+    def kv_bytes_per_token(self, bytes_per_value: int = 2) -> int:
+        # 2 = one Key vector + one Value vector per token, per layer
+        return 2 * self.layers * self.kv_heads * self.head_dim * bytes_per_value
 
 
-class GPUHardwareSpec(BaseModel):
-    """Target GPU physical memory constraints."""
-    name: str
-    vram_capacity_gb: float
-    cuda_runtime_overhead_gb: float = Field(
-        default=2.5, description="PyTorch/CUDA runtime buffers and context overhead"
-    )
-
-    @property
-    def usable_vram_gb(self) -> float:
-        return max(0.0, self.vram_capacity_gb - self.cuda_runtime_overhead_gb)
+def session_bytes(model: ModelShape, tokens: int, bytes_per_value: int = 2) -> int:
+    if tokens < 0:
+        raise ValueError("tokens must be >= 0")
+    return model.kv_bytes_per_token(bytes_per_value) * tokens
 
 
-class CapacityReport(BaseModel):
-    """Comprehensive sizing and concurrency analysis."""
-    model_name: str
-    gpu_name: str
-    static_weights_gb: float
-    remaining_vram_for_cache_gb: float
-    kv_cache_per_token_bytes: float
-    single_session_cache_mb: float
-    max_safe_concurrent_streams: int
-    is_deployable: bool
-
-
-class VRAMCapacityPlanner:
-    """Calculates serving capacity and guards against out-of-memory crashes."""
-
-    @staticmethod
-    def calculate_capacity(
-        model: ModelConfig,
-        hardware: GPUHardwareSpec,
-        target_context_tokens: int = 4096,
-        kv_cache_precision_bytes: float = 2.0,  # 2.0 for FP16, 1.0 for FP8 KV cache
-    ) -> CapacityReport:
-        # 1. Static model weight footprint
-        static_weight_bytes = model.total_parameters_billions * 1e9 * model.bytes_per_weight
-        static_weights_gb = static_weight_bytes / (1024**3)
-
-        # 2. Remaining VRAM for dynamic KV cache
-        remaining_vram_gb = hardware.usable_vram_gb - static_weights_gb
-        is_deployable = remaining_vram_gb > 2.0  # Require at least 2 GB free for minimal caching
-
-        # 3. KV-cache bytes per single token step across the entire model:
-        # Formula: 2 (K and V) * Layers * KV_Heads * Head_Dim * Bytes_Per_Element
-        bytes_per_token = (
-            2.0
-            * model.num_layers
-            * model.num_kv_heads
-            * model.head_dimension
-            * kv_cache_precision_bytes
-        )
-
-        # 4. KV-cache for one complete user session at target context length:
-        session_cache_bytes = bytes_per_token * target_context_tokens
-        session_cache_mb = session_cache_bytes / (1024**2)
-        session_cache_gb = session_cache_bytes / (1024**3)
-
-        # 5. Maximum concurrent streams before exhausting available VRAM:
-        if is_deployable and session_cache_gb > 0:
-            # Leave 10% safety buffer for memory fragmentation
-            safe_cache_pool_gb = remaining_vram_gb * 0.90
-            max_concurrency = int(safe_cache_pool_gb // session_cache_gb)
-        else:
-            max_concurrency = 0
-
-        return CapacityReport(
-            model_name=model.name,
-            gpu_name=hardware.name,
-            static_weights_gb=round(static_weights_gb, 2),
-            remaining_vram_for_cache_gb=round(remaining_vram_gb, 2),
-            kv_cache_per_token_bytes=round(bytes_per_token, 2),
-            single_session_cache_mb=round(session_cache_mb, 2),
-            max_safe_concurrent_streams=max_concurrency,
-            is_deployable=is_deployable,
-        )
-
-
-# --- Example Execution ---
 if __name__ == "__main__":
-    # LLaMA-3.1-70B architecture parameters
-    llama_70b = ModelConfig(
-        name="Meta-LLaMA-3.1-70B (FP16)",
-        total_parameters_billions=70.6,
-        num_layers=80,
-        num_query_heads=64,
-        num_kv_heads=8,  # GQA: 8:1 ratio
-        head_dimension=128,
-        default_precision="FP16",
-    )
-
-    # Dual NVIDIA H100 SXM5 (160 GB combined VRAM via Tensor Parallelism = 2)
-    h100_pair = GPUHardwareSpec(
-        name="2x NVIDIA H100 SXM5 (160 GB Total)",
-        vram_capacity_gb=160.0,
-        cuda_runtime_overhead_gb=5.0,
-    )
-
-    report = VRAMCapacityPlanner.calculate_capacity(
-        model=llama_70b,
-        hardware=h100_pair,
-        target_context_tokens=8192,
-        kv_cache_precision_bytes=2.0,  # FP16 KV-Cache
-    )
-
-    print("=== ENTERPRISE VRAM & CONCURRENCY SIZING REPORT ===")
-    print(f"Model: {report.model_name}")
-    print(f"Hardware Cluster: {report.gpu_name}")
-    print(f"Deployable: {'YES' if report.is_deployable else 'NO (Insufficient VRAM)'}")
-    print(f"Static Model Weights: {report.static_weights_gb} GB")
-    print(f"Remaining VRAM for KV-Cache: {report.remaining_vram_for_cache_gb} GB")
-    print(f"KV-Cache per Token: {report.kv_cache_per_token_bytes:,.0f} Bytes")
-    print(f"Single Session Cache (8k context): {report.single_session_cache_mb} MB")
-    print(f"Max Safe Concurrent Streams: {report.max_safe_concurrent_streams} streams")
+    base = dict(layers=80, head_dim=128, weight_params=70e9)
+    variants = {
+        "MHA (64 KV heads)": ModelShape(name="mha", kv_heads=64, **base),
+        "GQA (8 KV heads)": ModelShape(name="gqa", kv_heads=8, **base),
+        "MQA (1 KV head)": ModelShape(name="mqa", kv_heads=1, **base),
+    }
+    for label, m in variants.items():
+        per_tok = m.kv_bytes_per_token()
+        one = session_bytes(m, 8192)
+        print(f"{label:20s} {per_tok:>10,} B/token  {one / GB:7.3f} GB per 8,192-token session")
 ```
 
-### Script Output Analysis:
+Expected output (verified by running the block with Python 3.14.7 and Pydantic 2.13.5):
+
 ```text
-=== ENTERPRISE VRAM & CONCURRENCY SIZING REPORT ===
-Model: Meta-LLaMA-3.1-70B (FP16)
-Hardware Cluster: 2x NVIDIA H100 SXM5 (160 GB Total)
-Deployable: YES
-Static Model Weights: 131.5 GB
-Remaining VRAM for KV-Cache: 23.5 GB
-KV-Cache per Token: 327,680 Bytes
-Single Session Cache (8k context): 2,560.0 MB
-Max Safe Concurrent Streams: 8 streams
+MHA (64 KV heads)     2,621,440 B/token   21.475 GB per 8,192-token session
+GQA (8 KV heads)        327,680 B/token    2.684 GB per 8,192-token session
+MQA (1 KV head)          40,960 B/token    0.336 GB per 8,192-token session
 ```
 
-Notice the critical operational takeaway: across two $30,000 H100 GPUs (160 GB combined VRAM), after loading the 70B model weights and accounting for runtime buffers, **you have enough memory to safely serve only 8 concurrent users** with an 8,192-token context! 
+The second file turns that into a concurrency plan. It compares worst-case reservation with paged allocation, where each request only holds what it has actually used. Save it next to the first:
 
-If a 9th user submits a request, the cluster will OOM unless you implement PagedAttention, KV-cache quantization (FP8), or request queueing.
+```python
+from pydantic import BaseModel, Field
+
+GB = 1_000_000_000  # decimal gigabyte, matching GPU spec sheets
+
+
+class ModelShape(BaseModel):
+    name: str
+    layers: int = Field(gt=0)
+    kv_heads: int = Field(gt=0)
+    head_dim: int = Field(gt=0)
+    weight_params: float = Field(gt=0, description="total parameters")
+
+    def kv_bytes_per_token(self, bytes_per_value: int = 2) -> int:
+        return 2 * self.layers * self.kv_heads * self.head_dim * bytes_per_value
+
+
+def session_bytes(model: ModelShape, tokens: int, bytes_per_value: int = 2) -> int:
+    if tokens < 0:
+        raise ValueError("tokens must be >= 0")
+    return model.kv_bytes_per_token(bytes_per_value) * tokens
+
+
+class GPUBudget(BaseModel):
+    total_vram_gb: float = Field(gt=0, description="all GPUs combined")
+    runtime_overhead_gb: float = Field(ge=0, description="framework buffers (illustrative)")
+    safety_fraction: float = Field(default=0.10, ge=0, lt=1)
+
+
+class Plan(BaseModel):
+    weights_gb: float
+    cache_pool_gb: float
+    reserved_max_sessions: int
+    paged_max_sessions: int
+
+
+def plan(model: ModelShape, gpu: GPUBudget, max_ctx: int, avg_ctx: int,
+         bytes_per_weight: int = 2, bytes_per_kv: int = 2) -> Plan:
+    if avg_ctx > max_ctx:
+        raise ValueError("avg_ctx cannot exceed max_ctx")
+    weights = model.weight_params * bytes_per_weight
+    free = gpu.total_vram_gb * GB - gpu.runtime_overhead_gb * GB - weights
+    if free <= 0:
+        raise ValueError("model weights do not fit on this GPU budget")
+    pool = free * (1 - gpu.safety_fraction)
+    reserved = int(pool // session_bytes(model, max_ctx, bytes_per_kv))
+    paged = int(pool // session_bytes(model, avg_ctx, bytes_per_kv))
+    return Plan(weights_gb=weights / GB, cache_pool_gb=round(pool / GB, 2),
+                reserved_max_sessions=reserved, paged_max_sessions=paged)
+
+
+if __name__ == "__main__":
+    llama70 = ModelShape(name="70B-class", layers=80, kv_heads=8, head_dim=128, weight_params=70e9)
+    gpu = GPUBudget(total_vram_gb=160, runtime_overhead_gb=5)
+    print(plan(llama70, gpu, max_ctx=8192, avg_ctx=2000).model_dump())
+    try:
+        plan(llama70, GPUBudget(total_vram_gb=80, runtime_overhead_gb=5), 8192, 2000)
+    except ValueError as err:
+        print("Rejected:", err)
+```
+
+Expected output (verified by running the block with Python 3.14.7 and Pydantic 2.13.5):
+
+```text
+{'weights_gb': 140.0, 'cache_pool_gb': 13.5, 'reserved_max_sessions': 5, 'paged_max_sessions': 20}
+Rejected: model weights do not fit on this GPU budget
+```
+
+What to notice:
+- **Memory, not compute, sets the ceiling**: 160 GB minus 140 GB of weights minus 5 GB overhead leaves 15 GB; after a 10% safety margin the pool is 13.5 GB.
+- **Reservation wastes the pool**: at 8,192 tokens per session, 13.5 ÷ 2.684 = 5.03, so 5 sessions. If real sessions average 2,000 tokens *(illustrative)*, 13.5 GB ÷ 0.655 GB per session is about 20.6, so 20. The gain is the gap between what you reserve and what users use.
+- **A fail-fast check**: the second call shows the planner refusing a GPU budget where the weights alone do not fit, instead of returning a negative number.
+- **Placeholders**: the 5 GB overhead, 10% margin and 2,000-token average are assumptions. Measure your own.
+
+## 5. Trade-Offs
+
+| Choice | Benefit | Cost |
+|---|---|---|
+| MQA or GQA instead of MHA | Much smaller cache per user, faster decode | Chosen at model design time (existing MHA checkpoints can be uptrained, per Ainslie et al., 2023); MQA can lose quality |
+| MLA | Cache close to MQA size (about 2.25 × head dim per layer, per the DeepSeek-V2 paper) | More complex model design and serving code |
+| Paged allocation | Near-zero stranded cache memory, prefix sharing | Extra indirection on each read; block size to tune |
+| Larger batch | More users served per read of the weights | More cache needed; each request may wait longer for its turn |
+| Storing the cache in fewer bytes per value (for example 1 byte instead of 2) | Halves the cache per token (derived from the formula) | Possible quality change; measure on your own task |
+| Longer context limit | Bigger documents and chats | Cache per user grows linearly with it |
+
+## 6. Failure Modes & Anti-Patterns
+
+| Symptom | Cause | Fix |
+|---|---|---|
+| Server runs out of GPU memory under real traffic, fine in tests | Tested with short prompts; cache grows with tokens × users | Size with the formula at your real p95 context length; load-test with realistic lengths |
+| Throughput plateaus while GPU compute looks idle | Decode is memory-bound and the cache pool limits batch size | Reduce cache per user (shorter limits, GQA model, fewer bytes per value) before adding compute |
+| New requests queue while memory appears free | Worst-case contiguous reservation strands the pool | Use an engine with paged allocation; admit on free blocks, not on a fixed count |
+| Users complain the first word is slow, answers then stream fine | Long prompt, so TTFT dominates | Shorten or trim the prompt, or cache shared prefixes |
+| Answers stream slowly, first word is quick | Decode speed (TPS) limited by memory bandwidth and cache reads | Shorter answers, smaller cache per request, or hardware with more bandwidth |
+| Planner returns zero or negative capacity | Weights plus overhead exceed the GPU budget | Spread weights over more GPUs or pick a smaller model; fail fast as the planner does |
+
+## 🧠 7. Quick Check to See if it Clicked
+
+> A 70B-class model (80 layers, 8 KV heads, head dim 128, FP16) has 60 GB of GPU memory left for the cache after weights and overhead. Your product allows 8,192-token contexts, and 45 users connect. (a) How many fit if each request reserves its full 8,192 tokens? (b) Users actually average 2,000 tokens *(illustrative)*. Do 45 fit with paged allocation? Show the arithmetic.
+
+<details>
+<summary><b>View answer</b></summary>
+
+```text
+Per token:        327,680 bytes
+Per full session: 327,680 × 8,192 = 2,684,354,560 bytes ≈ 2.68 GB
+
+(a) Reserved:  60 ÷ 2.684 = 22.35  →  22 users. The 45 users need
+               45 × 2.684 = 120.8 GB, twice what you have. Out of memory.
+
+(b) Paged:     45 × 2,000 tokens × 327,680 bytes = 29.49 GB  →  fits in 60 GB
+               with room for about 91 such sessions (60 ÷ 0.655).
+```
+
+Reservation plans for the worst case, while paging allocates on demand. The catch: if all 45 users grow toward 8,192 tokens, total demand still reaches 120.8 GB. Therefore, you still need admission control and a policy for block exhaustion (queue, pause, or evict).
+</details>
+
+## 8. Key Takeaways
+
+- The KV cache stores every earlier token's Key and Value so the model does not recompute them. It turns quadratic total work into linear per-step work at the price of memory.
+- Prefill is parallel and sets TTFT. Decode is sequential and sets TPS. Measure them separately.
+- Cache size is 2 × layers × KV heads × head dim × bytes per value × tokens × requests. Derive it before you provision.
+- GQA, MQA and MLA shrink the cache by reducing what is stored per token. Paged allocation removes the waste from reserving for the worst case.
+
+**Sources I opened and read:**
+- [Kwon et al. (2023), Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)
+- [Ainslie et al. (2023), GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245)
+- [Shazeer (2019), Fast Transformer Decoding: One Write-Head is All You Need](https://arxiv.org/abs/1911.02150)
+- [DeepSeek-AI (2024), DeepSeek-V2](https://arxiv.org/abs/2405.04434)
+- [Llama 3 paper, Table 3 hyperparameters](https://arxiv.org/abs/2407.21783) and [Llama 3.1 70B model card](https://huggingface.co/meta-llama/Llama-3.1-70B)
 
 ---
 
-## 8. Trade-offs & Architecture Decision Matrix
-
-| Attention Variant | KV-Cache Footprint | Quality / Accuracy | Concurrency Multiplier | Dominant Production Examples |
-|---|---|---|---|---|
-| **Multi-Head Attention (MHA)** | 100% (Baseline, Largest) | Maximum baseline | 1.0x (Lowest concurrency) | GPT-3, GPT-4, original Transformer |
-| **Multi-Query Attention (MQA)** | 12.5% (8x reduction) | Small drop in associative multi-hop recall | Up to 8x higher concurrency | PaLM, Falcon 40B |
-| **Grouped-Query Attention (GQA)** | 25% (4x reduction for G=2) to 12.5% (8x for G=8) | Indistinguishable from MHA | 4x to 8x higher concurrency | LLaMA 3, Mistral, Qwen 2.5 |
-| **FP8 Quantized KV-Cache** | 50% cut over FP16 KV cache | Minimal perplexity change (< 0.1%) | 2x additional concurrency | Supported in vLLM and TensorRT-LLM |
-
----
-
-## 9. Common Failure Modes & Anti-Patterns
-
-### Anti-Pattern 1: The Linear Concurrency Assumption
-- **The Mistake**: Engineering teams assume that because the GPU is at 20% compute utilization under 10 concurrent requests, it can comfortably handle 50 concurrent requests.
-- **Why It Fails**: Compute scales smoothly; KV-cache memory scales with both batch size AND sequence length. When those 50 requests reach deep context during multi-turn chat, VRAM suddenly exhausts, triggering an immediate crash.
-- **Production Remedy**: Implement an admission controller at the API Gateway that checks available KV-cache blocks in vLLM before accepting new requests.
-
-### Anti-Pattern 2: Disregarding PagedAttention Block Sizing
-- **The Mistake**: Setting the PagedAttention block size too large (e.g. `block_size = 64` or `128` tokens) in low-latency environments.
-- **Why It Fails**: Oversized blocks re-introduce internal fragmentation. If a request terminates after generating 65 tokens, two full 64-token blocks are allocated, wasting nearly 50% of the memory.
-- **Production Remedy**: Use `block_size = 16` for varied conversational workloads with high request turn-over; use `block_size = 32` for high-throughput batch summarization.
-
----
-
-## 10. Quick Check to See if it Clicked
-
-> **Scenario**: You are serving LLaMA-3.1-70B (FP16) on a 2x 80 GB NVIDIA H100 cluster (160 GB total). Model weights consume 131.5 GB. Runtime overhead takes 5 GB.
->
-> You need to support **32 concurrent users** simultaneously analyzing 8,192-token contracts. 
->
-> Currently, the script indicates you can safely support only **8 concurrent users** because each session takes 2.56 GB of KV-cache (8 streams × 2.56 GB = 20.48 GB, leaving ~3 GB buffer).
->
-> **Question**: Without buying more GPUs, what two production levers can you configure to reach the 32-stream target?
->
-> **Answer**: 
-> 1. **Model Weight Quantization (FP8 or INT4 AWQ)**:
->    - Converting model weights from FP16 (131.5 GB) to FP8 (65.8 GB) instantly frees up **~65 GB of VRAM**.
-> 2. **KV-Cache Quantization (FP8)**:
->    - Storing Key and Value vectors in FP8 (1 byte per element instead of 2 bytes) cuts the single-session cache from 2.56 GB down to **1.28 GB**.
-> 3. **The Result**: 32 streams × 1.28 GB = 40.96 GB of KV-cache. With FP8 weights (65.8 GB) + 41 GB KV cache + 5 GB runtime = **111.8 GB**, easily fitting into the 160 GB cluster with nearly 50 GB of safety buffer!
-
----
-
-## 11. Key Takeaways
-
-1. **The KV-Cache Is Stateful Scratchpad Memory**: In autoregressive decode, past Key and Value vectors must be retained in VRAM to prevent quadratic O(N^2) recomputation.
-2. **Decode Is Memory-Bandwidth-Bound**: Generating tokens one at a time is bottlenecked by the speed of transferring model weights and KV activations across the HBM bus.
-3. **Grouped-Query Attention (GQA) Is the Industry Standard**: By grouping Query heads to share Key-Value heads, GQA reduces KV-cache memory consumption by 4x to 8x with zero loss in output quality.
-4. **PagedAttention Eliminates Memory Waste**: Applying OS-style non-contiguous paging to the KV cache reduces memory fragmentation from ~70% to under 4%.
-
----
-
-## 12. Verified Resources
-
-- **[Ainslie et al. (2023) — GQA: Training Generalized Multi-Query Transformer Models from Multi-Head Checkpoints](https://arxiv.org/abs/2305.13245)**: The seminal research paper introducing Grouped-Query Attention.
-- **[Kwon et al. (2023) — Efficient Memory Management for Large Language Model Serving with PagedAttention](https://arxiv.org/abs/2309.06180)**: The foundational paper behind the vLLM serving engine.
-- **[Pope et al. (2022) — Efficiently Scaling Transformer Inference](https://arxiv.org/abs/2211.05102)**: Detailed analysis of arithmetic intensity and memory bandwidth bottlenecks in large models.
-- **Previous Lesson**: [Lesson 02: Tokenization & Byte-Pair Encoding (BPE)](./02-tokenization-and-bpe-mechanics.md)
-- **Next Lesson**: [Lesson 04: Test-Time Compute & Reasoning Tokens](./04-test-time-compute-and-reasoning-models.md)
+## 🧭 Navigation
+- **[← Previous Lesson: Transformer Inference & Hardware Realities](./02-transformer-and-hardware-physics.md)**
+- **[Phase 00 Hub](./README.md)**
+- **[Next Lesson: Test-Time Compute & Reasoning Models →](./04-test-time-compute-and-reasoning-models.md)**
+- **[Capstone Lab: Token Economics Analyzer](./labs/capstone-token-economics-analyzer.md)**

@@ -73,61 +73,57 @@ When you hardcode light pastel fills (e.g. `fill:#f0f7ff`, `fill:#ffffff`, `fill
 
 ---
 
-### Clean Theme-Adaptive Flowchart Example
+### Clean Theme-Adaptive Flowchart Examples (Split Into Two Diagrams)
+
+A retrieval system has two phases, so it gets two small diagrams instead of one large one.
+
+**Diagram 1: Ingestion (5 nodes)**
+
+```mermaid
+flowchart LR
+    D["Source Documents<br>(PDFs, docs)"] --> C["Chunking<br>(split into pieces)"]
+    C --> E["Embedding Model<br>(text → numbers)"]
+    E --> V[("Vector Database")]
+    C --> K[("Keyword Index")]
+
+    style D stroke:#2563eb,stroke-width:2px
+    style C stroke:#2563eb,stroke-width:2px
+    style E stroke:#7c3aed,stroke-width:2px
+    style V stroke:#16a34a,stroke-width:2px
+    style K stroke:#16a34a,stroke-width:2px
+```
+
+**Diagram 2: Query and answer (8 nodes)**
 
 ```mermaid
 flowchart TD
-    subgraph PHASE1["Phase 1: Ingestion & Prep (The Library Catalogs)"]
-        D["1. Source Documents<br>(PDFs, Spreadsheets, Docs)"] --> CC["2. Contextual Chunking<br>(Index cards + parent summary note)"]
-        CC --> E1["Dense Vectors<br>(Concepts & Meaning)"]
-        CC --> E2["Sparse Index<br>(Exact Word BM25)"]
-        E1 --> VDB[("Vector Database")]
-        E2 --> KDB[("Keyword Index")]
-    end
-
-    subgraph PHASE2["Phase 2: Query & Synthesis (Test Day Answering)"]
-        UQ["User Query"] --> QR["3. Query Rewriter<br>(Expand acronyms & HyDE)"]
-        QR --> H1["Dense Search"]
-        QR --> H2["BM25 Search"]
-        VDB -.-> H1
-        KDB -.-> H2
-        H1 --> RRF["4. RRF Rank Fusion<br>(Fair voting without score bias)"]
-        H2 --> RRF
-        RRF --> RR["5. Deep Reranker<br>(Cross-Encoder evaluates top 25)"]
-        RR --> LLM["6. Generator LLM<br>(Synthesizes answer with citations)"]
-        LLM --> GD{"7. Fact-Check Gate<br>Is response grounded?"}
-        GD -- "Yes" --> ANS["Final Verified Answer"]
-        GD -- "No" --> ABSTAIN["Quarantine & Abstain"]
-    end
-
-    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
-    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
-
-    style D stroke:#2563eb,stroke-width:2px
-    style CC stroke:#2563eb,stroke-width:2px
-    style E1 stroke:#7c3aed,stroke-width:2px
-    style E2 stroke:#7c3aed,stroke-width:2px
-    style VDB stroke:#16a34a,stroke-width:2px
-    style KDB stroke:#16a34a,stroke-width:2px
+    UQ["User Query"] --> H1["Vector Search"]
+    UQ --> H2["Keyword Search"]
+    H1 --> RRF["Rank Fusion<br>(merge both lists fairly)"]
+    H2 --> RRF
+    RRF --> LLM["Generator LLM<br>(answers with citations)"]
+    LLM --> GD{"Grounded in<br>the evidence?"}
+    GD -- "Yes" --> ANS["Verified Answer"]
+    GD -- "No" --> ABSTAIN["Abstain"]
 
     style UQ stroke:#2563eb,stroke-width:2px
-    style QR stroke:#2563eb,stroke-width:2px
-    style H1 stroke:#7c3aed,stroke-width:2px
-    style H2 stroke:#7c3aed,stroke-width:2px
     style RRF stroke:#d97706,stroke-width:2px
-    style RR stroke:#d97706,stroke-width:2px
     style LLM stroke:#7c3aed,stroke-width:2px
     style GD stroke:#d97706,stroke-width:2px
     style ANS stroke:#16a34a,stroke-width:2px
     style ABSTAIN stroke:#dc2626,stroke-width:2px
 ```
 
+Each diagram gets its own heading and its own numbered walkthrough. Neither needs subgraph wrappers, because the heading already names the phase.
+
 ---
 
 ## 4. Structural Rules: Low Node Budget & Modular Splitting
 
 1. **Low Node Budget (Simplicity & Readability First)**:
-   - **Target 4 to 8 nodes per diagram (strict ceiling of 10 nodes)**.
+   - **Target 4 to 8 nodes per diagram (strict ceiling of 10 nodes)**. Count every node, including nodes inside subgraphs, storage cylinders and decision diamonds.
+   - **Sequence diagrams**: at most 5 participants and 12 messages. **State diagrams**: at most 8 states.
+   - Do not copy any example in this repository that exceeds the ceiling. If you find one, split it and record it in the report.
    - A diagram with 15–20 nodes is visually overwhelming, unreadable on mobile screens, and prone to routing spaghetti.
    - Prioritize high-signal, clean visualizations over trying to cram an entire system into a single chart.
 

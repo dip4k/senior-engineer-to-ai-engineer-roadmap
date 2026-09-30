@@ -3,6 +3,8 @@
 > **Purpose:** Demonstrates how to explain an AI architecture by starting from the problem, identifying responsibilities, showing interactions, and discussing trade-offs.
 >
 > This is a quality reference, not a mandatory structure.
+>
+> Real lessons must also carry the header block with the term ledger, the canonical tier badge, every number sourced or marked illustrative, and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)). Define each AI term in plain English before using it.
 
 # Retrieval-Augmented Generation Architecture
 

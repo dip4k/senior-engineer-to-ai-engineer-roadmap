@@ -1,6 +1,6 @@
 # Document Parsing & Structural Chunking Strategies
 
-> **Tier**: `HIGH ROI / CORE` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/02-tokenization-and-bpe-mechanics.md), [Phase 01: Context AST](../01-prompt-and-context-engineering/01-context-ast-architecture.md)
+> **Tier**: `HIGH ROI / CORE` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [Phase 01: Context AST](../01-prompt-and-context-engineering/01-context-ast-architecture.md)
 
 ---
 

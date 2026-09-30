@@ -1,11 +1,11 @@
 ---
 name: ai-curriculum-refactoring
-description: Provides methodology, templates, quality rules, and validation guidance for refactoring AI Engineering curriculum for experienced software engineers. Use when auditing, restructuring, rewriting, simplifying, or validating lessons and learning phases.
+description: Methodology, templates, quality gates and validation rules for auditing, restructuring, rewriting and validating the AI Engineering curriculum for software engineers who know software terms but are new to AI terms. Use when auditing, planning, refactoring, simplifying or validating lessons and learning phases.
 ---
 
 # AI Curriculum Refactoring Skill
 
-This skill defines the pedagogical methodology, structural guidelines, editorial rules, and quality verification gates for designing, auditing, and refactoring the AI Engineering curriculum in this repository.
+This skill is the **single source of truth** for how the AI Engineering curriculum is audited, written and validated. The agent `ai-curriculum-architect` decides *when* to do what; this skill defines *how* and *what good looks like*. Detailed specifications live in `references/`. This file holds the rules that apply to every task.
 
 ---
 
@@ -13,182 +13,172 @@ This skill defines the pedagogical methodology, structural guidelines, editorial
 
 > **"Do not teach less. Teach better."**
 
-Refactoring does not mean dumbing down content or stripping away advanced systems engineering. It means:
-- **Demystifying before formalizing**: Lead with a vivid, intuitive real-world mental model or analogy (Explain Like I'm 10) before introducing formal mathematics or algorithms.
-- **Following the Tripartite Pedagogy Rhythm**: For every major block, explain (1) 🧒 **The Analogy**, (2) ⚙️ **The Engineering Mechanics**, and (3) ⚠️ **What happens if you skip this?**
-- **Contrasting evolution**: Provide "Old/Naive vs Modern Production" tables to show *why* modern patterns were invented.
-- **Explaining the failure mode of naive implementations** before introducing complex distributed solutions.
-- **Anchoring every concept in concrete engineering trade-offs** (latency, cost, throughput, recall, determinism).
-- **Giving experienced engineers clear mental models** that bridge traditional systems engineering (ACID, CRUD, RPC, deterministic state machines) to Software 3.0 (probabilistic outputs, semantic routing, KV cache physics, event-sourced WALs).
-- **Calibrating intuition**: Ending with a "Quick Check to See if it Clicked" scenario.
+<pedagogy_baseline>
+  <target_reader>
+    A working senior software engineer (backend, systems, cloud, distributed systems) who knows software terms deeply,
+    but is completely new to every AI term. They want pragmatic, high-signal engineering truth, not hype or academic jargon.
+  </target_reader>
+  
+  <voice_and_register>
+    Principal Systems Engineer at Stripe or Cloudflare explaining an architecture on a whiteboard to a smart backend
+    colleague over coffee. Direct, conversational, punchy, active, and zero academic pretension.
+  </voice_and_register>
+  
+  <depth_contract>
+    Depth is: memory math (VRAM/RAM), latency budgets (ms), failure modes (timeouts, silent drift),
+    hardware physics, wire protocols, and typed runnable code.
+    Depth is NEVER: academic ML paper vocabulary, statistical mechanics jargon, or ArXiv preprint phrasing.
+  </depth_contract>
+
+  <prose_mechanics>
+    <rule id="one_concept_per_sentence">Max 1 new AI concept per sentence. Never stack unfamiliar terms.</rule>
+    <rule id="sentence_length_ceiling">Hard ceiling: 28 words per sentence. Target average: 12-18 words.</rule>
+    <rule id="action_verbs">Use plain Anglo-Saxon verbs (build, run, guess, drop, check, save) over Latinate abstractions (instantiate, execute, hypothesize, evict, verify, persist).</rule>
+    <rule id="active_voice">Target 80%+ active voice: Subject -> Verb -> Object ("The engine drops the cache", NOT "The cache is evicted by the engine").</rule>
+    <rule id="ban_jargon_stacking">Never stack 2+ abstract AI adjectives before a noun (NO "probabilistic autoregressive next-token prediction model"; write "an AI that predicts the next word based on odds").</rule>
+  </prose_mechanics>
+
+  <canonical_jargon_translations>
+    <entry from="probabilistic autoregressive model" to="an AI that predicts words based on odds, not deterministic code" />
+    <entry from="autoregressive next-token prediction" to="predicting words one by one based on probabilities" />
+    <entry from="stochastic decoding trajectory" to="random variations in what the model outputs" />
+    <entry from="high-dimensional semantic vector embedding" to="a list of numbers that captures what text means" />
+    <entry from="parametric knowledge" to="what the model learned during training" />
+    <entry from="non-parametric knowledge" to="the fresh documents you feed it at runtime" />
+    <entry from="deterministic adjudication" to="standard code / if-statements" />
+    <entry from="heterogeneous agent topology" to="multiple agents working together" />
+    <entry from="prefix KV cache eviction under VRAM pressure" to="discarding saved prompt calculations when GPU memory runs out" />
+    <entry from="utilize" to="use" />
+    <entry from="commence / initiate" to="start" />
+    <entry from="ascertain / elucidate" to="check / explain" />
+    <entry from="necessitate" to="require" />
+  </canonical_jargon_translations>
+</pedagogy_baseline>
+
+Refactoring never means stripping engineering depth. It means:
+- **Demystifying before formalizing**: a plain-English mental model first, then mechanics, then code.
+- **Enforcing the "Coffee Test"**: write like a Senior Principal Engineer explaining an architecture on a whiteboard to a backend peer. Depth is proven through failure modes, memory bottlenecks, latency budgets, and runnable code—never through dense academic adjectives or ML jargon stacking.
+- **Showing why the naive approach fails** before introducing the production solution.
+- **Anchoring every concept in a trade-off** (latency, cost, memory, quality, determinism).
+- **Bridging from software the learner already knows** to the AI concept, without letting the bridge replace the explanation.
+- **Ending with a Quick Check** that tests understanding with a concrete scenario.
 
 ---
 
-## 🎯 Target Learner Profile
+## 🎯 Learner Baseline
 
-The learner is a **Senior / Staff Software Engineer or Solutions Architect (7–10+ years experience)**:
-- **Assumed Background**: Deep expertise in distributed systems, networking, caching tiers, relational & NoSQL databases, microservices, Linux internals, CI/CD, and telemetry.
-- **Cognitive Barrier**: Disoriented by probabilistic LLM outputs, opaque non-deterministic failures, vector math, and transient framework hype.
-- **Instructional Rule**: Never teach basic programming, Git, basic REST APIs, or introductory SQL. Introduce AI-specific primitives with architectural rigor, using accessible mental models to remove cognitive gatekeeping.
+The learner is a **working software engineer of any seniority who is new to AI engineering**.
+
+| | Assumed | Treatment |
+|---|---|---|
+| **Software engineering terms** (cache, index, RPC, idempotency, tracing, CI/CD) | Known | Use freely as bridges. Never re-teach. |
+| **AI engineering terms** (token, embedding, context window, attention, KV cache, RAG, agent, eval, hallucination, quantization, temperature) | Unknown, for everyone | Teach every one from zero: **definition → analogy → tiny example → formal name → math or code**. |
+
+**Term Ledger (mandatory)**: every lesson header lists `New AI terms introduced` and `AI terms assumed from earlier lessons` (linked). No AI term may be used before the lesson that teaches it. Details: [terminology-guidelines.md](references/terminology-guidelines.md), [lesson-template.md](references/lesson-template.md).
 
 ---
 
-## 🏷️ Effort vs ROI Depth Alignment
+## 🏷️ One Tier System
 
-Every lesson across all phases must declare its target depth tier in its header metadata, categorizing topics by their true enterprise ROI:
-
-| Tier | Badge | Scope & Word Budget | Target Audience |
+| Tier | Badge | Prose words | Scope |
 |---|---|---|---|
-| **Tier 1** | `HIGH ROI / CORE` | Essential concepts providing the highest practical ROI for enterprise applications (e.g., LLM APIs, prompt design, tokens/context, RAG, tool calling, MCP). Master these first. (~800–1,500 words). | All learners. Foundational phase entry. |
-| **Tier 2** | `IMPORTANT / NEXT` | Next-level production concerns like stateful agents, context/session management, security guardrails, evaluation, and observability. (~1,200–2,500 words). | Engineers deploying to production. Architectural core. |
-| **Tier 3** | `ADVANCED / SPECIALIZED` | Complex architectures, multi-agent sagas, vector search optimization, scale limits, and platform-specific enterprise implementations. (~1,500–3,000 words). | Senior & Staff engineers tackling specialized domains. |
-| **Tier 4** | `REFERENCE / AWARENESS` | Foundational hardware physics, memory hierarchy, mathematical proofs, and internal wire protocol details—good to know, but not strictly required for daily engineering. (~1,500–3,000 words). | Architects needing zero-abstraction clarity. |
+| 1 | `🟢 Core` | 800–1,500 | One core idea with intuition, naive failure, working baseline. |
+| 2 | `🟡 Engineering Depth` | 1,200–2,500 | Production concerns: edge cases, failure modes, scale, telemetry. |
+| 3 | `🔵 Advanced` | 1,500–3,000 | Specialised patterns. |
+| 4 | `⚫ Deep Dive` | 1,500–3,000 | Internal mechanics, hardware, wire protocols. |
 
-*Detailed tier parameters and split/merge thresholds are specified in [references/lesson-template.md](references/lesson-template.md).*
+Budgets count prose only (not code, diagrams or tables) and are hard limits: over budget means split. Legacy labels (`HIGH ROI / CORE` and similar) are migrated when a lesson is touched. See [lesson-template.md](references/lesson-template.md).
 
 ---
 
 ## 📐 Core Pedagogical Arc
 
-Every concept follows this natural, beginner-accessible yet systems-deep engineering progression:
-
 ```mermaid
 flowchart LR
-    Prob["1. Problem & ELI10 Analogy"] --> Naive["2. Why Naive Fails"]
-    Naive --> Tripartite["3. Tripartite Blocks<br>(Analogy ➔ Engineering ➔ Breakage)"]
-    Tripartite --> Code["4. Typed Code & Schemas"]
-    Code --> Trade["5. Trade-Offs & Telemetry"]
-    Trade --> Check["6. Quick Check & Evals"]
+    Prob["Problem &<br>Analogy"] --> Naive["Why naive<br>fails"]
+    Naive --> Mech["One term at a time<br>(Analogy, Engineering, Breakage)"]
+    Mech --> Code["Typed code<br>you can run"]
+    Code --> Trade["Trade-offs &<br>failure modes"]
+    Trade --> Check["Quick Check"]
 
     style Prob stroke:#2563eb,stroke-width:2px
     style Naive stroke:#dc2626,stroke-width:2px
-    style Tripartite stroke:#7c3aed,stroke-width:2px
+    style Mech stroke:#7c3aed,stroke-width:2px
     style Code stroke:#16a34a,stroke-width:2px
     style Trade stroke:#d97706,stroke-width:2px
     style Check stroke:#16a34a,stroke-width:2px
 ```
 
-See [references/curriculum-principles.md](references/curriculum-principles.md) for pedagogical principles and [references/lesson-template.md](references/lesson-template.md) for the 11-part lesson anatomy.
+1. **Problem & Analogy**: a concrete scenario, then a plain-English mental model.
+2. **Why naive fails**: the obvious approach and where it breaks.
+3. **One term at a time**: for each of the 2–4 core mechanisms, give the analogy, the engineering, and what breaks if you skip it.
+4. **Typed code**: Python 3.12+, Pydantic v2, offline, executed.
+5. **Trade-offs & failure modes**: honest costs, labelled numbers.
+6. **Quick Check**: a scenario with a hidden answer.
 
 ---
 
-## 🧩 Structural Flexibility Rule
+## 🧩 Structural Flexibility
 
-The lesson template is a **default structure, not a rigid checklist**. Template compliance does not equal good teaching.
+The template is a default, not a checklist. **Six invariants are mandatory**: (1) header block with term ledger, (2) plain-English mental model with its "where this analogy breaks" note, (3) systems depth with typed, executed code, (4) trade-offs and failure modes, (5) Quick Check, (6) navigation footer. Everything else is omittable.
 
-> [!TIP]
-> **Not All Sections Are Mandatory!**  
-> Tailor each lesson to its depth tier and topic. Never force artificial filler into a lesson just to satisfy all 11 template sections.  
-> - **Tier 1 Core Primers**: Keep them tight (800–1,500 words). Focus on intuition, failure of naive, and baseline code; omit distributed system diagrams or extensive interview trees if they dilute reading momentum.  
-> - **Algorithmic Utilities**: When explaining a formula (like BM25 or BPE), omit full distributed architecture blocks and focus on byte-level math and failure modes.  
-> - **Only 5 Invariants Are Mandatory**: (1) Title + Core Concept, (2) Intuitive Mental Model, (3) Systems Depth & Typed Code, (4) Failure Modes & Trade-offs, and (5) Reciprocal Navigation. All other sections are modular and omittable.
-
-Apply this **editorial decision test** to every section:
-> *"Does this section help the learner understand the concept, make an architectural decision, navigate a trade-off, or avoid a production failure?"*
-
-If not, remove or merge it.
+Editorial test for every section: *"Does this help the learner understand, decide, navigate a trade-off, or avoid a production failure?"* If not, remove or merge it.
 
 ---
 
 ## 🧭 Content Transformation Taxonomy
 
-When auditing or refactoring existing content, classify every element into one of seven actions:
-
-| Action | Definition | When to Use |
-|---|---|---|
-| **KEEP** | Preserve as-is | High-quality explanations with clear diagrams, code, and trade-offs. |
-| **REWRITE** | Rewrite with standard arc | Buzzword-heavy, passive, or undigested text dumped from docs. |
-| **REORGANIZE** | Shift position | Advanced concepts introduced before foundational prerequisites. |
-| **SIMPLIFY** | Condense without losing depth | Verbose text taking 500 words to explain a 50-word concept. |
-| **MOVE** | Transfer to another phase/appendix | Content belonging to an earlier or later phase. |
-| **MERGE** | Combine redundant sections | Repetitive explanations scattered across multiple headings. |
-| **REMOVE** | Delete entirely | Generic AI fluff, vendor hype, and duplicate cheat sheets. |
+Classify each element as one of: **KEEP**, **REWRITE**, **REORGANIZE**, **SIMPLIFY**, **MOVE**, **MERGE**, **REMOVE**. Prefer restructuring over deletion.
 
 ---
 
-## 🚦 Mandatory Enforcement Guardrails
+## 🚦 Guardrails (Violations Block Merge)
 
-These rules are strictly enforced during refactoring and validation. Violations block merge approval:
+These are the only copy of the guardrails. The agent and always-on rules refer here.
 
-### 1. Intuition-First Teaching & Tripartite Pedagogy
-- **Required**: Lead with an accessible, plain-English mental model or analogy (Explain Like I'm 10) before formal jargon. For every core block or mechanism, apply the Tripartite Pedagogy rhythm:
-  - 🧒 **The Analogy**: Relatable real-world metaphor.
-  - ⚙️ **The Engineering**: Production systems mechanics, schemas, code, and text formulas.
-  - ⚠️ **What happens if you skip this?**: Concrete failure mode / outage scenario.
-- **Required**: Provide "Old vs Modern" evolution tables and conclude with a "Quick Check to See if it Clicked" scenario.
-- **Forbidden**: Academic cognitive gatekeeping, dense jargon dumps, and unanchored acronym soup.
-
-### 2. Zero-LaTeX & Clean GFM Standard
-- **Forbidden**: Never use LaTeX math delimiters (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
-- **Required**: Clean text code blocks (```text), native Unicode (`→`, `⟷`, `Σ`, `≈`, `α`, `≤`, `≥`), standard `O(N)` monospace text, and GFM pipe tables. Avoid unescaped multiple dollar signs (`$$`, `$$$`).
-
-### 3. Zero Meta-Directive Leaks
-- **Forbidden**: Internal refactoring directives, compliance labels, or checklist tags in learner-facing text (e.g., `### Section (Zero-LaTeX):`, `(Pure Markdown)`, `(Refactored)`, `[MUST-HAVE]`).
-- **Required**: Clean, professional, authoritative headings and prose without exposing the authoring checklist.
-
-### 4. Plain-Language Titles (No Isolated Acronyms)
-- **Forbidden**: Isolated abbreviations in titles/headings (e.g., `# BM25 and HNSW`). Do not introduce multiple unexplained abbreviations in the same section.
-- **Required**: Plain-language systems descriptor first, acronym in parentheses (e.g., `# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics`), plus a 1–2 sentence `Core Concept` callout below the title. Expand every important abbreviation on first meaningful use.
-
-### 5. Mandatory Navigation & Wayfinding
-- **Lessons**: Every lesson file must conclude with `## 🧭 Navigation` containing reciprocal links (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Capstone Lab]`).
-- **Phase Hubs**: Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer. See [references/phase-template.md](references/phase-template.md).
-
-### 6. Theme-Adaptive Light & Dark Mode Contrast, Low Node Budget & Modular Splitting
-- **Theme-Adaptive Contrast (Light & Dark Mode)**: Diagrams must render with high contrast and zero visual breakage across both Light Mode and Dark Mode (GitHub, VS Code, web docs):
-  - **Subgraphs**: Always transparent (`fill:none,stroke:#...,stroke-width:2px`). Never apply opaque pastel fills (`#f0f7ff`) to subgraphs.
-  - **Nodes**: Do not override `fill` with light pastel colors (`#ffffff`, `#f0f7ff`). Leaving node fills to Mermaid's native theme engine ensures node cards and text automatically invert with high contrast in dark mode (dark slate card + white text) and light mode (light card + dark text).
-  - **Semantic Borders**: Apply meaning through vibrant, accessible borders:
-    - Primary/Ingestion/Pipeline: `stroke:#2563eb,stroke-width:2px` (Blue)
-    - Success/Runtime/Verified Output: `stroke:#16a34a,stroke-width:2px` (Green)
-    - Decision Gates/Rerank/Warning: `stroke:#d97706,stroke-width:2px` (Amber)
-    - Quarantine/Error/Hazard/Legacy: `stroke:#dc2626,stroke-width:2px` (Red)
-    - LLM/Reasoning Engine/Synthesis Core: `stroke:#7c3aed,stroke-width:2px` (Purple)
-    - Container/Framework Boundary: `stroke:#64748b,stroke-width:2px` (Slate)
-- **Low Node Count**: Aim for **4 to 8 nodes per diagram (strict ceiling of 10 nodes)**. Keep diagrams lightweight, focused, and immediately grokkable. Never build 20-node labyrinths.
-- **Modular Splitting**: If a flow or architecture has multiple phases (e.g. Ingestion vs. Query, Prefill vs. Decode, The Problem vs. The Modern Solution), **split it into separate, focused diagrams** rather than a single monolithic diagram. Each diagram gets its own heading, clear purpose, and step-by-step prose walkthrough.
-- **Forbidden**: Subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric rank links (`RightNode ~~~ LeftNode`). Multi-column subgraphs must use symmetric column pinning (`~~~`) to guarantee flush vertical stacking. See [references/diagram-guidelines.md](references/diagram-guidelines.md).
-
-### 7. Production Code Standards & Technology Noise Reduction
-- **Required**: Python 3.12+, typed Pydantic v2 schemas, type annotations, real error handling, and zero framework magic or pseudocode.
-- **Rule**: Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
-
-### 8. Strict Working Tree Policy: Do Not Commit Directly
-- **Forbidden**: Never run `git commit` or `git push` directly or autonomously after refactoring.
-- **Required**: Leave all modified and newly generated files in the git working tree for the user to inspect (`git diff`), run evaluation harnesses on, and review.
-- **Handoff**: Present a clear summary of changes and test verification results, and let the user review and commit when ready.
+1. **Beginner-first AI terms**: rules above. Tripartite rhythm (🧒 Analogy → ⚙️ Engineering → ⚠️ What happens if you skip this?) for each core mechanism, not every paragraph. Every analogy states where it breaks. Zero academic jargon stacking (strictly obey `<prose_mechanics>` and `<canonical_jargon_translations>`). Must pass the "Coffee Test". Max 28 words per sentence.
+2. **Accuracy & verifiability**: every number sourced, derived or marked *(illustrative)*; model and product names verified in the current session and dated; no invented citations, URLs or API fields; every code block executed. See [accuracy-policy.md](references/accuracy-policy.md).
+3. **Zero-LaTeX**: no `$$`, `$...$`, `\frac`, `\text`. Use `text` code blocks and Unicode (`→ ⟷ Σ ≈ α ≤ ≥`). GFM pipe tables only.
+4. **Zero meta-directive leaks**: no `(Zero-LaTeX)`, `(Refactored)`, `[MUST-HAVE]`, `[GOOD-TO-KNOW]` or any authoring-checklist tags in learner-facing text.
+5. **Plain-language titles**: plain descriptor first, acronym in parentheses, plus a Core Concept callout. Expand every abbreviation on first use. No more than two new acronyms per paragraph.
+6. **Navigation**: every lesson ends with `## 🧭 Navigation` (Previous, Phase Hub, Next, Capstone Lab). Every phase README has a Master Lesson Navigation Table and a Direct Chapter & Lesson Directory. See [phase-template.md](references/phase-template.md).
+7. **Diagrams**: 4–8 nodes each (hard ceiling 10), split when larger; transparent subgraphs, no `fill` overrides, semantic border colours; no subgraph-to-subgraph edges; numbered walkthrough under every diagram. Palette and layout rules live only in [diagram-guidelines.md](references/diagram-guidelines.md).
+8. **Code**: Python 3.12+, typed Pydantic v2, real error handling, no pseudo-code, runs offline by default. Introduce a technology only when it explains a concept or trade-off (concept → why it matters → how it works → example → technology).
+9. **Working tree policy**: never run `git commit` or `git push`. Leave changes in the working tree for the user to review.
 
 ---
 
-## 📡 Controlled Research & Conflict Resolution
+## 📡 Research & Conflict Resolution
 
-When evaluating emerging topics or industry updates:
-1. Follow the **Controlled Research Protocol**: `Research → Verify → Classify → Evaluate → Recommend → Human Approval → Integrate`. See [references/research-guidelines.md](references/research-guidelines.md).
-2. When audit and research findings conflict, apply [references/conflict-resolution-checklist.md](references/conflict-resolution-checklist.md). Record material conflicts rather than silently discarding them.
-
----
-
-## 📚 Quality References (Golden Examples)
-
-Golden examples in `examples/` demonstrate target quality, narrative pacing, and technical rigor (they are quality references, not rigid structural clones):
-- **Foundational Concept**: [examples/golden-concept-lesson.md](examples/golden-concept-lesson.md)
-- **System Architecture**: [examples/golden-architecture-lesson.md](examples/golden-architecture-lesson.md)
-- **Production Engineering**: [examples/golden-engineering-lesson.md](examples/golden-engineering-lesson.md)
-- **End-to-End Lesson**: [examples/golden-lesson.md](examples/golden-lesson.md)
+- Research uses the controlled protocol `Research → Verify → Classify → Evaluate → Recommend → Human Approval → Integrate`. See [research-guidelines.md](references/research-guidelines.md).
+- When audit and research disagree, use [conflict-resolution-checklist.md](references/conflict-resolution-checklist.md) and record material conflicts.
 
 ---
 
-## 🗂️ Single Source of Truth (SSOT) Reference Index
+## 📚 Golden Examples
 
-For detailed specifications, consult the authoritative references:
+Quality references, not structural clones. Start with the first.
 
-| Reference Document | Canonical Scope & Purpose |
+- **Beginner Tier 1 lesson (canonical)**: [examples/golden-lesson.md](examples/golden-lesson.md)
+- **Foundational concept**: [examples/golden-concept-lesson.md](examples/golden-concept-lesson.md)
+- **System architecture**: [examples/golden-architecture-lesson.md](examples/golden-architecture-lesson.md)
+- **Production engineering**: [examples/golden-engineering-lesson.md](examples/golden-engineering-lesson.md)
+
+---
+
+## 🗂️ Reference Index
+
+| Reference | Scope |
 |---|---|
-| **[references/quality-gates.md](references/quality-gates.md)** | **The 13-Point Quality Gate Checklist**, Dual-Lens Review, and Defect Severity Triage. |
-| **[references/lesson-template.md](references/lesson-template.md)** | **11-Part Default Lesson Anatomy**, word budgets, split/merge rules, and navigation footers. |
-| **[references/phase-template.md](references/phase-template.md)** | **Phase README Specification**, Master Lesson Navigation Table, and Direct Chapter Directory. |
-| **[references/terminology-guidelines.md](references/terminology-guidelines.md)** | **Title & Terminology Rules**, First-Mention rule, concept-before-acronym, and banned buzzwords. |
-| **[references/diagram-guidelines.md](references/diagram-guidelines.md)** | **Mermaid Standards**, Dagre layout stabilization, symmetric column pinning, and walkthroughs. |
-| **[references/curriculum-principles.md](references/curriculum-principles.md)** | **Senior Pedagogy**, Software 2.0 to 3.0 bridging, 9 anti-patterns, and decision matrices. |
-| **[references/research-guidelines.md](references/research-guidelines.md)** | **Controlled Web Research**, classification taxonomy, freshness criteria, and update workflows. |
-| **[references/conflict-resolution-checklist.md](references/conflict-resolution-checklist.md)** | **Evidence Verification**, distinguishing facts from trends, and resolving analytical conflicts. |
+| [audit-protocol.md](references/audit-protocol.md) | The 10-step audit protocol. |
+| [refactor-protocol.md](references/refactor-protocol.md) | The 12-step refactoring protocol with human checkpoints. |
+| [quality-gates.md](references/quality-gates.md) | 15-point quality gate, dual-lens review, severity triage. |
+| [accuracy-policy.md](references/accuracy-policy.md) | Numbers, models, citations, code execution, analogies, freshness. |
+| [lesson-template.md](references/lesson-template.md) | Tier system, budgets, header block, default anatomy, split/merge rules. |
+| [phase-template.md](references/phase-template.md) | Phase README specification. |
+| [terminology-guidelines.md](references/terminology-guidelines.md) | Learner baseline, first-mention rule, title rules, banned buzzwords. |
+| [diagram-guidelines.md](references/diagram-guidelines.md) | Mermaid standards, theme-adaptive palette, layout stability. |
+| [curriculum-principles.md](references/curriculum-principles.md) | Pedagogy, Software 2.0 → 3.0 bridges, anti-patterns, trade-off matrices. |
+| [research-guidelines.md](references/research-guidelines.md) | Controlled web research and freshness rules. |
+| [conflict-resolution-checklist.md](references/conflict-resolution-checklist.md) | Resolving conflicting evidence. |
+| [report-templates.md](references/report-templates.md) | Report formats and the `.curriculum-reports/` location. |

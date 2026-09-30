@@ -68,7 +68,7 @@ class EnterprisePromptCompiler:
         # Keeping system block immutable guarantees KV cache hits across subsequent turns.
         try:
             response = self.client.messages.create(
-                model="claude-3-7-sonnet-latest",
+                model="claude-3-5-sonnet-latest",
                 max_tokens=1024,
                 system=[
                     {

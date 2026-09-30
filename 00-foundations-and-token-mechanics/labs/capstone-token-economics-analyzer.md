@@ -15,7 +15,7 @@
     3. If a passenger brings too much luggage or the flight is full, the agent stops them at the counter with a courteous ticket change (`HTTP 429 Too Many Requests`), protecting the plane from crashing.
 
 * ⚙️ **The Engineering Reality**:
-  * An enterprise API proxy in Python (FastAPI), TypeScript (Fastify), or C# (ASP.NET Core) that intercepts LLM calls before provider dispatch to eliminate runaway inference costs, prevent GPU out-of-memory crashes, and enforce tenant SLAs.
+  * You build an enterprise API proxy in Python, TypeScript, or C#. It intercepts LLM requests before dispatch to cap inference costs, block out-of-memory crashes, and protect tenant SLAs.
 
 ---
 
@@ -70,7 +70,7 @@ flowchart TD
 ## 🛠️ Core Architectural Components & Implementation Steps
 
 1. **Exact Multi-Model Token Profiler:**
-   - Detect the target model family (`gpt-4.5`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
+   - Detect the target model family (As of 2026-09: `gpt-4.5`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
    - Use the appropriate native tokenizer bindings (`tiktoken` / `tokenizers` / C# `Microsoft.ML.Tokenizers`).
    - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
 
@@ -100,4 +100,8 @@ flowchart TD
 
 ---
 
-[Return to Phase 00 Hub](../README.md)
+## 🧭 Navigation
+- **[← Previous Lesson: Small Language Models & Quantization](../05-slms-and-quantization-mechanics.md)**
+- **[Optional Deep Dive: FlashAttention & Roofline Model](../06-roofline-and-flashattention-deep-dive.md)**
+- **[Phase 00 Hub](../README.md)**
+- **[Next Phase: Phase 01: Prompt & Context Engineering →](../../01-prompt-and-context-engineering/README.md)**

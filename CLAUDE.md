@@ -19,6 +19,9 @@ python scripts/refresh_content_scout.py --summary
 
 # 🔎 Generate Web Search Query List for Content Refresh
 python scripts/refresh_content_scout.py --queries-only
+
+# 🧹 Lint curriculum against the mechanical quality gates (add --phase N, --detail, --report, --run)
+python scripts/lint_curriculum.py
 ```
 
 ---

@@ -20,6 +20,7 @@ This capstone integrates the core patterns established across the Phase 01 curri
 
 | Pipeline Stage | Architectural Pattern | Relevant Lesson |
 |---|---|---|
+| **0. Prompt Foundations** | Message Roles, In-Context Learning, XML Sandboxing | [Lesson 00: Prompt Engineering Fundamentals](../00-prompt-engineering-fundamentals-roles-and-in-context-learning.md) |
 | **1. Context Compilation** | 3-Layer AST Schema, Developer Role, XML Delimiters | [Lesson 01: Context AST Architecture](../01-context-ast-architecture.md) |
 | **2. Budget Enforcement** | 16K/32K Token Portfolios, 4-Tier Compaction Pipeline | [Lesson 02: Token Budgeting & Compaction](../02-token-budgeting-and-compaction.md) |
 | **3. KV Cache Layout** | Contiguous Prefix Matching, Ephemeral Breakpoints | [Lesson 03: Prefix & Prompt Caching](../03-prefix-and-prompt-caching.md) |
@@ -66,7 +67,7 @@ This capstone integrates the core patterns established across the Phase 01 curri
 
 ### 4. Self-Healing Defensive Layer
 - Wrap downstream deserialization in a resilient validation handler.
-- If an edge-case model returns invalid syntax or violates constraints, dispatch the raw payload and validation error trace to a secondary fast model (Claude 3.5 Haiku, Gemini 2.0 Flash) for single-turn schema repair.
+- If an edge-case model returns invalid syntax, trigger fallback repair. Dispatch the malformed payload and error trace to a secondary fast model (Claude 3.5 Haiku as of 2024-10, Gemini 2.0 Flash as of 2025-01) for single-turn repair.
 
 ---
 

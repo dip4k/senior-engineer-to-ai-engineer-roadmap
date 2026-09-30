@@ -1,469 +1,316 @@
-# Lesson 04: Test-Time Compute & Reasoning Tokens
+# Lesson 04: Letting a Model Think Before It Answers (Test-Time Compute and Reasoning Models)
 
-`🔵 Advanced` · *Phase 00: Foundations & Token Mechanics* · *Estimated Reading Time: 17 minutes*
-
----
-
-## What You Will Learn
-
-By the end of this lesson, you will understand:
-- The fundamental shift from pre-training compute scaling to test-time (inference-time) compute scaling.
-- The internal mechanics of reasoning models: search trees, Process-Supervised Reward Models (PRMs), and backtracking.
-- The 50:1 thinking token asymmetry and its financial impact on cloud API billing.
-- Why reasoning scratchpads cannot be pre-cached like static prompt prefixes.
-- How to architect a production token governor with dead-man switches and circuit breakers to prevent runaway billing bankruptcies.
+> **Tier**: `🔵 Advanced` | **Read time**: ~16 min | **Prerequisites**: [Lesson 03: KV cache, prefill and decode](./03-kv-cache-vram-and-bandwidth-physics.md)  
+> **Core Concept**: A reasoning model spends extra tokens writing out its working before it gives the final answer. Those working tokens are billed and count toward limits even though you often never see them, so you need a budget and a ceiling around them.  
+> **New AI terms introduced**: reasoning model, test-time compute, thinking tokens, token governor  
+> **AI terms assumed from earlier lessons**: [large language model (LLM)](./00-what-is-an-llm.md), [prompt](./00-what-is-an-llm.md), [token](./00-what-is-an-llm.md), [inference](./00-what-is-an-llm.md), [context window](./00-what-is-an-llm.md), [hallucination](./00-what-is-an-llm.md), [temperature](./00-what-is-an-llm.md), [decode](./03-kv-cache-vram-and-bandwidth-physics.md), [KV cache](./03-kv-cache-vram-and-bandwidth-physics.md)
 
 ---
 
-## 1. The Problem: The Limits of Pre-Training Scaling
+## 🎯 What You Will Learn
 
-From 2017 to 2024, AI progress was driven almost entirely by the **first scaling law** (Kaplan et al., 2020; Chinchilla, Hoffmann et al., 2022):
-- Scrape tens of trillions of tokens from the public internet.
-- Rent tens of thousands of GPUs for months.
-- Compress human knowledge into static, frozen neural network weights.
-
-However, by late 2024, pre-training compute began encountering hard physical and informational limits:
-1. **Human Data Depletion**: The high-quality public text on the internet had been completely exhausted.
-2. **Exponential Power Costs**: Training next-generation clusters required hundreds of megawatts of electrical power and billions of dollars in capital expenditure.
-3. **The Single-Pass Hallucination Ceiling**: Standard transformers operate under a strict constraint: **O(1) compute per emitted token**. When you ask a standard model to write a complex 500-line multi-threaded distributed lock, it must emit the first token within a fraction of a second. It cannot pause to explore hypotheses, simulate race conditions, or verify invariants before typing.
-
-When faced with novel multi-step algorithmic reasoning, single-pass models frequently hallucinate plausible-sounding code that fails under edge cases.
+- Explain in plain words what "thinking before answering" means for a language model and why it costs money.
+- Read a provider's usage report and tell thinking tokens apart from answer tokens.
+- Build a governor that caps thinking per request and spending per day.
+- Decide when extra thinking is worth the latency and cost, and when it is waste.
 
 ---
 
-## 2. Why Naive Approaches Fail
+## 1. The Problem
 
-Before dedicated reasoning models, engineering teams attempted to force standard models into deep reasoning:
+You route a batch job through a model. Each request is a one-word classification: the reply is `YES` or `NO`. You estimate the cost from the reply length, which is tiny. The invoice is far larger than the estimate.
 
-- **Prompt Begging ("Think Step-by-Step")**: Adding phrases like `"Take a deep breath and think carefully before answering"` slightly improves Chain-of-Thought (CoT) formatting, but does not allocate more internal search depth. The model remains bound by the frozen probability distribution of its single forward pass.
-- **Client-Side Self-Consistency Loops**: Developers wrote loops that called GPT-4 five times, parsed the answers with regex, and computed majority voting. This multiplied latency and API costs by 5x while lacking any mechanism for the model to detect and backtrack from subtle logical flaws.
-- **Unbounded Thinking Without Governance**: When first adopting reasoning models (such as OpenAI o3 or Claude 3.7 Thinking), teams enabled thinking by default across all services. Automated background workers processed ambiguous inputs, entered recursive reasoning loops, and drained monthly cloud budgets in hours.
+What happened: the model wrote thousands of tokens of working first, and you paid for all of them. Three surprises follow from that:
 
----
+| You assume | Reasoning reality |
+|---|---|
+| Output cost follows the length of the reply I receive | Output cost follows everything the model generated, including hidden working |
+| A request has a predictable size | The amount of working varies per request and per task difficulty |
+| A timeout protects me | A long-running request can be slow *and* expensive before it finishes |
 
-## 3. Systems Mental Model: The Fast Buzzer vs. The Mathematician
+The fix is the same kind of control you already use for other variable-cost resources: a per-request cap, a daily budget and a check before you spend.
 
----
+## 2. The Mental Model
 
-### The Impulsive Contestant vs. The Scratchpad Thinker
+🧒 **Think of two ways to answer "What is 387 × 492?"** One person has to blurt a number the instant they are asked. The other is handed scrap paper, writes partial products, spots a slip, fixes it, and only then says the answer. The second person uses more time and more paper, and is more likely to be right on hard questions.
 
-* 🧒 **The Analogy**:
-  * Imagine two contestants on a high-stakes math quiz show:
-    * **Standard LLM (The Fast Buzzer Contestant)**: The host asks: *"What is 387 × 492?"* The rules forbid paper. The contestant must hit the buzzer in 0.1 seconds and speak immediately. They blurt out *"189,424!"* It sounds confident and ends in a 4, but it is completely wrong! Once the words leave their mouth, they cannot erase them.
-    * **Reasoning Model (The Mathematician with Scrap Paper)**: The host asks the same question. The mathematician takes a pencil and scrap paper. For 20 seconds, they work through partial products, spot an addition error, cross it out with a line (*"Wait, let me recalculate that column"*), verify the total, and then speak only one single word: *"190,404"*.
-  * The mathematician used 200 words of private scratchpad notes to emit a 1-word perfect answer. **Test-time compute trades inference latency and tokens for verified logical accuracy.**
+A normal model is the first person: it starts writing the answer immediately. A **reasoning model** is the second: it is trained or configured to write working first, then answer. The scrap paper is the model's own output, produced one token at a time, exactly like the answer itself.
 
-* ⚙️ **The Engineering Mechanics**:
-  * Test-time compute enables models to scale computational work at inference time rather than training time.
-  * Instead of following the highest-probability path blindly, the model navigates a search tree over candidate reasoning steps.
-  * Intermediate steps are scored by **Process-Supervised Reward Models (PRMs)** or deterministic verifiers (unit tests, math solvers).
-  * If a step is invalid, the model emits an internal backtracking token (e.g. `"Wait, that assumption causes a deadlock. Let me try a different lock ordering."`) and prunes the bad branch.
+**Where this analogy breaks**: a person's scrap paper is free. A model's scrap paper is billed per token, takes up space in the context window, and adds waiting time. Also, more working does not guarantee a correct answer. It improves accuracy on many multi-step tasks, but the model can still reason its way to a wrong conclusion.
 
-* ⚠️ **What Happens If You Ignore This?**
-  * You treat reasoning models like standard conversational models.
-  * Because reasoning tokens are billed as output tokens at premium rates ($15/1M vs $3/1M input), a concise 20-word answer can quietly burn 5,000 hidden reasoning tokens—costing **100x more than expected** and blowing past API rate limits.
+## 3. How It Works, One Term at a Time
 
----
+### Test-time compute and reasoning models
 
-## 4. Mechanical Architecture of Test-Time Compute
+* 🧒 **The Analogy**: Studying for an exam is one kind of effort (paid once, in advance). Thinking during the exam is another (paid on every question). Study time is fixed. Exam-time thinking is something you can choose to spend more or less of on each question.
+* ⚙️ **The Engineering**: Earlier lessons covered where the effort goes during **training** (building the model) and what **inference** costs (running it). **Test-time compute** means spending extra computation at inference time, on the specific request in front of you, instead of only at training time. In practice the extra computation is extra generated tokens. A **reasoning model** is a language model built or configured so that it generates working tokens before its answer. One paper studying this, [Snell et al. (2024)](https://arxiv.org/abs/2408.03314), reports that for problems where a smaller model already has some baseline competence, spending test-time compute well can beat a model 14 times larger. That is one study's result, not a law for all tasks.
+* ⚠️ **What happens if you skip this?** You keep choosing models only by size and ignore a second dial. Some hard requests would be answered better by the same model with more thinking, and some easy requests get slower and pricier for no gain.
 
-How do frontier models like OpenAI o3, DeepSeek-R1, and Claude 3.7 Thinking execute this scratchpad process under the hood?
+### Diagram 1: Direct answer versus thinking first
+
+```mermaid
+flowchart LR
+    P["Your prompt"] --> D["Direct answer<br>(few tokens, fast)"]
+    P --> T["Thinking tokens<br>(working, billed)"]
+    T --> A["Answer after thinking<br>(slower, more tokens)"]
+
+    style P stroke:#2563eb,stroke-width:2px
+    style D stroke:#16a34a,stroke-width:2px
+    style T stroke:#7c3aed,stroke-width:2px
+    style A stroke:#d97706,stroke-width:2px
+```
+
+1. **Your prompt** is the same in both paths.
+2. **Direct answer** starts writing the reply at once. Cheap and quick, weaker on multi-step problems.
+3. **Thinking tokens** are generated first, one after another, using the same decode loop as any other output.
+4. **Answer after thinking** comes last. You wait for the working before the first answer token.
+
+### Thinking tokens
+
+* 🧒 **The Analogy**: A taxi meter. It runs while the driver is working out the route, not only while you are moving. You see the final fare, not the driver's deliberation, but the meter counted all of it.
+* ⚙️ **The Engineering**: **Thinking tokens** are the tokens a reasoning model generates as working before it writes the answer. Three facts matter for engineering, and each is stated in the provider documentation listed in the table below:
+  * They are billed as output tokens. Anthropic's pricing section says thinking tokens are "billed as output tokens", OpenAI says reasoning tokens "are billed as output tokens", and Google says response pricing "is the sum of output tokens and thinking tokens".
+  * The count you see in the reply text can be smaller than the count you pay for. Anthropic documents that you are billed for the full thinking process, not the summary shown in the response.
+  * They share the output limit. Anthropic states that thinking counts toward `max_tokens`; OpenAI notes reasoning tokens occupy space in the context window and recommends leaving generous room for reasoning and output.
+* ⚠️ **What happens if you skip this?** You set a small output cap sized for the visible reply. Hard requests spend the whole cap on thinking and the call ends with a truncated or empty answer, and you were still billed for the tokens.
+
+### Diagram 2: What one request is made of
+
+```mermaid
+flowchart LR
+    I["Input tokens<br>(your prompt)"] --> B["Bill"]
+    TH["Thinking tokens<br>(often hidden)"] --> O["Output tokens"]
+    V["Answer tokens<br>(visible)"] --> O
+    O --> B
+
+    style I stroke:#2563eb,stroke-width:2px
+    style TH stroke:#7c3aed,stroke-width:2px
+    style V stroke:#16a34a,stroke-width:2px
+    style B stroke:#d97706,stroke-width:2px
+```
+
+1. **Input tokens** are what you send.
+2. **Thinking tokens** and **answer tokens** together form the output.
+3. **Output tokens** are typically priced higher per token than input tokens, so thinking usually dominates the bill on hard requests. Check your provider's price page for the actual ratio.
+4. **The bill** is input cost plus output cost.
+
+A worked example with *(illustrative)* prices of 1 currency unit per million input tokens and 5 per million output tokens:
+
+```text
+Request: 300 input tokens, 12,000 thinking tokens, 5 answer tokens (illustrative)
+
+Input cost  = 300      × 1 / 1,000,000 = 0.000300
+Output cost = 12,005   × 5 / 1,000,000 = 0.060025
+Total                                   = 0.060325
+
+Same request with no thinking:
+Output cost = 5        × 5 / 1,000,000 = 0.000025
+Total                                   = 0.000325
+
+Ratio = 0.060325 / 0.000325 ≈ 186 times more expensive
+```
+
+The ratio is large here because the example sets thinking at 2,400 times the answer length *(illustrative)*. Real ratios depend on the task, the model and the settings. Measure yours from the usage field your provider returns.
+
+### Thinking controls and the token governor
+
+* 🧒 **The Analogy**: A company card with a per-purchase limit and a monthly limit. Each purchase is checked against both before it goes through. You do not wait for the statement to find out.
+* ⚙️ **The Engineering**: Providers expose a dial for thinking time. This dial comes in two common shapes: a **token budget** or an **effort level**. A token budget targets a specific number of thinking tokens. An effort level (low, medium, high) steers how deeply the model reasons. Parameter names change frequently across providers, so see the dated table in section 4. Two rules hold across providers: the dial guides thinking rather than guaranteeing cost, and only a hard output cap blocks overruns. Anthropic documents that the budget is a target rather than a strict cap, while `max_tokens` remains the hard ceiling.
+
+  A **token governor** is your own code that sits between your application and the model call. It enforces rules the provider will not: a cap per request, a ceiling per day, and a smaller budget on retries. It must check the *worst case* before the call, because after the call the money is already spent.
+* ⚠️ **What happens if you skip this?** Retries and batch workers multiply the cost of hard requests. A queue that re-delivers a failed job re-buys the same expensive thinking every time, and nothing stops the loop until a person notices the invoice.
+
+### Diagram 3: The governor's decision
 
 ```mermaid
 flowchart TD
-    Prompt["1. User Prompt (In-Memory KV-Cache)<br>Ingest complex engineering query"] --> Search["2. Candidate Hypothesis Generator<br>Explore multi-branch reasoning tree"]
-    Search --> PRM{"3. PRM Step Verifier<br>Is reasoning deduction logically valid?"}
-    PRM -- "Valid Step" --> Check{"4. Solution Complete?"}
-    PRM -- "Invalid Logic" --> Backtrack["Backtrack & Prune Branch<br>'Wait, that deadlocks. Rethink.'"]
-    Backtrack --> Search
-    Check -- "Explore Next Step" --> Search
-    Check -- "Fully Verified" --> Out["5. Concise Verified Output<br>Emit answer (Scratchpad hidden)"]
+    R["Request arrives"] --> W{"Worst case fits<br>today's ceiling?"}
+    W -- "No" --> X["Reject<br>(nothing spent)"]
+    W -- "Yes" --> C["Call model with<br>a hard output cap"]
+    C --> L["Record actual spend"]
 
-    style Prompt stroke:#2563eb,stroke-width:2px
-    style Search stroke:#d97706,stroke-width:2px
-    style PRM stroke:#7c3aed,stroke-width:2px
-    style Backtrack stroke:#dc2626,stroke-width:2px
-    style Check stroke:#d97706,stroke-width:2px
-    style Out stroke:#16a34a,stroke-width:2px
+    style R stroke:#2563eb,stroke-width:2px
+    style W stroke:#d97706,stroke-width:2px
+    style X stroke:#dc2626,stroke-width:2px
+    style C stroke:#7c3aed,stroke-width:2px
+    style L stroke:#16a34a,stroke-width:2px
 ```
 
-### Walkthrough of the Reasoning Loop:
-1. **Input Prefill**: The user prompt is ingested and its Key-Value activations are stored in GPU memory.
-2. **Search Tree Generation**: Rather than sampling along the single path of highest token probability, the model generates multiple potential branches of reasoning (using variants of Monte Carlo Tree Search or beam search).
-3. **Step-Level Verification via PRMs**: While traditional models are evaluated only on final answers (Outcome Reward Models), reasoning models utilize **Process-Supervised Reward Models (PRMs)** that grade every single deduction step.
-4. **Internal Self-Correction & Backtracking**: When a reasoning branch violates a constraint or reaches a contradiction, the model generates an internal pivot token (e.g. `"Wait, that assumption fails under edge condition X. Let me re-evaluate."`), pruning the bad branch and exploring alternative paths.
-5. **Final Synthesis**: Once the solution is internally verified, the model summarizes its conclusion into the final visible output.
+1. **Request arrives** with a declared input size, a thinking budget and room reserved for the answer.
+2. **Worst case check** computes the most the call could cost: input plus the full hard output cap. If that would push today's total over the ceiling, stop.
+3. **Reject** costs nothing and leaves the caller to retry later, downgrade, or alert.
+4. **Call with a hard cap** passes the cap to the provider so the model cannot exceed it.
+5. **Record actual spend** using the real usage numbers from the reply, so the next check sees the true total.
 
----
+## 4. What Providers Offer Right Now
 
-### The RL Training Paradigm: PPO vs. GRPO (DeepSeek-R1 Innovation)
+Model names and parameters change every few months, which is why they are kept out of the explanations above. This table was verified against the official pages on 2026-09-30. Re-check before relying on any row.
 
-How do models learn this self-correcting behavior without supervised human traces? The breakthrough lies in **Group Relative Policy Optimization (GRPO)**:
+**As of 2026-09**
 
-```mermaid
-flowchart TD
-    subgraph PPO["Traditional PPO (Heavy VRAM Overhead)"]
-        direction TB
-        P_Actor["Actor Policy Model (π_θ)"]
-        P_Critic["Critic / Value Model (V_ϕ)<br>(Consumes 100% Actor VRAM)"]
-        P_Reward["Neural Reward Model (r_ψ)"]
-        P_Actor <--> P_Critic
-        P_Reward --> P_Critic
-    end
+| Provider | How you control thinking | Where usage is reported | Notes from the docs | Official page |
+|---|---|---|---|---|
+| Anthropic | `thinking: {type: "adaptive"}` plus `output_config: {effort: ...}` with levels `low`, `medium`, `high`, `xhigh`, `max` (availability varies by model). Older manual mode: `thinking: {type: "enabled", budget_tokens: N}`, minimum 1,024 | `usage.output_tokens_details.thinking_tokens` | Manual mode is deprecated on 4.6 models and rejected with a 400 error on 4.7 and later. The model decides per request whether to think. Changing effort between requests invalidates the prompt cache. | [Steering thinking](https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost), [Extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking) |
+| OpenAI | `reasoning.effort` with values including `none`, `minimal`, `low`, `medium`, `high`, `xhigh`, `max` (supported values differ by model). Output cap: `max_output_tokens` | `output_tokens_details.reasoning_tokens` | Hitting the cap returns `status: "incomplete"` with `incomplete_details.reason: "max_output_tokens"`. Docs recommend reserving at least 25,000 tokens for reasoning and output when experimenting. | [Reasoning guide](https://developers.openai.com/api/docs/guides/reasoning) |
+| Google (Gemini) | `thinking_level` with values such as `low`, `medium`, `high` (and `minimal` on some models) | `total_thought_tokens` | Models think dynamically by default. Pricing is the sum of output tokens and thinking tokens. Thought summaries are controlled by `thinking_summaries` (`auto` or `none`). | [Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking) |
+| DeepSeek | `thinking: {"type": "enabled" or "disabled"}` and `reasoning_effort` | Chain of thought returned in `reasoning_content`, next to `content` | The page I read did not state how thinking tokens are billed or counted against `max_tokens`. Read the pricing page before assuming. | [Thinking mode](https://api-docs.deepseek.com/guides/thinking_mode) |
 
-    subgraph GRPO["DeepSeek GRPO (Critic-Less Efficiency)"]
-        direction TB
-        G_Prompt["Input Prompt q"] --> G_Group["Sample Group of G Outputs<br>{o_1, o_2, ..., o_G}"]
-        G_Group --> G_Rule["Deterministic Rule Verifiers<br>(Unit Tests • Compilers • Math Proofs)"]
-        G_Rule --> G_Adv["Group Relative Advantage:<br>A_i = (r_i - Mean(r)) / StdDev(r)"]
-        G_Adv --> G_Update["Direct Policy Update<br>(Zero Critic Model in VRAM!)"]
-    end
+Notice the pattern: Anthropic, OpenAI and Google now steer with an effort or level setting rather than one fixed token budget, and all three report thinking tokens separately in the usage data. That is the durable part. The spelling is not.
 
-    style PPO fill:none,stroke:#dc2626,stroke-width:2px
-    style GRPO fill:none,stroke:#16a34a,stroke-width:2px
+## 5. Try It (Runnable, Offline)
 
-    style P_Critic stroke:#dc2626,stroke-width:1px
-    style G_Rule stroke:#16a34a,stroke-width:1px
-    style G_Update stroke:#16a34a,stroke-width:1px
-```
-
-#### Walkthrough of the PPO vs. GRPO Comparison:
-1. **The PPO Bottleneck**: Traditional Proximal Policy Optimization (PPO) requires maintaining a separate **Critic (Value) Model** of comparable size to the actor model in GPU VRAM to predict the expected future reward for each token state. This doubles hardware VRAM requirements and introduces training instability.
-2. **The GRPO Critic-Less Alternative**: GRPO eliminates the critic network entirely. For each prompt `q`, it samples a group of `G` candidate outputs (`G = 8` to `16`).
-3. **Group Relative Advantage**: It scores each output using objective rule-based verifiers and calculates relative advantage by normalizing against the group mean and standard deviation:
-   ```text
-   A_i = [ r_i - Mean({r_1, ..., r_G}) ] / [ StdDev({r_1, ..., r_G}) + ε ]
-   ```
-4. **Rule-Based Verification Over Neural Rewards**: Instead of subjective human preference models (which are vulnerable to reward hacking and sycophancy), GRPO uses deterministic verifiers: compiler check pass/fail, mathematical proof validation, and unit test results.
-5. **Emergence of "Aha Moments"**: Driven solely by rule-based rewards and relative advantage, models spontaneously learn to backtrack (`"Wait, that assumption fails under edge condition X. Let me rethink."`), re-read prompts, and self-verify before emitting visible tokens.
-
----
-
-## 5. Frontier Reasoning Model Landscape
-
-| Model | Provider | Architecture & Mechanism | Thinking Budget Control | Max Context / Output | Cost Profile (per 1M Tokens) | Primary Enterprise Production Use Case |
-|---|---|---|---|---|---|---|
-| **OpenAI o3** | OpenAI | Large-scale RL over hidden CoT; deep tree search | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~$10.00 / Out: ~$40.00 *(Thinking billed as output)* | Mission-critical algorithmic verification, complex multi-file refactoring |
-| **OpenAI o4-mini** | OpenAI | Distilled compact RL reasoning architecture | `reasoning_effort: low / medium / high` | 200k Context / 100k Output | In: ~$1.10 / Out: ~$4.40 *(Thinking billed as output)* | Fast STEM logic, real-time code triage, sub-second agent planning |
-| **Claude 3.7 Thinking** | Anthropic | Hybrid: toggles seamlessly between instant output and extended thinking | Explicit token budget (`budget_tokens: 1024..64000`) or disabled (`0`) | 200k Context / 64k Output | In: $3.00 / Out: $15.00 *(Thinking billed at $15.00/1M)* | Full-stack software engineering, architecture audits, regulatory compliance |
-| **DeepSeek-R1** | DeepSeek | 671B MoE (37B active parameters); pure RL (R1-Zero) + cold-start SFT | Open-weights / `<think>` tag token boundaries | 64k Context / 32k Output | In: $0.55 / Out: $2.19 *(Cache Hit: $0.14/1M)* | Air-gapped self-hosted reasoning, bulk batch code analysis, on-prem finance |
-| **Gemini 2.5 Pro Thinking** | Google | Native multimodal test-time compute with code execution sandbox | Configurable budget (`thinkingBudget: N`) | 1M - 2M Context / 64k Output | In: ~$2.50 / Out: ~$10.00 *(Thinking billed at $10.00/1M)* | Long-context document forensic audits, full-repository migrations |
-
----
-
-## 6. Thinking Token Economics: The 50:1 Asymmetry
-
-The single most critical operational trap with reasoning models is the **output token asymmetry**.
-
-### The 5,000 : 28 Reality
-Suppose an automated CI/CD pipeline sends a pull request diff to a reasoning model with the prompt:
-> *"Does this concurrency loop contain a potential race condition under the ARM64 memory model? Answer strictly with YES or NO and a one-sentence proof."*
-
-```text
-The Model's Execution:
-├── Prompt Input: 250 tokens
-├── Hidden Scratchpad Tokens Emitted: 5,240 tokens
-└── Visible Output Emitted: 28 tokens:
-    "YES. The memory barrier is omitted prior to reading the pointer, 
-     permitting CPU instruction reordering on weakly-ordered architectures."
-```
-
-### The Financial Calculation
-In cloud LLM APIs, **all thinking tokens are billed as output tokens**. Because output tokens typically cost 3x to 5x more than input tokens ($15/1M vs $3/1M):
-
-```text
-Input Cost:   (250 tokens / 1,000,000) × $3.00   = $0.00075
-Output Cost:  (5,268 tokens / 1,000,000) × $15.00  = $0.07902
-Total Cost:   $0.07977 (Nearly 8 cents for a one-sentence response!)
-```
-
-The ratio of hidden thinking tokens to visible output was **187 to 1**!
-
-### Why Thinking Tokens Cannot Be Pre-Cached
-In standard LLM serving, if 1,000 users send the same system prompt, you can use **Prefix KV-Caching** to get a 90% discount on input tokens.
-
-**You cannot pre-cache reasoning tokens across separate user queries.** Every reasoning trajectory is non-deterministic and dynamic. The scratchpad is generated autoregressively in response to the specific nuances of that single input, consuming full GPU memory bandwidth on every run.
-
----
-
-### 📊 Prompt Begging (2023) vs. Native Test-Time Reasoning (2026)
-
-| Architectural Dimension | Prompt Begging (2023) | Native Test-Time Reasoning (2026) |
-| :--- | :--- | :--- |
-| **Trigger Mechanism** | Magic phrases (*"Think step-by-step"*) | **Native RL policies & token budgets** (`budget_tokens: 4096`) |
-| **Search Space** | Single forward-pass greedy trajectory | **Multi-branch exploration with backtracking & PRMs** |
-| **Cost Predictability** | Linear with prompt & output length | **Asymmetric 50:1 thinking bursts; requires token governors** |
-| **Prefix Caching** | High hit rate on fixed prompts | **Zero caching on intermediate thinking trajectories** |
-| **Failure Recovery** | Hallucinates plausible incorrect reasoning | **Internal pivot tokens prune failed hypotheses before output** |
-
----
-
-## 7. Concrete Implementation: Production Reasoning Token Governor
-
-To prevent runaway billing and catastrophic budget exhaustion, production architectures require a **Token Governor & Circuit Breaker** that enforces thinking token budgets and halts execution if the asymmetry ratio exceeds safety limits.
+This block builds the governor from Diagram 3. The model call is simulated: you tell it how much thinking a task "needs" and it stops at the hard cap. Prices are supplied by the caller and are *(illustrative)*, not real rates. Needs Python 3.12+ and Pydantic v2, with no network.
 
 ```python
-"""
-Production Reasoning Token Governor & Circuit Breaker.
-Enforces per-request cost ceilings and monitors thinking-to-output asymmetry.
-"""
-
-from typing import Any
 from pydantic import BaseModel, Field
 
 
-class ReasoningRequest(BaseModel):
-    """Specification for an incoming reasoned task."""
+class Prices(BaseModel):
+    """Dollars per 1,000,000 tokens. Supplied by YOU from your provider's price page."""
+    input_per_m: float = Field(ge=0)
+    output_per_m: float = Field(ge=0)  # thinking tokens are billed at this rate
+
+
+class Request(BaseModel):
     task_id: str
-    prompt: str
-    max_visible_tokens: int = Field(default=1024, ge=1)
-    thinking_budget: int = Field(default=4096, ge=0)
-    cost_ceiling_usd: float = Field(default=0.25, ge=0.01)
+    input_tokens: int = Field(ge=0)
+    thinking_budget: int = Field(ge=0)   # most thinking tokens we allow
+    answer_reserve: int = Field(ge=1)    # room we keep for the visible answer
 
 
-class ExecutionTelemetry(BaseModel):
-    """Actual token consumption emitted by LLM provider."""
-    prompt_tokens: int
+class Usage(BaseModel):
     thinking_tokens: int
-    visible_tokens: int
-
-    @property
-    def total_output_tokens(self) -> int:
-        return self.thinking_tokens + self.visible_tokens
-
-    @property
-    def asymmetry_ratio(self) -> float:
-        """Ratio of hidden reasoning to visible output."""
-        return self.thinking_tokens / max(1, self.visible_tokens)
+    answer_tokens: int
+    hit_cap: bool
 
 
-class CostReport(BaseModel):
-    """Financial and operational audit of the reasoning invocation."""
-    task_id: str
-    is_approved: bool
-    total_cost_usd: float
-    asymmetry_ratio: float
-    warning: str | None = None
+def simulated_model(req: Request, thinking_needed: int, answer_len: int) -> Usage:
+    """Stand-in for a real API call. Stops when the hard output cap is reached."""
+    cap = req.thinking_budget + req.answer_reserve           # hard output cap
+    thinking = min(thinking_needed, req.thinking_budget)
+    answer = min(answer_len, cap - thinking)
+    return Usage(thinking_tokens=thinking, answer_tokens=answer, hit_cap=thinking_needed > thinking)
 
 
-class ReasoningGovernor:
-    """Enterprise policy engine governing test-time compute allocation."""
+class TokenGovernor:
+    def __init__(self, prices: Prices, daily_ceiling: float) -> None:
+        self.prices, self.daily_ceiling, self.spent = prices, daily_ceiling, 0.0
 
-    # Pricing per 1M tokens (e.g., Claude 3.7 Thinking tier)
-    INPUT_RATE_PER_M: float = 3.00
-    OUTPUT_RATE_PER_M: float = 15.00
-    ASYMMETRY_WARNING_THRESHOLD: float = 50.0  # Alert if thinking > 50x visible
+    def cost(self, input_tokens: int, output_tokens: int) -> float:
+        p = self.prices
+        return (input_tokens * p.input_per_m + output_tokens * p.output_per_m) / 1_000_000
 
-    @classmethod
-    def audit_execution(
-        cls, request: ReasoningRequest, telemetry: ExecutionTelemetry
-    ) -> CostReport:
-        # Calculate exact monetary cost
-        input_cost = (telemetry.prompt_tokens / 1_000_000.0) * cls.INPUT_RATE_PER_M
-        output_cost = (telemetry.total_output_tokens / 1_000_000.0) * cls.OUTPUT_RATE_PER_M
-        total_cost = round(input_cost + output_cost, 6)
+    def worst_case(self, req: Request) -> float:
+        return self.cost(req.input_tokens, req.thinking_budget + req.answer_reserve)
 
-        warning: str | None = None
-
-        # Check circuit breaker ceiling
-        if total_cost > request.cost_ceiling_usd:
-            return CostReport(
-                task_id=request.task_id,
-                is_approved=False,
-                total_cost_usd=total_cost,
-                asymmetry_ratio=round(telemetry.asymmetry_ratio, 1),
-                warning=(
-                    f"CIRCUIT BREAKER TRIGGERED: Cost ${total_cost:.4f} exceeded "
-                    f"allocated ceiling of ${request.cost_ceiling_usd:.4f}."
-                ),
-            )
-
-        # Monitor extreme token asymmetry
-        if telemetry.asymmetry_ratio > cls.ASYMMETRY_WARNING_THRESHOLD:
-            warning = (
-                f"HIGH ASYMMETRY WARNING: Thinking ratio is {telemetry.asymmetry_ratio:.1f}:1 "
-                f"({telemetry.thinking_tokens} thinking vs {telemetry.visible_tokens} visible tokens)."
-            )
-
-        return CostReport(
-            task_id=request.task_id,
-            is_approved=True,
-            total_cost_usd=total_cost,
-            asymmetry_ratio=round(telemetry.asymmetry_ratio, 1),
-            warning=warning,
-        )
+    def run(self, req: Request, thinking_needed: int, answer_len: int) -> str:
+        worst = self.worst_case(req)
+        if self.spent + worst > self.daily_ceiling:          # check BEFORE spending
+            return f"{req.task_id}: REJECTED (worst case ${worst:.4f}, left ${self.daily_ceiling - self.spent:.4f})"
+        u = simulated_model(req, thinking_needed, answer_len)
+        actual = self.cost(req.input_tokens, u.thinking_tokens + u.answer_tokens)
+        self.spent += actual
+        flag = " cap-hit" if u.hit_cap else ""
+        return f"{req.task_id}: ok thinking={u.thinking_tokens} answer={u.answer_tokens} cost=${actual:.4f}{flag}"
 
 
-# --- Simulation Demonstration ---
-if __name__ == "__main__":
-    governor = ReasoningGovernor()
-
-    # Scenario 1: Normal targeted engineering analysis
-    req_normal = ReasoningRequest(
-        task_id="TASK-REF-001",
-        prompt="Analyze this 50-line C++ routine for deadlock invariants.",
-        thinking_budget=4096,
-        cost_ceiling_usd=0.10,
-    )
-    telem_normal = ExecutionTelemetry(
-        prompt_tokens=850,
-        thinking_tokens=2200,
-        visible_tokens=350,
-    )
-    result_normal = governor.audit_execution(req_normal, telem_normal)
-    print("=== SCENARIO 1: Standard Reasoning Task ===")
-    print(f"Status: {'APPROVED' if result_normal.is_approved else 'REJECTED'}")
-    print(f"Cost: ${result_normal.total_cost_usd:.4f}")
-    print(f"Asymmetry: {result_normal.asymmetry_ratio}:1")
-    print(f"Warnings: {result_normal.warning or 'None'}\n")
-
-    # Scenario 2: Runaway automated background task
-    req_runaway = ReasoningRequest(
-        task_id="TASK-BATCH-999",
-        prompt="Classify this ambiguous document into category A or B.",
-        thinking_budget=32000,
-        cost_ceiling_usd=0.25,
-    )
-    telem_runaway = ExecutionTelemetry(
-        prompt_tokens=1200,
-        thinking_tokens=28500,  # Model got stuck in deep hypothesis loop
-        visible_tokens=15,      # Emitted "Category: A"
-    )
-    result_runaway = governor.audit_execution(req_runaway, telem_runaway)
-    print("=== SCENARIO 2: Runaway Thinking Task ===")
-    print(f"Status: {'APPROVED' if result_runaway.is_approved else 'REJECTED'}")
-    print(f"Cost: ${result_runaway.total_cost_usd:.4f}")
-    print(f"Asymmetry: {result_runaway.asymmetry_ratio}:1")
-    print(f"Warnings: {result_runaway.warning}")
+gov = TokenGovernor(Prices(input_per_m=1.0, output_per_m=5.0), daily_ceiling=0.08)  # illustrative prices
+print(gov.run(Request(task_id="easy", input_tokens=800, thinking_budget=1024, answer_reserve=200), 300, 40))
+print(gov.run(Request(task_id="hard", input_tokens=800, thinking_budget=4000, answer_reserve=500), 9000, 300))
+for attempt in (1, 2):   # a retry reuses a big budget here, so watch the ceiling
+    req = Request(task_id=f"retry{attempt}", input_tokens=800, thinking_budget=8000, answer_reserve=500)
+    print(gov.run(req, 9000, 300))
+print(f"spent today: ${gov.spent:.4f} of ${gov.daily_ceiling:.2f}")
 ```
 
----
+Expected output (verified by running the block with Python 3.14.7 and Pydantic v2):
 
-## 8. Production War Story: The 2:14 AM Runaway Bankruptcy
-
-> **The Incident**: It is 2:14 AM on Sunday. Your pager buzzes with an alert from cloud cost monitoring: an internal LLM gateway just generated **$3,600 in charges over the last 90 minutes**.
-
-### What Happened
-A fintech team deployed Claude 3.7 Thinking to triage incoming merchant chargeback dispute packets. An engineer configured the service with an aggressive configuration:
-
-```python
-# THE FATAL DEFAULT:
-thinking={"type": "enabled", "budget_tokens": 32000}
-```
-
-A merchant submitted an ambiguous 40-page PDF containing conflicting scanned ledger dates and handwritten receipts. The reasoning model entered a recursive hypothesis search:
-- *Hypothesis 1*: Payment settled on March 12th. *(Contradicted by document 2, page 14)*.
-- *Hypothesis 2*: Payment settled on March 14th. *(Contradicted by wire timestamp)*.
-- *Hypothesis 3*: Simulating clearinghouse banking holiday retries...
-
-Because the chargeback worker was managed by a background SQS queue with an automated 3-retry dead-letter policy, every worker timeout caused another instance to pick up the exact same job. 
-
-Each attempt burned **32,000 thinking tokens** at $15/1M ($0.48 per attempt) while running for 55 seconds. When 100 concurrent workers processed the queue, the system burned:
 ```text
-100 workers × 30 attempts/hour × $0.48 = $1,440 per hour
+easy: ok thinking=300 answer=40 cost=$0.0025
+hard: ok thinking=4000 answer=300 cost=$0.0223 cap-hit
+retry1: ok thinking=8000 answer=300 cost=$0.0423 cap-hit
+retry2: REJECTED (worst case $0.0433, left $0.0129)
+spent today: $0.0671 of $0.08
 ```
 
-Before the on-call engineer woke up, **$3,600 had evaporated to triage a single $45 disputed chargeback**.
+What to notice:
+- **The easy task uses a fraction of its budget.** A budget is a limit, not a purchase. You only pay for what the model generates.
+- **The hard task hits the cap.** It needed 9,000 thinking tokens and got 4,000. The governor reports `cap-hit` so you can log it and decide whether the answer is trustworthy or the task needs a bigger budget.
+- **The second retry is refused before any money is spent.** Worst case ($0.0433) is more than what is left ($0.0129). Check this number, not the running total alone.
+- **Real providers enforce caps differently.** In the simulation the budget is strict. Real dials are often soft guidance, so always also pass the provider's hard output cap.
 
-### Root Cause Analysis & Post-Mortem Architecture
-1. **Uncapped Default Budgets**: Automated batch workers must never have a 32k thinking budget. Batch triage tasks must cap `budget_tokens: 1024` or `2048`.
-2. **Missing Dead-Man Switch**: Retries re-executed full inference with identical thinking budgets. The SQS consumer now inspects task retry count and drops thinking tokens on retry attempts.
-3. **Dynamic Budget Escalation**: Allocate deep thinking (16k+ tokens) **only** when an explicit human architect triggers a deep-analysis flag in the back-office console.
+## 6. Trade-Offs
 
----
+| Choice | Benefit | Cost |
+|---|---|---|
+| More thinking (higher effort or budget) | Often better accuracy on multi-step problems | More output tokens, longer wait before the first answer token, higher bill |
+| Less or no thinking | Faster and cheaper | More mistakes on hard multi-step tasks |
+| Strict hard cap | Predictable worst-case spend | Hard tasks can be cut off mid-thought with no usable answer |
+| Loose cap | Fewer truncated answers | Unpredictable spend, long-running requests |
+| Different effort per request | Matches effort to difficulty | Anthropic documents that changing effort invalidates prompt caching, so switching often can raise input cost |
+| Governor in your own code | Works the same across providers | You maintain prices and must keep them current |
 
-## 9. Architectural Decision Framework
+Here are two practical routing rules of thumb. First, route latency-sensitive, simple, or high-volume queries to low or no thinking. Second, reserve deep thinking for async, difficult, and verifiable tasks where wrong answers carry high business costs. Always benchmark both settings on your own data before rolling out.
 
-Use this decision matrix to determine when to route requests to reasoning models versus standard models or Small Language Models (SLMs):
+## 7. Failure Modes
 
-```mermaid
-flowchart TD
-    subgraph ROUTER["Reasoning vs Standard Model Routing Decision Tree"]
-        direction TB
+| Symptom | Cause | Fix |
+|---|---|---|
+| Empty or cut-off answer, `max_tokens` stop reason | Output cap sized for the answer only, so thinking used it all | Raise the cap, or lower effort if the task was over-thought |
+| Invoice far above estimate from reply length | Estimate ignored thinking tokens | Budget from the provider's thinking-token usage field, not reply length |
+| Daily cost spike after an outage | Queue retries each re-buy full thinking | Smaller budget on retries, a retry limit, and a per-day ceiling |
+| Cache hit rate drops after a settings change | Effort or budget changed between requests | Fix one setting per conversation, steer per message instead |
+| Request rejected with a 400 after a model upgrade | Old manual-budget parameter sent to a model that no longer accepts it | Check the provider's per-model support table and migrate the parameter |
+| Cost grows over a long agent conversation | Earlier thinking blocks stay in context and are billed as input tokens on some models | Check the provider's preservation rules and trim history on purpose |
+| Quality did not improve after raising effort | The task does not benefit from extra working, or needs better input | Measure on a test set before paying for more thinking |
 
-        Start(["Incoming Engineering Task"]) --> LatencyCheck{"Strict Latency SLA?<br>(TTFT < 1.5s or Real-Time UI)"}
-        
-        LatencyCheck -- "Yes (< 1.5s)" --> FastPath["Deploy Standard LLM or SLM<br>(Claude 3.5 Sonnet, GPT-4o, Phi-4)"]
-        LatencyCheck -- "No (Async / Worker / Queue)" --> TaskType{"Problem Nature & Complexity?"}
-        
-        TaskType -- "Document Summary / Extraction / Rewriting" --> FastPath
-        TaskType -- "Standard CRUD API / Simple JSON Mapping" --> FastPath
-        
-        TaskType -- "Algorithmic Code / Math / Security Audit" --> AccuracyCheck{"Can Standard Model with Few-Shot CoT<br>achieve ≥ 98% accuracy in evals?"}
-        
-        AccuracyCheck -- "Yes (Sufficient)" --> FastPath
-        AccuracyCheck -- "No (Hallucinates subtle logic flaws)" --> BudgetCheck{"Can Budget Absorb 10x-50x Token Cost<br>& 10s-30s Time-To-First-Token?"}
-        
-        BudgetCheck -- "Yes" --> ReasoningTier["Deploy Reasoning Model with Test-Time Compute<br>(Claude 3.7 Thinking, o3, DeepSeek-R1)"]
-        BudgetCheck -- "No" --> DistillTier["Deploy Distilled Reasoning SLM<br>(DeepSeek-R1-Distill-Qwen-14B / Phi-4)"]
-    end
+## 🧠 8. Quick Check to See if it Clicked
 
-    style ROUTER fill:none,stroke:#64748b,stroke-width:2px
-    style FastPath fill:none,stroke:#16a34a,stroke-width:2px
-    style ReasoningTier fill:none,stroke:#7c3aed,stroke-width:2px
-    style DistillTier fill:none,stroke:#d97706,stroke-width:2px
+> A batch job sends 1,000 requests. Each has 300 input tokens, produces a 5-token answer (`YES` or `NO`) and, on average, 12,000 thinking tokens. With *(illustrative)* prices of 1 per million input tokens and 5 per million output tokens, what does the batch cost? What does it cost if thinking is turned off, and what single control would you add first?
 
-    style Start stroke:#2563eb,stroke-width:2px
-    style LatencyCheck stroke:#2563eb,stroke-width:2px
-    style TaskType stroke:#2563eb,stroke-width:2px
-    style AccuracyCheck stroke:#d97706,stroke-width:2px
-    style BudgetCheck stroke:#d97706,stroke-width:2px
+<details>
+<summary><b>View answer</b></summary>
+
+```text
+With thinking:
+Input  = 1,000 × 300      = 300,000 tokens      × 1 / 1,000,000 = 0.30
+Output = 1,000 × 12,005   = 12,005,000 tokens   × 5 / 1,000,000 = 60.025
+Total                                                            = 60.325
+
+Without thinking:
+Output = 1,000 × 5        = 5,000 tokens        × 5 / 1,000,000 = 0.025
+Total                                                            = 0.325
 ```
 
-### The Architect's Golden Rule:
-> **"If a Senior Software Engineer would need a whiteboard and 15 minutes of quiet deliberation before writing code, dispatch a Reasoning Model. If a Junior Engineer could write the answer off the top of their head in 30 seconds, use a Standard Model or an SLM."**
+The thinking run costs about 186 times more, and 99.5 percent of it is thinking tokens. The first control to add is a hard output cap plus a low effort or a small budget for this classification task, then measure accuracy with and without thinking. If accuracy is the same, turn thinking off. The daily ceiling in the governor is the second control, so a bad day cannot run unbounded.
+</details>
+
+## 9. Key Takeaways and Sources
+
+- Test-time compute means spending extra generated tokens on the request in front of you. A reasoning model does that by writing working before the answer.
+- Thinking tokens are billed as output tokens and count toward the output limit, even when you only see a summary or nothing.
+- Dial names change quickly, so keep them in one dated table. The steady ideas are an effort or budget setting, a hard output cap, and separate reporting of thinking tokens.
+- Put a governor in your own code: worst-case check before the call, smaller budgets on retries, and a daily ceiling.
+
+**Sources I opened and read while writing this lesson (2026-09-30):**
+- [Anthropic: Extended thinking](https://platform.claude.com/docs/en/build-with-claude/extended-thinking)
+- [Anthropic: Steering thinking (effort, cost control, pricing)](https://platform.claude.com/docs/en/build-with-claude/thinking-steering-and-cost)
+- [OpenAI: Reasoning guide](https://developers.openai.com/api/docs/guides/reasoning)
+- [Google: Gemini thinking](https://ai.google.dev/gemini-api/docs/thinking)
+- [DeepSeek: Thinking mode](https://api-docs.deepseek.com/guides/thinking_mode)
+- [Snell et al. (2024): Scaling LLM Test-Time Compute Optimally can be More Effective than Scaling Model Parameters](https://arxiv.org/abs/2408.03314)
+- [DeepSeek-AI (2025): DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948) (abstract only: states reasoning abilities can be incentivized through reinforcement learning)
+
+## ✂️ Cut or Deferred
+
+- The search-tree, step-scoring and reinforcement-learning training internals (including GRPO and PPO) were removed from this lesson. Training method is not something an API user controls, and the specifics were not verified in this session. They are deferred to a later training-focused lesson.
+- Per-model pricing, context sizes and the old model comparison table were removed. They are replaced by the dated table in section 4.
+- The fictional war story was replaced by the derived simulation in section 5.
 
 ---
 
-## 10. Common Failure Modes & Anti-Patterns
-
-### Anti-Pattern 1: Forcing Raw JSON Output Without Scratchpad Space
-- **The Mistake**: Prompting a reasoning model with `"Output strictly valid JSON with no other text"` or setting `response_format={"type": "json_object"}` while disabling thinking.
-- **Why It Fails**: Forcing an immediate JSON output prevents the model from generating internal CoT tokens to verify logic before serialization, resulting in syntax errors or skipped business constraints.
-- **Production Remedy**: Allow the model to think freely inside hidden CoT or `<think>` tags, then extract the final validated JSON from a designated `<output>` boundary.
-
-### Anti-Pattern 2: Zeroing Out Temperature on Reasoning Models
-- **The Mistake**: Blindly setting `temperature = 0.0` on reasoning models like OpenAI o-series or DeepSeek-R1.
-- **Why It Fails**: Unlike standard models where `T = 0` enforces precision, setting `T = 0` on reasoning search algorithms can destroy the entropy needed for search-space exploration, inducing repetitive thinking loops.
-- **Production Remedy**: Follow provider specifications: leave temperature at the model's native default (`1.0` for OpenAI o-series, `0.6` for DeepSeek-R1).
-
----
-
-## 11. Quick Check to See if it Clicked
-
-> **Scenario**: An engineering team hooks an automated queue worker to a reasoning model with a 16,000 thinking token budget. The prompt asks: *"Verify if this 20-line SQL query meets SOC2 data segregation rules. Answer strictly with YES or NO."*
->
-> The worker processes 1,000 SQL queries. The visible output for all queries is a single word: `"YES"`.
->
-> When the cloud invoice arrives, the team is shocked to discover the 1,000 single-word answers cost **$180.00** instead of the anticipated $0.05.
->
-> **Question**: Why did emitting 1,000 words cost $180.00, and how do you protect the architecture?
->
-> **Answer**: 
-> 1. All hidden thinking tokens are billed as **output tokens** at premium rates ($15.00 per 1M tokens).
-> 2. The reasoning model spent ~12,000 thinking tokens exploring permissions, row-level security, and edge cases before outputting the 1-word `"YES"`:
->    - 1,000 requests × 12,000 output tokens = **12,000,000 output tokens**.
->    - 12M tokens × $15/1M = **$180.00**.
->    - The asymmetry ratio was **12,000 to 1**!
-> 3. **Architectural Protection**:
->    - Add a **Token Governor** that caps thinking budget for simple verification to 1,024 tokens.
->    - Or route this task to a distilled SLM or standard model with few-shot examples, dropping the cost to under $0.50.
-
----
-
-## 12. Key Takeaways
-
-1. **Test-Time Compute Decouples Capability from Size**: Decouples intelligence from model parameter count by trading latency and tokens for search, verification, and backtracking.
-2. **Beware the 50:1 Asymmetry**: Thinking tokens are billed at premium output rates. A concise 30-token final answer can quietly consume 5,000+ billed tokens.
-3. **Reasoning Tokens Cannot Be Cached**: Unlike static prompt prefixes, internal reasoning paths are dynamic and query-specific, requiring full forward-pass computation every time.
-4. **Govern Automated Queues**: Never deploy uncapped thinking budgets to background workers or automated retry queues without strict cost ceilings and circuit breakers.
-
----
-
-## 13. Verified Resources
-
-- **[Snell et al. (2024) — Scaling LLM Test-Time Compute Optimally Can Be More Effective than Scaling Model Parameters](https://arxiv.org/abs/2408.03314)**: Groundbreaking research proving test-time compute scaling laws.
-- **[Lightman et al. (2023) — Let's Verify Step by Step](https://arxiv.org/abs/2305.20050)**: Seminal paper introducing Process-Supervised Reward Models (PRMs) for intermediate reasoning verification.
-- **[DeepSeek-AI (2025) — DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcement Learning](https://arxiv.org/abs/2501.12948)**: Architectural details on pure RL reasoning emergence and distillation.
-- **Previous Lesson**: [Lesson 03: KV-Cache Mechanics & Memory Sizing Math](./03-kv-cache-vram-and-bandwidth-physics.md)
-- **Next Lesson**: [Lesson 05: Small Language Models & Model Quantization](./05-slms-and-quantization-mechanics.md)
+## 🧭 Navigation
+- **[← Previous Lesson: KV Cache, Memory and Bandwidth](./03-kv-cache-vram-and-bandwidth-physics.md)**
+- **[Phase 00 Hub](./README.md)**
+- **[Next Lesson: Small Language Models and Quantization →](./05-slms-and-quantization-mechanics.md)**
+- **[Capstone Lab: Token Economics Analyzer](./labs/capstone-token-economics-analyzer.md)**

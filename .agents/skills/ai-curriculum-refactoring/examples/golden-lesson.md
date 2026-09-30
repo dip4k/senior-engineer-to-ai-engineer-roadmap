@@ -1,272 +1,219 @@
-# Golden Lesson Example: Embeddings & Semantic Vector Proximity
+<!--
+QUALITY REFERENCE (not a structural clone). Demonstrates a Tier 1 beginner-first lesson:
+- every AI term taught from zero (definition → analogy → tiny example → formal name)
+- term ledger in the header, "where this analogy breaks" note, illustrative numbers labelled
+- diagrams within the 8-node budget, each with a walkthrough
+- code is offline, typed, Pydantic v2, and was executed (output shown is the real output)
+- Quick Check and navigation footer
+Optional sections (evolution table, telemetry, interview) are omitted on purpose.
+-->
 
-> **Tier**: `🟢 Core` | **Estimated Read Time**: 15 min  
-> **Core Concept**: Embeddings map high-dimensional text concepts into geometric coordinate vectors, allowing machines to search documents by semantic meaning rather than literal keyword matches.
+# Lesson 03: Embeddings: Searching by Meaning Instead of Exact Words
+
+> **Tier**: `🟢 Core` | **Read time**: ~10 min | **Prerequisites**: [Tokens and Tokenization](../../../../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md)  
+> **Core Concept**: An embedding turns a piece of text into a list of numbers so that texts with similar meaning get similar numbers. That lets software find "refund policy" when a user types "money back".  
+> **New AI terms introduced**: embedding, embedding model, vector, cosine similarity, relevance threshold  
+> **AI terms assumed from earlier lessons**: [token](../../../../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md)
 
 ---
 
 ## 🎯 What You Will Learn
 
-By the end of this lesson, you will be able to:
-- Diagnose why lexical matching fails on conceptual queries (*"money back"* vs. *"refund policy"*).
-- Convert unstructured text into dense floating-point vectors and measure directional alignment using Cosine Similarity.
-- Avoid the "Dense Vector Blindspot" where embedding models hallucinate matches on exact product IDs, serial numbers, or negated clauses.
-- Architect a dual-coordinate search strategy that pairs dense semantic vectors with exact-word inverted indexes.
+- Explain why keyword search returns nothing for "How do I get my money back?" when the policy says "refund".
+- Describe what an embedding is and compute cosine similarity by hand in Python.
+- Avoid the two classic failures: exact identifiers and "least bad" matches.
+- Decide when to pair embeddings with keyword search.
 
 ---
 
-## 1. The Problem & The Real-World Intuition
+## 1. The Problem
 
-### The Problem Scenario
-Imagine a customer on your e-commerce support portal typing:
-> *"How do I get my money back?"*
+A customer types:
 
-Your knowledge base contains this exact policy clause:
-> *"Customers can request a refund within 30 days of purchase."*
+> *How do I get my money back?*
 
-If your system relies solely on traditional SQL `LIKE` queries or exact lexical keyword matching, this lookup returns **0 results**.
-- The customer typed **"money back"**.
-- The manual says **"refund"**.
-- They share **zero common vocabulary**, yet express the exact same human intent.
+Your knowledge base contains:
 
-### 🧒 The Mental Model (Explain Like I'm 10)
-Imagine a massive library organized not by book title, but by a 3D **Idea Galaxy**:
-* In one corner of the room, all books about **dogs, puppies, and golden retrievers** float right next to each other.
-* Across the room, books about **bicycles and skateboards** float together.
-* If you throw a paper airplane labeled *"cute little animals that bark"*, it naturally lands right inside the puppy cluster—even though you never wrote the word "dog"!
+> *Customers can request a refund within 30 days.*
 
-An **embedding model** is simply the GPS engine that calculates the exact `(X, Y, Z)` coordinates of any sentence and places it into this Idea Galaxy.
+A SQL `LIKE '%money back%'` query or any exact-word match returns **zero results**. The two sentences share no words, yet they mean the same thing. You know this problem well from search engines: synonyms break keyword matching. The question is how to make a computer compare **meaning**.
 
----
+## 2. The Mental Model
 
-## 2. The Architectural Blueprint (Modern Visual Flowchart)
+🧒 **Think of a map of ideas.** Imagine a giant room where every sentence is placed at a spot on the floor. Sentences about refunds sit in one corner. Sentences about shipping sit in another. "Money back" lands right next to "refund" because they are about the same thing, even though the words differ. To search, you place the question on the floor and look at what is standing closest.
 
-```mermaid
-flowchart TD
-    subgraph PHASE1["Phase 1: Ingestion (Mapping the Library)"]
-        DOC["Support Articles & Policies<br>(Unstructured Text)"] --> CHUNK["Text Chunks<br>(200-500 Tokens)"]
-        CHUNK --> EMBED1["Embedding Model<br>(text-embedding-3-small)"]
-        EMBED1 --> VDB[("Vector Database<br>(Stores Vectors + Text Payload)")]
-    end
+A tiny example: if the room had only two directions (refund-ness and shipping-ness), "refund within 30 days" might sit at `(0.9, 0.1)` and "shipping takes 3 days" at `(0.1, 0.9)`. "How do I get my money back?" would land near `(0.8, 0.2)`, close to the refund corner.
 
-    subgraph PHASE2["Phase 2: Querying (Finding the Nearest Idea)"]
-        UQ["User Query:<br>'How do I get my money back?'"] --> EMBED2["Embedding Model<br>(Identical Weights)"]
-        EMBED2 --> QV["Query Vector<br>[0.14, -0.82, 0.45, ...]"]
-        QV --> ANN["Approximate Nearest Neighbor (ANN)<br>(Cosine Similarity Search)"]
-        VDB -.-> ANN
-        ANN --> MATCH["Top Match Chunks:<br>'Customers can request a refund...'"]
-        MATCH --> GATE{"Relevance Gate<br>Cosine Score >= 0.75?"}
-        GATE -- "Yes" --> PASS["Deliver Grounded Evidence to LLM"]
-        GATE -- "No" --> FALLBACK["Abstain / Route to Human Agent"]
-    end
+**Where this analogy breaks**: real embeddings do not have 2 or 3 directions. They have hundreds or thousands, nobody labelled them, and "close" means "pointing in a similar direction", not "near on a flat floor".
 
-    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
-    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+## 3. How It Works, One Term at a Time
 
-    style GATE stroke:#d97706,stroke-width:2px
-    style PASS stroke:#16a34a,stroke-width:2px
-    style FALLBACK stroke:#dc2626,stroke-width:2px
-    style EMBED1 stroke:#7c3aed,stroke-width:2px
-    style EMBED2 stroke:#7c3aed,stroke-width:2px
+### Embeddings and vectors
+
+* 🧒 **The Analogy**: A street address for a sentence on the map of ideas.
+* ⚙️ **The Engineering**: An **embedding model** is a neural network that reads text (as tokens) and outputs a fixed-length list of numbers called a **vector**. The list is the **embedding**. You run the same model on your documents once, store the vectors, and run it again on each incoming query.
+* ⚠️ **What happens if you skip this?** You stay locked to literal string matches. Typos, synonyms and other languages all return nothing.
+
+Rule you must not break: documents and queries must be embedded by the **same model**. Vectors from two different models live on two different maps and cannot be compared.
+
+### Cosine similarity
+
+* 🧒 **The Analogy**: Two people point flashlights from the same spot. Same direction means the same idea. Perpendicular beams mean unrelated ideas.
+* ⚙️ **The Engineering**: **Cosine similarity** measures the angle between two vectors. It ignores their length, so a long document is not favoured over a short one.
+
+```text
+cosine_similarity(A, B) = dot(A, B) / (length(A) × length(B))
+result near 1 → same direction   result near 0 → unrelated
 ```
 
-### Visual Architecture Walkthrough:
-1. **Ingestion (Phase 1)**: Documentation is chunked and passed through the embedding model, transforming text strings into dense floating-point arrays stored in a vector index.
-2. **Query Vectorization (Phase 2)**: The user query is transformed into a vector using the *exact same* embedding model and token weights.
-3. **Spatial Proximity Search**: The vector database computes the cosine angle between the query vector and candidate document vectors.
-4. **Relevance Gating**: A strict similarity threshold prevents irrelevant documents from being injected into the LLM context window.
+* ⚠️ **What happens if you skip this?** Comparing raw distances instead of angles can favour chunks simply because their vectors are longer.
 
----
+### Relevance threshold
 
-## 3. Explaining Every Block (The Tripartite Pedagogy)
+* 🧒 **The Analogy**: A librarian who says "we don't have that" instead of handing you the nearest book about cooking when you asked about rockets.
+* ⚙️ **The Engineering**: A **relevance threshold** is a minimum similarity score. Below it, return nothing and let the application say "I don't know" or route to a human. Pick the value by measuring on your own questions, not by copying a number.
+* ⚠️ **What happens if you skip this?** A vector search always returns its top results, even when none are relevant. The LLM then writes a confident answer from unrelated text.
 
-### Block 1: The Vector Transformation (Text to Coordinates)
-* 🧒 **The Analogy**: Converting words into an address on a world map. "Paris" and "Eiffel Tower" are at almost the exact same GPS coordinates, even though their spellings are totally different.
-* ⚙️ **The Engineering**: A neural transformer reads token sequence embeddings and outputs a dense 1D vector (e.g. 1536 dimensions for `text-embedding-3-small`). Each dimension captures latent statistical properties learned during training.
-* ⚠️ **What happens if you skip this?**: Your application remains locked to literal string equality. Typos, synonyms, and multilingual queries fail completely.
+### Diagram 1: Preparing the library
 
-### Block 2: Cosine Similarity (Measuring Angle, Not Length)
-* 🧒 **The Analogy**: Two hikers standing at the base of a mountain pointing their flashlights. If their beams point in the exact same direction, their similarity is 1.0. If one points North and the other points East, their similarity is 0.0.
-* ⚙️ **The Engineering**: Cosine similarity measures the inner product of two normalized vectors:
-  ```text
-  Similarity(A, B) = dot(A, B) / (norm(A) * norm(B))
-  ```
-  Normalized vectors allow SIMD-accelerated dot products with `O(D)` complexity.
-* ⚠️ **What happens if you skip this?**: Using Euclidean distance (`L2`) on unnormalized vectors skews results toward longer chunks that contain more words rather than higher semantic alignment.
+```mermaid
+flowchart LR
+    D["Documents"] --> C["Split into chunks"]
+    C --> E["Embedding model"]
+    E --> V[("Vector store")]
 
-### Block 3: The Relevance Barrier Gate
-* 🧒 **The Analogy**: A bouncer at the library door. If the student asks for an alien recipe and the closest book in the library is a Mexican cookbook with a 12% match, the bouncer says: *"We don't have that book,"* instead of handing them taco recipes!
-* ⚙️ **The Engineering**: Enforcing a strict cutoff (e.g., `similarity >= 0.72`) before passing retrieved context into downstream prompt templates.
-* ⚠️ **What happens if you skip this?**: When a user asks an unanswerable or out-of-domain question, the vector database returns the "least bad" 3 documents anyway. The LLM then hallucinates a bogus answer based on irrelevant snippets.
+    style E stroke:#7c3aed,stroke-width:2px
+    style V stroke:#16a34a,stroke-width:2px
+```
 
----
+1. **Documents**: your policies and articles.
+2. **Split into chunks**: short passages so each vector captures one idea.
+3. **Embedding model**: converts each chunk into a vector.
+4. **Vector store**: saves vectors next to their original text.
 
-## 4. Evolution: Old/Naive vs. Modern Production
+### Diagram 2: Answering a question
 
-| Feature / Dimension | Naive Vector Prototype (2023) | Modern Production Architecture (2026) |
-|---|---|---|
-| **Search Engine** | Dense vector search only | **Hybrid Search**: Dense Vectors (Meanings) + BM25 (Exact Words) |
-| **Rank Fusion** | Heuristic distance cutoff | **Reciprocal Rank Fusion (RRF)** (`k = 60`) |
-| **Precision Filter** | None (returns raw top-k) | **Cross-Encoder Reranker** for token-to-token cross-attention |
-| **Dimensionality** | Fixed 1536-dim vectors | **Matryoshka Representation Learning (MRL)** for dynamic 256/512-dim truncation |
-| **Out-of-Domain Safety** | Blind LLM generation | **Relevance barrier gating** with explicit abstention |
+```mermaid
+flowchart LR
+    Q["User question"] --> E["Same embedding model"]
+    E --> S["Find nearest vectors"]
+    S --> G{"Score above threshold?"}
+    G -- "Yes" --> A["Hand evidence to the LLM"]
+    G -- "No" --> B["Say: I don't know"]
 
----
+    style E stroke:#7c3aed,stroke-width:2px
+    style G stroke:#d97706,stroke-width:2px
+    style A stroke:#16a34a,stroke-width:2px
+    style B stroke:#dc2626,stroke-width:2px
+```
 
-## 5. Concrete Production Implementation (Runnable Python)
+1. **User question**: arrives as plain text.
+2. **Same embedding model**: produces a query vector.
+3. **Find nearest vectors**: rank stored chunks by cosine similarity.
+4. **Threshold gate**: weak matches are discarded.
+5. **Outcome**: strong matches go to the LLM as evidence. Otherwise the system abstains.
 
-Here is a production-grade, type-annotated vector comparison service using **Pydantic v2** and pure Python vector math:
+## 4. Try It (Runnable, Offline)
+
+This example uses hand-made 4-number vectors so it runs with only Python 3.12+ and Pydantic v2. No model, key or network is needed. Real embedding models produce much longer vectors.
 
 ```python
 import math
+
 from pydantic import BaseModel, Field
 
-class TextVector(BaseModel):
-    id: str = Field(..., description="Unique document or chunk ID")
-    text: str = Field(..., description="Original raw text payload")
-    vector: list[float] = Field(..., description="Dense embedding vector")
 
-class MatchResult(BaseModel):
+class Chunk(BaseModel):
     id: str
     text: str
-    similarity: float = Field(..., ge=-1.0, le=1.0)
+    vector: list[float] = Field(description="Hand-made 4-number 'meaning' vector (illustrative)")
 
-class VectorScorer:
-    @staticmethod
-    def cosine_similarity(v1: list[float], v2: list[float]) -> float:
-        """Calculates cosine similarity between two dense vectors."""
-        if len(v1) != len(v2):
-            raise ValueError(f"Vector dimension mismatch: {len(v1)} vs {len(v2)}")
-        
-        dot_product = sum(a * b for a, b in zip(v1, v2))
-        norm_v1 = math.sqrt(sum(a * a for a in v1))
-        norm_v2 = math.sqrt(sum(b * b for b in v2))
-        
-        if norm_v1 == 0.0 or norm_v2 == 0.0:
-            return 0.0
-            
-        return dot_product / (norm_v1 * norm_v2)
 
-    def find_nearest(
-        self, 
-        query_vector: list[float], 
-        candidates: list[TextVector], 
-        min_threshold: float = 0.70
-    ) -> list[MatchResult]:
-        """Filters and ranks documents above the relevance barrier."""
-        results = []
-        for candidate in candidates:
-            score = self.cosine_similarity(query_vector, candidate.vector)
-            if score >= min_threshold:
-                results.append(
-                    MatchResult(id=candidate.id, text=candidate.text, similarity=round(score, 4))
-                )
-        return sorted(results, key=lambda x: x.similarity, reverse=True)
+class Match(BaseModel):
+    id: str
+    text: str
+    similarity: float = Field(ge=-1.0, le=1.0)
+
+
+def cosine_similarity(a: list[float], b: list[float]) -> float:
+    if len(a) != len(b):
+        raise ValueError(f"dimension mismatch: {len(a)} vs {len(b)}")
+    norm_a = math.sqrt(sum(x * x for x in a))
+    norm_b = math.sqrt(sum(x * x for x in b))
+    if norm_a == 0.0 or norm_b == 0.0:
+        return 0.0
+    return sum(x * y for x, y in zip(a, b)) / (norm_a * norm_b)
+
+
+def find_nearest(query: list[float], chunks: list[Chunk], min_score: float = 0.80) -> list[Match]:
+    scored = [
+        Match(id=c.id, text=c.text, similarity=round(cosine_similarity(query, c.vector), 3))
+        for c in chunks
+    ]
+    return sorted((m for m in scored if m.similarity >= min_score), key=lambda m: -m.similarity)
+
+
+chunks = [
+    Chunk(id="refund", text="Customers can request a refund within 30 days.", vector=[0.9, 0.1, 0.0, 0.1]),
+    Chunk(id="shipping", text="Standard shipping takes 3 to 5 business days.", vector=[0.1, 0.9, 0.1, 0.0]),
+    Chunk(id="warranty", text="Hardware is covered by a 2 year warranty.", vector=[0.2, 0.1, 0.9, 0.1]),
+]
+query_vector = [0.8, 0.2, 0.1, 0.1]  # pretend an embedding model produced this for "How do I get my money back?"
+
+print("Words shared with the refund chunk:", {"money", "back"} & set(chunks[0].text.lower().split()))
+for match in find_nearest(query_vector, chunks):
+    print(match.id, match.similarity)
+print("Out-of-domain query:", find_nearest([0.0, 0.1, 0.1, 0.9], chunks))
 ```
 
-## 6. Decision-Oriented Trade-Off Matrix
+Expected output (verified by running the block with Python 3.14 and Pydantic 2.13):
 
-When evaluating embedding models for production search and RAG systems, use this architectural decision matrix:
-
-| Model Architecture | Latency (p95) | Memory / Storage Footprint | Precision / Recall | Best For | Production Failure Mode |
-|---|---|---|---|---|---|
-| **Small Dense (384–768 dim)** | Very Low (<10ms) | Low (~1.5–3KB/vector) | Medium | Mobile, local edge, high-throughput search | Lacks nuance on deep domain legal/medical jargon |
-| **Large Dense (1536–3072 dim)** | Medium (~25–50ms) | High (~6–12KB/vector) | High | Enterprise RAG knowledge bases | Higher memory cost; still blind to exact IDs |
-| **Matryoshka (MRL Dynamic)** | Low (~15ms) | Configurable (256–1024 dim) | High (>98% retention) | Massive-scale vector indexes | Requires MRL-trained model weights |
-| **Cross-Encoder (Reranker)** | High (~100–250ms) | No vector storage (computed online) | Very High | Final top-25 reranking stage | Latency bottleneck if called on >50 candidates |
-
----
-
-## 7. Common Failure Modes & Anti-Patterns
-
-### Anti-Pattern 1: The Exact Identifier Blindspot
-* **Symptom**: User searches for invoice `INV-2024-9981` or error code `0x80070002`. The vector search returns an invoice for a completely different client or a generic Windows article.
-* **Root Cause**: BPE tokenizers split alphanumeric identifiers into arbitrary subword tokens (`INV`, `-`, `20`, `24`, `-`, `99`, `81`), scattering their latent meaning.
-* **Production Fix**: Implement **Hybrid Search** with a sparse inverted index (BM25) and merge results with Reciprocal Rank Fusion (RRF).
-
-### Anti-Pattern 2: Negation Amnesia
-* **Symptom**: User searches *"credit cards with NO annual fee"*. The top retrieved document is *"Premium Platinum Card with $550 Annual Fee"*.
-* **Root Cause**: Vector embeddings measure topical affinity, not logical Boolean operators. Both texts share intense semantic clustering around "credit card" and "annual fee".
-* **Production Fix**: Pre-query intent classification or LLM query rewriting with hard metadata filters (`annual_fee == 0`).
-
----
-
-## 8. OpenTelemetry Tracing & Telemetry View
-
-In production, measure embedding generation latency and vector retrieval duration using standard GenAI semantic conventions:
-
-```python
-from opentelemetry import trace
-
-tracer = trace.get_tracer("rag.retrieval")
-
-def traced_retrieval(query: str, scorer: VectorScorer, index: list[TextVector]):
-    with tracer.start_as_current_span("gen_ai.retrieval") as span:
-        span.set_attribute("gen_ai.retrieval.query", query)
-        span.set_attribute("gen_ai.retrieval.candidate_count", len(index))
-        
-        # 1. Measure embedding generation
-        with tracer.start_as_current_span("gen_ai.embeddings.create") as embed_span:
-            embed_span.set_attribute("gen_ai.request.model", "text-embedding-3-small")
-            # query_vector = model.embed(query)
-            query_vector = [0.12] * 1536  # Mock vector
-            
-        # 2. Measure vector nearest-neighbor search
-        with tracer.start_as_current_span("vector_db.search") as search_span:
-            search_span.set_attribute("db.system", "vector_index")
-            matches = scorer.find_nearest(query_vector, index, min_threshold=0.70)
-            search_span.set_attribute("db.vector.matches_found", len(matches))
-            
-        return matches
+```text
+Words shared with the refund chunk: set()
+refund 0.984
+Out-of-domain query: []
 ```
 
----
+The query shares no words with the refund chunk, yet scores 0.984 against it. An unrelated query returns an empty list instead of the "least bad" chunk.
 
-## 🧠 9. Quick Check to See if it Clicked
+## 5. Trade-Offs
 
-Test your architectural intuition:
+| Choice | Benefit | Cost |
+|---|---|---|
+| Embeddings only | Finds paraphrases and synonyms | Weak on exact identifiers and negation |
+| Keyword search only | Exact and predictable | Misses every paraphrase |
+| Both combined (hybrid search) | Covers both failure types | Two indexes to build and keep in sync |
+| Higher threshold | Fewer wrong answers | More "I don't know" replies |
 
-> **Scenario**: A customer searches your corporate IT portal:
-> *"Why is laptop docking station dock_v2 failing with firmware error 404?"*
-> 
-> 1. Why will a pure **Dense Vector Search** likely retrieve the wrong docking station manual?
-> 2. Which companion index and merging strategy solves this in modern production RAG?
+## 6. Failure Modes
+
+- **Exact identifiers**: a search for `INV-2024-9981` or error `0x80070002` can return a similar-looking but wrong record. An embedding captures topic, not character-exact codes. **Fix**: add keyword search alongside.
+- **Negation**: "cards with no annual fee" is topically close to "card with a $550 annual fee". **Fix**: apply a hard filter on a structured field where one exists.
+- **Mixed models**: re-indexing with a new embedding model but querying with the old one makes every score meaningless. **Fix**: store the model name with the index and refuse mismatches.
+
+## 🧠 7. Quick Check to See if it Clicked
+
+> A user searches an IT portal for: *"dock_v2 firmware error 404"*. Why might embeddings-only search return the manual for `dock_v1`, and what would you add?
 
 <details>
-<summary><b>View Solution</b></summary>
+<summary><b>View answer</b></summary>
 
-1. **Why Vector Search Struggles**: Dense embeddings excel at broad conceptual intent (e.g. *"docking station not working"*), but compress exact alphanumeric part codes (`dock_v2`) and status codes (`404`) into fuzzy subword tokens. It is likely to return manuals for `dock_v1` or general USB errors because they are conceptually adjacent.
-2. **The Production Fix**: A **Sparse BM25 Index** matches the exact tokens `"dock_v2"` and `"404"`. Pairing BM25 with Dense Vectors via **Reciprocal Rank Fusion (RRF)** ensures candidates that match both exact tokens and broad semantic intent rank at the absolute top.
+Embeddings capture the topic ("docking station firmware problem"), so `dock_v1` and `dock_v2` sit close together. The exact characters `dock_v2` and `404` carry little weight. Add a keyword index so exact tokens match, and merge both result lists (covered in the hybrid search lesson).
 </details>
 
----
+## 8. Key Takeaways
 
-## 💡 10. Senior Architectural Interview Perspective
+- An embedding is a list of numbers placed so that similar meanings end up close.
+- Always embed documents and queries with the same model.
+- Use a relevance threshold so the system can say "I don't know".
+- Pair embeddings with keyword search when exact identifiers matter.
 
-**Interview Question**: *"We have 50 million documents. Calculating cosine similarity across all vectors at query time takes 4 seconds. How do you scale this retrieval system to sub-30ms p99 latency without losing significant recall?"*
-
-**Architectural Defense**:
-1. **Approximate Nearest Neighbor (ANN) Graphs**: Replace brute-force linear scan with an **HNSW (Hierarchical Navigable Small World)** graph or **DiskANN**, trading <1% recall for logarithmic `O(log N)` search time.
-2. **Quantization & Matryoshka Representation Learning (MRL)**: Compress vectors from 32-bit floats to 8-bit integers (`int8` scalar quantization) or binary vectors, reducing RAM bandwidth bottlenecks by 4x to 32x.
-3. **Two-Stage Retrieval**: Perform fast ANN search over the top 1,000 candidates on SSD with DiskANN, followed by in-memory reranking of the top 50 with a cross-encoder.
-
----
-
-## 11. Key Takeaways & Verified Resources
-
-* **Vectors Represent Coordinates in Meaning**: Embeddings enable fuzzy semantic similarity where traditional keyword matching returns zero results.
-* **The Dual-Catalog Rule**: Never use dense vectors alone for enterprise systems. Always pair them with sparse lexical inverted indexes (BM25) to catch exact IDs.
-* **The Relevance Gate**: Enforce similarity thresholds to abstain when queries fall outside the knowledge corpus, preventing downstream hallucinations.
-
-### Verified Primary Sources
-* **MRL Paper**: Kusupati et al., *"Matryoshka Representation Learning"*, NeurIPS (arXiv:2205.13147).
-* **Anthropic Research**: *"Contextual Retrieval in Enterprise Search"* (2024).
-* **HNSW Paper**: Malkov & Yashunin, *"Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs"* (IEEE TPAMI).
+**Sources** (abstract pages opened and checked when this example was written): Kusupati et al., *Matryoshka Representation Learning* (arXiv:2205.13147), for embeddings that stay useful at several sizes; Malkov and Yashunin, *Efficient and robust approximate nearest neighbor search using Hierarchical Navigable Small World graphs* (arXiv:1603.09320), for how large vector stores are searched quickly. Both are covered in later lessons.
 
 ---
 
 ## 🧭 Navigation
-- **[← Previous Lesson: Foundations Hub](../00-foundations-and-token-mechanics/README.md)**
-- **[Phase 02: Enterprise Retrieval Hub](../02-rag-and-knowledge-systems/README.md)**
-- **[Next Lesson: Document Parsing & Structural Chunking](../02-rag-and-knowledge-systems/01-document-parsing-and-chunking.md) →**
-- **[Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](../02-rag-and-knowledge-systems/labs/capstone-enterprise-rag-pipeline.md)**
+- **[← Previous Lesson: Document Parsing and Chunking](../../../../02-rag-and-knowledge-systems/01-document-parsing-and-chunking.md)**
+- **[Phase 02 Hub](../../../../02-rag-and-knowledge-systems/README.md)**
+- **[Next Lesson: Hybrid Search →](../../../../02-rag-and-knowledge-systems/03-hybrid-search-bm25-and-hnsw.md)**
+- **[Capstone Lab: Enterprise RAG Pipeline](../../../../02-rag-and-knowledge-systems/labs/capstone-enterprise-rag-pipeline.md)**

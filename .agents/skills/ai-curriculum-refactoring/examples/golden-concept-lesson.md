@@ -1,8 +1,8 @@
 # Golden Concept Lesson
 
-> **Purpose:** Demonstrates how to teach a foundational AI concept clearly to an experienced software engineer.
+> **Purpose:** Demonstrates how to teach a foundational AI concept clearly to a software engineer who knows software terms but has never met AI terms.
 >
-> This is a quality reference, not a mandatory lesson structure.
+> This is a quality reference, not a mandatory lesson structure. Real lessons must also carry the header block with the term ledger, the canonical tier badge, a "where this analogy breaks" note, a Quick Check and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)).
 
 # Tokens and Context
 

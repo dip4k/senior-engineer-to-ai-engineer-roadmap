@@ -31,5 +31,5 @@ python examples/semantic_layer_decoupling.py
 ### Running C# Example
 ```bash
 # Execute standalone .NET 9 console pipeline
-dotnet run --project examples/StrictJsonPipeline.cs
+dotnet run --project examples/StrictJsonPipeline.csproj
 ```

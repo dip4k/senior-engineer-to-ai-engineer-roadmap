@@ -35,11 +35,12 @@ flowchart TD
 ```
 
 ### Step-by-Step Architecture Walkthrough:
-1. **Context AST Assembly (Lesson 01)**: The application runtime ingests application state, user queries, and retrieved knowledge, compiling them into a typed 3-layer Context AST (`Static Prefix` → `Semi-Dynamic` → `Dynamic Tail`). Untrusted text is escaped and sandboxed within XML boundaries.
-2. **Token Governance & Compaction (Lesson 02)**: The token governor measures token footprints against portfolio limits. If thresholds are exceeded, the 4-tier compaction pipeline progressively executes deterministic pruning, historical tool payload masking, and summarization.
-3. **Physical Prompt Cache Reuse (Lesson 03)**: The static prefix is dispatched with provider cache headers. If the prefix matches pre-existing tensors in GPU High-Bandwidth Memory (HBM), matrix prefill compute is bypassed, slashing TTFT and cost.
-4. **Constrained Grammar Sampling (Lesson 04)**: During token generation, an active FSM/DFA logit mask dynamically sets the logits of illegal tokens to -infinity, mathematically guaranteeing that every generated character strictly adheres to the defined JSON schema.
-5. **Typed Deserialization**: The emitted JSON string deserializes directly into strongly-typed domain records (Pydantic / C# records) without requiring regex cleanup or secondary repair calls.
+1. **Prompt Foundations & Message Roles (Lesson 00)**: Structure prompts into discrete, role-attributed message turns (`system`/`developer`, `user`, `assistant`), leverage in-context learning to steer output probabilities, and sandbox untrusted text within XML delimiters.
+2. **Context AST Assembly (Lesson 01)**: Ingest application state, user queries, and retrieved knowledge, compiling them into a typed 3-layer Context AST (`Static Prefix` → `Semi-Dynamic` → `Dynamic Tail`). Untrusted text is escaped and sandboxed within XML boundaries.
+3. **Token Governance & Compaction (Lesson 02)**: Measure token footprints against portfolio limits. If thresholds are exceeded, the 4-tier compaction pipeline progressively executes deterministic pruning, historical tool payload masking, and summarization.
+4. **Physical Prompt Cache Reuse (Lesson 03)**: Dispatch the immutable static prefix with provider cache headers. When matching pre-existing tensors in GPU HBM, matrix prefill compute is bypassed, slashing TTFT and cost.
+5. **Constrained Grammar Sampling (Lesson 04)**: Dynamically mask illegal token logits to $-\infty$ via FSM/CFG transition tables, mathematically guaranteeing that every emitted token strictly adheres to the defined JSON schema.
+6. **Long-Context Reliability & Context Rot (Lesson 05)**: Defeat the Lost-in-the-Middle U-curve and attention amnesia across long contexts using Boundary Pinning and edge-weighted reranking validated against the RULER benchmark.
 
 ---
 
@@ -47,11 +48,12 @@ flowchart TD
 
 | # | Lesson Title | Depth Tier | Core Systems Focus | Engineering Outcome |
 |:---:|---|:---:|---|---|
-| **01** | **[Context AST Architecture & Structured Composition](./01-context-ast-architecture.md)** | `HIGH ROI / CORE` | Compiler AST metaphor, 3-layer schema, 4-tier role hierarchy (`developer`/`system`), XML delimiter sandboxing, decoupling LLM extraction from deterministic rule engines. | Compile typed context payloads that neutralize prompt injection attacks. |
-| **02** | **[Dynamic Token Budgeting & Compaction Pipelines](./02-token-budgeting-and-compaction.md)** | `HIGH ROI / CORE` | 16K/32K/64K portfolios, headroom math, reasoning model thinking token buffers, 4-tier compaction escalation, LLMLingua 2 vs. heuristic pruning, tool schema budgeting. | Eliminate HTTP 400 context overflow crashes and manage multi-turn tool history. |
-| **03** | **[Prefix & Prompt Caching Mechanics](./03-prefix-and-prompt-caching.md)** | `IMPORTANT / NEXT` | GPU KV-cache physics, contiguous prefix invariant, prefix taint bug, Anthropic GA ordering (`tools → system → messages`), OpenAI 128-token chunk quantization, Gemini dual caching, RadixAttention trees. | Cut input costs by 90% and reduce TTFT by up to 80% via GPU memory reuse. |
-| **04** | **[Constrained Decoding & Schema FSMs](./04-constrained-decoding-and-schema-fsm.md)** | `IMPORTANT / NEXT` | Fragility of naive JSON, DFA/CFG logit masking loop, vocabulary partitioning, Outlines vs. XGrammar GPU decoding, OpenAI `strict: true`, over-constrained schema deadlocks. | Guarantee 100% JSON schema compliance at the sampling layer with zero regex hacks. |
-| **05** | **[Maximum Effective Context Window (MECW) & Context Rot](./05-mecw-and-context-rot.md)** | `ADVANCED / SPECIALIZED` | MECW vs. advertised windows, attention U-curve (Lost-in-the-Middle), RULER multi-hop benchmark, context rot SNR equation, 50% operational rule, Boundary Pinning, edge-weighted reranking. | Prevent silent middle-void attention amnesia across long contexts. |
+| **00** | **[Prompt Engineering Fundamentals: Roles & ICL](./00-prompt-engineering-fundamentals-roles-and-in-context-learning.md)** | `🟢 Core` | Message role protocol (`system`/`developer`, `user`), ChatML framing tokens, in-context learning (few-shot conditioning), structural XML delimiters, sandboxing. | Establish boundary-safe, role-attributed message structures. |
+| **01** | **[Context AST Architecture & Structured Composition](./01-context-ast-architecture.md)** | `🟡 Engineering Depth` | Compiler AST metaphor, 3-layer schema, 4-tier role hierarchy, XML delimiter sandboxing, decoupling LLM extraction from deterministic rule engines. | Compile typed context payloads that neutralize prompt injection attacks. |
+| **02** | **[Dynamic Token Budgeting & Compaction Pipelines](./02-token-budgeting-and-compaction.md)** | `🟡 Engineering Depth` | 16K/32K/64K portfolios, headroom math, reasoning model thinking token buffers, 4-tier compaction escalation, LLMLingua 2 vs. heuristic pruning, tool schema budgeting. | Eliminate HTTP 400 context overflow crashes and manage multi-turn tool history. |
+| **03** | **[Prefix & Prompt Caching Mechanics](./03-prefix-and-prompt-caching.md)** | `🟡 Engineering Depth` | GPU KV-cache physics, contiguous prefix invariant, prefix taint bug, Anthropic ordering, OpenAI 128-token chunk quantization, Gemini caching, RadixAttention trees. | Cut input costs by up to 90% and reduce TTFT via GPU memory reuse. |
+| **04** | **[Constrained Decoding & Schema FSMs](./04-constrained-decoding-and-schema-fsm.md)** | `🟡 Engineering Depth` | Fragility of naive JSON, DFA/CFG logit masking loop, vocabulary partitioning, Outlines vs. XGrammar GPU decoding, OpenAI `strict: true`, over-constrained schema deadlocks. | Guarantee 100% JSON schema compliance at the sampling layer with zero regex hacks. |
+| **05** | **[Maximum Effective Context Window (MECW) & Context Rot](./05-mecw-and-context-rot.md)** | `🔵 Advanced` | MECW vs. advertised windows, attention U-curve (Lost-in-the-Middle), RULER multi-hop benchmark, context rot SNR equation, 50% operational rule, Boundary Pinning, edge-weighted reranking. | Prevent silent middle-void attention amnesia across long contexts. |
 
 ---
 

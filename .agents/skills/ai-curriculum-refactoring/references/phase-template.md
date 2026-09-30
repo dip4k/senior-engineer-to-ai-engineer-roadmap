@@ -43,31 +43,31 @@ Start with an accessible, high-impact mental model (ELI10) that grounds the enti
 
 ---
 
+## 🚦 Start Here: Learning Path & Readiness Checkpoints
+
+- **Who this phase is for**: software engineers who know the software terms but are new to the AI terms introduced here.
+- **Suggested order**: list the lessons in the order a beginner should read them, marking which are optional Deep Dives.
+- **You are ready to move on when you can**: 3–4 concrete, testable statements (for example "explain why a 2,000-word document may cost more tokens than 2,000").
+- **Phase glossary**: the AI terms this phase introduces, each with a one-line plain definition (link to the repository glossary).
+
+---
+
 ## 🗺️ Phase Blueprint & System Topology
 
-Include an authoritative, modern Mermaid diagram using semantic UI color styling:
+Include one phase-level Mermaid diagram of at most 8 nodes (see [diagram-guidelines.md](./diagram-guidelines.md)). Put deeper flows in the lessons:
 
 ```mermaid
-flowchart TD
-    subgraph PHASE1["Phase 1: Ingestion & Preparation (Offline Prep)"]
-        D["1. Source Records<br>(Raw Documents)"] --> P["2. Structural Parsing<br>(Clean Layout)"]
-        P --> E["3. Dual-Indexing<br>(Lexical + Semantic)"]
-    end
-
-    subgraph PHASE2["Phase 2: Execution & Serving (Online Runtime)"]
-        Q["User Request"] --> R["4. Search & Rerank<br>(RRF + Cross-Encoder)"]
-        R --> S["5. Model Synthesis<br>(Grounded Citations)"]
-        S --> G{"6. Verification Gate<br>Factual Grounding?"}
-        G -- "Yes" --> OUT["Verified Output"]
-        G -- "No" --> ABSTAIN["Quarantine & Abstain"]
-    end
-
-    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
-    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+flowchart LR
+    D["Source Records"] --> P["Parse and Clean"]
+    P --> I["Index<br>(keyword + vector)"]
+    Q["User Request"] --> R["Search and Rerank"]
+    I -.-> R
+    R --> S["Model Answer<br>(with citations)"]
+    S --> G{"Grounded?"}
+    G -- "Yes" --> OUT["Verified Output"]
 
     style G stroke:#d97706,stroke-width:2px
     style OUT stroke:#16a34a,stroke-width:2px
-    style ABSTAIN stroke:#dc2626,stroke-width:2px
     style S stroke:#7c3aed,stroke-width:2px
 ```
 
@@ -91,15 +91,15 @@ Every phase README must contrast the early/naive approach against the modern pro
 
 ## 📚 Modular Curriculum Lessons (Master Navigation Table)
 
-| # | Lesson / Module | Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
+| # | Lesson / Module | Tier | Est. Time | New AI Terms | Key Engineering Outcome |
 |---|---|---|---|---|---|
-| **01** | [Foundational Primitive](./01-<topic>.md) | `🟢 Core` | ~18 min | Architectural or mathematical core | Measurable baseline capability |
-| **02** | [Core Implementation / Deep Dive](./02-<topic>.md) | `⚫ Deep Dive` | ~22 min | Deterministic system mechanism | Fault-tolerant execution pattern |
-| **03** | [Advanced Scaling](./03-<topic>.md) | `🟡 Engineering Depth` | ~20 min | High-concurrency / distributed optimization | Production throughput & latency SLA |
-| **04** | [Production Defense / Telemetry](./04-<topic>.md) | `🔵 Advanced` | ~22 min | Guardrails, evaluations, or observability | Enterprise compliance & failure recovery |
+| **01** | [Foundational Primitive](./01-<topic>.md) | `🟢 Core` | ~18 min | token, tokenizer | Measurable baseline capability |
+| **02** | [Core Implementation / Deep Dive](./02-<topic>.md) | `⚫ Deep Dive` | ~22 min | context window, attention | Fault-tolerant execution pattern |
+| **03** | [Advanced Scaling](./03-<topic>.md) | `🟡 Engineering Depth` | ~20 min | KV cache, batching | Production throughput & latency SLA |
+| **04** | [Production Defense / Telemetry](./04-<topic>.md) | `🔵 Advanced` | ~22 min | eval, groundedness | Enterprise compliance & failure recovery |
 
 ### Exemplar Lesson Maps by Curricular Phase:
-- **Phase 00 (Foundations)**: Tokenization & BPE → Attention & KV Cache Memory → Prefill vs. Decode Physics → Chunked Prefill & FlashAttention.
+- **Phase 00 (Foundations)**: What an LLM is (Lesson 00 primer) → Tokens & Tokenization → Attention & the Context Window → KV Cache Memory → Reasoning Models → Small Models & Quantization → Hardware Physics (Deep Dive).
 - **Phase 01 (Context)**: In-Context Learning → Constrained Grammar Decoding → JSON Schema Marshaling → Context Pruning ASTs.
 - **Phase 02 (Retrieval)**: Document Parsing → Dense/Sparse Indexing → Hybrid Search & RRF → Cross-Encoder Reranking → GraphRAG.
 - **Phase 03 (Tools & MCP)**: JSON-RPC 2.0 Wire Protocol → MCP Stdio/SSE Servers → ABAC Policy Gates → Tool Idempotency.
@@ -110,6 +110,8 @@ Every phase README must contrast the early/naive approach against the modern pro
 - **Phase 08 (SDLC)**: Spec-Driven Code Generation → Agentic Pull Request Reviewers → Enterprise AI Governance.
 
 ---
+
+> Reports, audits and plans never live in this folder. They go to `.curriculum-reports/` (see [report-templates.md](./report-templates.md)).
 
 ## 🛠️ Associated Hands-On Labs
 

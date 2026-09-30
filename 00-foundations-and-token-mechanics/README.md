@@ -39,8 +39,8 @@ flowchart TD
         direction TB
 
         subgraph CORE_HW["1. Silicon & Attention Foundations"]
-            L1["Lesson 01: Hardware Physics & FlashAttention<br>• Compute vs. Memory Bandwidth Wall<br>• Roofline Model & SRAM Tiling"]
-            L2["Lesson 02: Tokenization & BPE Mechanics<br>• Subword Merges & Number Shredding<br>• Leading Whitespace & Multilingual Tax"]
+            L1["Lesson 02: Hardware Physics & FlashAttention<br>• Compute vs. Memory Bandwidth Wall<br>• Roofline Model & SRAM Tiling"]
+            L2["Lesson 01: Tokenization & BPE Mechanics<br>• Subword Merges & Number Shredding<br>• Leading Whitespace & Multilingual Tax"]
         end
 
         subgraph MEM_SYS["2. Memory Systems & Concurrency"]
@@ -76,8 +76,8 @@ flowchart TD
 ```
 
 ### Walkthrough of the Phase 00 Journey:
-1. **Hardware Realities (Lesson 01)**: Uncover why inference decode is memory-bandwidth bound and how FlashAttention eliminates intermediate memory thrashing by computing attention inside on-chip SRAM tiles.
-2. **Tokenization (Lesson 02)**: Demystify Byte-Pair Encoding (BPE), subword token fragmentation, leading whitespace sensitivity, and the 5x non-English token penalty.
+1. **Hardware Realities (Lesson 02)**: Uncover why inference decode is memory-bandwidth bound and how FlashAttention eliminates intermediate memory thrashing by computing attention inside on-chip SRAM tiles.
+2. **Tokenization (Lesson 01)**: Demystify Byte-Pair Encoding (BPE), subword token fragmentation, leading whitespace sensitivity, and the 5x non-English token penalty.
 3. **KV-Cache Physics (Lesson 03)**: Derive the exact memory math of dynamic KV-caches, contrast MHA vs. GQA vs. MLA, and understand how PagedAttention implements virtual memory for LLMs.
 4. **Reasoning Models (Lesson 04)**: Master test-time compute scaling, manage the 50:1 thinking token asymmetry, and implement automated token governors to prevent runaway API bills.
 5. **SLMs & Quantization (Lesson 05)**: Compress models using AWQ and GPTQ to deploy high-throughput 8B–14B models on commodity hardware with near-zero accuracy loss.
@@ -100,9 +100,17 @@ flowchart TD
 
 ## 🎯 Target Audience & Prerequisites
 
-- **Audience**: Senior Software Engineers, Staff Backend Engineers, and Solutions Architects (7–10+ years) transitioning into AI Engineering / Software 3.0.
-- **Assumed Background**: Systems architecture, data structures, caching tiers, OS virtual memory, network protocols, and distributed systems.
-- **Zero AI Prerequisites**: We do not assume prior machine learning experience. All concepts are introduced with engineering rigor from first principles.
+- **Audience**: Software engineers of any seniority who are new to AI engineering.
+- **Assumed Background**: Software engineering vocabulary: caching, indexes, APIs, distributed systems, observability. We do not re-teach these.
+- **Zero AI Prerequisites**: Every AI term (token, context window, KV cache, and so on) is defined in plain English before it is used. Start with Lesson 00.
+
+---
+
+## 🚦 Start Here: Learning Path & Readiness Checkpoints
+
+- **Reading order**: 00 → 01 → 02 → 03 → 04 → 05, exactly as numbered. Lesson 00 defines the basic terms, Lesson 01 teaches tokens in depth, and Lesson 02 gives the memory-bandwidth background that Lesson 03 builds on.
+- **After Lesson 00 you can**: explain what an LLM does when called, why cost and limits are counted in tokens, why the model "forgets" between calls, and what temperature changes.
+- **Phase glossary (so far)**: large language model (LLM), prompt, token, tokenizer, training, inference, context window, temperature, hallucination. Each is defined in [Lesson 00](./00-what-is-an-llm.md).
 
 ---
 
@@ -110,11 +118,13 @@ flowchart TD
 
 | Lesson | Depth Tier | Target Words | Core Systems Focus |
 |---|:---:|:---:|---|
-| **[01. Transformer Inference & Hardware Realities](./01-transformer-and-hardware-physics.md)** | `HIGH ROI / CORE` | ~1,500 | GPU memory bandwidth wall, HBM3 vs. SRAM hierarchy, arithmetic intensity, Roofline Model, FlashAttention IO-aware tiling. |
-| **[02. Tokenization & Byte-Pair Encoding (BPE)](./02-tokenization-and-bpe-mechanics.md)** | `HIGH ROI / CORE` | ~1,300 | BPE merge trees, token boundary fragmentation, whitespace sensitivity, number shredding, non-English token penalties, sampling mechanics. |
-| **[03. KV-Cache Mechanics & Memory Sizing Math](./03-kv-cache-vram-and-bandwidth-physics.md)** | `IMPORTANT / NEXT` | ~2,100 | Autoregressive decoding, Prefill (TTFT) vs. Decode (TPS), KV-cache growth math, MHA vs. GQA vs. MLA, PagedAttention block tables. |
-| **[04. Test-Time Compute & Reasoning Tokens](./04-test-time-compute-and-reasoning-models.md)** | `ADVANCED / SPECIALIZED` | ~1,900 | Test-time compute scaling, reasoning models (o3, Claude 3.7 Thinking, DeepSeek-R1), 50:1 thinking token asymmetry, token governors, runaway billing defense. |
-| **[05. Small Language Models & Model Quantization](./05-slms-and-quantization-mechanics.md)** | `IMPORTANT / NEXT` | ~1,700 | Edge SLMs (Phi-4, Gemma 2, Qwen 2.5 Coder), precision formats (FP16, FP8, INT4), AWQ vs. GPTQ algorithms, hardware deployment matrix. |
+| **[00. What Is a Large Language Model? Tokens, Prompts and Context Windows](./00-what-is-an-llm.md)** | `🟢 Core` | ~1,400 | The generation loop, tokens, stateless calls, context window, temperature, hallucination. |
+| **[01. How Text Becomes Tokens: Byte-Pair Encoding (BPE) and Sampling](./01-tokenization-and-bpe-mechanics.md)** | `🟡 Engineering Depth` | ~2,500 | BPE merge trees, token boundaries, whitespace sensitivity, multilingual token costs, logits, softmax, sampling. |
+| **[02. Why Your Graphics Processing Unit Waits on Memory: Transformers and Hardware Limits](./02-transformer-and-hardware-physics.md)** | `🟡 Engineering Depth` | ~1,900 | GPU memory bandwidth ceiling, VRAM vs compute, arithmetic intensity, memory-bound decode, quadratic attention scaling. |
+| **[03. The Working Memory You Must Size: KV Cache, Prefill and Decode](./03-kv-cache-vram-and-bandwidth-physics.md)** | `🟡 Engineering Depth` | ~2,500 | Autoregressive decoding, Prefill (TTFT) vs Decode (TPS), KV cache arithmetic, MHA vs GQA vs MLA, PagedAttention. |
+| **[04. Letting a Model Think Before It Answers: Test-Time Compute and Reasoning Models](./04-test-time-compute-and-reasoning-models.md)** | `🔵 Advanced` | ~2,200 | Test-time compute scaling, reasoning models, thinking token asymmetry, token governors, runaway cost defense. |
+| **[05. Small Language Models and Storing Weights in Fewer Bits (Quantization)](./05-slms-and-quantization-mechanics.md)** | `🟡 Engineering Depth` | ~2,300 | Edge SLMs, precision formats (FP16, FP8, INT4), outlier weights, AWQ vs GPTQ calibration, hardware sizing. |
+| **[06. Deep Dive: The Roofline Model and Memory-Aware Attention (FlashAttention)](./06-roofline-and-flashattention-deep-dive.md)** | `⚫ Deep Dive` | ~1,850 | (Optional) Williams roofline model, IO-aware SRAM tiling, online softmax derivation, quadratic traffic elimination. |
 
 ---
 
@@ -146,5 +156,16 @@ flowchart TD
 
 ## 🧭 Navigation
 
+### Phase Progression
 - **Previous Phase**: *None (Phase 00 is the curriculum entry point)*
 - **Next Phase**: **[Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md)**
+
+### Direct Chapter & Lesson Directory
+- **[Lesson 00: What Is a Large Language Model?](./00-what-is-an-llm.md)**
+- **[Lesson 01: How Text Becomes Tokens (BPE & Sampling)](./01-tokenization-and-bpe-mechanics.md)**
+- **[Lesson 02: Why Your GPU Waits on Memory (Hardware Limits)](./02-transformer-and-hardware-physics.md)**
+- **[Lesson 03: The Working Memory You Must Size (KV Cache)](./03-kv-cache-vram-and-bandwidth-physics.md)**
+- **[Lesson 04: Letting a Model Think Before It Answers (Reasoning Models)](./04-test-time-compute-and-reasoning-models.md)**
+- **[Lesson 05: Small Language Models & Model Quantization](./05-slms-and-quantization-mechanics.md)**
+- **[Lesson 06: Deep Dive: The Roofline Model and Memory-Aware Attention (FlashAttention)](./06-roofline-and-flashattention-deep-dive.md)**
+- **[Hands-On Capstone Lab: Token Budgeting Proxy](./labs/capstone-token-economics-analyzer.md)**

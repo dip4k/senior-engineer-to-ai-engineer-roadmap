@@ -167,8 +167,8 @@ To successfully execute the architectures in this phase, learners should have ma
 
 | Upstream Knowledge Domain | Required Concept | Repository Source File |
 |---|---|---|
-| **Phase 00: Foundations** | BPE Tokenization Mechanics | [`00/02-tokenization-and-bpe-mechanics.md`](../00-foundations-and-token-mechanics/02-tokenization-and-bpe-mechanics.md) |
-| **Phase 00: Foundations** | Latent Embeddings & Vector Spaces | [`00/01-transformer-and-hardware-physics.md`](../00-foundations-and-token-mechanics/01-transformer-and-hardware-physics.md) |
+| **Phase 00: Foundations** | BPE Tokenization Mechanics | [`00/01-tokenization-and-bpe-mechanics.md`](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md) |
+| **Phase 00: Foundations** | Latent Embeddings & Vector Spaces | [`00/02-transformer-and-hardware-physics.md`](../00-foundations-and-token-mechanics/02-transformer-and-hardware-physics.md) |
 | **Phase 00: Foundations** | KV Cache Memory Bandwidth Physics | [`00/03-kv-cache-vram-and-bandwidth-physics.md`](../00-foundations-and-token-mechanics/03-kv-cache-vram-and-bandwidth-physics.md) |
 | **Phase 01: Context Engineering** | Context AST Compilation & XML Delimiters | [`01/01-context-ast-architecture.md`](../01-prompt-and-context-engineering/01-context-ast-architecture.md) |
 | **Phase 01: Context Engineering** | Prompt Caching Breakpoints | [`01/03-prefix-and-prompt-caching.md`](../01-prompt-and-context-engineering/03-prefix-and-prompt-caching.md) |
