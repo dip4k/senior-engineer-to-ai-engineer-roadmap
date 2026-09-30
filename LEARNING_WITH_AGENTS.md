@@ -1,6 +1,8 @@
 # 🎓 Learning & Practicing AI Engineering with Autonomous Agents
 > **Interactive Multi-Agent Learning Harness for Senior Developers & AI Tech Leads**  
 > Supports **Google Antigravity**, **Claude Code**, and **GitHub Copilot**.
+>
+> [← Master Curriculum & Architecture (README.md)](./README.md) • [🗺️ Full AI Engineer Roadmap](./AI_ENGINEER_ROADMAP.md) • [📖 Glossary by Practice](./ai-engineering-glossary-by-practice.md)
 
 This repository is designed not merely to be read, but to be **experienced interactively** alongside AI pair-programming agents. By using the pre-configured agents, skills, and tools in this repo, you can practice production AI systems engineering hands-on.
 
@@ -36,30 +38,36 @@ You can summon specialized agent personas across all three platforms:
   - **Claude Code**: Type `/practice` or ask *"Act as @tutor and guide me through Phase 01: Context Engineering."*
   - **GitHub Copilot**: Load `.github/prompts/learn-practice.prompt.md` or type *"Act as @tutor and quiz me on KV-cache budgeting."*
 
-### 2. 🏛️ `@architect` — Distributed Agent Systems Engineer
+### 3. 🏛️ `@architect` — Distributed Agent Systems Engineer
 - **Role**: Assists in designing and scaffolding resilient microservices, MCP servers, and WAL event-stores in `agent-forge/`.
 - **How to invoke**:
   - **Antigravity**: *"Activate agent-forge-builder skill. Help me add a new MCP server for document redaction."*
   - **Claude Code**: Type `/architect`
   - **GitHub Copilot**: Load `.github/prompts/agent-architect.prompt.md`
 
-### 3. 📡 `@refresher` — Autonomous Frontier Content Scout
+### 4. 📡 `@refresher` — Autonomous Frontier Content Scout
 - **Role**: Scans repository coverage, queries the web for the newest models, protocol revisions, and standards, and identifies curriculum gaps.
 - **How to invoke**:
   - **Antigravity**: *"Activate repo-content-refresher skill. Find what's new in reasoning models and MCP specs."*
   - **Claude Code**: Type `/refresh-content`
   - **GitHub Copilot**: Load `.github/prompts/refresh-content.prompt.md`
 
-### 4. 🛡️ `@security` — Adversarial Red-Team Evaluator
+### 5. 🛡️ `@security` — Adversarial Red-Team Evaluator
 - **Role**: Evaluates prompt injection defenses, zero-trust policies, and dual-LLM quarantine pipelines.
 - **How to invoke**:
   - Across all agents: *"Act as @security. Red-team my tool execution policy in `agent_forge/mcp/policy_engine.py`."*
 
+### 6. 📐 `@curriculum` — AI Curriculum Architect & Editorial Lead
+- **Role**: Audits, plans, refactors, and validates curriculum phases against production architectural standards and zero-LaTeX quality gates.
+- **How to invoke**:
+  - **Antigravity**: Select the `ai-curriculum-architect` workspace agent in `.agents/agents/`.
+  - Across all agents: *"Act as @curriculum. Review Phase 08 for cognitive load budgeting and interface rigor."*
+
 ---
 
-## 🚀 7 Hands-On Practice Labs & Code Harness
+## 🚀 Hands-On Practice Labs & Capstone Harness
 
-The repository contains 7 hands-on labs mapped directly to the production microservices in `agent-forge/`:
+The repository contains 7 hands-on labs plus an enterprise Capstone mapped directly to the production microservices in `agent-forge/`:
 
 ```mermaid
 flowchart TD
@@ -69,9 +77,10 @@ flowchart TD
     L4 --> L5["Lab 05: AI Observability & Tracing<br>(OpenTelemetry GenAI Spans)"]
     L5 --> L6["Lab 06: Dual-LLM Quarantine<br>(Zero-Trust Tool Isolation)"]
     L6 --> L7["Lab 07: Hybrid ML Fairness<br>(Disparate Impact & Explainability)"]
+    L7 --> CAP["Phase 08 Capstone Lab: Enterprise AI-Native Repository<br>(AGENT.md + Headless CI/CD + TDD)"]
 ```
 
-| Lab | Architectural Focus | Corresponding `agent-forge` Module | Automated Verification Command |
+| Lab | Architectural Focus | Corresponding Module | Automated Verification Command |
 |:---|:---|:---|:---|
 | **Lab 01** | Multi-Tenant Hybrid RAG & Isolation | `agent_forge/retrieval/` | `python scripts/verify_lab.py --lab 1` |
 | **Lab 02** | Tool Execution with MCP | `agent_forge/mcp/` | `python scripts/verify_lab.py --lab 2` |
@@ -79,7 +88,8 @@ flowchart TD
 | **Lab 04** | Agent Failure Defense & Rate Limiter | `agent_forge/gateway/` | `python scripts/verify_lab.py --lab 4` |
 | **Lab 05** | AI Observability & Tracing | `agent_forge/observability/` | `python scripts/verify_lab.py --lab 5` |
 | **Lab 06** | Dual-LLM Quarantine Guardrails | `agent_forge/mcp/policy_engine.py` | `python scripts/verify_lab.py --lab 6` |
-| **Lab 07** | Hybrid ML Fairness & Explainability | `labs/lab-07-hybrid-ml-*.md` | `python scripts/verify_lab.py --lab 7` |
+| **Lab 07** | Hybrid ML Fairness & Explainability | `labs/lab-07-hybrid-ml-fairness-and-explainability.md` | `python scripts/verify_lab.py --lab 7` |
+| **Phase 08 Capstone** | Enterprise AI-Native SDLC Framework | `labs/capstone-ai-native-repository.md` | Capstone Acceptance Rubric & Headless Gates |
 
 ---
 
@@ -136,7 +146,7 @@ To ensure your knowledge and this repo stay at the frontier:
    python scripts/refresh_content_scout.py --summary
    ```
 2. **Review Missing Frontier Concepts**:
-   View [CONTENT_REFRESH_REPORT.md](./CONTENT_REFRESH_REPORT.md).
+   Inspect the summary output in your terminal or generate a queries plan (`python scripts/refresh_content_scout.py --queries-only`).
 3. **Execute Live Web Searches**:
    Ask your agent (Antigravity, Claude Code, or Copilot with web search):
    > *"Search the web for the latest updates on Anthropic Claude 3.7 / 4 reasoning tokens, Model Context Protocol spec revisions, and EU AI Act enforcement. Compare findings with our repository and draft additions for `ai-engineering-glossary-by-practice.md`."*

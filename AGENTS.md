@@ -8,6 +8,8 @@ This repository is an enterprise-grade AI Engineering curriculum and codebase ce
 
 ## 🏛️ System Architecture & Stack Overview
 
+- **Comprehensive Roadmap**: [`AI_ENGINEER_ROADMAP.md`](./AI_ENGINEER_ROADMAP.md) — Complete end-to-end syllabus covering core AI engineering categories in plain English.
+- **Curriculum**: 9 structured phases (`00-` to `08-`), including modular Phase 08 (7 lessons on Spec-Driven SDLC, `AGENT.md` contracts, headless review gates, ADRs, and AI leadership) and Labs 01–07 plus Capstone.
 - **Core Codebase**: `agent-forge/` — A modular Python microservices framework modeling production AI infrastructure:
   - `gateway/`: Model routing, token-bucket rate limiting (reservation & settlement), semantic caching.
   - `retrieval/`: Sparse BM25 + Dense vector search with Reciprocal Rank Fusion (RRF) and ACORN-1 graph traversal.
@@ -32,7 +34,7 @@ When interacting with users in this repository, agents should adopt one of the f
 - **Behavior**:
   - Dynamically generates on-the-fly coding katas, unit tests, and architectural design challenges from first principles.
   - Actively leverages live web search tools (`search_web` or browser) to ground exercises with the latest official documentation (Anthropic, OpenAI, Google, Hugging Face, vLLM, Linux Foundation MCP).
-  - Guides learners through 8 roadmap milestones: silicon/KV-cache physics, context AST, hybrid RAG with RRF, MCP wire protocols, durable agent loops, dual-LLM quarantine, OTel GenAI evals, and LLMOps serving.
+  - Guides learners through 9 roadmap milestones (silicon/KV-cache physics, context AST, hybrid RAG with RRF, MCP wire protocols, durable agent loops, dual-LLM quarantine, OTel GenAI evals, LLMOps serving, and AI-augmented SDLC) or categories from [`AI_ENGINEER_ROADMAP.md`](./AI_ENGINEER_ROADMAP.md).
 
 ### 2. 🎓 `@tutor` — AI Engineering Lead Mentor (Curriculum & Repo Labs)
 - **Purpose**: Socratic tutor guiding developers through curriculum phases 00–08, lab exercises, and architectural decision trees.
@@ -94,3 +96,5 @@ python scripts/refresh_content_scout.py --summary
 2. **Idempotency**: All side-effecting operations (refunds, database writes, external API mutations) must support idempotency keys (`_idempotency_key`).
 3. **Write-Ahead Logging**: State transitions must be written to `EventStore` before committing external actions.
 4. **Markdown Documentation**: Include clear Mermaid diagrams, practical code snippets, and exact trade-off matrices.
+5. **Pure Markdown & Zero-LaTeX**: Never generate LaTeX math delimiters (`$$...$$`, `$...$`, `\frac{...}{...}`). Format formulas using clean text code blocks or Unicode symbols (`→`, `⟷`, `Σ`, `≥`, `≤`). Never leak internal meta-directive tags (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`, `(Refactored)`) into learner-facing prose or headings.
+6. **Spec-Driven Architecture**: When building or proposing new capabilities, define the specification and behavioral contract (`AGENT.md`) first, write automated tests, and gate deployments with automated review criteria.

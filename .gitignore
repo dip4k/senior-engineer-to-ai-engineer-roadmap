@@ -1139,3 +1139,13 @@ $RECYCLE.BIN/
 
 # Log files created by default by the nohup command
 nohup.out
+
+# Ephemeral Agent Artifacts & Generation Reports
+CONTENT_REFRESH_REPORT.md
+*AUDIT*.md
+*PLAN*.md
+*RESEARCH*.md
+*REFACTORING_REPORT*.md
+*VALIDATION_REPORT*.md
+CURRICULUM_*.md
+

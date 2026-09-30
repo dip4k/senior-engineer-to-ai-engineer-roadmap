@@ -34,6 +34,7 @@ python scripts/refresh_content_scout.py --queries-only
   - `evals/`: Binary evaluators (groundedness, faithfulness) and trajectory step scoring.
 - **`labs/`**: Labs 01 through 07 covering multi-tenant RAG, MCP tool execution, WAL orchestration, failure defenses, OTel tracing, dual-LLM quarantine, and ML fairness.
 - **`00-` to `08-`**: 9-phase master curriculum modules with comprehensive READMEs, code examples, and architecture guides.
+- **`AI_ENGINEER_ROADMAP.md`**: Full conceptual AI Engineer Roadmap covering core categories and topics in plain English.
 - **`interview/`**: Senior AI Platform Engineer interview guides and scenario questions.
 - **`scripts/`**: Automated verification and content freshness scouts.
 
@@ -58,3 +59,4 @@ You can use the following custom commands in `.claude/commands/`:
 3. **Write-Ahead Logging (WAL)**: Every agent decision, tool call, and observation must be persisted to the `EventStore` before committing external side-effects.
 4. **Zero-Trust Tooling**: All MCP tools must validate schemas and reject hazardous queries (`DROP`, `DELETE`, `UPDATE`) through the `PolicyEngine`.
 5. **Web Search & Discovery**: Use web search tools to inspect real-time changes in protocols (MCP, A2A, AG-UI) and frontier model capabilities (Claude 3.7 Sonnet, Gemini 2.5/3, o3/o4-mini, DeepSeek-R1).
+6. **Pure Markdown & Zero-LaTeX**: Never generate LaTeX math delimiters (`$$...$$`, `$...$`, `\frac{...}{...}`). Format formulas using clean text code blocks or Unicode symbols (`→`, `⟷`, `Σ`, `≥`, `≤`). Never leak internal meta-directive tags (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`, `(Refactored)`) into learner-facing prose or headings.
