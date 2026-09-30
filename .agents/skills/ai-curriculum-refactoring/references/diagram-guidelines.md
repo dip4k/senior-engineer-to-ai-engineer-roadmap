@@ -12,54 +12,108 @@ A diagram is a visual anchor, not a replacement for clear instruction. If a read
 
 ---
 
-## 2. Supported Diagram Types & Topologies
+## 2. Supported Diagram Types & Visual Topologies
 
-Use native Mermaid syntax within standard markdown code blocks:
+Use native Mermaid syntax within standard markdown code blocks, complemented by markdown tables and ASCII charts:
 
-| Intent | Diagram Type | Best Practices |
+| Intent | Diagram / Visual Type | Best Practices |
 |---|---|---|
-| **Data Ingestion & Pipelines** | `flowchart LR` | Left-to-right flow; clean separation between stages. |
-| **Multi-Stage Decision Trees** | `flowchart TD` | Top-down decision branches; clearly labeled condition edges. |
+| **Data Ingestion & Pipelines** | `flowchart TD` or `flowchart LR` | Clear phase separation; distinct colors for ingestion vs. querying. |
+| **Multi-Stage Decision Trees** | `flowchart TD` | Top-down decision branches; clearly labeled condition edges (`-- "Yes" -->`, `-- "No" -->`). |
 | **Tool Calling & Wire Protocols** | `sequenceDiagram` | Show client, gateway, agent runtime, and MCP server actors with request/response payloads. |
 | **Agent State Lifecycles** | `stateDiagram-v2` | State transitions (`Idle` → `Planning` → `ToolExecution` → `Quarantine`). |
+| **Latency/Throughput Curves** | `xychart-beta` or ASCII bar | Show empirical trade-offs (e.g. KV Cache batch size vs. TTFT latency). |
+| **Architectural Trade-Offs** | GFM Comparison Tables | Side-by-side matrices contrasting Naive vs. Modern production approaches. |
 
 ---
 
-## 3. Structural Rules & Clean Layouts
+## 3. Modern Color & UI Styling System
 
-1. **Node Limit**: Keep diagrams under 10–12 nodes. If a system is more complex, break it into a macro-architecture diagram followed by focused micro-architecture diagrams in subsequent sections.
-2. **Subgraphs**: Use `subgraph` blocks to indicate trust boundaries, process boundaries, or infrastructure tiers (e.g., *Client Tier*, *Gateway Tier*, *GPU Inference Engine*).
-3. **Escaping**: Always quote labels containing parentheses, brackets, or colons:
-   ```mermaid
-   nodeA["Client (gRPC / HTTP)"] --> nodeB["Gateway Tier: Token Bucket (100 req/s)"]
-   ```
-4. **No HTML**: Avoid inline `<br>`, `<b>`, or `<span>` tags inside labels whenever possible to ensure universal rendering across IDEs and GitHub.
+To make diagrams clean, professional, and visually engaging, always apply semantic color coding to subgraphs and key nodes:
 
----
+### Semantic UI Palette
 
-## 4. Required Prose Walkthrough Pattern
+```text
+┌────────────────────────────────────────────────────────────────────────┐
+│ Ingestion / Prep Tier (Blue)      : fill:#f0f7ff, stroke:#0066cc, 2px  │
+│ Query / Execution Tier (Green)    : fill:#f6fff0, stroke:#2e7d32, 2px  │
+│ Decision / Rerank Gate (Amber)    : fill:#fffbf0, stroke:#d97706, 2px  │
+│ Guardrail / Quarantine / Dropped  : fill:#fff5f5, stroke:#dc2626, 2px  │
+│ Foundation Model / Synthesis Core : fill:#f8f5ff, stroke:#7c3aed, 2px  │
+│ Highlight / Winning Candidate     : fill:#fef3c7, stroke:#b45309, 2px  │
+└────────────────────────────────────────────────────────────────────────┘
+```
 
-Immediately following any diagram, provide a structured walkthrough using this pattern:
+### Modern Flowchart Example with Semantic Styling
 
-```markdown
-### Visual Data Flow Breakdown (Example A: Hybrid Retrieval):
-1. **Request Ingestion (Steps 1–2)**: The client query arrives at the Gateway. The token bucket rate limiter reserves tokens against tenant quotas before routing.
-2. **Parallel Retrieval (Step 3)**: The query is simultaneously dispatched to the sparse BM25 index (lexical search) and the dense HNSW index (vector search).
-3. **Reciprocal Rank Fusion (Step 4)**: Individual ranking scores are merged using the RRF constant k = 60 to yield a single calibrated candidate list.
-4. **Cross-Encoder Reranking (Step 5)**: The top 25 candidates are evaluated by a cross-encoder model to determine semantic relevance before passing context to the LLM.
-5. **Telemetry & Tracing (Step 6)**: Spans recording retrieval latency, candidate counts, and token costs are emitted to the OpenTelemetry collector.
+```mermaid
+flowchart TD
+    subgraph PHASE1["Phase 1: Ingestion & Prep (The Library Catalogs)"]
+        D["1. Source Documents<br>(PDFs, Spreadsheets, Docs)"] --> CC["2. Contextual Chunking<br>(Index cards + parent summary note)"]
+        CC --> E1["Dense Vectors<br>(Concepts & Meaning)"]
+        CC --> E2["Sparse Index<br>(Exact Word BM25)"]
+        E1 --> VDB[("Vector Database")]
+        E2 --> KDB[("Keyword Index")]
+    end
 
-### Visual Data Flow Breakdown (Example B: Stateful Agent WAL Loop):
-1. **Client Event Ingestion**: An incoming task payload enters the agent runtime and is assigned a unique idempotency key.
-2. **Pre-Execution Write**: The orchestrator appends a `TaskStarted` event to the Write-Ahead Log (WAL) event store before initiating reasoning.
-3. **Bounded Reasoning Loop**: The model proposes a tool call. The orchestrator checks the turn counter (max 10) and budget decay.
-4. **ABAC Policy Verification**: The requested MCP tool and arguments are checked against the tenant policy server. If denied, a quarantine event is logged.
-5. **Tool Execution & State Commit**: The tool runs, output is captured, and a `ToolCompleted` event is persisted to disk before returning results to the client.
+    subgraph PHASE2["Phase 2: Query & Synthesis (Test Day Answering)"]
+        UQ["User Query"] --> QR["3. Query Rewriter<br>(Expand acronyms & HyDE)"]
+        QR --> H1["Dense Search"]
+        QR --> H2["BM25 Search"]
+        VDB -.-> H1
+        KDB -.-> H2
+        H1 --> RRF["4. RRF Rank Fusion<br>(Fair voting without score bias)"]
+        H2 --> RRF
+        RRF --> RR["5. Deep Reranker<br>(Cross-Encoder evaluates top 25)"]
+        RR --> LLM["6. Generator LLM<br>(Synthesizes answer with citations)"]
+        LLM --> GD{"7. Fact-Check Gate<br>Is response grounded?"}
+        GD -- "Yes" --> ANS["Final Verified Answer"]
+        GD -- "No" --> ABSTAIN["Quarantine & Abstain"]
+    end
+
+    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style GD fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style ANS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
+    style LLM fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
 ```
 
 ---
 
-## 5. Subgraph Layout Stability & Preventing the Diagonal "Staircase" Defect
+## 4. Structural Rules & Clean Typography
+
+1. **Node Limit**: Keep diagrams under 10–14 nodes. If a system is more complex, break it into a macro-architecture blueprint followed by focused component diagrams.
+2. **Subgraphs**: Use `subgraph` blocks to indicate logical phases (e.g. *Phase 1: Ingestion*, *Phase 2: Querying*) or infrastructure boundaries (*Client Tier*, *Agent Runtime*, *MCP Tool Sandbox*).
+3. **Typography & Labeling**:
+   - Always enclose labels in double quotes: `node["**Step Title**<br>(Helpful 1-line detail)"]`.
+   - Use `<br>` inside quoted labels for clean vertical hierarchy (Bold title on line 1, short description on line 2). Avoid raw unquoted tags or complex HTML attributes (`style=...`).
+4. **Node Shapes**:
+   - Cylinders for storage and databases: `VDB[("Vector Database")]`
+   - Diamonds for decision gates and guardrails: `Gate{"Score >= 0.70?"}`
+   - Dotted arrows for asynchronous or read lookups: `VDB -.-> SearchNode`
+   - Solid arrows for sequential data pipelines: `NodeA --> NodeB`
+5. **Accompanying Visuals**:
+   - Pair complex flowcharts with **"Old vs Modern" Evolution Tables** or **ASCII memory maps** (e.g. showing KV-cache block allocation or PagedAttention frame tables).
+
+---
+
+## 5. Required Prose Walkthrough Pattern
+
+Immediately following any diagram, provide a structured, numbered walkthrough explaining the flow of data:
+
+```markdown
+### Visual Architecture Walkthrough:
+1. **Source Ingestion (Phase 1)**: Documents are pre-processed and enriched with contextual summaries before being dual-indexed into dense vector and sparse keyword stores.
+2. **Parallel Retrieval (Phase 2)**: The rewritten user query dispatches simultaneous searches across lexical and semantic indexes.
+3. **Rank Harmonization**: The two candidate lists are merged via Reciprocal Rank Fusion (RRF) to eliminate score distribution biases.
+4. **Cross-Attention Reranking**: High-scoring candidates are inspected token-by-token by a cross-encoder model to filter out irrelevant false positives.
+5. **Grounded Synthesis & Verification**: The LLM generates citations directly from retrieved snippets, subject to an automated fact-checking gate before delivery.
+```
+
+---
+
+## 6. Subgraph Layout Stability & Preventing the Diagonal "Staircase" Defect
 
 ### The Dagre Layout Engine Mechanics
 Mermaid relies on the Dagre directed graph layout engine. When a diagram defines multiple `subgraph` blocks (e.g., sequential execution phases, comparative "Cold vs. Warm" flows, or layered systems architectures), Dagre balances edge length minimization and rank ordering.
@@ -188,11 +242,14 @@ flowchart TD
 
 ---
 
-### Layout Verification Checklist
+### Layout & Styling Verification Checklist
 Before approving any Mermaid diagram containing two or more subgraphs:
 - [ ] **No Subgraph ID Edges**: Are all edges drawn between concrete internal nodes, never cluster IDs?
 - [ ] **Symmetric Column Pinning**: In multi-column subgraphs, are all parallel columns symmetrically pinned (`Col1 ~~~ Col1`, `Col2 ~~~ Col2`)?
 - [ ] **Flush Vertical Stack**: In `flowchart TD`, do the subgraphs stack flush vertically without cascading diagonally into a staircase?
+- [ ] **Modern Color & UI Styling**: Are subgraphs styled using the semantic color palette (Blue for Ingestion/Prep, Green for Query/Runtime, Amber for Decision/Rerank, Rose for Quarantine/Abstain, Purple for LLM/Model)?
+- [ ] **Clean Typography**: Are labels enclosed in quotes with bold titles and subtitles separated by `<br>`?
 - [ ] **Walkthrough Mandatory**: Does the diagram include a complete step-by-step prose walkthrough directly beneath it?
+- [ ] **Multi-Format Visuals**: Are complex systems complemented with comparison tables, evolution summaries, or ASCII/xy charts where helpful?
 
 

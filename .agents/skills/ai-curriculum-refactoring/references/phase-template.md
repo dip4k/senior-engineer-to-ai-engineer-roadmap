@@ -36,17 +36,55 @@ Explain the overarching production capability delivered by this phase:
 
 ---
 
-## 🗺️ Learning Path & System Topology
-Include a concise Mermaid diagram illustrating how the concepts in this phase connect:
+## 🧒 Phase Mental Model & Real-World Intuition
+Start with an accessible, high-impact mental model (ELI10) that grounds the entire phase:
+- Frame the system using a relatable, human-scale analogy (e.g. *Closed-Book vs. Open-Book Exam*, *The Detective and the Library*, *Operating System Kernel vs. User Space*).
+- Contrast the intuitive mental model directly with the probabilistic realities of neural models.
+
+---
+
+## 🗺️ Phase Blueprint & System Topology
+
+Include an authoritative, modern Mermaid diagram using semantic UI color styling:
 
 ```mermaid
-flowchart LR
-    L1["Lesson 01<br>Foundations"] --> L2["Lesson 02<br>Core Mechanism"]
-    L2 --> L3["Lesson 03<br>Advanced Scaling"]
-    L3 --> Lab["Hands-On Lab<br>Verification"]
+flowchart TD
+    subgraph PHASE1["Phase 1: Ingestion & Preparation (Offline Prep)"]
+        D["1. Source Records<br>(Raw Documents)"] --> P["2. Structural Parsing<br>(Clean Layout)"]
+        P --> E["3. Dual-Indexing<br>(Lexical + Semantic)"]
+    end
+
+    subgraph PHASE2["Phase 2: Execution & Serving (Online Runtime)"]
+        Q["User Request"] --> R["4. Search & Rerank<br>(RRF + Cross-Encoder)"]
+        R --> S["5. Model Synthesis<br>(Grounded Citations)"]
+        S --> G{"6. Verification Gate<br>Factual Grounding?"}
+        G -- "Yes" --> OUT["Verified Output"]
+        G -- "No" --> ABSTAIN["Quarantine & Abstain"]
+    end
+
+    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style G fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style OUT fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
+    style S fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
 ```
 
-Briefly walk through the path in 2–3 sentences.
+### Visual Architecture Walkthrough:
+Walk through the numbered steps in 3–5 bullet points.
+
+---
+
+## 📊 Evolution: Naive Prototype vs. Modern Production Architecture
+
+Every phase README must contrast the early/naive approach against the modern production standard:
+
+| Architecture Layer | Naive Prototype (2023) | Modern Enterprise Standard (2026) |
+|---|---|---|
+| **Data Ingestion** | Blind token slicing | Layout-aware semantic parsing + contextual prepending |
+| **Search / Storage** | Single vector store | Hybrid dual-indexing (Dense + BM25) with predicate filtering |
+| **Scoring & Merging** | Heuristic distance thresholds | Reciprocal Rank Fusion (RRF) + Cross-Encoder attention |
+| **Output Attestation** | Unverified generation | Groundedness verification gates & inline source citations |
 
 ---
 

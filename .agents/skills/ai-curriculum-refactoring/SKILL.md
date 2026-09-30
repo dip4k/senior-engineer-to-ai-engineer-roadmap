@@ -14,10 +14,13 @@ This skill defines the pedagogical methodology, structural guidelines, editorial
 > **"Do not teach less. Teach better."**
 
 Refactoring does not mean dumbing down content or stripping away advanced systems engineering. It means:
-- Replacing raw documentation dumps with **guided conceptual progressions**.
-- Explaining the **failure mode of naive implementations** before introducing complex distributed solutions.
-- Anchoring every concept in **concrete engineering trade-offs** (latency, cost, throughput, recall, determinism).
-- Giving experienced engineers clear **mental models** that bridge traditional systems engineering (ACID, CRUD, RPC, deterministic state machines) to Software 3.0 (probabilistic outputs, semantic routing, KV cache physics, event-sourced WALs).
+- **Demystifying before formalizing**: Lead with a vivid, intuitive real-world mental model or analogy (Explain Like I'm 10) before introducing formal mathematics or algorithms.
+- **Following the Tripartite Pedagogy Rhythm**: For every major block, explain (1) 🧒 **The Analogy**, (2) ⚙️ **The Engineering Mechanics**, and (3) ⚠️ **What happens if you skip this?**
+- **Contrasting evolution**: Provide "Old/Naive vs Modern Production" tables to show *why* modern patterns were invented.
+- **Explaining the failure mode of naive implementations** before introducing complex distributed solutions.
+- **Anchoring every concept in concrete engineering trade-offs** (latency, cost, throughput, recall, determinism).
+- **Giving experienced engineers clear mental models** that bridge traditional systems engineering (ACID, CRUD, RPC, deterministic state machines) to Software 3.0 (probabilistic outputs, semantic routing, KV cache physics, event-sourced WALs).
+- **Calibrating intuition**: Ending with a "Quick Check to See if it Clicked" scenario.
 
 ---
 
@@ -26,7 +29,7 @@ Refactoring does not mean dumbing down content or stripping away advanced system
 The learner is a **Senior / Staff Software Engineer or Solutions Architect (7–10+ years experience)**:
 - **Assumed Background**: Deep expertise in distributed systems, networking, caching tiers, relational & NoSQL databases, microservices, Linux internals, CI/CD, and telemetry.
 - **Cognitive Barrier**: Disoriented by probabilistic LLM outputs, opaque non-deterministic failures, vector math, and transient framework hype.
-- **Instructional Rule**: Never teach basic programming, Git, basic REST APIs, or introductory SQL. Introduce AI-specific primitives with architectural rigor.
+- **Instructional Rule**: Never teach basic programming, Git, basic REST APIs, or introductory SQL. Introduce AI-specific primitives with architectural rigor, using accessible mental models to remove cognitive gatekeeping.
 
 ---
 
@@ -47,15 +50,22 @@ Every lesson across all phases must declare its target depth tier in its header 
 
 ## 📐 Core Pedagogical Arc
 
-Every concept follows this natural engineering progression:
+Every concept follows this natural, beginner-accessible yet systems-deep engineering progression:
 
 ```mermaid
 flowchart LR
-    Prob["1. Problem"] --> Naive["2. Naive Failure"]
-    Naive --> Mental["3. Mental Model"]
-    Mental --> Mech["4. Mechanics & Code"]
-    Mech --> Trade["5. Trade-offs & Telemetry"]
-    Trade --> Fail["6. Failure Modes & Evals"]
+    Prob["1. Problem & ELI10 Analogy"] --> Naive["2. Why Naive Fails"]
+    Naive --> Tripartite["3. Tripartite Blocks<br>(Analogy ➔ Engineering ➔ Breakage)"]
+    Tripartite --> Code["4. Typed Code & Schemas"]
+    Code --> Trade["5. Trade-Offs & Telemetry"]
+    Trade --> Check["6. Quick Check & Evals"]
+
+    style Prob fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style Naive fill:#fff5f5,stroke:#dc2626,stroke-width:2px
+    style Tripartite fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style Code fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style Trade fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style Check fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
 
 See [references/curriculum-principles.md](references/curriculum-principles.md) for pedagogical principles and [references/lesson-template.md](references/lesson-template.md) for the 11-part lesson anatomy.
@@ -93,9 +103,13 @@ When auditing or refactoring existing content, classify every element into one o
 
 These rules are strictly enforced during refactoring and validation. Violations block merge approval:
 
-### 1. Consistent Teaching Language & Jargon Reduction
-- **Required**: Use simple, direct, natural technical English. Frame concepts using mental models before implementation details (e.g., comparing Context ASTs to compiler ASTs). 
-- **Forbidden**: Unnecessary academic language, dense paragraphs, and marketing buzzwords.
+### 1. Intuition-First Teaching & Tripartite Pedagogy
+- **Required**: Lead with an accessible, plain-English mental model or analogy (Explain Like I'm 10) before formal jargon. For every core block or mechanism, apply the Tripartite Pedagogy rhythm:
+  - 🧒 **The Analogy**: Relatable real-world metaphor.
+  - ⚙️ **The Engineering**: Production systems mechanics, schemas, code, and text formulas.
+  - ⚠️ **What happens if you skip this?**: Concrete failure mode / outage scenario.
+- **Required**: Provide "Old vs Modern" evolution tables and conclude with a "Quick Check to See if it Clicked" scenario.
+- **Forbidden**: Academic cognitive gatekeeping, dense jargon dumps, and unanchored acronym soup.
 
 ### 2. Zero-LaTeX & Clean GFM Standard
 - **Forbidden**: Never use LaTeX math delimiters (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
@@ -113,9 +127,15 @@ These rules are strictly enforced during refactoring and validation. Violations 
 - **Lessons**: Every lesson file must conclude with `## 🧭 Navigation` containing reciprocal links (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Capstone Lab]`).
 - **Phase Hubs**: Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer. See [references/phase-template.md](references/phase-template.md).
 
-### 6. Diagram Stability & Dagre Rules
-- **Forbidden**: Subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric rank links (`RightNode ~~~ LeftNode`).
-- **Required**: `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts, node-to-node wiring, and mandatory step-by-step prose walkthroughs directly below every diagram. See [references/diagram-guidelines.md](references/diagram-guidelines.md).
+### 6. Modern Diagram UI Styling & Dagre Stability Rules
+- **Required**: Modern `flowchart TD`/`LR` with semantic color styling:
+  - Blue (`fill:#f0f7ff,stroke:#0066cc,stroke-width:2px`) for Ingestion/Prep
+  - Green (`fill:#f6fff0,stroke:#2e7d32,stroke-width:2px`) for Query/Runtime/Verified paths
+  - Amber (`fill:#fffbf0,stroke:#d97706,stroke-width:2px`) for Decision gates/Rerankers
+  - Rose (`fill:#fff5f5,stroke:#dc2626,stroke-width:2px`) for Quarantine/Abstention/Failure modes
+  - Purple (`fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px`) for Foundation Models/Synthesis core
+- **Required**: Labels use bold titles and descriptions separated by `<br>`. Mandatory step-by-step prose walkthroughs directly beneath every diagram. Complement with markdown tables and charts (`xychart-beta` or text charts) as needed.
+- **Forbidden**: Subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric rank links (`RightNode ~~~ LeftNode`). Multi-column subgraphs must use symmetric column pinning (`~~~`) to guarantee flush vertical stacking. See [references/diagram-guidelines.md](references/diagram-guidelines.md).
 
 ### 7. Production Code Standards & Technology Noise Reduction
 - **Required**: Python 3.12+, typed Pydantic v2 schemas, type annotations, real error handling, and zero framework magic or pseudocode.

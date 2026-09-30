@@ -144,9 +144,14 @@ Before making changes:
 
 Strictly enforce these six non-negotiable rules across all curriculum authoring:
 
-### 1. Consistent Teaching Language & Jargon Reduction
-   - **Required**: Use simple, direct, natural technical English. Frame concepts using mental models before implementation details (e.g., comparing Context ASTs to compiler ASTs). 
-   - **Forbidden**: Unnecessary academic language, dense paragraphs, and marketing buzzwords.
+### 1. Intuition-First Teaching & Tripartite Pedagogy
+   - **Required**: Use simple, direct, natural technical English. Lead with an accessible, plain-English mental model or analogy (Explain Like I'm 10) before formal technical jargon.
+   - **Tripartite Rhythm**: For every core system block or mechanism, explain:
+     1. 🧒 **The Analogy**: Relatable real-world metaphor (ELI10).
+     2. ⚙️ **The Engineering**: Production systems mechanics, schemas, code, and text formulas.
+     3. ⚠️ **What happens if you skip this?**: Concrete failure mode / outage scenario.
+   - **Evolution & Intuition Checks**: Provide "Old vs Modern" evolution tables and conclude concepts with a "Quick Check to See if it Clicked" scenario.
+   - **Forbidden**: Academic cognitive gatekeeping, dense jargon dumps, and unanchored acronym soup.
 
 2. **Zero-LaTeX Standard**:
    - Never use LaTeX syntax (`$$...$$`, `$...$`, `\text{...}`, `\frac{...}{...}`, `\begin{array}`).
@@ -161,9 +166,15 @@ Strictly enforce these six non-negotiable rules across all curriculum authoring:
 5. **Mandatory Navigation & Wayfinding**:
    - Every lesson must conclude with `## 🧭 Navigation` containing reciprocal links (`← Previous`, `Phase Hub`, `Next →`, `Capstone Lab`).
    - Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer.
-6. **Diagram Stability & Dagre Rules**:
-   - Ban subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric cross-subgraph rank links.
-   - Require `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts, node-to-node wiring, and a mandatory step-by-step prose walkthrough directly beneath every diagram.
+6. **Modern Diagram UI Styling & Dagre Stability Rules**:
+   - Modern `flowchart TD`/`LR` with semantic color styling:
+     - Blue (`fill:#f0f7ff,stroke:#0066cc,stroke-width:2px`) for Ingestion/Prep
+     - Green (`fill:#f6fff0,stroke:#2e7d32,stroke-width:2px`) for Query/Runtime/Verified paths
+     - Amber (`fill:#fffbf0,stroke:#d97706,stroke-width:2px`) for Decision gates/Rerankers
+     - Rose (`fill:#fff5f5,stroke:#dc2626,stroke-width:2px`) for Quarantine/Abstention/Failure modes
+     - Purple (`fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px`) for Foundation Models/Synthesis core
+   - Labels use bold titles and descriptions separated by `<br>`. Mandatory step-by-step prose walkthroughs directly beneath every diagram. Complement with markdown tables and charts (`xychart-beta` or text charts) as needed.
+   - Ban subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric cross-subgraph rank links. Require `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts to guarantee flush vertical stacking.
 7. **Code Standards & Technology Noise Reduction**:
    - Python 3.12+, typed Pydantic v2 schemas, type annotations, and absence of pseudocode.
    - Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
