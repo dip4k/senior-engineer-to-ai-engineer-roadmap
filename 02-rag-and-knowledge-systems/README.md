@@ -22,39 +22,51 @@ Imagine you have to take the hardest history exam in the world:
 
 Modern production RAG is split into two distinct operational phases: **Phase 1: The Librarian's Prep** (offline ingestion before any question is asked) and **Phase 2: The Student's Test Day** (online runtime when a user asks a question).
 
+### Stage 1: The Librarian's Prep (Offline Dual-Index Ingestion)
+
 ```mermaid
 flowchart TD
-    subgraph PHASE1["Phase 1: Ingestion (The Librarian Prepares the Books)"]
-        D["1. Source Documents<br>(PDFs, Spreadsheets, Contracts, Docs)"] --> CC["2. Contextual Chunking<br>(Cut into index cards + parent summary note)"]
-        CC --> E1["Dense Embeddings<br>(Meaning & Concept Vectors)"]
-        CC --> E2["Sparse Inverted Index<br>(Exact Word BM25 Okapi)"]
-        E1 --> VDB[("Vector Database<br>HNSW / DiskANN")]
-        E2 --> KDB[("Keyword Index<br>BM25 / SPLADE")]
-    end
+    D["1. Huge Library Books<br>(PDFs, Docs, Spreadsheets)"] --> CC["2. Contextual Chunking<br>(Cut into index cards + parent summary note)"]
+    CC --> E1["3. Dense Embeddings<br>(Concept & Meaning Vectors)"]
+    CC --> E2["4. Sparse BM25 Index<br>(Exact Keyword Matching)"]
+    E1 --> VDB[("Vector Database<br>HNSW / DiskANN")]
+    E2 --> KDB[("Keyword Inverted Index<br>BM25 Okapi")]
 
-    subgraph PHASE2["Phase 2: Querying & Serving (Test Day: Answering the User)"]
-        UQ["User Question:<br>'Why did Project Apollo fail in 2024?'"] --> QR["3. Query Rewriter<br>(Fix grammar, expand acronyms, HyDE)"]
-        QR --> H1["Dense Search<br>(Finds conceptual ideas)"]
-        QR --> H2["BM25 Search<br>(Finds 'Apollo' & '2024')"]
-        VDB -.-> H1
-        KDB -.-> H2
-        H1 --> RRF["4. RRF Rank Fusion<br>(Fair voting without score bias, k=60)"]
-        H2 --> RRF
-        RRF --> RR["5. Deep Cross-Encoder Reranker<br>(Reads top 25 chunks with full attention)"]
-        RR --> CP["6. Context Assembler<br>(Packs top 3-5 snippets with XML IDs)"]
-        CP --> LLM["7. Generator LLM<br>(Writes answer with inline citations)"]
-        LLM --> GD{"8. Fact-Check Guardrail<br>Did the model hallucinate?"}
-        GD -- "Verified" --> ANS["Final Auditable Answer with Citations"]
-        GD -- "Unverified" --> ABSTAIN["Flag Hallucination & Abstain"]
-    end
-
-    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style GD fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style ANS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style LLM fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style D stroke:#2563eb,stroke-width:2px
+    style CC stroke:#2563eb,stroke-width:2px
+    style E1 stroke:#7c3aed,stroke-width:2px
+    style E2 stroke:#7c3aed,stroke-width:2px
+    style VDB stroke:#16a34a,stroke-width:2px
+    style KDB stroke:#16a34a,stroke-width:2px
 ```
+
+*Walkthrough: Documents are decomposed into semantically coherent cards tagged with parent document summaries. Each chunk is dual-indexed into both a high-dimensional vector database for conceptual similarity and an inverted BM25 index for exact keywords.*
+
+---
+
+### Stage 2: The Student's Test Day (Online Retrieval, Rerank & Generation)
+
+```mermaid
+flowchart TD
+    UQ["1. User Question<br>'Why did Project Apollo fail?'"] --> QR["2. Query Rewriter<br>(Expand acronyms, HyDE)"]
+    QR --> HYBRID["3. Hybrid Search & RRF Fusion<br>Dense Vectors + BM25 Keywords (k=60)"]
+    HYBRID --> RR["4. Deep Cross-Encoder Reranker<br>Inspect top 25 chunks with full attention"]
+    RR --> LLM["5. Context Assembler & LLM<br>Generate answer with explicit XML citations"]
+    LLM --> GD{"6. Fact-Check Guardrail<br>Is every claim grounded in context?"}
+    GD -- "Verified" --> ANS["7. Final Auditable Answer"]
+    GD -- "Unverified" --> ABSTAIN["Flag Hallucination & Abstain"]
+
+    style UQ stroke:#2563eb,stroke-width:2px
+    style QR stroke:#2563eb,stroke-width:2px
+    style HYBRID stroke:#d97706,stroke-width:2px
+    style RR stroke:#d97706,stroke-width:2px
+    style LLM stroke:#7c3aed,stroke-width:2px
+    style GD stroke:#d97706,stroke-width:2px
+    style ANS stroke:#16a34a,stroke-width:2px
+    style ABSTAIN stroke:#dc2626,stroke-width:2px
+```
+
+*Walkthrough: When a user query arrives, it is disambiguated and dispatched in parallel across both indexes. Candidates are fused via Reciprocal Rank Fusion (RRF), re-scored by a high-precision cross-encoder, assembled into prompt context, and verified by an automated groundedness judge.*
 
 ### Visual Architecture Walkthrough:
 1. **Structural Ingestion (Phase 1)**: Documents are parsed while preserving layout geometry (tables and multi-column order). Chunks are tagged with contextual summaries before being dual-indexed into dense vector graphs (HNSW) and sparse inverted text indexes (BM25).

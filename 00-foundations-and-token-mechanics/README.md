@@ -56,23 +56,23 @@ flowchart TD
             LAB["Phase 00 Capstone Lab<br>High-Throughput Token Budgeting Proxy<br>& VRAM Capacity Profiler"]
         end
 
-        CORE_HW --> MEM_SYS
-        MEM_SYS --> ADV_SYS
-        ADV_SYS --> CAPSTONE
+        L2 --> L3
+        L3 --> L4
+        L5 --> LAB
     end
 
-    style PHASE00 fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style CORE_HW fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style MEM_SYS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ADV_SYS fill:#fffbf0,stroke:#b26b00,stroke-width:2px
-    style CAPSTONE fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    style PHASE00 fill:none,stroke:#64748b,stroke-width:2px
+    style CORE_HW fill:none,stroke:#2563eb,stroke-width:2px
+    style MEM_SYS fill:none,stroke:#16a34a,stroke-width:2px
+    style ADV_SYS fill:none,stroke:#d97706,stroke-width:2px
+    style CAPSTONE fill:none,stroke:#7c3aed,stroke-width:2px
 
-    style L1 fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style L2 fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style L3 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style L4 fill:#ffffff,stroke:#b26b00,stroke-width:1px
-    style L5 fill:#ffffff,stroke:#b26b00,stroke-width:1px
-    style LAB fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style L1 stroke:#2563eb,stroke-width:2px
+    style L2 stroke:#2563eb,stroke-width:2px
+    style L3 stroke:#16a34a,stroke-width:2px
+    style L4 stroke:#d97706,stroke-width:2px
+    style L5 stroke:#d97706,stroke-width:2px
+    style LAB stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Walkthrough of the Phase 00 Journey:

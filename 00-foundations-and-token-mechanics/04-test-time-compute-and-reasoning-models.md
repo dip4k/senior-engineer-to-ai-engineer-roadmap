@@ -71,52 +71,20 @@ How do frontier models like OpenAI o3, DeepSeek-R1, and Claude 3.7 Thinking exec
 
 ```mermaid
 flowchart TD
-    subgraph TEST_TIME["Test-Time Search & Verification Loop"]
-        direction TB
+    Prompt["1. User Prompt (In-Memory KV-Cache)<br>Ingest complex engineering query"] --> Search["2. Candidate Hypothesis Generator<br>Explore multi-branch reasoning tree"]
+    Search --> PRM{"3. PRM Step Verifier<br>Is reasoning deduction logically valid?"}
+    PRM -- "Valid Step" --> Check{"4. Solution Complete?"}
+    PRM -- "Invalid Logic" --> Backtrack["Backtrack & Prune Branch<br>'Wait, that deadlocks. Rethink.'"]
+    Backtrack --> Search
+    Check -- "Explore Next Step" --> Search
+    Check -- "Fully Verified" --> Out["5. Concise Verified Output<br>Emit answer (Scratchpad hidden)"]
 
-        subgraph INTAKE["1. Request Intake & Prefill"]
-            Prompt["User Request Received<br>(e.g. Verify Distributed Lock Invariants)"]
-            PreFill["Prefill Phase:<br>Compute KV-cache for input prompt"]
-            Prompt --> PreFill
-        end
-
-        subgraph SEARCH_LOOP["2. Search, Verification & Backtracking (Hidden Scratchpad)"]
-            CoT["Generate Candidate Reasoning Step<br>(Internal Hypothesis)"]
-            PRM["Process-Supervised Verifier (PRM)<br>Evaluates step logic & AST constraints"]
-            Valid{"Is step logically valid?"}
-            NextStep["Append Step to Scratchpad<br>& Explore Next Hypothesis"]
-            Backtrack["Backtrack & Prune Branch:<br>'Wait, that lock order deadlocks. Let me rethink.'"]
-            CheckDone{"Solution Fully Verified?"}
-
-            PreFill --> CoT
-            CoT --> PRM
-            PRM --> Valid
-            Valid -- "Yes" --> NextStep
-            Valid -- "No" --> Backtrack
-            Backtrack --> CoT
-            NextStep --> CheckDone
-            CheckDone -- "No" --> CoT
-        end
-
-        subgraph SYNTHESIS["3. Final Response Synthesis"]
-            FinalDecode["Synthesize Concise Final Output<br>(Discard or hide internal scratchpad)"]
-            Response["Stream Verified Answer to Client"]
-
-            CheckDone -- "Yes" --> FinalDecode
-            FinalDecode --> Response
-        end
-    end
-
-    style TEST_TIME fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style INTAKE fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style SEARCH_LOOP fill:#fffbf0,stroke:#b26b00,stroke-width:2px
-    style SYNTHESIS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style Prompt fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style PRM fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
-    style Backtrack fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style NextStep fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style Response fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style Prompt stroke:#2563eb,stroke-width:2px
+    style Search stroke:#d97706,stroke-width:2px
+    style PRM stroke:#7c3aed,stroke-width:2px
+    style Backtrack stroke:#dc2626,stroke-width:2px
+    style Check stroke:#d97706,stroke-width:2px
+    style Out stroke:#16a34a,stroke-width:2px
 ```
 
 ### Walkthrough of the Reasoning Loop:
@@ -151,12 +119,12 @@ flowchart TD
         G_Adv --> G_Update["Direct Policy Update<br>(Zero Critic Model in VRAM!)"]
     end
 
-    style PPO fill:#fff5f5,stroke:#c62828,stroke-width:2px
-    style GRPO fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style PPO fill:none,stroke:#dc2626,stroke-width:2px
+    style GRPO fill:none,stroke:#16a34a,stroke-width:2px
 
-    style P_Critic fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style G_Rule fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style G_Update fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style P_Critic stroke:#dc2626,stroke-width:1px
+    style G_Rule stroke:#16a34a,stroke-width:1px
+    style G_Update stroke:#16a34a,stroke-width:1px
 ```
 
 #### Walkthrough of the PPO vs. GRPO Comparison:
@@ -430,16 +398,16 @@ flowchart TD
         BudgetCheck -- "No" --> DistillTier["Deploy Distilled Reasoning SLM<br>(DeepSeek-R1-Distill-Qwen-14B / Phi-4)"]
     end
 
-    style ROUTER fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style FastPath fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ReasoningTier fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
-    style DistillTier fill:#fffbf0,stroke:#b26b00,stroke-width:2px
+    style ROUTER fill:none,stroke:#64748b,stroke-width:2px
+    style FastPath fill:none,stroke:#16a34a,stroke-width:2px
+    style ReasoningTier fill:none,stroke:#7c3aed,stroke-width:2px
+    style DistillTier fill:none,stroke:#d97706,stroke-width:2px
 
-    style Start fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style LatencyCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style TaskType fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style AccuracyCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style BudgetCheck fill:#ffffff,stroke:#0066cc,stroke-width:1px
+    style Start stroke:#2563eb,stroke-width:2px
+    style LatencyCheck stroke:#2563eb,stroke-width:2px
+    style TaskType stroke:#2563eb,stroke-width:2px
+    style AccuracyCheck stroke:#d97706,stroke-width:2px
+    style BudgetCheck stroke:#d97706,stroke-width:2px
 ```
 
 ### The Architect's Golden Rule:

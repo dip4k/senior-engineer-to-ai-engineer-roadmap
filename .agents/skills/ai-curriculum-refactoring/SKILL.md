@@ -60,12 +60,12 @@ flowchart LR
     Code --> Trade["5. Trade-Offs & Telemetry"]
     Trade --> Check["6. Quick Check & Evals"]
 
-    style Prob fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style Naive fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style Tripartite fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
-    style Code fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style Trade fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style Check fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style Prob stroke:#2563eb,stroke-width:2px
+    style Naive stroke:#dc2626,stroke-width:2px
+    style Tripartite stroke:#7c3aed,stroke-width:2px
+    style Code stroke:#16a34a,stroke-width:2px
+    style Trade stroke:#d97706,stroke-width:2px
+    style Check stroke:#16a34a,stroke-width:2px
 ```
 
 See [references/curriculum-principles.md](references/curriculum-principles.md) for pedagogical principles and [references/lesson-template.md](references/lesson-template.md) for the 11-part lesson anatomy.
@@ -75,6 +75,13 @@ See [references/curriculum-principles.md](references/curriculum-principles.md) f
 ## 🧩 Structural Flexibility Rule
 
 The lesson template is a **default structure, not a rigid checklist**. Template compliance does not equal good teaching.
+
+> [!TIP]
+> **Not All Sections Are Mandatory!**  
+> Tailor each lesson to its depth tier and topic. Never force artificial filler into a lesson just to satisfy all 11 template sections.  
+> - **Tier 1 Core Primers**: Keep them tight (800–1,500 words). Focus on intuition, failure of naive, and baseline code; omit distributed system diagrams or extensive interview trees if they dilute reading momentum.  
+> - **Algorithmic Utilities**: When explaining a formula (like BM25 or BPE), omit full distributed architecture blocks and focus on byte-level math and failure modes.  
+> - **Only 5 Invariants Are Mandatory**: (1) Title + Core Concept, (2) Intuitive Mental Model, (3) Systems Depth & Typed Code, (4) Failure Modes & Trade-offs, and (5) Reciprocal Navigation. All other sections are modular and omittable.
 
 Apply this **editorial decision test** to every section:
 > *"Does this section help the learner understand the concept, make an architectural decision, navigate a trade-off, or avoid a production failure?"*
@@ -127,19 +134,29 @@ These rules are strictly enforced during refactoring and validation. Violations 
 - **Lessons**: Every lesson file must conclude with `## 🧭 Navigation` containing reciprocal links (`[← Previous]`, `[Phase Hub]`, `[Next →]`, `[Capstone Lab]`).
 - **Phase Hubs**: Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer. See [references/phase-template.md](references/phase-template.md).
 
-### 6. Modern Diagram UI Styling & Dagre Stability Rules
-- **Required**: Modern `flowchart TD`/`LR` with semantic color styling:
-  - Blue (`fill:#f0f7ff,stroke:#0066cc,stroke-width:2px`) for Ingestion/Prep
-  - Green (`fill:#f6fff0,stroke:#2e7d32,stroke-width:2px`) for Query/Runtime/Verified paths
-  - Amber (`fill:#fffbf0,stroke:#d97706,stroke-width:2px`) for Decision gates/Rerankers
-  - Rose (`fill:#fff5f5,stroke:#dc2626,stroke-width:2px`) for Quarantine/Abstention/Failure modes
-  - Purple (`fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px`) for Foundation Models/Synthesis core
-- **Required**: Labels use bold titles and descriptions separated by `<br>`. Mandatory step-by-step prose walkthroughs directly beneath every diagram. Complement with markdown tables and charts (`xychart-beta` or text charts) as needed.
+### 6. Theme-Adaptive Light & Dark Mode Contrast, Low Node Budget & Modular Splitting
+- **Theme-Adaptive Contrast (Light & Dark Mode)**: Diagrams must render with high contrast and zero visual breakage across both Light Mode and Dark Mode (GitHub, VS Code, web docs):
+  - **Subgraphs**: Always transparent (`fill:none,stroke:#...,stroke-width:2px`). Never apply opaque pastel fills (`#f0f7ff`) to subgraphs.
+  - **Nodes**: Do not override `fill` with light pastel colors (`#ffffff`, `#f0f7ff`). Leaving node fills to Mermaid's native theme engine ensures node cards and text automatically invert with high contrast in dark mode (dark slate card + white text) and light mode (light card + dark text).
+  - **Semantic Borders**: Apply meaning through vibrant, accessible borders:
+    - Primary/Ingestion/Pipeline: `stroke:#2563eb,stroke-width:2px` (Blue)
+    - Success/Runtime/Verified Output: `stroke:#16a34a,stroke-width:2px` (Green)
+    - Decision Gates/Rerank/Warning: `stroke:#d97706,stroke-width:2px` (Amber)
+    - Quarantine/Error/Hazard/Legacy: `stroke:#dc2626,stroke-width:2px` (Red)
+    - LLM/Reasoning Engine/Synthesis Core: `stroke:#7c3aed,stroke-width:2px` (Purple)
+    - Container/Framework Boundary: `stroke:#64748b,stroke-width:2px` (Slate)
+- **Low Node Count**: Aim for **4 to 8 nodes per diagram (strict ceiling of 10 nodes)**. Keep diagrams lightweight, focused, and immediately grokkable. Never build 20-node labyrinths.
+- **Modular Splitting**: If a flow or architecture has multiple phases (e.g. Ingestion vs. Query, Prefill vs. Decode, The Problem vs. The Modern Solution), **split it into separate, focused diagrams** rather than a single monolithic diagram. Each diagram gets its own heading, clear purpose, and step-by-step prose walkthrough.
 - **Forbidden**: Subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric rank links (`RightNode ~~~ LeftNode`). Multi-column subgraphs must use symmetric column pinning (`~~~`) to guarantee flush vertical stacking. See [references/diagram-guidelines.md](references/diagram-guidelines.md).
 
 ### 7. Production Code Standards & Technology Noise Reduction
 - **Required**: Python 3.12+, typed Pydantic v2 schemas, type annotations, real error handling, and zero framework magic or pseudocode.
 - **Rule**: Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
+
+### 8. Strict Working Tree Policy: Do Not Commit Directly
+- **Forbidden**: Never run `git commit` or `git push` directly or autonomously after refactoring.
+- **Required**: Leave all modified and newly generated files in the git working tree for the user to inspect (`git diff`), run evaluation harnesses on, and review.
+- **Handoff**: Present a clear summary of changes and test verification results, and let the user review and commit when ready.
 
 ---
 

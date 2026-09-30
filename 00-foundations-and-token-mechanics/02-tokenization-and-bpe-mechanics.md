@@ -89,45 +89,16 @@ Let's trace how the tokenizer transforms the raw string `"unbreakable"` into dis
 
 ```mermaid
 flowchart TD
-    subgraph BPE["Byte-Pair Encoding (BPE) Tokenization Pipeline"]
-        direction TB
+    Raw["1. Raw Text<br>'unbreakable'"] --> Bytes["2. UTF-8 Byte Deconstruction<br>['u', 'n', 'b', 'r', 'e', 'a', 'k', 'a', 'b', 'l', 'e']"]
+    Bytes --> Merges["3. Iterative BPE Merges<br>('u','n' → 'un') & ('break','able' → 'breakable')"]
+    Merges --> Subwords["4. Final Subword Tokens<br>['un', 'breakable']"]
+    Subwords --> IDs["5. Integer Token IDs<br>[2834, 41920]"]
 
-        subgraph INGEST["1. Byte Deconstruction"]
-            Raw["Raw Text: 'unbreakable'"]
-            Bytes["UTF-8 Byte Stream:<br>['u', 'n', 'b', 'r', 'e', 'a', 'k', 'a', 'b', 'l', 'e']"]
-            Raw --> Bytes
-        end
-
-        subgraph MERGING["2. Iterative Merge Tree"]
-            Lookup["Match Known BPE Merge Pairs in Vocabulary Table"]
-            Merge1["Merge Step 1: ('u', 'n') → 'un' (ID: 2834)"]
-            Merge2["Merge Step 2: ('b', 'r') → 'br'"]
-            Merge3["Merge Step 3: ('break', 'able') → 'breakable' (ID: 41920)"]
-
-            Bytes --> Lookup
-            Lookup --> Merge1
-            Merge1 --> Merge2
-            Merge2 --> Merge3
-        end
-
-        subgraph SERIAL["3. Integer Token Serialization"]
-            FinalTokens["Final Subword Tokens:<br>['un', 'breakable']"]
-            FinalIDs["Final Integer Token IDs:<br>[2834, 41920]"]
-
-            Merge3 --> FinalTokens
-            FinalTokens --> FinalIDs
-        end
-    end
-
-    style BPE fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style INGEST fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style MERGING fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
-    style SERIAL fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style Raw fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style Bytes fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style FinalTokens fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style FinalIDs fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style Raw stroke:#2563eb,stroke-width:2px
+    style Bytes stroke:#2563eb,stroke-width:2px
+    style Merges stroke:#7c3aed,stroke-width:2px
+    style Subwords stroke:#16a34a,stroke-width:2px
+    style IDs stroke:#16a34a,stroke-width:2px
 ```
 
 ### Walkthrough of the BPE Tokenization Process:
@@ -216,43 +187,14 @@ How does the serving engine convert these logits into the next output token?
 
 ```mermaid
 flowchart TD
-    subgraph SAMPLING["Next-Token Sampling Pipeline"]
-        direction TB
+    RawLogits["1. Raw Output Logits<br>z_1, z_2, ..., z_V (Vocab Size: 128,000)"] --> Softmax["2. Temperature Scaling & Softmax<br>Scale logits by T & normalize into probabilities P(w_i)"]
+    Softmax --> Filter["3. Top-K & Top-P Truncation<br>Prune improbable long-tail candidate tokens"]
+    Filter --> Sample["4. Next Token Selection<br>Greedy Argmax (T=0) or Categorical Sampling"]
 
-        subgraph LOGITS["1. Raw Output"]
-            RawLogits["Raw Logits: z_1, z_2, ..., z_V<br>(Shape: [Vocab Size, e.g. 128,000])"]
-        end
-
-        subgraph SCALING["2. Temperature Scaling & Normalization"]
-            Temp["Apply Temperature Scaling:<br>z_i' = z_i / Temperature"]
-            Softmax["Softmax Layer:<br>P(w_i) = exp(z_i') / Σ exp(z_j')"]
-            Dist["Normalized Probability Distribution<br>(Sum of probabilities = 1.0)"]
-
-            RawLogits --> Temp
-            Temp --> Softmax
-            Softmax --> Dist
-        end
-
-        subgraph FILTER["3. Candidate Truncation"]
-            Filter["Filter Candidates via Top-K and Top-P (Nucleus)"]
-            Dist --> Filter
-        end
-
-        subgraph EMIT["4. Token Selection"]
-            Sample["Sample Next Token:<br>• Greedy (Argmax) if Temp = 0.0<br>• Categorical Sampling if Temp > 0.0"]
-            Filter --> Sample
-        end
-    end
-
-    style SAMPLING fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style LOGITS fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style SCALING fill:#fffbf0,stroke:#b26b00,stroke-width:2px
-    style FILTER fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
-    style EMIT fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style RawLogits fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style Dist fill:#ffffff,stroke:#b26b00,stroke-width:1px
-    style Sample fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style RawLogits stroke:#2563eb,stroke-width:2px
+    style Softmax stroke:#d97706,stroke-width:2px
+    style Filter stroke:#7c3aed,stroke-width:2px
+    style Sample stroke:#16a34a,stroke-width:2px
 ```
 
 ### 1. Temperature (`T`)

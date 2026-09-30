@@ -84,10 +84,20 @@ flowchart LR
         C2 --> D2["Automated CI/CD Eval Gates<br>(OTel Spans & Judge Rubrics)"]
     end
 
-    Y2024 ==> Y2026
+    B1 ==>|Evolution to Systems| B2
 
-    style Y2024 fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style Y2026 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style Y2024 fill:none,stroke:#dc2626,stroke-width:2px
+    style Y2026 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style A1 stroke:#dc2626,stroke-width:1px
+    style B1 stroke:#dc2626,stroke-width:2px
+    style C1 stroke:#dc2626,stroke-width:1px
+    style D1 stroke:#dc2626,stroke-width:1px
+
+    style A2 stroke:#16a34a,stroke-width:1px
+    style B2 stroke:#7c3aed,stroke-width:2px
+    style C2 stroke:#16a34a,stroke-width:1px
+    style D2 stroke:#16a34a,stroke-width:1px
 ```
 
 ### Visual Architecture Walkthrough:
@@ -143,11 +153,11 @@ flowchart TD
         S8["**Phase 08: AI-Augmented SDLC & Leadership**<br>• Spec-Driven Development • Headless CI/CD • Governance"]
     end
 
-    style S0 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style S1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style CoreTracks fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style AgenticTracks fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style ProductionTracks fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style S0 stroke:#2563eb,stroke-width:2px
+    style S1 stroke:#2563eb,stroke-width:2px
+    style CoreTracks fill:none,stroke:#16a34a,stroke-width:2px
+    style AgenticTracks fill:none,stroke:#d97706,stroke-width:2px
+    style ProductionTracks fill:none,stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Visual Curriculum Walkthrough:

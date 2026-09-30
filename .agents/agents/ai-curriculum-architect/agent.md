@@ -166,18 +166,33 @@ Strictly enforce these six non-negotiable rules across all curriculum authoring:
 5. **Mandatory Navigation & Wayfinding**:
    - Every lesson must conclude with `## 🧭 Navigation` containing reciprocal links (`← Previous`, `Phase Hub`, `Next →`, `Capstone Lab`).
    - Every phase `README.md` must contain a **Master Lesson Navigation Table** and a **Direct Chapter & Lesson Directory** in its navigation footer.
-6. **Modern Diagram UI Styling & Dagre Stability Rules**:
-   - Modern `flowchart TD`/`LR` with semantic color styling:
-     - Blue (`fill:#f0f7ff,stroke:#0066cc,stroke-width:2px`) for Ingestion/Prep
-     - Green (`fill:#f6fff0,stroke:#2e7d32,stroke-width:2px`) for Query/Runtime/Verified paths
-     - Amber (`fill:#fffbf0,stroke:#d97706,stroke-width:2px`) for Decision gates/Rerankers
-     - Rose (`fill:#fff5f5,stroke:#dc2626,stroke-width:2px`) for Quarantine/Abstention/Failure modes
-     - Purple (`fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px`) for Foundation Models/Synthesis core
+6. **Theme-Adaptive Light & Dark Mode Contrast, Low Node Budget & Modular Splitting**:
+   - **Theme-Adaptive Contrast (Light & Dark Mode)**: Diagrams must render with high contrast and zero visual breakage across both Light Mode and Dark Mode (GitHub, VS Code, web docs):
+     - **Subgraphs**: Always transparent (`fill:none,stroke:#...,stroke-width:2px`). Never apply opaque pastel fills (`#f0f7ff`) to subgraphs.
+     - **Nodes**: Do not override `fill` with light pastel colors (`#ffffff`, `#f0f7ff`). Leaving node fills to Mermaid's native theme engine ensures node cards and text automatically invert with high contrast in dark mode (dark slate card + white text) and light mode (light card + dark text).
+     - **Semantic Borders**: Apply meaning through vibrant, accessible borders:
+       - Primary/Ingestion/Pipeline: `stroke:#2563eb,stroke-width:2px` (Blue)
+       - Success/Runtime/Verified Output: `stroke:#16a34a,stroke-width:2px` (Green)
+       - Decision Gates/Rerank/Warning: `stroke:#d97706,stroke-width:2px` (Amber)
+       - Quarantine/Error/Hazard/Legacy: `stroke:#dc2626,stroke-width:2px` (Red)
+       - LLM/Reasoning Engine/Synthesis Core: `stroke:#7c3aed,stroke-width:2px` (Purple)
+       - Container/Framework Boundary: `stroke:#64748b,stroke-width:2px` (Slate)
+   - Keep diagrams concise: **aim for 4 to 8 nodes per diagram (hard ceiling of 10 nodes)**.
+   - If an architecture or lifecycle has multiple stages, **split it into modular, focused diagrams** (e.g. Overview Flow vs. Internal Engine vs. Failure Path) rather than creating a tangled 20-node mega-diagram.
    - Labels use bold titles and descriptions separated by `<br>`. Mandatory step-by-step prose walkthroughs directly beneath every diagram. Complement with markdown tables and charts (`xychart-beta` or text charts) as needed.
    - Ban subgraph ID chaining (`subgraphA --> subgraphB`) and asymmetric cross-subgraph rank links. Require `flowchart TD` with symmetric column pinning (`~~~`) for multi-column layouts to guarantee flush vertical stacking.
 7. **Code Standards & Technology Noise Reduction**:
    - Python 3.12+, typed Pydantic v2 schemas, type annotations, and absence of pseudocode.
    - Introduce a technology only when it helps explain a concept/implementation approach/architectural decision/real production trade-off. Prefer: Concept -> Why it matters -> How it works -> Example -> Technology implementation. Avoid unnecessary lists of frameworks, vendors, libraries, model providers.
+8. **Strict Source Control Policy: Never Commit Directly**:
+   - Never execute `git commit` or `git push` autonomously.
+   - Always leave all refactored and updated files in the local git working tree so the user retains complete review authority.
+   - Provide summary reports, verify unit tests, and let the user inspect changes via `git diff`.
+9. **Structural Flexibility (Template Is a Guide, Not a Straitjacket)**:
+   - **Tip**: Not all 11 sections of the default lesson anatomy are mandatory for every lesson!
+   - Do NOT force artificial filler into a lesson just to satisfy an arbitrary checklist.
+   - Core invariants are strictly required: (1) Title + Core Concept callout, (2) Intuitive mental model (ELI10), (3) Systems depth with typed runnable code, (4) Failure modes & trade-offs, and (5) Reciprocal navigation footer.
+   - Specialized sections (Architecture diagrams, distributed OTel spans, interview defense scenarios, evolution tables) must be included only when they genuinely illuminate the specific topic.
 
 ---
 

@@ -60,13 +60,14 @@ flowchart TD
         GATE -- "No" --> FALLBACK["Abstain / Route to Human Agent"]
     end
 
-    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style GATE fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style PASS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style FALLBACK fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style EMBED1 fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
-    style EMBED2 fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
+    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style GATE stroke:#d97706,stroke-width:2px
+    style PASS stroke:#16a34a,stroke-width:2px
+    style FALLBACK stroke:#dc2626,stroke-width:2px
+    style EMBED1 stroke:#7c3aed,stroke-width:2px
+    style EMBED2 stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Visual Architecture Walkthrough:

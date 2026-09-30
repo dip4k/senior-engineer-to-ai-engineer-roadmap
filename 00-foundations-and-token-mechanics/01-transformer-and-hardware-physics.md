@@ -150,44 +150,16 @@ At the core of the transformer architecture (Vaswani et al., 2017) is the attent
 
 ```mermaid
 flowchart TD
-    subgraph ATTN["Scaled Dot-Product Attention Pipeline"]
-        direction TB
+    X["1. Input Tokens (X)<br>Sequence Embeddings + Positional Vector"] --> QKV["2. Linear Projections (W_Q, W_K, W_V)<br>Generate Q (Search), K (Index), V (Value)"]
+    QKV --> SIM["3. Pairwise Similarity (Q · K^T / √d_k)<br>Calculate token-to-token score matrix"]
+    SIM --> SOFT["4. Causal Mask & Softmax<br>Convert scores into probability weights (A)"]
+    SOFT --> OUT["5. Value Aggregation (A · V)<br>Emit context-weighted token representation"]
 
-        subgraph INPUTS["1. Input Projections"]
-            X["Token Embeddings + Positional Vector (X)"]
-            WQ["W_Q Projection Matrix"]
-            WK["W_K Projection Matrix"]
-            WV["W_V Projection Matrix"]
-            
-            X --> WQ & WK & WV
-            WQ --> Q["Query Matrix (Q: Seq × d_k)"]
-            WK --> K["Key Matrix (K: Seq × d_k)"]
-            WV --> V["Value Matrix (V: Seq × d_v)"]
-        end
-
-        subgraph SIMILARITY["2. Pairwise Affinity & Masking"]
-            Q & K --> MatMul1["Matrix Multiplication: Q · K^T<br>(Pairwise Token Similarity)"]
-            MatMul1 --> Scale["Scale: Multiply by 1 / sqrt(d_k)"]
-            Scale --> Mask["Apply Causal Mask<br>(Future tokens set to -infinity)"]
-        end
-
-        subgraph NORMALIZATION["3. Softmax & Value Aggregation"]
-            Mask --> Softmax["Softmax along rows<br>Attention Weights (A: Seq × Seq)"]
-            Softmax & V --> MatMul2["Matrix Multiplication: A · V<br>(Weighted Context Aggregation)"]
-            MatMul2 --> Out["Output Linear Projection (W_O)"]
-        end
-    end
-
-    style ATTN fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style INPUTS fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style SIMILARITY fill:#fffbf0,stroke:#b26b00,stroke-width:2px
-    style NORMALIZATION fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style X fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style Q fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style K fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style V fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style Out fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style X stroke:#2563eb,stroke-width:2px
+    style QKV stroke:#2563eb,stroke-width:2px
+    style SIM stroke:#d97706,stroke-width:2px
+    style SOFT stroke:#7c3aed,stroke-width:2px
+    style OUT stroke:#16a34a,stroke-width:2px
 ```
 
 ### Walkthrough of the Attention Pipeline:
@@ -229,53 +201,37 @@ In standard PyTorch implementations prior to 2022, the GPU repeatedly wrote and 
     3. It aggregates the Value vectors on the fly and writes **only the final output** back to HBM.
     4. Intermediate `N × N` attention score matrices are **never materialized in GPU HBM**.
 
+#### The Memory Thrashing Trap (Standard PyTorch Attention)
+
 ```mermaid
 flowchart TD
-    subgraph STANDARD["Standard PyTorch Attention (Memory Thrashing)"]
-        direction TB
-        HBM1["GPU HBM (Slow, High Capacity)"] -->|"1. Load Q, K"| SRAM1["GPU SRAM (Fast, 100 KB/SM)"]
-        SRAM1 -->|"2. Write N×N Intermediate Score Matrix (68 GB!)"| HBM2["GPU HBM"]
-        HBM2 -->|"3. Read N×N Matrix back for Softmax"| SRAM2["GPU SRAM"]
-        SRAM2 -->|"4. Write N×N Normalized Probabilities"| HBM3["GPU HBM"]
-        HBM3 -->|"5. Read Probabilities + V"| SRAM3["GPU SRAM"]
-        SRAM3 -->|"6. Write Final Output"| HBM4["GPU HBM"]
-    end
+    HBM1["1. GPU High-Bandwidth Memory (HBM)<br>Holds Q, K, V Tensors in VRAM"] -->|"Load Tiles Across Slow Bus"| SRAM1["2. On-Chip SRAM (Compute)<br>Multiply Q · K^T"]
+    SRAM1 -->|"Write Temporary Scores (68 GB!)"| HBM2["3. GPU HBM (Intermediate Store)<br>Materialize N×N Matrix"]
+    HBM2 -->|"Read Back for Softmax & Output"| SRAM2["4. On-Chip SRAM<br>Softmax Normalization + V Multiply"]
 
-    subgraph FLASH["FlashAttention-2 / 3 (SRAM Tiling & Kernel Fusion)"]
-        direction TB
-        F_HBM["GPU HBM (Model Weights & KV-Cache)"] -->|"1. Load Small Block Tiles (Q_i, K_j, V_j)"| F_SRAM["On-Chip SRAM Block Tiling"]
-        F_SRAM -->|"2. Compute Online Softmax & Scale In-Place inside SRAM"| F_SRAM
-        F_SRAM -->|"3. Write FINAL Output Only<br>(Zero N×N Intermediate Writes!)"| F_OUT["GPU HBM (Final Output Tensor)"]
-    end
-
-    style STANDARD fill:#fff5f5,stroke:#c62828,stroke-width:2px
-    style FLASH fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style HBM1 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style HBM2 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style HBM3 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style HBM4 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style SRAM1 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style SRAM2 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style SRAM3 fill:#ffffff,stroke:#c62828,stroke-width:1px
-
-    style F_HBM fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style F_SRAM fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style F_OUT fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style HBM1 stroke:#dc2626,stroke-width:1px
+    style SRAM1 stroke:#dc2626,stroke-width:2px
+    style HBM2 stroke:#dc2626,stroke-width:2px
+    style SRAM2 stroke:#dc2626,stroke-width:2px
 ```
 
-### Walkthrough of the Memory Comparison:
-1. **Standard Attention Thrashing**:
-   - The GPU reads `Q` and `K` from HBM into SRAM.
-   - It computes the `N × N` dot products and writes the full 68.5 GB matrix back to HBM.
-   - It reads the 68.5 GB matrix from HBM back to SRAM to apply softmax, and writes it back to HBM.
-   - It reads the normalized weights back along with `V`, performs the final multiplication, and writes the output back to HBM.
-   - **Cost**: `O(N^2)` memory traffic crossing the memory bus, completely saturating bandwidth.
-2. **FlashAttention IO-Aware Tiling**:
-   - Divides `Q`, `K`, and `V` into small tiles that fit entirely inside fast SRAM.
-   - Utilizes **Online Softmax** to incrementally compute normalization without ever materializing the global `N × N` matrix.
-   - Computes the attention output locally in SRAM and writes **only the final result** back to HBM.
-   - **Result**: Drops memory traffic from `O(N^2)` to `O(N)`, providing a **2x to 4x real-world speedup** and enabling 128k+ context windows.
+*Walkthrough: Standard attention forces the GPU to write a colossal 68 GB intermediate score matrix back to slow HBM, only to immediately read it back into SRAM for softmax normalization. This saturates the memory bus and caps context windows at 4k tokens.*
+
+---
+
+#### The Solution: FlashAttention IO-Aware Tiling & Kernel Fusion
+
+```mermaid
+flowchart TD
+    F_HBM["1. GPU High-Bandwidth Memory (HBM)<br>Holds Model Weights & Sequence Data"] -->|"Stream Small Block Tiles (128×128)"| F_SRAM["2. Fast On-Chip SRAM<br>Compute Online Softmax & Multiply V in SRAM"]
+    F_SRAM -->|"Write FINAL Output Only<br>(Zero Intermediate Writes!)"| F_OUT["3. Final Output in HBM<br>Linear O(N) Memory Traffic"]
+
+    style F_HBM stroke:#2563eb,stroke-width:2px
+    style F_SRAM stroke:#16a34a,stroke-width:2px
+    style F_OUT stroke:#16a34a,stroke-width:2px
+```
+
+*Walkthrough: FlashAttention divides queries, keys, and values into tiny blocks that fit inside SRAM. Using **Online Softmax**, it computes running statistics in-place and writes only the final output tensor back to HBM. Memory traffic drops from quadratic `O(N^2)` to linear `O(N)`.*
 
 ---
 

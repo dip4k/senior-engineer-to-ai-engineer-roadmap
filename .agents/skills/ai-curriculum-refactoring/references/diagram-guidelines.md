@@ -27,24 +27,53 @@ Use native Mermaid syntax within standard markdown code blocks, complemented by 
 
 ---
 
-## 3. Modern Color & UI Styling System
+## 3. Theme-Adaptive Light & Dark Mode Contrast Standard
 
-To make diagrams clean, professional, and visually engaging, always apply semantic color coding to subgraphs and key nodes:
+A critical requirement for all technical documentation diagrams is **universal readability across both Light Mode and Dark Mode** (GitHub, VS Code, and browser readers).
 
-### Semantic UI Palette
+### The Dark Mode Failure Mechanism
+When you hardcode light pastel fills (e.g. `fill:#f0f7ff`, `fill:#ffffff`, `fill:#f6fff0`) on nodes or subgraphs:
+1. **The Inverted Text Trap**: In dark mode, Mermaid automatically renders node text in white or light gray (`#c9d1d9`). When placed over a hardcoded white or pastel fill, **the text becomes completely invisible** (contrast ratio < 1.2:1).
+2. **The "Flashbang" Glare**: Giant opaque light boxes clash violently against dark reader backgrounds, looking visually broken and jarring.
+3. **The Light Mode Washout**: Setting `fill:#ffffff` on a white page makes cards look border-only and flat, losing component hierarchy.
 
-```text
-┌────────────────────────────────────────────────────────────────────────┐
-│ Ingestion / Prep Tier (Blue)      : fill:#f0f7ff, stroke:#0066cc, 2px  │
-│ Query / Execution Tier (Green)    : fill:#f6fff0, stroke:#2e7d32, 2px  │
-│ Decision / Rerank Gate (Amber)    : fill:#fffbf0, stroke:#d97706, 2px  │
-│ Guardrail / Quarantine / Dropped  : fill:#fff5f5, stroke:#dc2626, 2px  │
-│ Foundation Model / Synthesis Core : fill:#f8f5ff, stroke:#7c3aed, 2px  │
-│ Highlight / Winning Candidate     : fill:#fef3c7, stroke:#b45309, 2px  │
-└────────────────────────────────────────────────────────────────────────┘
-```
+---
 
-### Modern Flowchart Example with Semantic Styling
+### The Universal Dual-Mode Styling Rules
+
+1. **Subgraphs: Always Transparent (`fill:none`)**:
+   - Never apply opaque background fills to subgraphs.
+   - Use `fill:none` with a 2px colored or slate stroke:
+     ```mermaid
+     style SUBGRAPH_ID fill:none,stroke:#2563eb,stroke-width:2px
+     ```
+   - This ensures the subgraph background stays transparent, cleanly inheriting the reader's background theme in both light and dark modes while framing internal nodes.
+
+2. **Nodes: Stroke-Based Semantic Accenting (Do Not Override `fill`)**:
+   - Let Mermaid's native theme engine manage node background cards and text colors. In light mode it generates light cards with dark text; in dark mode it generates dark slate cards with light text.
+   - Apply semantic meaning using **vibrant, high-contrast borders (`stroke`) and 2px border width**:
+     ```mermaid
+     style NODE_ID stroke:#2563eb,stroke-width:2px
+     ```
+
+3. **High-Contrast Dual-Mode Color Palette**:
+   Every color in this palette is specifically calibrated to provide >= 3.5:1 contrast against both pure white (`#ffffff`) and dark slate (`#0d1117`):
+
+| Semantic Role | Border Stroke Hex | Recommended Line Width | Usage |
+|:---|:---|:---|:---|
+| **Primary / Ingestion / Data Pipeline** | `stroke:#2563eb` (Blue) | `2px` | Source documents, chunking, queues, inputs |
+| **Success / Runtime / Verified Output** | `stroke:#16a34a` (Green) | `2px` | Passed gates, final outputs, durable commits |
+| **Decision Gate / Rerank / Warning** | `stroke:#d97706` (Amber) | `2px` | Evaluation diamonds, RRF ranking, thresholds |
+| **Quarantine / Error / Hazard / Fallback** | `stroke:#dc2626` (Red) | `2px` | Blocked payloads, rate limits (429), alerts |
+| **LLM / Reasoning Engine / Synthesis Core** | `stroke:#7c3aed` (Purple) | `2px` | Foundation models, thinking loops, transformers |
+| **Container / System Boundary / Framework** | `stroke:#64748b` (Slate) | `2px` | Subgraphs, external tiers, hardware boundaries |
+
+4. **Explicit Pairing Rule (If Fills Are Used)**:
+   - If an edge case requires a custom fill (e.g., a solid callout badge), **you MUST explicitly specify the text color (`color:#...`)** alongside the fill. Never specify `fill` without `color`.
+
+---
+
+### Clean Theme-Adaptive Flowchart Example
 
 ```mermaid
 flowchart TD
@@ -71,29 +100,58 @@ flowchart TD
         GD -- "No" --> ABSTAIN["Quarantine & Abstain"]
     end
 
-    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style GD fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style ANS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style LLM fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
+    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style D stroke:#2563eb,stroke-width:2px
+    style CC stroke:#2563eb,stroke-width:2px
+    style E1 stroke:#7c3aed,stroke-width:2px
+    style E2 stroke:#7c3aed,stroke-width:2px
+    style VDB stroke:#16a34a,stroke-width:2px
+    style KDB stroke:#16a34a,stroke-width:2px
+
+    style UQ stroke:#2563eb,stroke-width:2px
+    style QR stroke:#2563eb,stroke-width:2px
+    style H1 stroke:#7c3aed,stroke-width:2px
+    style H2 stroke:#7c3aed,stroke-width:2px
+    style RRF stroke:#d97706,stroke-width:2px
+    style RR stroke:#d97706,stroke-width:2px
+    style LLM stroke:#7c3aed,stroke-width:2px
+    style GD stroke:#d97706,stroke-width:2px
+    style ANS stroke:#16a34a,stroke-width:2px
+    style ABSTAIN stroke:#dc2626,stroke-width:2px
 ```
 
 ---
 
-## 4. Structural Rules & Clean Typography
+## 4. Structural Rules: Low Node Budget & Modular Splitting
 
-1. **Node Limit**: Keep diagrams under 10–14 nodes. If a system is more complex, break it into a macro-architecture blueprint followed by focused component diagrams.
-2. **Subgraphs**: Use `subgraph` blocks to indicate logical phases (e.g. *Phase 1: Ingestion*, *Phase 2: Querying*) or infrastructure boundaries (*Client Tier*, *Agent Runtime*, *MCP Tool Sandbox*).
-3. **Typography & Labeling**:
+1. **Low Node Budget (Simplicity & Readability First)**:
+   - **Target 4 to 8 nodes per diagram (strict ceiling of 10 nodes)**.
+   - A diagram with 15–20 nodes is visually overwhelming, unreadable on mobile screens, and prone to routing spaghetti.
+   - Prioritize high-signal, clean visualizations over trying to cram an entire system into a single chart.
+
+2. **Modular Splitting Rule**:
+   - If an architecture, pipeline, or lifecycle has more than 8–10 steps or multiple distinct phases, **do NOT create a single massive diagram**.
+   - **Split into separate, sequential, or modular diagrams**:
+     - *Diagram 1: Macro Architecture / Overview Flow (4–6 nodes)*
+     - *Diagram 2: Component Deep-Dive / Detailed Mechanism (4–6 nodes)*
+     - *Diagram 3: Error / Backtracking / Edge Case Flow (3–5 nodes)*
+   - Each diagram must have its own dedicated heading, focused purpose, and direct step-by-step prose walkthrough.
+
+3. **Subgraphs**: Use lightweight `subgraph` blocks to group 2–4 related nodes indicating logical boundaries (*Client Tier*, *Agent Runtime*, *Ingestion*, *Synthesis*). Avoid nesting subgraphs more than 1 level deep.
+
+4. **Typography & Labeling**:
    - Always enclose labels in double quotes: `node["**Step Title**<br>(Helpful 1-line detail)"]`.
-   - Use `<br>` inside quoted labels for clean vertical hierarchy (Bold title on line 1, short description on line 2). Avoid raw unquoted tags or complex HTML attributes (`style=...`).
-4. **Node Shapes**:
+   - Use `<br>` inside quoted labels for clean vertical hierarchy (Bold title on line 1, short description on line 2). Avoid raw unquoted tags or complex HTML attributes.
+
+5. **Node Shapes**:
    - Cylinders for storage and databases: `VDB[("Vector Database")]`
    - Diamonds for decision gates and guardrails: `Gate{"Score >= 0.70?"}`
    - Dotted arrows for asynchronous or read lookups: `VDB -.-> SearchNode`
    - Solid arrows for sequential data pipelines: `NodeA --> NodeB`
-5. **Accompanying Visuals**:
+
+6. **Accompanying Visuals**:
    - Pair complex flowcharts with **"Old vs Modern" Evolution Tables** or **ASCII memory maps** (e.g. showing KV-cache block allocation or PagedAttention frame tables).
 
 ---
@@ -246,8 +304,7 @@ flowchart TD
 Before approving any Mermaid diagram containing two or more subgraphs:
 - [ ] **No Subgraph ID Edges**: Are all edges drawn between concrete internal nodes, never cluster IDs?
 - [ ] **Symmetric Column Pinning**: In multi-column subgraphs, are all parallel columns symmetrically pinned (`Col1 ~~~ Col1`, `Col2 ~~~ Col2`)?
-- [ ] **Flush Vertical Stack**: In `flowchart TD`, do the subgraphs stack flush vertically without cascading diagonally into a staircase?
-- [ ] **Modern Color & UI Styling**: Are subgraphs styled using the semantic color palette (Blue for Ingestion/Prep, Green for Query/Runtime, Amber for Decision/Rerank, Rose for Quarantine/Abstain, Purple for LLM/Model)?
+- [ ] **Theme-Adaptive Contrast (Light & Dark Mode)**: Are subgraphs transparent (`fill:none`)? Are node backgrounds un-overridden with semantic border strokes (`stroke:#2563eb`, `stroke:#16a34a`, `stroke:#d97706`, `stroke:#dc2626`, `stroke:#7c3aed`) so text remains 100% readable in both Light and Dark modes?
 - [ ] **Clean Typography**: Are labels enclosed in quotes with bold titles and subtitles separated by `<br>`?
 - [ ] **Walkthrough Mandatory**: Does the diagram include a complete step-by-step prose walkthrough directly beneath it?
 - [ ] **Multi-Format Visuals**: Are complex systems complemented with comparison tables, evolution summaries, or ASCII/xy charts where helpful?

@@ -121,44 +121,35 @@ Standard for edge deployment and local SLMs
 
 How do we compress a model from 16 bits to 4 bits without destroying its accuracy? The industry relies on two primary Post-Training Quantization (PTQ) techniques:
 
+#### Method 1: Activation-Aware Weight Quantization (AWQ)
+
 ```mermaid
 flowchart TD
-    subgraph CALIBRATION["1. Calibration & Analysis"]
-        Weights["Pre-Trained FP16 Weights (W)"]
-        Analyze["Forward Pass Calibration Data<br>Observe Activation Magnitudes (X)"]
-        Weights --> Analyze
-    end
+    Weights["1. Pre-Trained FP16 Weights & Activations<br>Forward pass calibration data"] --> Salient["2. Identify & Scale Top 1% Salient Channels<br>Scale salient channels to absorb quantization noise"]
+    Salient --> AWQ_Out["3. AWQ 4-Bit Packed Tensor<br>Preserves mathematical & coding precision"]
 
-    subgraph AWQ_BOX["2. Activation-Aware Quantization (AWQ)"]
-        direction TB
-        FindSalient["Identify Top 1% Salient Weight Channels<br>(Channels with highest activation magnitudes)"]
-        ScaleProtect["Per-Channel Scaling Transformation<br>Protect salient weights from quantization noise"]
-        QuantizeLow["Quantize remaining 99% weights to INT4"]
-        AWQ_Out["AWQ 4-bit Packed Tensor<br>• Preserves complex math & coding logic<br>• Fast on NVIDIA Tensor Cores"]
-
-        FindSalient --> ScaleProtect --> QuantizeLow --> AWQ_Out
-    end
-
-    subgraph GPTQ_BOX["3. Generalized Post-Training Quantization (GPTQ)"]
-        direction TB
-        Hessian["Compute Inverse Hessian Matrix (H^-1)<br>Quantifies error sensitivity across layers"]
-        Compensate["Second-Order Error Compensation<br>Update unquantized weights to offset rounding errors"]
-        GPTQ_Out["GPTQ 4-bit Packed Tensor<br>• Optimized for large batch inference<br>• Highly compressed"]
-
-        Hessian --> Compensate --> GPTQ_Out
-    end
-
-    Analyze --> AWQ_BOX
-    Analyze --> GPTQ_BOX
-
-    style CALIBRATION fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style AWQ_BOX fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style GPTQ_BOX fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
-
-    style Weights fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style AWQ_Out fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style GPTQ_Out fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style Weights stroke:#2563eb,stroke-width:2px
+    style Salient stroke:#16a34a,stroke-width:2px
+    style AWQ_Out stroke:#16a34a,stroke-width:2px
 ```
+
+*Walkthrough: AWQ observes activation magnitudes during forward-pass calibration, identifies the top 1% critical channels, and applies an algebraic scaling transformation to protect them before 4-bit rounding.*
+
+---
+
+#### Method 2: Generalized Post-Training Quantization (GPTQ)
+
+```mermaid
+flowchart TD
+    Hessian["1. Compute Inverse Hessian Matrix (H^-1)<br>Quantify layer-by-layer parameter sensitivity"] --> Compensate["2. Second-Order Error Compensation<br>Adjust remaining unrounded weights to offset noise"]
+    Compensate --> GPTQ_Out["3. GPTQ 4-Bit Packed Tensor<br>Fast calibration optimized for batch throughput"]
+
+    style Hessian stroke:#2563eb,stroke-width:2px
+    style Compensate stroke:#7c3aed,stroke-width:2px
+    style GPTQ_Out stroke:#7c3aed,stroke-width:2px
+```
+
+*Walkthrough: GPTQ treats quantization as a layer-by-layer optimization problem, calculating the second-order Taylor expansion error and adjusting remaining unquantized weights to cancel out rounding error.*
 
 ### Walkthrough of AWQ vs. GPTQ:
 1. **Activation-aware Weight Quantization (AWQ)** (Lin et al., 2023):

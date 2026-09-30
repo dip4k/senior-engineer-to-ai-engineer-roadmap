@@ -153,62 +153,51 @@ Early transformers used **Multi-Head Attention (MHA)**, where every Query head h
 
 The AI industry evolved attention architectures to shrink this scratchpad:
 
+#### The Scaling Dilemma: Multi-Head (MHA) vs. Multi-Query (MQA)
+
 ```mermaid
-flowchart TD
-    subgraph ATTN_ARCH["Evolution of Attention Architectures"]
-        direction TB
-
-        subgraph MHA["1. Multi-Head Attention (MHA: 2017)"]
-            direction TB
-            Q_MHA["Query Heads (H = 8)"]
-            K_MHA["Key Heads (H = 8)"]
-            V_MHA["Value Heads (H = 8)"]
-            MHA_Note["Ratio: 1:1:1<br>KV-Cache: 100% (Baseline)<br>High VRAM Bottleneck"]
-            Q_MHA --> K_MHA --> V_MHA --> MHA_Note
-        end
-
-        subgraph MQA["2. Multi-Query Attention (MQA: 2019)"]
-            direction TB
-            Q_MQA["Query Heads (H = 8)"]
-            K_MQA["Key Head (H = 1)"]
-            V_MQA["Value Head (H = 1)"]
-            MQA_Note["Ratio: 8:1:1<br>KV-Cache: 12.5% (8x saving)<br>Degrades Multi-Hop Recall"]
-            Q_MQA --> K_MQA --> V_MQA --> MQA_Note
-        end
-
-        subgraph GQA["3. Grouped-Query Attention (GQA: 2023)"]
-            direction TB
-            Q_GQA["Query Heads (H = 8, 2 groups)"]
-            K_GQA["Key Heads (G = 2)"]
-            V_GQA["Value Heads (G = 2)"]
-            GQA_Note["Ratio: 4:1:1<br>KV-Cache: 25% (4x saving)<br>Matches MHA Accuracy!"]
-            Q_GQA --> K_GQA --> V_GQA --> GQA_Note
-        end
-
-        subgraph MLA["4. Multi-Head Latent Attention (MLA: 2024/2026)"]
-            direction TB
-            Q_MLA["Query Heads (H = 128)"]
-            Latent["Latent Vector c_t (Dim: 512)"]
-            Absorb["Matrix Absorption into W^Q / W^O"]
-            MLA_Note["Low-Rank Projection<br>KV-Cache: ~6.7% (15x saving)<br>Full MHA Expressiveness"]
-            Q_MLA --> Latent --> Absorb --> MLA_Note
-        end
-
-        MHA_Note -.->|"Group KV heads"| GQA
-        MQA_Note -.->|"Compress into latent space"| MLA
+flowchart LR
+    subgraph MHA["1. Multi-Head Attention (MHA: 2017)"]
+        MHA_Q["Query Heads (H = 64)"] --> MHA_KV["Key & Value Heads (H = 64)<br>1:1 Ratio · 100% KV Cache (Baseline)"]
     end
 
-    style ATTN_ARCH fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style MHA fill:#fff5f5,stroke:#c62828,stroke-width:2px
-    style MQA fill:#fffbf0,stroke:#b26b00,stroke-width:2px
-    style GQA fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style MLA fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
+    subgraph MQA["2. Multi-Query Attention (MQA: 2019)"]
+        MQA_Q["Query Heads (H = 64)"] --> MQA_KV["Single Shared KV Head (H = 1)<br>64:1 Ratio · 12.5% Cache (Degrades Logic)"]
+    end
 
-    style MHA_Note fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style MQA_Note fill:#ffffff,stroke:#b26b00,stroke-width:1px
-    style GQA_Note fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style MLA_Note fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
+    style MHA fill:none,stroke:#dc2626,stroke-width:2px
+    style MQA fill:none,stroke:#d97706,stroke-width:2px
+    style MHA_Q stroke:#dc2626,stroke-width:1px
+    style MHA_KV stroke:#dc2626,stroke-width:1px
+    style MQA_Q stroke:#d97706,stroke-width:1px
+    style MQA_KV stroke:#d97706,stroke-width:1px
 ```
+
+*Walkthrough: MHA reserves a separate Key and Value head for every Query head, causing the KV cache to explode at long contexts. MQA forces all Query heads to share a single KV head, saving 8x–16x memory but degrading associative retrieval.*
+
+---
+
+#### Modern Production Standards: Grouped-Query (GQA) vs. Latent (MLA)
+
+```mermaid
+flowchart LR
+    subgraph GQA["3. Grouped-Query Attention (GQA: LLaMA-3)"]
+        GQA_Q["Query Groups (8 Heads/Group)"] --> GQA_KV["Group Shared KV (8 Heads Total)<br>4x–8x Cache Cut · >99% MHA Quality"]
+    end
+
+    subgraph MLA["4. Multi-Head Latent Attention (MLA: DeepSeek-R1)"]
+        MLA_Q["Query Heads (H = 128)"] --> MLA_LAT["Low-Rank Latent Vector (Dim = 512)<br>Matrix Absorbed into Q · 15x–20x Cache Cut"]
+    end
+
+    style GQA fill:none,stroke:#16a34a,stroke-width:2px
+    style MLA fill:none,stroke:#7c3aed,stroke-width:2px
+    style GQA_Q stroke:#16a34a,stroke-width:1px
+    style GQA_KV stroke:#16a34a,stroke-width:1px
+    style MLA_Q stroke:#7c3aed,stroke-width:1px
+    style MLA_LAT stroke:#7c3aed,stroke-width:1px
+```
+
+*Walkthrough: GQA groups queries to share Key-Value heads, striking the sweet spot between memory and accuracy. MLA down-projects KV heads into a compact latent vector, absorbing the up-projection matrix directly into Query weights during inference for a 93%+ memory reduction.*
 
 ### Walkthrough of Attention Architectures:
 1. **Multi-Head Attention (MHA)**:
@@ -258,53 +247,15 @@ This naive strategy caused catastrophic memory waste:
 PagedAttention borrows the foundational concept of **OS Virtual Memory Paging**:
 
 ```mermaid
-flowchart TD
-    subgraph PAGED["PagedAttention Memory Architecture"]
-        direction TB
+flowchart LR
+    L_REQ["1. Logical Context Stream<br>Contiguous Tokens (0 to 48)"] --> PT["2. Virtual Block Table<br>Dynamic Logical-to-Physical Map"]
+    PT --> P_MEM["3. Scattered Physical Frames<br>VRAM Frames 2, 7, 11 (Zero Waste)"]
+    PT -.-> COW["4. Shared Prefix Blocks<br>Zero-Copy Branching for System Prompts"]
 
-        subgraph LOGICAL["1. Logical KV-Cache (Contiguous Request Stream)"]
-            L0["Logical Block 0<br>(Tokens 0 - 15)"]
-            L1["Logical Block 1<br>(Tokens 16 - 31)"]
-            L2["Logical Block 2<br>(Tokens 32 - 47)"]
-        end
-
-        subgraph PAGETABLE["2. Virtual Page Table (Block Mapping)"]
-            T0["Block 0  →  Physical Frame 7"]
-            T1["Block 1  →  Physical Frame 2"]
-            T2["Block 2  →  Physical Frame 11"]
-        end
-
-        subgraph PHYSICAL["3. Physical GPU VRAM (Non-Contiguous Memory Frames)"]
-            P2["Frame 2 (Req A, Block 1)"]
-            P5["Frame 5 (Req B, Block 0)"]
-            P7["Frame 7 (Req A, Block 0)"]
-            P11["Frame 11 (Req A, Block 2)"]
-        end
-
-        L0 --> T0
-        L1 --> T1
-        L2 --> T2
-
-        T0 --> P7
-        T1 --> P2
-        T2 --> P11
-    end
-
-    style PAGED fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style LOGICAL fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PAGETABLE fill:#f8f5ff,stroke:#6a1b9a,stroke-width:2px
-    style PHYSICAL fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-
-    style L0 fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style L1 fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style L2 fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style T0 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
-    style T1 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
-    style T2 fill:#ffffff,stroke:#6a1b9a,stroke-width:1px
-    style P2 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style P5 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style P7 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style P11 fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style L_REQ stroke:#2563eb,stroke-width:2px
+    style PT stroke:#7c3aed,stroke-width:2px
+    style P_MEM stroke:#16a34a,stroke-width:2px
+    style COW stroke:#d97706,stroke-width:2px
 ```
 
 ### Walkthrough of PagedAttention Paging:

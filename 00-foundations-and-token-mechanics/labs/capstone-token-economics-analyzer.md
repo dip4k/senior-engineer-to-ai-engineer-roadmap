@@ -54,15 +54,15 @@ flowchart TD
         Dispatch --> GPU_Cluster
     end
 
-    style CLIENT_TIER fill:#ffffff,stroke:#1e293b,stroke-width:2px
-    style PROXY_TIER fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style BACKEND_TIER fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style CLIENT_TIER fill:none,stroke:#64748b,stroke-width:2px
+    style PROXY_TIER fill:none,stroke:#2563eb,stroke-width:2px
+    style BACKEND_TIER fill:none,stroke:#16a34a,stroke-width:2px
 
-    style Req fill:#ffffff,stroke:#0066cc,stroke-width:1px
-    style Breach fill:#ffffff,stroke:#b26b00,stroke-width:1px
-    style Err429 fill:#ffffff,stroke:#c62828,stroke-width:1px
-    style Dispatch fill:#ffffff,stroke:#2e7d32,stroke-width:1px
-    style GPU_Cluster fill:#ffffff,stroke:#2e7d32,stroke-width:1px
+    style Req stroke:#2563eb,stroke-width:2px
+    style Breach stroke:#d97706,stroke-width:2px
+    style Err429 stroke:#dc2626,stroke-width:2px
+    style Dispatch stroke:#16a34a,stroke-width:2px
+    style GPU_Cluster stroke:#16a34a,stroke-width:2px
 ```
 
 ---

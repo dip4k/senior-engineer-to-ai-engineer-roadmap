@@ -62,12 +62,13 @@ flowchart TD
         G -- "No" --> ABSTAIN["Quarantine & Abstain"]
     end
 
-    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style G fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style OUT fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style S fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
+    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style G stroke:#d97706,stroke-width:2px
+    style OUT stroke:#16a34a,stroke-width:2px
+    style ABSTAIN stroke:#dc2626,stroke-width:2px
+    style S stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Visual Architecture Walkthrough:

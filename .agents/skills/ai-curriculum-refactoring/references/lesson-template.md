@@ -32,9 +32,14 @@ To maintain optimal cognitive load and reading momentum:
 - **Artificial Separation**: Splitting the "theory" and "code" into separate disconnected markdown files when they belong in the same unified narrative arc.
 - **Merge Strategy**: Consolidate into a single coherent `🟢 Core` or `🟡 Engineering Depth` lesson.
 
----
-
 ## 📋 The Parameterized 11-Part Anatomy
+
+> [!TIP]
+> **Not All Sections Are Mandatory!**  
+> The 11-part anatomy is an architectural reference blueprint, **not a rigid bureaucratic checklist**. Do not artificially inflate lessons with boilerplate text just to fill every numbered heading.  
+> - **Core Invariants (Always Include)**: Title + Core Concept, Mental Model (ELI10), Systems Mechanics, Runnable Typed Code/Schemas, Failure Modes / Trade-offs, and Navigation footer.
+> - **Flexible / Omittable**: Evolution tables (omit if the concept has no historical naive predecessor), architecture flowcharts (omit for small algorithmic or math utilities), full OTel span telemetry (omit for foundational syntax/token primers), and interview scenarios (omit when covered in a phase-level capstone or adjacent depth lesson).  
+> - **Rule**: Only include sections that actively advance learner comprehension or prevent real production outages. See [Structural Flexibility Guidelines](#%EF%B8%8F-structural-flexibility-guidelines) below.
 
 ```markdown
 # Lesson <XX>: <Plain-Language Systems Title (Acronym)>
@@ -94,12 +99,13 @@ flowchart TD
         GD -- "No" --> ABSTAIN["Quarantine & Abstain"]
     end
 
-    style PHASE1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style PHASE2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style GD fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style ANS fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style ABSTAIN fill:#fff5f5,stroke:#dc2626,stroke-width:2px
-    style LLM fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style PHASE1 fill:none,stroke:#2563eb,stroke-width:2px
+    style PHASE2 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style GD stroke:#d97706,stroke-width:2px
+    style ANS stroke:#16a34a,stroke-width:2px
+    style ABSTAIN stroke:#dc2626,stroke-width:2px
+    style LLM stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Visual Architecture Walkthrough:
