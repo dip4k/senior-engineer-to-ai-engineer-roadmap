@@ -560,14 +560,16 @@ public static class OrderEndpoints
 
 ---
 
-#### Step 5: Automated Code Review & Security Scanning
+#### Step 5: Automated Code Review, Security Scanning & Headless CI/CD Agents
 
-Human code reviewers suffer from fatigue, cognitive overload, and rubber-stamp syndrome. An autonomous PR review agent provides consistent, non-tiring enforcement of architectural rules, security boundaries, and performance invariants.
+Human code reviewers suffer from fatigue, cognitive overload, and rubber-stamp syndrome. A major breakthrough in late 2026 is the deployment of **Headless CI/CD Agents** operating within automated pipelines (e.g., GitHub Actions, GitLab CI).
+
+Rather than relying purely on interactive chat, tools like Claude Code can be executed non-interactively (e.g., `claude -p "Review this PR for OWASP violations" --output-format json`). This enables the **Builder-Validator Chain**: a workflow where a human or an agent generates code, and a secondary, isolated validation agent autonomously enforces invariants before human review.
 
 ```mermaid
 flowchart TD
-    A["Developer Opens PR"] --> B["GitHub Actions Triggered"]
-    B --> C["Review Agent Checks Invariants"]
+    A["Developer / Generation Agent Opens PR"] --> B["GitHub Actions Triggered"]
+    B --> C["Headless Review Agent (e.g., Claude CLI non-interactive)"]
     C --> D1["Layer Violations (Domain referencing Infra?)"]
     C --> D2["Security Flaws (OWASP: SQLi, SSRF, IDOR)"]
     C --> D3["Performance (N+1 queries, unindexed filters)"]
@@ -655,7 +657,12 @@ Writing code is no longer purely deterministic. When dealing with probabilistic 
 - **Verification Provenance**: Require pull requests to demonstrate test execution output, coverage metrics, and linter runs before requesting human review.
 - **Defensive Coding Standards**: Explicitly train engineers to look for common LLM failure modes: hallucinated package imports, subtly inverted boolean logic, unhandled exception paths, and insecure default configurations.
 
-#### 2. Measuring Team Productivity: DORA in the AI Era
+#### 2. Agentic-Driven Delivery (ADD) & Containment Boundaries
+As you transition to an Agentic SDLC, you must establish **Containment Boundaries** for headless CI/CD agents.
+- **Principle of Least Privilege**: When tools like Claude Code run non-interactively in GitHub Actions, restrict their tool access (e.g., `--allowedTools Read,Bash,Edit`) and bound their credentials (e.g., read-only tokens for PR reviews).
+- **Builder-Validator Separation**: Never let the agent that wrote the feature be the same agent that reviews the feature. Isolate them physically (different CI steps) and semantically (different foundation models).
+
+#### 3. Measuring Team Productivity: DORA in the AI Era
 Traditional metrics like Lines of Code (LOC), commit counts, or closed story points are fundamentally broken in an AI-assisted world where an agent can generate 10,000 lines of boilerplate in seconds.
 
 Senior engineering leadership must evaluate productivity using the **DORA (DevOps Research and Assessment)** framework supplemented by AI-specific health metrics:
@@ -671,7 +678,7 @@ Senior engineering leadership must evaluate productivity using the **DORA (DevOp
 | **AI Health** | **PR Rework Rate** | Percentage of PRs requiring > 3 review cycles due to agent hallucination or missed criteria. | $< 10\%$ of pull requests |
 ```
 
-#### 3. Mentoring Senior & Junior Developers: The Apprenticeship Dilemma
+#### 4. Mentoring Senior & Junior Developers: The Apprenticeship Dilemma
 One of the most pressing organizational challenges in software leadership is the **Apprenticeship Crisis**:
 - *The Dilemma*: Historically, junior developers learned the craft by writing repetitive boilerplate, simple CRUD endpoints, unit tests, and bug fixes. Today, AI agents perform these tasks instantaneously. If junior engineers don't write basic code, how do they develop the intuition required to become senior architects?
 - *The Solution: Up-leveling Early-Career Engineers*:
@@ -1620,7 +1627,7 @@ To deepen your mastery of the AI-native software engineering lifecycle and leade
 
 ## 9. Capstone Challenge: Establish an Enterprise AI-Native Repository Framework [MUST-HAVE] 🔴
 
-> Structure an enterprise repository with machine-readable directives (`AGENT.md`), automated CI PR review bots, and TDD verification.
+> Structure an enterprise repository with machine-readable directives (`AGENT.md`), implement a **Headless CI/CD PR Review Bot** (e.g. using Claude Code non-interactive mode via GitHub Actions), and enforce strict TDD verification.
 > 
 > 👉 **[View Capstone Challenge Specification](./labs/capstone-ai-native-repository.md)**
 
