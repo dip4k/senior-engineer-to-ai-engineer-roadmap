@@ -96,12 +96,12 @@ A **Deterministic Finite Automaton (DFA)** (or **Finite State Machine**) is a co
 
 ```mermaid
 flowchart TD
-    State["1. FSM State S_t<br>(e.g. Expecting JSON Key)"] --> Query["2. Grammar Evaluation<br>(Find Allowed Tokens in Vocab)"]
-    Query --> Mask["3. Construct Bitmask M_t<br>(Allowed = 0, Illegal = -inf)"]
-    Logits["4. Raw Vocab Logits L_t<br>(From Transformer Linear Layer)"] --> Add["5. Additive Masking<br>(L_masked = L_t + M_t)"]
+    State["⚙️ 1. FSM State S_t<br>(e.g. Expecting JSON Key)"] --> Query["📜 2. Grammar Evaluation<br>(Find Allowed Tokens in Vocab)"]
+    Query --> Mask["🛡️ 3. Construct Bitmask M_t<br>(Allowed = 0, Illegal = -inf)"]
+    Logits["📊 4. Raw Vocab Logits L_t<br>(From Transformer Linear Layer)"] --> Add["➕ 5. Additive Masking<br>(L_masked = L_t + M_t)"]
     Mask --> Add
-    Add --> Softmax["6. Softmax & Sampling<br>(P_illegal = exp(-inf) = 0.0)"]
-    Softmax --> Emit["7. Emit Token & Advance FSM<br>(S_{t+1} = Next State)"]
+    Add --> Softmax["🎲 6. Softmax & Sampling<br>(P_illegal = exp(-inf) = 0.0)"]
+    Softmax --> Emit["📝 7. Emit Token & Advance FSM<br>(S_{t+1} = Next State)"]
 
     style State fill:none,stroke:#2563eb,stroke-width:2px
     style Mask fill:none,stroke:#d97706,stroke-width:2px
@@ -157,7 +157,15 @@ For engineers working with cloud APIs rather than writing custom FSM compilers, 
 Both OpenAI (GPT-4o and o3-mini, as of 2025-01) and xAI (Grok-3 and Grok-3 Mini, as of 2025-02) adopt the standardized JSON Schema response format:
 
 ```python
-# OpenAI & xAI Native Grammar Decoding
+# OpenAI & xAI Native Grammar Decoding Configuration
+from unittest.mock import MagicMock
+from pydantic import BaseModel
+
+class UserComplianceRecord(BaseModel):
+    user_id: str
+    is_compliant: bool
+
+client = MagicMock()
 response = client.chat.completions.create(
     model="gpt-4o",  # or "grok-3-mini"
     messages=[{"role": "user", "content": "Extract customer record from email text"}],
@@ -195,6 +203,8 @@ An **over-constrained schema deadlock** occurs when a rigid schema physically bl
 * 🧒 **The Analogy**: A witness in court who is only allowed to answer "yes" or "no" to the question: "Have you stopped cheating on tests?" If the witness never cheated, neither answer is true. The rule prevents the truth from being spoken.
 * ⚙️ **The Engineering**: Suppose you define a strict schema requiring a mandatory verdict:
   ```python
+  from pydantic import BaseModel
+
   class Decision(BaseModel):
       is_fraud: bool
       fraud_reason: str
@@ -208,6 +218,9 @@ However, the FSM logit mask **physically blocks** that explanation. It forces th
 Always design production schemas with explicit, typed escape valves:
 
 ```python
+from typing import Literal, Optional, List
+from pydantic import BaseModel, Field
+
 class ResilientDecision(BaseModel):
     status: Literal["CONFIRMED_FRAUD", "CLEARED", "INSUFFICIENT_EVIDENCE", "UNABLE_TO_EVALUATE"]
     confidence_score: float = Field(ge=0.0, le=1.0)

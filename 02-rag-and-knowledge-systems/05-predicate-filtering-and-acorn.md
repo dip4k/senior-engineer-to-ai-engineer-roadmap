@@ -38,15 +38,18 @@ When engineers integrate vector search with structured predicates, naive impleme
 flowchart TD
     subgraph Dilemma["THE FILTERED ANN SEARCH DILEMMA"]
         subgraph PostFilter["NAIVE POST-FILTERING"]
-            P1["1. Unconstrained HNSW Traversal<br>Fetches Top-100 nearest vectors in global space"] --> P2["2. Application Filter Evaluated<br>Discards chunks where tenant_id != 'corp_42'"]
-            P2 --> P3["3. Filter Starvation!<br>Because tenant_id represents 1% of corpus,<br>only 0 to 2 matching items survive.<br>Top-5 request returns underfilled!"]
+            P1["🗄️ 1. Unconstrained HNSW Traversal<br>Fetches Top-100 nearest vectors in global space"] --> P2{"🛡️ 2. Application Filter Evaluated<br>Discards chunks where tenant_id != 'corp_42'"}
+            P2 --> P3["⚠️ 3. Filter Starvation!<br>Because tenant_id represents 1% of corpus,<br>only 0 to 2 matching items survive.<br>Top-5 request returns underfilled!"]
         end
 
         subgraph PreFilter["NAIVE PRE-FILTERING"]
-            PR1["1. Pre-Filter Dataset<br>Isolates 1% of nodes matching tenant_id='corp_42'"] --> PR2["2. Traverse Filtered Subgraph<br>Navigates edges between matching nodes"]
-            PR2 --> PR3["3. Graph Disconnection!<br>Because matching nodes are spatially sparse,<br>graph edges are severed into isolated islands.<br>Search terminates prematurely; recall collapses!"]
+            PR1["🛡️ 1. Pre-Filter Dataset<br>Isolates 1% of nodes matching tenant_id='corp_42'"] --> PR2["🗄️ 2. Traverse Filtered Subgraph<br>Navigates edges between matching nodes"]
+            PR2 --> PR3["⚠️ 3. Graph Disconnection!<br>Because matching nodes are spatially sparse,<br>graph edges are severed into isolated islands.<br>Search terminates prematurely; recall collapses!"]
         end
     end
+    style Dilemma fill:none,stroke:#64748b,stroke-width:2px;
+    style PostFilter fill:none,stroke:#ef4444,stroke-width:2px;
+    style PreFilter fill:none,stroke:#f59e0b,stroke-width:2px;
 ```
 
 #### Diagram Walkthrough:
@@ -63,11 +66,11 @@ Security must be enforced as a **Cryptographic Tenant Perimeter** inside the que
 
 ```mermaid
 flowchart LR
-    User["Client Request + JWT"] --> Gateway["API Gateway Auth"]
-    Gateway --> Inject["Inject Tenant Boundary<br>(app.current_tenant_id)"]
-    Inject --> StorageEngine["Database Kernel<br>(PostgreSQL / Qdrant)"]
-    StorageEngine --> Traversal["Predicate Subgraph Traversal<br>(ACORN / pgvector iterative scan)"]
-    Traversal --> ZeroLeakage["Grounded Candidates<br>(Guaranteed Tenant Isolation)"]
+    User(["👤 Client Request + JWT"]) --> Gateway["🛡️ API Gateway Auth"]
+    Gateway --> Inject["⚡ Inject Tenant Boundary<br>(app.current_tenant_id)"]
+    Inject --> StorageEngine[("🗄️ Database Kernel<br>(PostgreSQL / Qdrant)")]
+    StorageEngine --> Traversal["🎯 Predicate Subgraph Traversal<br>(ACORN / pgvector iterative scan)"]
+    Traversal --> ZeroLeakage["📄 Grounded Candidates<br>(Guaranteed Tenant Isolation)"]
 ```
 
 #### Diagram Walkthrough:
@@ -95,12 +98,12 @@ Instead of modifying the index or severing edges, ACORN-1 changes the traversal 
 
 ```mermaid
 flowchart LR
-    Start["Valid Node A<br>(tenant_42)"] --> Waypoint["Invalid Node B<br>(tenant_99 - Waypoint)"]
-    Waypoint --> Target["Valid Node C<br>(tenant_42)"]
+    Start["📄 Valid Node A<br>(tenant_42)"] --> Waypoint["⚠️ Invalid Node B<br>(tenant_99 - Waypoint)"]
+    Waypoint --> Target["📄 Valid Node C<br>(tenant_42)"]
     
-    style Waypoint stroke:#f66,stroke-dasharray: 5 5
-    style Start stroke:#0f0
-    style Target stroke:#0f0
+    style Waypoint stroke:#ef4444,stroke-dasharray: 5 5
+    style Start stroke:#22c55e
+    style Target stroke:#22c55e
 ```
 
 #### Diagram Walkthrough:
@@ -167,13 +170,15 @@ When designing multi-tenant retrieval infrastructure, software architects must c
 ```mermaid
 flowchart TD
     subgraph Dedicated["STRATEGY A: DEDICATED PARTITIONING (Silo Pattern)"]
-        T1_DB[("Tenant 1 Collection<br>Isolated HNSW Index")]
-        T2_DB[("Tenant 2 Collection<br>Isolated HNSW Index")]
+        T1_DB[("🗄️ Tenant 1 Collection<br>Isolated HNSW Index")]
+        T2_DB[("🗄️ Tenant 2 Collection<br>Isolated HNSW Index")]
     end
 
     subgraph Shared["STRATEGY B: SHARED POOL (Pool Pattern)"]
-        Shared_DB[("Global Shared Index<br>ACORN / Iterative Scan<br>WHERE tenant_id = 'corp_42'")]
+        Shared_DB[("🗄️ Global Shared Index<br>ACORN / Iterative Scan<br>WHERE tenant_id = 'corp_42'")]
     end
+    style Dedicated fill:none,stroke:#3b82f6,stroke-width:2px;
+    style Shared fill:none,stroke:#10b981,stroke-width:2px;
 ```
 
 #### Diagram Walkthrough:

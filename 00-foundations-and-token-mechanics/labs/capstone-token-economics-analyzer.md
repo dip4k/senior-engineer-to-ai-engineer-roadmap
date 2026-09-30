@@ -24,22 +24,22 @@
 ```mermaid
 flowchart TD
     subgraph CLIENT_TIER["1. Client Application Tier"]
-        Req["Incoming Client Request<br>(Prompt + User / System Tokens)"]
+        Req(["👤 Incoming Client Request<br>(Prompt + User / System Tokens)"])
     end
 
     subgraph PROXY_TIER["2. Enterprise Token Budgeting Proxy"]
         direction TB
 
-        T_Profile["Step 1: Multi-Model Token Profiler<br>• Count exact tokens (tiktoken / tokenizers)<br>• Add message framing overhead (+3/msg)"]
+        T_Profile["🔤 Step 1: Token Profiler<br>• Count exact tokens (tiktoken / tokenizers)<br>• Add message framing overhead (+3/msg)"]
         
-        KV_Calc["Step 2: Dynamic KV-Cache Estimator<br>• KV = 2 × 2 × L × H_KV × d_k × Context × Batch<br>• Check available VRAM against 85% safety ceiling"]
+        KV_Calc[("💾 Step 2: Dynamic KV-Cache Estimator<br>• KV = 2 × 2 × L × H_KV × d_k × Context × Batch<br>• Check available VRAM against 85% safety ceiling")]
         
-        TPM_Check["Step 3: Sliding-Window TPM Governor<br>• Track tenant 60-second token consumption<br>• Enforce per-tenant SLA quotas"]
+        TPM_Check["⏱️ Step 3: Sliding-Window TPM Governor<br>• Track tenant 60-second token consumption<br>• Enforce per-tenant SLA quotas"]
         
-        Breach{"Ceiling or Quota Breached?"}
+        Breach{"🛡️ Ceiling or Quota Breached?"}
         
-        Err429["Return HTTP 429 / 400 (RFC 7807)<br>X-RateLimit-Reset & Retry-After Headers"]
-        Dispatch["Step 4: Dispatch Request to LLM Provider<br>(vLLM / Anthropic / OpenAI / Azure)"]
+        Err429["⚠️ Return HTTP 429 / 400 (RFC 7807)<br>X-RateLimit-Reset & Retry-After Headers"]
+        Dispatch["🚀 Step 4: Dispatch Request to LLM Provider<br>(vLLM / Anthropic / OpenAI / Azure)"]
 
         Req --> T_Profile
         T_Profile --> KV_Calc
@@ -50,7 +50,7 @@ flowchart TD
     end
 
     subgraph BACKEND_TIER["3. LLM Serving Tier"]
-        GPU_Cluster["GPU Cluster / Provider API<br>(NVIDIA H100 / Cloud Endpoint)"]
+        GPU_Cluster["🧠 GPU Cluster / Provider API<br>(NVIDIA H100 / Cloud Endpoint)"]
         Dispatch --> GPU_Cluster
     end
 

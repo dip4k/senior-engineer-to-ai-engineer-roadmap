@@ -270,36 +270,28 @@ In addition to the 9 curriculum phases, this repository provides battle-tested e
 The curriculum maps directly to the seven primary enterprise AI architectural archetypes, supported by comprehensive system designs and deep-dive use case blueprints:
 
 ```mermaid
-flowchart LR
-    subgraph UseCases["Enterprise AI Archetypes"]
-        direction TB
-        UC1["1. Enterprise Grounded Search<br>(Hybrid RAG + GraphRAG + RBAC)"]
-        UC2["2. Autonomous Tool Agent<br>(Stateless MCP + HITL Sandboxing)"]
-        UC3["3. Multi-Agent Systems<br>(MAF 1.0 + Google A2A + Handoffs)"]
-        UC4["4. Resilient AI Gateway<br>(Cost & Latency Governor)"]
-        UC5["5. Continuous Evals Flywheel<br>(CI/CD Quality Gates)"]
-        UC6["6. Autonomous SDLC Pipeline<br>(Software 3.0 & AGENT.md)"]
-        UC7["7. Copilot Studio & PaaS MCP Bridge<br>(Enterprise Low-Code to Cloud PaaS)"]
-    end
-    
-    subgraph Curricula["Curriculum Coverage"]
-        direction TB
-        P1["Phases 01, 02, 05, 06"]
-        P2["Phases 01, 03, 04, 05"]
-        P3["Phases 04, 06, 07"]
-        P4["Phases 00, 05, 07"]
-        P5["Phases 01, 06, 08"]
-        P6["Phases 03, 04, 08"]
-        P7["Phases 03, 04, 07"]
+flowchart TD
+    subgraph Knowledge["1. Knowledge & Tool Layer"]
+        A1["🔍 Enterprise Grounded Search<br>(Phases 01, 02, 05)"]
+        A2["⚡ Autonomous Tool Agent<br>(Phases 01, 03, 05)"]
+        A3["🔌 Copilot Studio & PaaS Bridge<br>(Phases 03, 04, 07)"]
     end
 
-    UC1 --> P1
-    UC2 --> P2
-    UC3 --> P3
-    UC4 --> P4
-    UC5 --> P5
-    UC6 --> P6
-    UC7 --> P7
+    subgraph Orchestration["2. Orchestration & Runtime Layer"]
+        A4["🤖 Multi-Agent Systems<br>(Phases 04, 06, 07)"]
+        A5["🛡️ Resilient AI Gateway<br>(Phases 00, 05, 07)"]
+    end
+
+    subgraph Quality["3. Quality & Delivery Layer"]
+        A6["🎯 Continuous Evals Flywheel<br>(Phases 01, 06, 08)"]
+        A7["🚀 Autonomous SDLC Pipeline<br>(Phases 03, 04, 08)"]
+    end
+
+    Knowledge --> Orchestration --> Quality
+
+    style Knowledge fill:none,stroke:#2563eb,stroke-width:2px;
+    style Orchestration fill:none,stroke:#7c3aed,stroke-width:2px;
+    style Quality fill:none,stroke:#16a34a,stroke-width:2px;
 ```
 
 ### 🏛️ Dedicated Architectural Blueprints & System Designs
@@ -327,23 +319,31 @@ flowchart LR
 Modern AI systems engineering relies on open, standardized protocols rather than proprietary walled gardens:
 
 ```mermaid
-flowchart LR
-    A["Lead AI Engineer"] --> B["Anthropic Ecosystem"]
-    A --> C["Google Ecosystem"]
-    A --> D["Microsoft & OpenAI"]
-    A --> E["Open-Source Standards"]
+flowchart TD
+    subgraph S1["Anthropic & Open Protocols"]
+        direction TB
+        B1["🧠 Claude 4 & Claude Code CLI"] --> B2["⚡ Model Context Protocol (MCP)"]
+    end
 
-    B --> B1["Claude 4 & Claude Code CLI"]
-    B --> B2["Model Context Protocol (MCP 2026)"]
+    subgraph S2["Google Agent Ecosystem"]
+        direction TB
+        C1["🧠 Google GenAI SDK"] --> C2["⚡ Agent2Agent (A2A) Protocol"]
+    end
 
-    C --> C1["Google GenAI SDK (google-genai)"]
-    C --> C2["Google ADK & Agent2Agent (A2A)"]
+    subgraph S3["Microsoft & OpenAI Platforms"]
+        direction TB
+        D1["🧠 Agent Framework (MAF 1.0)"] --> D2["⚡ Azure AI Foundry & SDK"]
+    end
 
-    D --> D1["Microsoft Agent Framework (MAF 1.0)"]
-    D --> D2["OpenAI Agents SDK & Azure AI Foundry"]
+    subgraph S4["Open-Source Runtime & Standards"]
+        direction TB
+        E1["🧠 PydanticAI & LangGraph"] --> E2["⚡ OpenTelemetry GenAI Spans"]
+    end
 
-    E --> E1["PydanticAI & LangGraph"]
-    E --> E2["FastMCP & OpenTelemetry GenAI Spans"]
+    style S1 fill:none,stroke:#3b82f6,stroke-width:2px;
+    style S2 fill:none,stroke:#10b981,stroke-width:2px;
+    style S3 fill:none,stroke:#8b5cf6,stroke-width:2px;
+    style S4 fill:none,stroke:#f59e0b,stroke-width:2px;
 ```
 
 ---

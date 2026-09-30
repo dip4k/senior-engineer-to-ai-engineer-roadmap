@@ -50,9 +50,9 @@ A normal model is the first person: it starts writing the answer immediately. A 
 
 ```mermaid
 flowchart LR
-    P["Your prompt"] --> D["Direct answer<br>(few tokens, fast)"]
-    P --> T["Thinking tokens<br>(working, billed)"]
-    T --> A["Answer after thinking<br>(slower, more tokens)"]
+    P["💬 User Prompt"] --> D["⚡ Direct Answer<br>(few tokens, low latency)"]
+    P --> T["🧠 Thinking Tokens<br>(working scratchpad, billed)"]
+    T --> A["🎯 Synthesized Answer<br>(higher accuracy)"]
 
     style P stroke:#2563eb,stroke-width:2px
     style D stroke:#16a34a,stroke-width:2px
@@ -78,14 +78,15 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    I["Input tokens<br>(your prompt)"] --> B["Bill"]
-    TH["Thinking tokens<br>(often hidden)"] --> O["Output tokens"]
-    V["Answer tokens<br>(visible)"] --> O
+    I["📥 Input Tokens<br>(user prompt)"] --> B[("💰 Cost Ledger<br>(total bill)")]
+    TH["🧠 Thinking Tokens<br>(hidden reasoning)"] --> O["📤 Output Tokens<br>(higher price/token)"]
+    V["📝 Visible Answer<br>(final text)"] --> O
     O --> B
 
     style I stroke:#2563eb,stroke-width:2px
     style TH stroke:#7c3aed,stroke-width:2px
     style V stroke:#16a34a,stroke-width:2px
+    style O stroke:#d97706,stroke-width:2px
     style B stroke:#d97706,stroke-width:2px
 ```
 
@@ -124,10 +125,10 @@ The ratio is large here because the example sets thinking at 2,400 times the ans
 
 ```mermaid
 flowchart TD
-    R["Request arrives"] --> W{"Worst case fits<br>today's ceiling?"}
-    W -- "No" --> X["Reject<br>(nothing spent)"]
-    W -- "Yes" --> C["Call model with<br>a hard output cap"]
-    C --> L["Record actual spend"]
+    R["📥 Request Arrives"] --> W{"🛡️ Worst Case Fits<br>Daily Token Budget?"}
+    W -- "No" --> X["🚫 Reject Call<br>(zero spend committed)"]
+    W -- "Yes" --> C["🧠 Call Model with<br>Hard max_tokens Cap"]
+    C --> L[("📊 Record Actual Spend<br>& Update Ledger")]
 
     style R stroke:#2563eb,stroke-width:2px
     style W stroke:#d97706,stroke-width:2px

@@ -82,9 +82,9 @@ When the `Judge` instructs the courtroom: *"Do not discuss this case outside thi
 
 ```mermaid
 flowchart TD
-    JSON["Client Message Array<br>[System, User]"] --> Tok["Tokenizer Injects<br>Special Control Tokens"]
-    Tok --> Wire["ChatML Token Stream<br>&lt;|im_start|&gt;system...&lt;|im_end|&gt;"]
-    Wire --> GPU["GPU Attention Layers<br>(System tokens carry higher authority)"]
+    JSON["📋 Client Message Array<br>[System, User]"] --> Tok["🔤 Tokenizer Injects<br>Special Control Tokens"]
+    Tok --> Wire["🌊 ChatML Token Stream<br>&lt;|im_start|&gt;system...&lt;|im_end|&gt;"]
+    Wire --> GPU["🧠 GPU Attention Layers<br>(System tokens carry authority)"]
 
     style JSON stroke:#2563eb,stroke-width:2px
     style Tok stroke:#7c3aed,stroke-width:2px
@@ -111,8 +111,8 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Zero["Zero-Shot Prompt<br>(Rules Only)"] --> V1["High Vocabulary Variance<br>(Plausible, but unpredictable)"]
-    Few["Few-Shot Prompt<br>(Rules + 2 Examples)"] --> V2["Tight Token Distribution<br>(Predictable, conditioned output)"]
+    Zero["📝 Zero-Shot Prompt<br>(Rules Only)"] --> V1["⚠️ High Variance<br>(Plausible but unpredictable)"]
+    Few["🎯 Few-Shot Prompt<br>(Rules + 2 Examples)"] --> V2["✅ Tight Distribution<br>(Predictable conditioned output)"]
 
     style Zero stroke:#d97706,stroke-width:2px
     style Few stroke:#2563eb,stroke-width:2px

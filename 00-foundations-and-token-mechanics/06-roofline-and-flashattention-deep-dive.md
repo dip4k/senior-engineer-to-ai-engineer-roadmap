@@ -87,13 +87,14 @@ Exact SRAM sizes and speeds differ by chip generation and were not verified for 
 
 ```mermaid
 flowchart TD
-    A["Load Q and K<br>from HBM"] --> B["Compute scores<br>(N × N)"]
-    B --> C["Write scores<br>to HBM"]
-    C --> D["Read scores back,<br>apply softmax"]
-    D --> E["Write weights<br>to HBM"]
-    E --> F["Read weights and V,<br>write output"]
+    A[("💾 Load Q & K<br>from slow HBM")] --> B["⚡ Compute Scores<br>(N × N matrix)"]
+    B --> C[("💾 Write Scores<br>to HBM (traffic penalty)")]
+    C --> D[("💾 Read Scores Back<br>& apply Softmax")]
+    D --> E[("💾 Write Weights<br>to HBM (traffic penalty)")]
+    E --> F["✨ Read Weights & V<br>write output"]
 
     style A stroke:#2563eb,stroke-width:2px
+    style B stroke:#7c3aed,stroke-width:2px
     style C stroke:#dc2626,stroke-width:2px
     style D stroke:#dc2626,stroke-width:2px
     style E stroke:#dc2626,stroke-width:2px
@@ -132,10 +133,10 @@ The original paper reports speedups across multiple benchmarks. These include 15
 
 ```mermaid
 flowchart LR
-    Q["Query tile<br>(into SRAM)"] --> L["Loop over<br>key/value tiles"]
-    L --> S["Scores, running softmax,<br>partial output<br>(all in SRAM)"]
+    Q["⚡ Load Query Tile<br>(into on-chip SRAM)"] --> L["🔄 Stream K & V Tiles<br>(block by block)"]
+    L --> S["🧠 Online Softmax<br>& partial accumulator<br>(stays in SRAM)"]
     S -.-> L
-    S --> O["Write final<br>output to HBM"]
+    S --> O[("💾 Write Final Output<br>to HBM (single pass)")]
 
     style Q stroke:#2563eb,stroke-width:2px
     style L stroke:#d97706,stroke-width:2px

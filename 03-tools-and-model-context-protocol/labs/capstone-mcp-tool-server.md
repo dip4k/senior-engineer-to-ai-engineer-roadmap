@@ -1,7 +1,7 @@
 # Capstone Engineering Challenge: The Production MCP Tool Server
 
 ### Objective
-Build and test a production-grade, dual-transport **Enterprise Observability & Schema Model Context Protocol (MCP) Server** in Python (FastMCP) or TypeScript (@modelcontextprotocol/sdk) implementing read-only database inspection, secure telemetry fetching, and cryptographically signed Human-in-the-Loop (HITL) step-up gates using the official **Elicitation primitive**.
+Build and test a production-grade, dual-transport **Enterprise Observability & Schema Model Context Protocol (MCP) Server** in Python or TypeScript. The server implements read-only database inspection, secure telemetry fetching, and cryptographically signed Human-in-the-Loop (HITL) step-up gates using the official **Elicitation primitive**.
 
 ---
 
@@ -18,17 +18,17 @@ However, your Chief Information Security Officer (CISO) has issued a strict mand
 ```mermaid
 flowchart TD
     subgraph Clients["Client Layer"]
-        STDIO["STDIO Transport<br/>Local Dev Workstation<br/>(Cursor / Claude Desktop)"]
-        HTTP["Streamable HTTP Transport<br/>Remote Cloud Gateway<br/>(Kubernetes / FastAPI)"]
+        STDIO(["💻 STDIO Transport<br/>Local Dev Workstation<br/>(Cursor / Claude Desktop)"])
+        HTTP["🔌 Streamable HTTP Transport<br/>Remote Cloud Gateway<br/>(Kubernetes / FastAPI)"]
     end
 
-    SERVER["Dual-Transport MCP Server<br/>(Observability & Diagnostics)"]
+    SERVER["⚡ Dual-Transport MCP Server<br/>(Observability & Diagnostics)"]
 
     subgraph Capabilities["Server Capabilities"]
-        TOOLS["Read-Only Tools<br/>• Schema Inspect<br/>• CPU/Mem Metric<br/>• Read System Log"]
-        HITL["HITL Elicitation Gateway<br/>• Propose Action<br/>• Verify HMAC Token<br/>• Commit Mutate"]
-        RESOURCES["Passive Resources<br/>• schema://db/catalog<br/>• metrics://live"]
-        PROMPTS["Prompts<br/>• incident_triage"]
+        TOOLS["⚡ Read-Only Tools<br/>• Schema Inspect<br/>• CPU/Mem Metric<br/>• Read System Log"]
+        HITL{"🛡️ HITL Elicitation Gateway<br/>• Propose Action<br/>• Verify HMAC Token<br/>• Commit Mutate"}
+        RESOURCES[("🗄️ Passive Resources<br/>• schema://db/catalog<br/>• metrics://live")]
+        PROMPTS["📄 Prompts<br/>• incident_triage"]
     end
 
     STDIO --> SERVER
@@ -37,6 +37,9 @@ flowchart TD
     SERVER --> HITL
     SERVER --> RESOURCES
     SERVER --> PROMPTS
+
+    style Clients fill:none,stroke:#3b82f6,stroke-width:2px;
+    style Capabilities fill:none,stroke:#10b981,stroke-width:2px;
 ```
 
 ### Architectural Walkthrough
@@ -81,4 +84,7 @@ flowchart TD
 
 ---
 
+## 🧭 Navigation
+
 [Back to Phase 03 Hub](../README.md)
+

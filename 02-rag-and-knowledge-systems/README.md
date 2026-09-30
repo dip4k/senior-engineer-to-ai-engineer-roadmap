@@ -26,18 +26,18 @@ Modern production RAG is split into two distinct operational phases. **Phase 1: 
 
 ```mermaid
 flowchart TD
-    D["1. Huge Library Books<br>(PDFs, Docs, Spreadsheets)"] --> CC["2. Contextual Chunking<br>(Cut into index cards + parent summary note)"]
-    CC --> E1["3. Dense Embeddings<br>(Concept & Meaning Vectors)"]
-    CC --> E2["4. Sparse BM25 Index<br>(Exact Keyword Matching)"]
-    E1 --> VDB[("Vector Database<br>HNSW / DiskANN")]
-    E2 --> KDB[("Keyword Inverted Index<br>BM25 Okapi")]
+    D["📄 1. Huge Library Books<br>(PDFs, Docs, Spreadsheets)"] --> CC["🎯 2. Contextual Chunking<br>(Cut into index cards + parent summary note)"]
+    CC --> E1["🧠 3. Dense Embeddings<br>(Concept & Meaning Vectors)"]
+    CC --> E2["📄 4. Sparse BM25 Index<br>(Exact Keyword Matching)"]
+    E1 --> VDB[("🗄️ Vector Database<br>HNSW / DiskANN")]
+    E2 --> KDB[("🗄️ Keyword Inverted Index<br>BM25 Okapi")]
 
-    style D stroke:#2563eb,stroke-width:2px
-    style CC stroke:#2563eb,stroke-width:2px
-    style E1 stroke:#7c3aed,stroke-width:2px
-    style E2 stroke:#7c3aed,stroke-width:2px
-    style VDB stroke:#16a34a,stroke-width:2px
-    style KDB stroke:#16a34a,stroke-width:2px
+    style D stroke:#2563eb,stroke-width:2px,fill:none
+    style CC stroke:#2563eb,stroke-width:2px,fill:none
+    style E1 stroke:#7c3aed,stroke-width:2px,fill:none
+    style E2 stroke:#7c3aed,stroke-width:2px,fill:none
+    style VDB stroke:#16a34a,stroke-width:2px,fill:none
+    style KDB stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 *Walkthrough: Documents are decomposed into semantically coherent cards tagged with parent document summaries. Each chunk is dual-indexed into both a high-dimensional vector database for conceptual similarity and an inverted BM25 index for exact keywords.*
@@ -48,22 +48,22 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    UQ["1. User Question<br>'Why did Project Apollo fail?'"] --> QR["2. Query Rewriter<br>(Expand acronyms, HyDE)"]
-    QR --> HYBRID["3. Hybrid Search & RRF Fusion<br>Dense Vectors + BM25 Keywords (k=60)"]
-    HYBRID --> RR["4. Deep Cross-Encoder Reranker<br>Inspect top 25 chunks with full attention"]
-    RR --> LLM["5. Context Assembler & LLM<br>Generate answer with explicit XML citations"]
-    LLM --> GD{"6. Fact-Check Guardrail<br>Is every claim grounded in context?"}
-    GD -- "Verified" --> ANS["7. Final Auditable Answer"]
-    GD -- "Unverified" --> ABSTAIN["Flag Hallucination & Abstain"]
+    UQ(["👤 1. User Question<br>'Why did Project Apollo fail?'"]) --> QR["🧠 2. Query Rewriter<br>(Expand acronyms, HyDE)"]
+    QR --> HYBRID[("🗄️ 3. Hybrid Search & RRF Fusion<br>Dense Vectors + BM25 Keywords (k=60)")]
+    HYBRID --> RR["🎯 4. Deep Cross-Encoder Reranker<br>Inspect top 25 chunks with full attention"]
+    RR --> LLM["🧠 5. Context Assembler & LLM<br>Generate answer with explicit XML citations"]
+    LLM --> GD{"🛡️ 6. Fact-Check Guardrail<br>Is every claim grounded in context?"}
+    GD -- "Verified" --> ANS["📄 7. Final Auditable Answer"]
+    GD -- "Unverified" --> ABSTAIN["⚠️ Flag Hallucination & Abstain"]
 
-    style UQ stroke:#2563eb,stroke-width:2px
-    style QR stroke:#2563eb,stroke-width:2px
-    style HYBRID stroke:#d97706,stroke-width:2px
-    style RR stroke:#d97706,stroke-width:2px
-    style LLM stroke:#7c3aed,stroke-width:2px
-    style GD stroke:#d97706,stroke-width:2px
-    style ANS stroke:#16a34a,stroke-width:2px
-    style ABSTAIN stroke:#dc2626,stroke-width:2px
+    style UQ stroke:#2563eb,stroke-width:2px,fill:none
+    style QR stroke:#2563eb,stroke-width:2px,fill:none
+    style HYBRID stroke:#d97706,stroke-width:2px,fill:none
+    style RR stroke:#d97706,stroke-width:2px,fill:none
+    style LLM stroke:#7c3aed,stroke-width:2px,fill:none
+    style GD stroke:#d97706,stroke-width:2px,fill:none
+    style ANS stroke:#16a34a,stroke-width:2px,fill:none
+    style ABSTAIN stroke:#dc2626,stroke-width:2px,fill:none
 ```
 
 *Walkthrough: When a user query arrives, it is disambiguated and dispatched in parallel across both indexes. Candidates are fused via Reciprocal Rank Fusion (RRF), re-scored by a high-precision cross-encoder, assembled into prompt context, and verified by an automated groundedness judge.*

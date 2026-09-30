@@ -135,13 +135,15 @@ A correct diagram is small. This one has 6 nodes. Bigger flows are split into se
 
 ```mermaid
 flowchart LR
-    Q["User Query"] --> E["Embedding Model<br>(text → numbers)"]
-    E --> S["Vector Search<br>(nearest neighbours)"]
-    S --> G{"Score high enough?"}
-    G -- "Yes" --> A["Send Evidence to LLM"]
-    G -- "No" --> B["Abstain"]
+    Q(["👤 User Query"]) --> E["🧠 Embedding Model<br>(text → numbers)"]
+    E --> S[("🗄️ Vector Search<br>(nearest neighbours)")]
+    S --> G{"🛡️ Score high enough?"}
+    G -- "Yes" --> A["✅ Send Evidence to LLM"]
+    G -- "No" --> B["⚠️ Abstain"]
 
+    style Q stroke:#2563eb,stroke-width:2px
     style E stroke:#7c3aed,stroke-width:2px
+    style S stroke:#16a34a,stroke-width:2px
     style G stroke:#d97706,stroke-width:2px
     style A stroke:#16a34a,stroke-width:2px
     style B stroke:#dc2626,stroke-width:2px

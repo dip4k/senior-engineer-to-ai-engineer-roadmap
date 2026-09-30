@@ -1,13 +1,15 @@
-# Lesson 04: Reverse Sampling & Host Orchestration
+# Lesson 04: Host Orchestration, Execution Governors, and Sampling Lifecycle
 
-> **Tier**: `⚫ Tier 3: Systems Deep Dive`  
+> **Tier**: `⚫ Deep Dive`  
 > **Estimated Reading Time**: 45 minutes  
-> **Prerequisites**: Lesson 02 (MCP Architecture & Transports), Lesson 03 (MCP Server Primitives)  
+> **Prerequisites**: [Lesson 02: MCP Architecture, Transports & Lifecycle](02-mcp-architecture-transports-and-lifecycle.md), [Lesson 03: MCP Server Primitives](03-mcp-server-primitives-tools-resources-prompts.md)  
 > **Target Audience**: Senior Software Engineers, Systems Architects  
-
----
-
-> **Core Concept**: In most AI applications, the flow goes one way: the model calls tools. **Reverse sampling** flips this direction — an MCP tool server can request the host application to generate a model completion on its behalf. This is useful when a tool needs AI assistance mid-execution (for example, a code analysis tool asking the model to summarize a complex diff). This lesson covers how the MCP host application orchestrates these bidirectional flows, manages multiple concurrent tool servers, and prevents runaway resource consumption.
+> 
+> **Core Concept**: In standard tool use, the flow is unidirectional: the model calls tools. In advanced setups, tool servers can request the host application to generate completions (**reverse sampling**). More critically, the MCP host acts as the supervisor kernel: managing process pools, enforcing token limits, compacting bloated payloads, and tripping circuit breakers on infinite retry loops. This lesson covers host orchestration mechanics and the architectural reasons why reverse sampling evolved toward host-side agent loops.
+> 
+> **Term Ledger**:
+> - `New AI terms introduced`: `Host Orchestration`, `Reverse Sampling`, `Execution Governor`, `Oscillation Circuit Breaker`, `Context Compaction`.
+> - `AI terms assumed from earlier lessons`: `MCP Host`, `MCP Server`, `MCP Tool`, `Context Window`.
 
 ---
 
@@ -17,7 +19,7 @@ Most developers view the Model Context Protocol purely from the perspective of a
 
 The Host is the operating system for AI agents. It does not simply pass strings back and forth; it acts as an **Ingress Gateway, Security Supervisor, and Resource Allocator**:
 - **Process Multiplexer**: Spawns and manages lifecycles for dozens of local child processes and remote Streamable HTTP connections simultaneously.
-- **Reverse Sampling Mediator**: Grants servers intelligent reasoning capabilities without ever leaking third-party API keys to server processes.
+- **Reverse Sampling Mediator**: Historically granted servers intelligent reasoning capabilities without leaking third-party API keys to server processes.
 - **Execution Governor**: Intercepts tool loops, breaks oscillation deadlocks, and compacts bloated outputs to prevent token exhaustion.
 
 ```text
@@ -34,6 +36,8 @@ Host as Kernel & Hypervisor:
  [Server: Database]       [Server: Git]            [Server: Remote SAP]
 ```
 
+> **Where this analogy breaks**: An OS kernel preempts runaway threads deterministically through hardware CPU clock interrupts. An MCP host cannot preempt a foundation model mid-inference token generation; it can only govern the execution loop between discrete API turns and terminate socket/process pipes externally.
+
 ---
 
 ## 2. Architecture & Wire Topology: The Host Orchestration Loop
@@ -43,10 +47,10 @@ The sequence diagram below traces the full orchestration loop, including a Serve
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as Human Operator
-    participant Host as Host Gateway Orchestrator
-    participant PrimaryLLM as Foundation LLM (Claude / OpenAI / Gemini)
-    participant Server as MCP Server (e.g. Unstructured Document Parser)
+    actor User as 👤 Human Operator
+    participant Host as 💻 Host Gateway Orchestrator
+    participant PrimaryLLM as 🧠 Foundation LLM (Claude / OpenAI / Gemini)
+    participant Server as ⚡ MCP Server (e.g. Document Parser)
 
     User->>Host: "Summarize Q3 financial audit PDF"
     Host->>PrimaryLLM: Prompt Context + Available Tool Schemas
@@ -55,7 +59,6 @@ sequenceDiagram
     Host->>Host: Governor Checks (Budget OK, Call Count < 10)
     Host->>Server: JSON-RPC tools/call (parse_audit_pdf)
     
-    rect rgb(240, 245, 255)
     Note over Host,Server: Reverse Sampling Handshake
     Server->>Server: Extracts 200 pages of raw text tables
     Server->>Host: JSON-RPC sampling/createMessage (messages: ["Extract EBITDA"], maxTokens: 500)
@@ -64,7 +67,6 @@ sequenceDiagram
     Host->>PrimaryLLM: Internal completion request (Using Host API Credentials)
     PrimaryLLM-->>Host: "EBITDA for Q3 was $14.2M"
     Host-->>Server: JSON-RPC sampling response { content: { text: "$14.2M" } }
-    end
 
     Server-->>Host: Final tools/call result: { summary: "EBITDA $14.2M", isError: false }
     Host->>Host: Compact Output (Ensure payload < 16KB)
@@ -310,6 +312,23 @@ Build a mock Host Gateway in Python that connects to an MCP tool server, interce
 - [ ] An execution governor sliding window tracks tool call signatures and trips before 3 duplicate invocations occur.
 - [ ] Tool outputs are compacted and truncated before injection into the foundation model context window.
 
+## 10. Quick Check
+
+An agent platform experiences an outage where an agent calls `lookup_order(id="ORD-991")`, receives `404 Not Found`, and immediately calls `lookup_order(id="ORD-991")` again. It repeats this 40 times until hitting rate limits. What specific governor pattern was missing in the host runtime, and how does it detect the condition?
+
+<details>
+<summary>Suggested Answer</summary>
+
+**Missing Governor**: An **Oscillation Circuit Breaker** with a sliding-window call signature hasher.
+
+**Detection Mechanism**: The host computes a deterministic hash of the tool name and serialized arguments (`hash("lookup_order:ORD-991")`). If the exact same call signature appears more than twice consecutively, the governor trips the circuit breaker. This action halts the loop and forces the model to report the missing record to the user.
+
+</details>
+
 ---
 
-[Previous: Lesson 03 — MCP Server Primitives: Tools, Resources, Prompts & Elicitation](./03-mcp-server-primitives-tools-resources-prompts.md) | [Next: Lesson 05 — Sandboxing, Security & Confused Deputy Defenses](./05-sandboxing-security-and-confused-deputy-defenses.md) | [Back to Phase 03 Hub](./README.md)
+## 🧭 Navigation
+
+| Previous | Hub | Next | Capstone Lab |
+|---|---|---|---|
+| [← Lesson 03: MCP Server Primitives](03-mcp-server-primitives-tools-resources-prompts.md) | [Phase 03 Overview](README.md) | [Lesson 05: Sandboxing & Confused Deputy Defenses →](05-sandboxing-security-and-confused-deputy-defenses.md) | [Capstone Lab: MCP Tool Server →](labs/capstone-mcp-tool-server.md) |

@@ -78,11 +78,12 @@ Fewer bytes can also mean faster generation. Decoding is typically memory-bound 
 
 ```mermaid
 flowchart LR
-    W["16-bit weight<br>(e.g. 0.037)"] --> D["Divide by the<br>group's scale"]
-    D --> R["Round to the nearest<br>whole number (-8 to 7)"]
-    R --> S["Store 4 bits<br>+ shared scale"]
-    S --> U["At run time:<br>multiply back"]
+    W["🔢 16-Bit Weight<br>(e.g. 0.037)"] --> D["➗ Scale Division<br>(normalize by group max)"]
+    D --> R["🎯 Round to Int<br>(-8 to +7 for 4-bit)"]
+    R --> S[("💾 Packed 4-Bit Int<br>+ shared scale factor")]
+    S --> U["⚡ Runtime Dequant<br>(integer x scale)"]
 
+    style W stroke:#2563eb,stroke-width:2px
     style D stroke:#2563eb,stroke-width:2px
     style R stroke:#d97706,stroke-width:2px
     style S stroke:#16a34a,stroke-width:2px
@@ -112,13 +113,15 @@ small weights ≈ 0.03, outlier = 4.0  →  step ≈ 0.57  →  0.03 ÷ 0.57 rou
 
 ```mermaid
 flowchart TD
-    A["Group of weights<br>(mostly near 0.03)"] --> B["Find the largest<br>(one weight is 4.0)"]
-    B --> C["Scale = largest ÷ 7<br>(step is about 0.57)"]
-    C --> D["Round all weights"]
-    D --> E["Small weights<br>become 0"]
+    A["📊 Weight Group<br>(values near 0.03)"] --> B["⚠️ Outlier Emerges<br>(one weight is 4.0)"]
+    B --> C["📏 Stretched Step Size<br>(scale = 4.0 / 7 ≈ 0.57)"]
+    C --> D["🎯 Rounding Execution"]
+    D --> E["❌ Small Weights Collapse<br>(0.03 rounds to zero)"]
 
+    style A stroke:#2563eb,stroke-width:2px
     style B stroke:#d97706,stroke-width:2px
     style C stroke:#d97706,stroke-width:2px
+    style D stroke:#2563eb,stroke-width:2px
     style E stroke:#dc2626,stroke-width:2px
 ```
 
@@ -144,13 +147,14 @@ Both methods are **post-training** quantizers that use **calibration**: you feed
 
 ```mermaid
 flowchart TD
-    M["Pick a model<br>and a precision"] --> Q["Quantize<br>(with calibration text)"]
-    Q --> T["Run YOUR test set<br>on the quantized model"]
-    T --> G{"Quality and speed<br>good enough?"}
-    G -- "Yes" --> D["Deploy and keep<br>monitoring"]
-    G -- "No" --> B["Try more bits,<br>another method, or<br>a larger model"]
+    M["🤖 Select Model<br>& Target Precision"] --> Q["⚙️ Calibration & Quantization<br>(AWQ / GPTQ)"]
+    Q --> T["🧪 Run Production Test Suite<br>(accuracy & latency)"]
+    T --> G{"🛡️ Quality & Latency<br>Gates Passed?"}
+    G -- "Yes" --> D["🚀 Deploy Container<br>& Stream Telemetry"]
+    G -- "No" --> B["🔄 Adjust Bits / Method<br>or Choose Larger Model"]
     B --> M
 
+    style M stroke:#7c3aed,stroke-width:2px
     style Q stroke:#2563eb,stroke-width:2px
     style T stroke:#7c3aed,stroke-width:2px
     style G stroke:#d97706,stroke-width:2px

@@ -30,11 +30,16 @@ Under production enterprise workloads, this naive approach collapses catastrophi
 
 ```mermaid
 flowchart TD
-    subgraph Failures["NAIVE EXTRACTION FAILURE MODES IN PRODUCTION"]
-        F1["Multi-Column Cross-Bleeding<br>Line 1 of Col 1 concatenates with Line 1 of Col 2,<br>producing scrambled sentences."]
-        F2["Tabular Coordinate Destruction<br>Financial balance sheet rows are flattened into raw text,<br>severing column headers from numbers."]
-        F3["Arbitrary Boundary Severance<br>A fixed 500-token cut slices a critical legal clause:<br>'Subject to Section 12.4, liability is...' | CUT | '...$0.'"]
+    subgraph Failures["⚠️ NAIVE EXTRACTION FAILURE MODES IN PRODUCTION"]
+        F1["💥 Multi-Column Cross-Bleeding<br>Line 1 of Col 1 concatenates with Col 2,<br>producing scrambled sentences."]
+        F2["💥 Tabular Coordinate Destruction<br>Financial balance sheet rows flattened,<br>severing column headers from numbers."]
+        F3["💥 Arbitrary Boundary Severance<br>A fixed 500-token cut slices a critical clause:<br>'Subject to Section 12.4, liability is...' | CUT | '...$0.'"]
     end
+
+    style Failures fill:none,stroke:#dc2626,stroke-width:2px
+    style F1 stroke:#dc2626,stroke-width:2px
+    style F2 stroke:#dc2626,stroke-width:2px
+    style F3 stroke:#dc2626,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:
@@ -52,28 +57,19 @@ Instead, view document ingestion as a **Relational Knowledge Normalizer**. Think
 
 ```mermaid
 flowchart TD
-    subgraph RawWorld["1. Raw Multi-Modal Artifact"]
-        Doc["Complex Enterprise PDF / DOCX<br>• Multi-column text flow<br>• Borderless financial tables<br>• Embedded charts & footnotes"]
-    end
+    Doc["📄 Complex Enterprise PDF<br>(Multi-column layout & borderless tables)"] --> Detect["📐 1. Layout Boundary Detection<br>(Polygon bounding boxes & reading order)"]
+    Detect --> Reconstruct["📊 2. Tabular Reconstruction<br>(Markdown pipe tables | H1 | H2 |)"]
+    Reconstruct --> Chunking["🌳 3. Hierarchical Chunking<br>(Parent Document ➔ Child Chunks)"]
+    
+    Chunking --> ChildVDB[("🗄️ Child Vector Store<br>(High-Resolution Embedding Chunks)")]
+    Chunking -.->|"Relational Pointer"| ParentStore[("🗄️ Parent Document Store<br>(Full Context Sections)")]
 
-    subgraph Normalizer["2. Relational Knowledge Normalizer"]
-        Detect["Layout Boundary Detection<br>(Polygon bounding boxes & reading order)"]
-        Reconstruct["Tabular Reconstruction<br>(Markdown pipe tables | H1 | H2 |)"]
-        Hierarchy["Parent-Child Hierarchical Linking<br>(Parent Section: 2,000 tok ➔ Child Chunks: 200 tok)"]
-        Enrich["Contextual Prepending<br>(LLM situational summary via cached prefix)"]
-    end
-
-    subgraph NormalizedIndex["3. Dual-Indexed Production Store"]
-        ChildVDB[("Vector Storage<br>High-Resolution Child Vectors")]
-        ParentStore[("Document Store<br>Full Parent Context Sections")]
-    end
-
-    Doc --> Detect
-    Detect --> Reconstruct
-    Reconstruct --> Hierarchy
-    Hierarchy --> Enrich
-    Enrich --> ChildVDB
-    Hierarchy -.->|Relational Pointer| ParentStore
+    style Doc stroke:#64748b,stroke-width:2px,fill:none;
+    style Detect stroke:#2563eb,stroke-width:2px,fill:none;
+    style Reconstruct stroke:#2563eb,stroke-width:2px,fill:none;
+    style Chunking stroke:#7c3aed,stroke-width:2px,fill:none;
+    style ChildVDB stroke:#16a34a,stroke-width:2px,fill:none;
+    style ParentStore stroke:#16a34a,stroke-width:2px,fill:none;
 ```
 
 #### Visual Normalizer Walkthrough:

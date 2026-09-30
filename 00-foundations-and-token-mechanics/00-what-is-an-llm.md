@@ -60,14 +60,17 @@ The text you send is called the **prompt**.
 
 ```mermaid
 flowchart LR
-    P["Your prompt"] --> T["Tokenizer<br>(text → tokens)"]
-    T --> M["Model<br>(scores the next token)"]
-    M --> S["Pick one token"]
-    S --> O["Add it to the text"]
+    P["💬 Your prompt"] --> T["🔤 Tokenizer<br>(text → tokens)"]
+    T --> M["🧠 Model<br>(scores next token)"]
+    M --> S{"🎲 Pick token<br>(temperature)"}
+    S --> O["📄 Append to text"]
     O -.-> M
 
+    style P stroke:#2563eb,stroke-width:2px
+    style T stroke:#2563eb,stroke-width:2px
     style M stroke:#7c3aed,stroke-width:2px
     style S stroke:#d97706,stroke-width:2px
+    style O stroke:#16a34a,stroke-width:2px
 ```
 
 1. **Your prompt** is split into tokens by the tokenizer.
@@ -85,12 +88,12 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    A["System instructions"] --> W["Context window<br>(token limit)"]
-    B["Earlier messages"] --> W
-    C["Documents you add"] --> W
-    D["New question"] --> W
-    W --> M["Model"]
-    M --> R["Reply<br>(also uses the limit)"]
+    A["⚙️ System instructions"] --> W[("🪟 Context window<br>(token limit)")]
+    B["💬 Earlier messages"] --> W
+    C["📄 Documents added"] --> W
+    D["❓ New question"] --> W
+    W --> M["🧠 Model"]
+    M --> R["📝 Generated reply<br>(consumes budget)"]
 
     style W stroke:#d97706,stroke-width:2px
     style M stroke:#7c3aed,stroke-width:2px

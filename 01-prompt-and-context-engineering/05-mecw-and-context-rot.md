@@ -64,8 +64,8 @@ The **Lost-in-the-Middle U-curve** describes the empirical drop in retrieval and
 
 ```mermaid
 flowchart LR
-    Primacy["1. Primacy Anchor<br>(0%–10% Depth)<br>Accuracy: 88%–94%"] --> Void["2. Middle Attention Void<br>(20%–80% Depth)<br>Accuracy: 28%–54% (Nadir)"]
-    Void --> Recency["3. Recency Anchor<br>(90%–100% Depth)<br>Accuracy: 85%–96%"]
+    Primacy["⚓ 1. Primacy Anchor<br>(0%–10% Depth)<br>Accuracy: 88%–94%"] --> Void["🕳️ 2. Middle Attention Void<br>(20%–80% Depth)<br>Accuracy: 28%–54% (Nadir)"]
+    Void --> Recency["🎯 3. Recency Anchor<br>(90%–100% Depth)<br>Accuracy: 85%–96%"]
 
     style Primacy fill:none,stroke:#16a34a,stroke-width:2px
     style Void fill:none,stroke:#dc2626,stroke-width:2px
@@ -155,8 +155,8 @@ Never allow production context to exceed **50% of the model's rated window** wit
 
 ```mermaid
 flowchart TD
-    Top["1. Top Boundary (Primacy Anchor: 0%–10%)<br>• Developer Invariants & Safety Rules<br>• Core Persona & Canonical Schemas"] --> Middle["2. Variable Payload (Middle Void: 10%–90%)<br>• Retrieved Evidence Chunks (Edge-Weighted Sorted)<br>• Intermediate Context & Few-Shot Examples"]
-    Middle --> Bottom["3. Bottom Boundary (Recency Anchor: 90%–100%)<br>• Repeated Constraint Reminders<br>• Latest User Turn & Immediate Trigger"]
+    Top["🔒 1. Top Boundary (Primacy Anchor: 0%–10%)<br>• Developer Invariants & Safety Rules<br>• Core Persona & Canonical Schemas"] --> Middle["📄 2. Variable Payload (Middle Void: 10%–90%)<br>• Retrieved Evidence Chunks (Edge-Weighted Sorted)<br>• Intermediate Context & Few-Shot Examples"]
+    Middle --> Bottom["🎯 3. Bottom Boundary (Recency Anchor: 90%–100%)<br>• Repeated Constraint Reminders<br>• Latest User Turn & Immediate Trigger"]
 
     style Top fill:none,stroke:#16a34a,stroke-width:2px
     style Middle fill:none,stroke:#d97706,stroke-width:2px

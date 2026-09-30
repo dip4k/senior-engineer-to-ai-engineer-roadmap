@@ -51,15 +51,15 @@ To solve this problem, software engineers must understand where an AI model stor
 ```mermaid
 flowchart LR
     subgraph Parametric["Parametric Memory (Weights)"]
-        W["Frozen Model Parameters<br>• Trained once at high cost<br>• Fuzzy statistical memory<br>• Cannot cite sources<br>• No access control"]
+        W["🧠 Frozen Model Parameters<br>• Trained once at high cost<br>• Fuzzy statistical memory<br>• Cannot cite sources<br>• No access control"]
     end
 
     subgraph NonParametric["Non-Parametric Memory (Storage)"]
-        D["External Databases & Indices<br>• Updated in real time<br>• Verifiable document provenance<br>• Exact source citations<br>• Strict multi-tenant RBAC"]
+        D[("🗄️ External Databases & Indices<br>• Updated in real time<br>• Verifiable document provenance<br>• Exact source citations<br>• Strict multi-tenant RBAC")]
     end
 
-    style Parametric stroke:#dc2626,stroke-width:2px
-    style NonParametric stroke:#16a34a,stroke-width:2px
+    style Parametric fill:none,stroke:#dc2626,stroke-width:2px
+    style NonParametric fill:none,stroke:#16a34a,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:
@@ -85,11 +85,11 @@ In software engineering terms:
 
 ```mermaid
 flowchart TD
-    Q["1. User Asks Question"] --> R["2. Librarian (Retrieval Engine)<br>Searches external index"]
-    R --> D["3. Relevant Document Chunks<br>Extracted with source IDs"]
-    D --> P["4. Prompt Context Assembler<br>Packs chunks into XML blocks"]
-    P --> LLM["5. Student (Language Model)<br>Synthesizes answer from text"]
-    LLM --> A["6. Grounded Answer<br>With explicit citations"]
+    Q(["👤 1. User Asks Question"]) --> R["🔍 2. Librarian (Retrieval Engine)<br>Searches external index"]
+    R --> D["📄 3. Relevant Document Chunks<br>Extracted with source IDs"]
+    D --> P["⚙️ 4. Prompt Context Assembler<br>Packs chunks into XML blocks"]
+    P --> LLM["🧠 5. Student (Language Model)<br>Synthesizes answer from text"]
+    LLM --> A["✅ 6. Grounded Answer<br>With explicit citations"]
 
     style Q stroke:#2563eb,stroke-width:2px
     style R stroke:#d97706,stroke-width:2px
@@ -117,28 +117,24 @@ flowchart TD
 A production RAG system separates work into three distinct operational stages:
 
 ```mermaid
-flowchart LR
-    subgraph S1["Stage 1: Ingestion (Offline)"]
-        P["Parse Documents"] --> C["Split into Chunks"]
-        C --> E["Generate Embeddings"]
+flowchart TD
+    subgraph Offline["1. OFFLINE INGESTION & INDEXING"]
+        Docs["📄 Enterprise Docs"] --> Split["✂️ Parse & Chunk"]
+        Split --> VDB[("🗄️ Dense Vector Index<br>(HNSW / DiskANN)")]
+        Split --> KDB[("🗄️ Sparse Inverted Index<br>(BM25 Okapi)")]
     end
 
-    subgraph S2["Stage 2: Storage & Indexing"]
-        E --> VDB[("Vector Index<br>HNSW / DiskANN")]
-        C --> KDB[("Inverted Index<br>BM25 Okapi")]
+    subgraph Online["2. ONLINE QUERY & GENERATION"]
+        Query(["👤 User Query"]) --> Search["🔍 Hybrid Search"]
+        Search --> Rerank["🎯 Cross-Encoder Rerank"]
+        Rerank --> LLM["🧠 Grounded LLM Response"]
     end
 
-    subgraph S3["Stage 3: Inference (Online)"]
-        UQ["User Query"] --> RET["Hybrid Search"]
-        VDB --> RET
-        KDB --> RET
-        RET --> RR["Cross-Encoder Rerank"]
-        RR --> SYN["LLM Generation"]
-    end
+    VDB -.->|"Vector Recall"| Search
+    KDB -.->|"Keyword Match"| Search
 
-    style S1 stroke:#2563eb,stroke-width:2px
-    style S2 stroke:#16a34a,stroke-width:2px
-    style S3 stroke:#7c3aed,stroke-width:2px
+    style Offline fill:none,stroke:#2563eb,stroke-width:2px
+    style Online fill:none,stroke:#7c3aed,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:

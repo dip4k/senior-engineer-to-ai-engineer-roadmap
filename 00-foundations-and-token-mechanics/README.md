@@ -35,44 +35,15 @@ Every production request consumes GPU High-Bandwidth Memory (HBM) throughput, st
 
 ```mermaid
 flowchart TD
-    subgraph PHASE00["Phase 00: Foundations & Hardware Blueprint"]
-        direction TB
+    S1["⚡ 1. Hardware & Token Physics<br>(Lessons 01 & 02: FlashAttention & BPE)"] --> S2
+    S2[("💾 2. KV-Cache & Memory Math<br>(Lesson 03: VRAM, MHA/GQA & PagedAttention)")] --> S3
+    S3["🧠 3. Reasoning & Quantization<br>(Lessons 04 & 05: Thinking Tokens & AWQ)"] --> S4
+    S4["🧪 4. Hands-On Verification<br>(Capstone Lab: Token Proxy & VRAM Profiler)"]
 
-        subgraph CORE_HW["1. Silicon & Attention Foundations"]
-            L1["Lesson 02: Hardware Physics & FlashAttention<br>• Compute vs. Memory Bandwidth Wall<br>• Roofline Model & SRAM Tiling"]
-            L2["Lesson 01: Tokenization & BPE Mechanics<br>• Subword Merges & Number Shredding<br>• Leading Whitespace & Multilingual Tax"]
-        end
-
-        subgraph MEM_SYS["2. Memory Systems & Concurrency"]
-            L3["Lesson 03: KV-Cache & Memory Math<br>• Prefill (TTFT) vs. Decode (TPS)<br>• MHA vs. GQA vs. MLA<br>• PagedAttention Block Tables"]
-        end
-
-        subgraph ADV_SYS["3. Frontiers & Edge Deployment"]
-            L4["Lesson 04: Test-Time Compute & Reasoning<br>• 50:1 Thinking Token Asymmetry<br>• GRPO Reinforcement Learning<br>• Token Governors & Circuit Breakers"]
-            L5["Lesson 05: SLMs & Model Quantization<br>• FP16 vs. FP8 vs. INT4 AWQ/GPTQ<br>• Outlier Channel Protection<br>• Edge Sizing for 8B-14B Models"]
-        end
-
-        subgraph CAPSTONE["4. Hands-On Verification"]
-            LAB["Phase 00 Capstone Lab<br>High-Throughput Token Budgeting Proxy<br>& VRAM Capacity Profiler"]
-        end
-
-        L2 --> L3
-        L3 --> L4
-        L5 --> LAB
-    end
-
-    style PHASE00 fill:none,stroke:#64748b,stroke-width:2px
-    style CORE_HW fill:none,stroke:#2563eb,stroke-width:2px
-    style MEM_SYS fill:none,stroke:#16a34a,stroke-width:2px
-    style ADV_SYS fill:none,stroke:#d97706,stroke-width:2px
-    style CAPSTONE fill:none,stroke:#7c3aed,stroke-width:2px
-
-    style L1 stroke:#2563eb,stroke-width:2px
-    style L2 stroke:#2563eb,stroke-width:2px
-    style L3 stroke:#16a34a,stroke-width:2px
-    style L4 stroke:#d97706,stroke-width:2px
-    style L5 stroke:#d97706,stroke-width:2px
-    style LAB stroke:#7c3aed,stroke-width:2px
+    style S1 stroke:#2563eb,stroke-width:2px,fill:none
+    style S2 stroke:#16a34a,stroke-width:2px,fill:none
+    style S3 stroke:#d97706,stroke-width:2px,fill:none
+    style S4 stroke:#7c3aed,stroke-width:2px,fill:none
 ```
 
 ### Walkthrough of the Phase 00 Journey:

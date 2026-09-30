@@ -81,10 +81,10 @@ A retrieval system has two phases, so it gets two small diagrams instead of one 
 
 ```mermaid
 flowchart LR
-    D["Source Documents<br>(PDFs, docs)"] --> C["Chunking<br>(split into pieces)"]
-    C --> E["Embedding Model<br>(text → numbers)"]
-    E --> V[("Vector Database")]
-    C --> K[("Keyword Index")]
+    D["📄 Source Documents<br>(PDFs, docs)"] --> C["⚙️ Chunking<br>(split into pieces)"]
+    C --> E["🧠 Embedding Model<br>(text → numbers)"]
+    E --> V[("🗄️ Vector Database")]
+    C --> K[("🗄️ Keyword Index")]
 
     style D stroke:#2563eb,stroke-width:2px
     style C stroke:#2563eb,stroke-width:2px
@@ -97,16 +97,18 @@ flowchart LR
 
 ```mermaid
 flowchart TD
-    UQ["User Query"] --> H1["Vector Search"]
-    UQ --> H2["Keyword Search"]
-    H1 --> RRF["Rank Fusion<br>(merge both lists fairly)"]
+    UQ(["👤 User Query"]) --> H1[("🗄️ Vector Search")]
+    UQ --> H2[("🗄️ Keyword Search")]
+    H1 --> RRF["⚖️ Rank Fusion<br>(merge both lists fairly)"]
     H2 --> RRF
-    RRF --> LLM["Generator LLM<br>(answers with citations)"]
-    LLM --> GD{"Grounded in<br>the evidence?"}
-    GD -- "Yes" --> ANS["Verified Answer"]
-    GD -- "No" --> ABSTAIN["Abstain"]
+    RRF --> LLM["🧠 Generator LLM<br>(answers with citations)"]
+    LLM --> GD{"🛡️ Grounded in<br>the evidence?"}
+    GD -- "Yes" --> ANS["✅ Verified Answer"]
+    GD -- "No" --> ABSTAIN["⚠️ Abstain"]
 
     style UQ stroke:#2563eb,stroke-width:2px
+    style H1 stroke:#16a34a,stroke-width:2px
+    style H2 stroke:#16a34a,stroke-width:2px
     style RRF stroke:#d97706,stroke-width:2px
     style LLM stroke:#7c3aed,stroke-width:2px
     style GD stroke:#d97706,stroke-width:2px
@@ -141,11 +143,27 @@ Each diagram gets its own heading and its own numbered walkthrough. Neither need
    - Always enclose labels in double quotes: `node["**Step Title**<br>(Helpful 1-line detail)"]`.
    - Use `<br>` inside quoted labels for clean vertical hierarchy (Bold title on line 1, short description on line 2). Avoid raw unquoted tags or complex HTML attributes.
 
-5. **Node Shapes**:
-   - Cylinders for storage and databases: `VDB[("Vector Database")]`
-   - Diamonds for decision gates and guardrails: `Gate{"Score >= 0.70?"}`
-   - Dotted arrows for asynchronous or read lookups: `VDB -.-> SearchNode`
-   - Solid arrows for sequential data pipelines: `NodeA --> NodeB`
+5. **Mermaid + Unicode Structural Iconography Standard**:
+   - Use native Mermaid structural node shapes paired with universal Unicode/emoji icons.
+   - **Why Unicode emojis over FontAwesome (`fa:fa-...`)**:
+     - GitHub's native viewer blocks external FontAwesome CDN stylesheets via its Content Security Policy (CSP), rendering raw text strings (`fa:fa-database`) or broken glyph boxes.
+     - Unicode emojis (`🗄️`, `🔌`, `⚡`, `🧠`, `🛡️`, `👤`) are native system glyphs on Windows, macOS, Linux, iOS, and Android. They render 100% reliably offline, in VS Code, and across Light and Dark themes with zero external dependencies.
+   - **Standard Component Icon & Shape Palette**:
+     | Component Type | Node Shape Syntax | Icon + Label Pattern | Semantic Border Stroke |
+     |---|---|---|---|
+     | **Database / Storage** | `[("...")]` (Cylinder) | `DB[("🗄️ Database / Vector Store")]` | `stroke:#16a34a` (Green) |
+     | **API / Ingress / Gateway** | `["..."]` (Rectangle) | `GW["🔌 API Gateway / ALB"]` | `stroke:#2563eb` (Blue) |
+     | **MCP Server / Tool Service** | `["..."]` (Rectangle) | `MCP["⚡ MCP Server / Microservice"]` | `stroke:#2563eb` (Blue) |
+     | **Foundation Model / LLM** | `["..."]` (Rectangle) | `LLM["🧠 Foundation Model / Generator"]` | `stroke:#7c3aed` (Purple) |
+     | **Security Guard / Eval Gate**| `{"..."}` (Diamond) | `SEC{"🛡️ AST Guard / Decision Gate"}` | `stroke:#d97706` (Amber) |
+     | **Human Operator / User** | `(["..."])` (Stadium) | `User(["👤 Human Operator / Client"])` | `stroke:#64748b` (Slate) |
+     | **Resource / Document Schema**| `["..."]` (Rectangle) | `RES["📄 schema://resource/uri"]` | `stroke:#16a34a` (Green) |
+     | **Local Subprocess / Pipe** | `(["..."])` (Stadium) | `PIPE(["💻 OS Pipe (stdio)"])` | `stroke:#64748b` (Slate) |
+     | **Alert / Quarantine / Error** | `["..."]` (Rectangle) | `ERR["⚠️ Quarantine / Rate Limit"]` | `stroke:#dc2626` (Red) |
+    - **Edge Connectors**:
+      - Dotted arrows for asynchronous lookups, token exchanges, or read-only references: `VDB -.-> SearchNode`
+      - Solid arrows for sequential execution pipelines: `NodeA --> NodeB`
+      - Double-stem arrows for bidirectional framed local channels: `Client <==> Pipe` (restricted to local, intra-subgraph duplex pipes; never stretched across multiple subgraphs)
 
 6. **Accompanying Visuals**:
    - Pair complex flowcharts with **"Old vs Modern" Evolution Tables** or **ASCII memory maps** (e.g. showing KV-cache block allocation or PagedAttention frame tables).
@@ -167,49 +185,56 @@ Immediately following any diagram, provide a structured, numbered walkthrough ex
 
 ---
 
-## 6. Subgraph Layout Stability & Preventing the Diagonal "Staircase" Defect
+## 6. Layout Stability, Anti-Bloat & Edge Cleanliness
 
 ### The Dagre Layout Engine Mechanics
-Mermaid relies on the Dagre directed graph layout engine. When a diagram defines multiple `subgraph` blocks (e.g., sequential execution phases, comparative "Cold vs. Warm" flows, or layered systems architectures), Dagre balances edge length minimization and rank ordering.
+Mermaid relies on the Dagre directed graph layout engine. When a diagram defines multiple `subgraph` blocks (e.g., execution phases, comparative flows, or layered architectures), Dagre balances edge length minimization and rank ordering.
 
-Without explicit layout constraints, Dagre triggers two common layout failures:
-1. **Unpredictable Horizontal Blowout**: When subgraphs are completely disconnected, Dagre places them side-by-side along the X-axis, stretching diagrams across wide viewports and breaking readability on mobile or standard monitors.
-2. **The Diagonal "Staircase" Defect ("Cascading Cluster Skew")**:
-   When subgraphs are connected sequentially or with unconstrained links, they frequently render staggered diagonally down and to the right:
-   ```text
-   [ First Subgraph ]
-         └───► [ Second Subgraph ]
-                     └───► [ Third Subgraph ]
-   ```
-   **Is this intentional?**
-   **No. This is an engine layout defect, NOT intentional design.** In professional technical architecture, multi-stage subgraphs must render flush, stacked vertically (top-to-bottom) or aligned in a clean grid. The diagonal staircase breaks visual hierarchy, produces ugly whitespace, and forces horizontal scrolling.
+Without explicit layout constraints, Dagre triggers three major layout defects:
+1. **Unpredictable Horizontal Blowout**: Disconnected subgraphs render side-by-side along the X-axis, stretching across wide viewports and breaking readability.
+2. **The Diagonal "Staircase" Defect**: Sequential subgraphs render staggered diagonally down and to the right.
+3. **Spaghetti Edge Collisions**: Multiple cross-subgraph edges in horizontal graphs (`flowchart LR`) criss-cross intervening nodes and clusters in sweeping curves.
 
 ---
 
-### Root Causes of the Diagonal Staircase
+### Anti-Bloat & Clean Edge Routing Standards
+
+1. **Ban Spaghetti Routing**:
+   - Never run multiple cross-cutting edges horizontally across 3 or more subgraphs (`flowchart LR`). Dagre stretches clusters and routes curved lines across neighboring nodes, producing visual chaos.
+   - *Fix*: Switch to top-down (`flowchart TD`) so layers stack naturally, or split the multi-subgraph pipeline into two separate focused diagrams (e.g., Ingestion vs. Query).
+
+2. **Ban Single-Node Subgraph Wrappers**:
+   - Never wrap an isolated single node inside a `subgraph ... end` block. Subgraphs group 2–4 related nodes under a logical boundary. Wrapping a single node creates redundant double borders, wastes horizontal canvas, and adds zero architectural information.
+   - *Fix*: If a component is singular (e.g., `LLM`, `User`), place it directly in the root graph with its semantic border and Unicode icon.
+
+3. **Ban Backwards Loops Across Subgraphs**:
+   - Never route return edges from downstream subgraphs back into upstream subgraphs (e.g., from an evaluation gate in Subgraph C back into a planner in Subgraph A). Dagre routes backwards edges around the diagram perimeter in massive, overlapping sweeping loops that intersect other edges and nodes.
+   - *Fix*: Model cyclic feedback or multi-turn interactions using a `sequenceDiagram`, or unroll into an acyclic forward progression (`Draft` → `Eval` → `Revise` → `Final`).
+
+4. **Ban Cross-Cluster Bidirectional Thick Rails (`<-->`, `<==>`)**:
+   - Avoid double-headed or thick rail connectors across cluster boundaries. They overpower the visual hierarchy and obscure data directionality.
+   - *Fix*: Use clean single-directed arrows (`-->`) with concise, active edge labels. Reserve `<==>` strictly for local, intra-subgraph duplex channels (such as an OS stdio pipe).
+
+5. **Ban Arbitrary Invisible Link Hacks**:
+   - Do not use invisible links (`~~~`) as positioning bandaids to arbitrarily shove nodes around.
+   - *Rule*: Use `~~~` strictly for mathematically symmetric column pinning across multi-column layers, or for median centerline entry/exit alignment.
+
+---
+
+### Root Causes of the Diagonal Staircase & How to Prevent Them
 
 1. **Anti-Pattern 1: Subgraph ID Chaining (`subgraphA --> subgraphB --> subgraphC`)**
-   - Subgraphs in Mermaid are syntactic clustering scopes (namespaces), not true graph vertices.
-   - Drawing an edge directly between subgraph identifiers causes Dagre to anchor the edge to the bounding box perimeters. The default exit anchor attaches to the bottom-right corner of the parent cluster, and the entry anchor attaches to the top-left corner of the child cluster.
-   - Chaining three clusters (`A --> B --> C`) compounds this horizontal displacement at each stage, sliding each successive subgraph further to the right.
+   - Subgraphs are syntactic clustering scopes (namespaces), not true graph vertices.
+   - Drawing an edge directly between subgraph identifiers causes Dagre to anchor to cluster bounding box corners (bottom-right of parent to top-left of child), compounding horizontal displacement at each stage.
+   - *Fix*: Draw edges strictly between concrete internal nodes.
 
 2. **Anti-Pattern 2: Asymmetric Cross-Subgraph Links (`RightNode ~~~ LeftNode`)**
-   - If an invisible rank link (`~~~`) connects an outer node on the right flank of Subgraph 1 to an outer node on the left flank of Subgraph 2:
-     ```mermaid
-     subgraph S1
-       L1  M1  R1
-     end
-     subgraph S2
-       L2  M2  R2
-     end
-     R1 ~~~ L2  %% ❌ Anti-pattern: Displaces S2 entirely to the right of S1
-     ```
-   - Dagre forces `L2` directly underneath `R1`. Because `L2` is the leftmost element of `S2`, the entire bounding box of `S2` shifts rightward by the width of `S1`.
-   - Repeating this between Subgraphs 2 and 3 compounds the translation, creating the cascading staircase.
+   - Connecting an outer node on the right flank of Subgraph 1 to an outer node on the left flank of Subgraph 2 forces the child subgraph entirely to the right of the parent.
+   - *Fix*: Pin all columns symmetrically (`Col1 ~~~ Col1`, `Col2 ~~~ Col2`).
 
 ---
 
-### The Three Golden Rules to Guarantee Flush Vertical Alignment
+### The Three Golden Rules for Flush Vertical Alignment
 
 #### Rule 1: Symmetrical Column Pinning (For Multi-Column Subgraphs)
 When subgraphs contain multiple parallel columns or horizontal nodes (e.g., 3-layer architectures where each layer has 2–3 cards), **pin every corresponding column symmetrically** using invisible links (`~~~`):
@@ -243,7 +268,6 @@ flowchart TD
     S2 ~~~ T2
     S3 ~~~ T3
 ```
-*Why this works*: By anchoring the left, center, and right columns simultaneously, Dagre cannot slide `Layer2` or `Layer3` horizontally. They are locked flush directly beneath each other.
 
 #### Rule 2: Explicit Semantic Data Wiring (Ban Cluster-to-Cluster Arrows)
 Never connect cluster names (`Logical --> PageTable --> Physical`). Instead, connect the actual internal nodes representing the data pipeline:
@@ -298,11 +322,14 @@ flowchart TD
 
 ### Layout & Styling Verification Checklist
 Before approving any Mermaid diagram containing two or more subgraphs:
+- [ ] **No Spaghetti Lines**: Are cross-subgraph links minimal, clean, and non-overlapping?
+- [ ] **No Single-Node Wrappers**: Does every subgraph contain 2 or more related nodes?
+- [ ] **No Backwards Cross-Cluster Loops**: Are feedback loops modeled as sequence diagrams or unrolled forward pipelines?
 - [ ] **No Subgraph ID Edges**: Are all edges drawn between concrete internal nodes, never cluster IDs?
 - [ ] **Symmetric Column Pinning**: In multi-column subgraphs, are all parallel columns symmetrically pinned (`Col1 ~~~ Col1`, `Col2 ~~~ Col2`)?
 - [ ] **Theme-Adaptive Contrast (Light & Dark Mode)**: Are subgraphs transparent (`fill:none`)? Are node backgrounds un-overridden with semantic border strokes (`stroke:#2563eb`, `stroke:#16a34a`, `stroke:#d97706`, `stroke:#dc2626`, `stroke:#7c3aed`) so text remains 100% readable in both Light and Dark modes?
-- [ ] **Clean Typography**: Are labels enclosed in quotes with bold titles and subtitles separated by `<br>`?
+- [ ] **Clean Typography & Icons**: Are labels enclosed in quotes with bold titles, subtitles separated by `<br>`, and native structural shapes with Unicode icons?
 - [ ] **Walkthrough Mandatory**: Does the diagram include a complete step-by-step prose walkthrough directly beneath it?
-- [ ] **Multi-Format Visuals**: Are complex systems complemented with comparison tables, evolution summaries, or ASCII/xy charts where helpful?
+- [ ] **Budget Compliance**: Is the diagram within 4–8 nodes (ceiling 10), and sequence participants <= 5?
 
 

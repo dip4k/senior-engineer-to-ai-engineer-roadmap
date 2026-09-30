@@ -1,13 +1,15 @@
-# Lesson 02: MCP Architecture, Transports & Protocol Lifecycle
+# Lesson 02: Model Context Protocol (MCP) Architecture, Transports & Protocol Lifecycle
 
-> **Tier**: `🟢 Tier 1: Core Systems Concept`  
+> **Tier**: `🟡 Engineering Depth`  
 > **Estimated Reading Time**: 45 minutes  
-> **Prerequisites**: Lesson 01 (Function Calling & JSON-RPC 2.0 Wire Protocols)  
+> **Prerequisites**: [Lesson 01: Function Calling & JSON-RPC Wire Protocols](01-function-calling-and-json-rpc-wire-protocols.md)  
 > **Target Audience**: Senior Software Engineers, Systems Architects  
-
----
-
-> **Core Concept**: The **Model Context Protocol (MCP)** is an open standard (created by Anthropic, now governed by an open-source community) that defines how AI applications discover and use external tools. Think of MCP as the "USB standard for AI tools" — just as USB lets any computer connect to any peripheral without custom drivers, MCP lets any AI application connect to any tool server without custom integration code. MCP uses the JSON-RPC 2.0 wire protocol (from Lesson 01) and supports two transport modes: **stdio** (standard input/output pipes, like a local shell process) and **Streamable HTTP** (for remote servers over the network).
+> 
+> **Core Concept**: The **Model Context Protocol (MCP)** is an open standard that defines how AI applications discover and use external tools. Think of MCP as the "USB standard for AI tools" — just as USB lets any computer connect to any peripheral without custom drivers, MCP lets any AI application connect to any tool server without custom integration code. MCP uses the JSON-RPC 2.0 wire protocol and supports two transport modes: **stdio** (standard input/output pipes for local child processes) and **Streamable HTTP** (for cloud microservices over the network).
+> 
+> **Term Ledger**:
+> - `New AI terms introduced`: `MCP Host`, `MCP Client`, `MCP Server`, `stdio Transport`, `Streamable HTTP`, `Capability Negotiation`.
+> - `AI terms assumed from earlier lessons`: `Function Calling`, `JSON-RPC 2.0`, `Tool Schema`.
 
 ---
 
@@ -36,6 +38,8 @@ The MCP Standardized Bus Architecture:
 
 MCP standardizes how an AI Host connects to external data and execution capabilities over a uniform JSON-RPC 2.0 protocol layer.
 
+> **Where this analogy breaks**: A POSIX device driver operates synchronously inside kernel space with direct memory pointers. In contrast, an MCP server runs out-of-process across JSON-RPC IPC or HTTP sockets. This communication introduces network latency, serialization overhead, and socket timeouts that in-kernel drivers do not face.
+
 ---
 
 ## 2. Architecture & Systems Topology
@@ -44,52 +48,31 @@ The Model Context Protocol defines three distinct architectural roles: the **Hos
 
 ```mermaid
 flowchart TD
-    subgraph HostApp["Host Application Boundary (Claude Desktop / Cursor / Custom Enterprise Gateway)"]
-        User(["Human Operator"]) <--> UI["UI / Agent Orchestrator"]
-        UI <--> LLM["Foundation Model (Claude / OpenAI / Gemini)"]
-        
-        subgraph MCPClientLayer["MCP Client Manager"]
-            Client1["MCP Client Instance (DB)"]
-            Client2["MCP Client Instance (Cloud)"]
-            SamplingHandler["Host Sampling & Elicitation Handler"]
-        end
-        
-        UI <--> MCPClientLayer
-        SamplingHandler <--> LLM
-    end
+    Host["💻 Host Application<br>(UI, LLM Orchestrator)"] --> Client["⚡ MCP Client Instance"]
+    Client -->|Local Subprocess IPC| StdioPipe(["💻 stdio Transport<br>(stdin / stdout)"])
+    Client -->|Remote HTTP POST| StreamHTTP["🔌 Streamable HTTP<br>(Single Endpoint + SSE)"]
+    StdioPipe --> LocalServer["⚡ Local MCP Server<br>(Database Driver)"]
+    StreamHTTP --> RemoteServer["⚡ Remote MCP Server<br>(Enterprise API)"]
+    LocalServer --> DB[("🗄️ Local Database")]
+    RemoteServer --> CloudAPI[("🗄️ Cloud Service / ERP")]
 
-    subgraph LocalTransport["Local Subprocess Boundary (Zero Network Surface)"]
-        StdioPipe["POSIX Anonymous Pipes (stdin / stdout)"]
-    end
-
-    subgraph RemoteTransport["Cloud Network Boundary (TLS / Load Balanced)"]
-        StreamHTTP["Streamable HTTP (Stateless Core v2026-07-28)"]
-    end
-
-    subgraph LocalServers["Local MCP Servers (Child Processes)"]
-        LocalDBSrv["Database / Filesystem MCP Server"]
-    end
-
-    subgraph CloudServers["Distributed MCP Microservices (Containers / K8s)"]
-        CloudSrv["Enterprise ERP / CRM Microservice"]
-    end
-
-    subgraph SystemsOfRecord["Systems of Record"]
-        Postgres[("Enterprise DB")]
-        SAP[("SAP S/4HANA ERP")]
-    end
-
-    Client1 <==>|Subprocess IPC| StdioPipe <==> LocalDBSrv <--> Postgres
-    Client2 <==>|HTTP POST / JSON-RPC| StreamHTTP <==> CloudSrv <--> SAP
+    style Host fill:none,stroke:#2563eb,stroke-width:2px
+    style Client fill:none,stroke:#2563eb,stroke-width:2px
+    style StdioPipe fill:none,stroke:#16a34a,stroke-width:2px
+    style StreamHTTP fill:none,stroke:#16a34a,stroke-width:2px
+    style LocalServer fill:none,stroke:#7c3aed,stroke-width:2px
+    style RemoteServer fill:none,stroke:#7c3aed,stroke-width:2px
+    style DB fill:none,stroke:#d97706,stroke-width:2px
+    style CloudAPI fill:none,stroke:#d97706,stroke-width:2px
 ```
 
 ### Architectural Walkthrough
-1. **The Host**: The outer application containing the user interface, session state, and model orchestrator (e.g., Cursor, Claude Desktop, Claude Code, or a custom FastAPI gateway).
+1. **The Host**: The outer application containing the user interface, session state, and model orchestrator (e.g., Cursor, Claude Desktop, Claude Code, or an enterprise FastAPI gateway).
 2. **The Client**: An in-memory component inside the Host that manages an active 1-to-1 connection to a specific MCP server. If an agent needs 3 servers, the Host instantiates 3 distinct Client instances.
 3. **The Server**: An independent process (either a local child process or a remote cloud service) that exposes capabilities via JSON-RPC 2.0: Tools, Resources, Prompts, and Elicitation.
 4. **Transport Layer**: The physical medium carrying JSON-RPC frames:
    - **`stdio`**: Direct OS pipes connecting parent Host and child Server processes on localhost.
-   - **Streamable HTTP**: A single-connection HTTP POST transport designed for scalable, stateless cloud microservices.
+   - **Streamable HTTP**: A unified HTTP POST transport designed for scalable, stateless cloud microservices.
 
 ---
 
@@ -100,31 +83,32 @@ MCP connections follow a deterministic lifecycle: **Handshake → Active Interac
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Host as MCP Client (Host)
-    participant Server as MCP Server
+    participant Host as 💻 MCP Client (Host)
+    participant Server as ⚡ MCP Server
 
-    rect rgb(240, 245, 255)
     Note over Host,Server: Phase 1: Initialization & Capability Negotiation
     Host->>Server: JSON-RPC request: initialize (clientInfo, capabilities, protocolVersion)
     Server-->>Host: JSON-RPC response: result (serverInfo, capabilities, protocolVersion)
     Host->>Server: JSON-RPC notification: notifications/initialized
-    end
 
-    rect rgb(245, 255, 245)
     Note over Host,Server: Phase 2: Active Operation
     Host->>Server: JSON-RPC request: tools/list
     Server-->>Host: JSON-RPC response: result (tool schemas)
     Host->>Server: JSON-RPC request: tools/call (name, arguments)
     Server-->>Host: JSON-RPC response: result (content, isError)
     Server--)Host: JSON-RPC notification: notifications/resources/updated
-    end
 
-    rect rgb(255, 245, 245)
     Note over Host,Server: Phase 3: Teardown
     Host->>Server: Close pipe (stdio EOF) / HTTP Disconnect
     Note over Server: Server flushes resources & exits (0)
-    end
 ```
+
+### Visual Walkthrough
+1. **Initialization Handshake**: The Host sends an `initialize` JSON-RPC request declaring its client name, protocol version, and capabilities.
+2. **Capability Response**: The Server returns its supported capabilities (`tools`, `resources`) and confirmed protocol version.
+3. **Initialized Notification**: The Host acknowledges with a `notifications/initialized` frame, transitioning the session to the Active state.
+4. **Active Tool Discovery & Call**: The Host queries `tools/list`, receives schemas, and executes tools using `tools/call`.
+5. **Clean Teardown**: The Host closes the transport pipe or drops HTTP connectivity, triggering clean server shutdown.
 
 ### Step-by-Step Lifecycle Analysis
 
@@ -329,16 +313,56 @@ The following script implements both sides of an MCP stdio communication channel
 """
 mcp_stdio_lifecycle.py
 Demonstration of low-level MCP JSON-RPC 2.0 Handshake and Stdio Framing.
-Requirements: Python 3.12+ (zero third-party dependencies).
+Requirements: Python 3.12+, Pydantic v2.
 """
 
 import asyncio
 import json
 import sys
-from typing import Dict, Any, Optional
+from typing import Any, Dict, Optional
+from pydantic import BaseModel, Field
+
 
 # ---------------------------------------------------------------------------
-# 1. MCP Stdio Transport Framing
+# 1. Typed Wire Protocol Models (Pydantic v2)
+# ---------------------------------------------------------------------------
+
+class ClientInfo(BaseModel):
+    name: str
+    version: str
+
+
+class InitializeParams(BaseModel):
+    protocolVersion: str
+    capabilities: Dict[str, Any] = Field(default_factory=dict)
+    clientInfo: ClientInfo
+
+
+class ServerCapabilities(BaseModel):
+    tools: Dict[str, bool] = Field(default_factory=lambda: {"listChanged": False})
+    resources: Dict[str, bool] = Field(default_factory=lambda: {"subscribe": False})
+
+
+class ServerInfo(BaseModel):
+    name: str
+    version: str
+
+
+class InitializeResult(BaseModel):
+    protocolVersion: str
+    capabilities: ServerCapabilities
+    serverInfo: ServerInfo
+
+
+class JsonRpcRequest(BaseModel):
+    jsonrpc: str = "2.0"
+    id: Optional[str | int] = None
+    method: str
+    params: Optional[Dict[str, Any]] = None
+
+
+# ---------------------------------------------------------------------------
+# 2. MCP Stdio Transport Framing
 # ---------------------------------------------------------------------------
 
 class StdioFramingHandler:
@@ -357,49 +381,49 @@ class StdioFramingHandler:
         serialized = json.dumps(payload) + "\n"
         stream_writer.write(serialized.encode("utf-8"))
 
+
 # ---------------------------------------------------------------------------
-# 2. Minimalist MCP Server Implementation (Protocol Lifecycle)
+# 3. MCP Server Protocol Lifecycle Handler
 # ---------------------------------------------------------------------------
 
 class MinimalMcpServer:
-    def __init__(self, name: str, version: str):
+    def __init__(self, name: str, version: str) -> None:
         self.name = name
         self.version = version
         self.initialized = False
 
-    async def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
-        req_id = request.get("id")
-        method = request.get("method")
-        params = request.get("params", {})
+    async def handle_request(self, raw_payload: Dict[str, Any]) -> Dict[str, Any]:
+        req = JsonRpcRequest.model_validate(raw_payload)
 
         # Handle Initialize Handshake
-        if method == "initialize":
+        if req.method == "initialize":
             self.initialized = True
+            init_result = InitializeResult(
+                protocolVersion="2026-07-28",
+                capabilities=ServerCapabilities(),
+                serverInfo=ServerInfo(name=self.name, version=self.version)
+            )
             return {
                 "jsonrpc": "2.0",
-                "id": req_id,
-                "result": {
-                    "protocolVersion": "2026-07-28",
-                    "capabilities": {
-                        "tools": {"listChanged": False},
-                        "resources": {"subscribe": False}
-                    },
-                    "serverInfo": {"name": self.name, "version": self.version}
+                "id": req.id,
+                "result": init_result.model_dump()
+            }
+
+        # Guard against premature calls before initialization
+        if not self.initialized and not req.method.startswith("notifications/"):
+            return {
+                "jsonrpc": "2.0",
+                "id": req.id,
+                "error": {
+                    "code": -32002,
+                    "message": "Server has not completed initialization handshake."
                 }
             }
 
-        # Guard against premature tool calls
-        if not self.initialized and not method.startswith("notifications/"):
+        if req.method == "tools/list":
             return {
                 "jsonrpc": "2.0",
-                "id": req_id,
-                "error": {"code": -32002, "message": "Server has not completed initialization handshake."}
-            }
-
-        if method == "tools/list":
-            return {
-                "jsonrpc": "2.0",
-                "id": req_id,
+                "id": req.id,
                 "result": {
                     "tools": [
                         {
@@ -413,8 +437,8 @@ class MinimalMcpServer:
 
         return {
             "jsonrpc": "2.0",
-            "id": req_id,
-            "error": {"code": -32601, "message": f"Method '{method}' not implemented."}
+            "id": req.id,
+            "error": {"code": -32601, "message": f"Method '{req.method}' not implemented."}
         }
 ```
 
@@ -475,6 +499,23 @@ Configure a local MCP tool server in Python and integrate it into a mock client 
 - [ ] Layer-7 routing policies inspect `Mcp-Method` and `Mcp-Protocol-Version` HTTP headers for rate limiting and telemetry tracking.
 - [ ] Capability negotiation verifies that the host supports required primitives before attempting invocation.
 
+## 12. Quick Check
+
+An engineer builds a local MCP server that executes shell commands. During testing with Claude Desktop, the server immediately disconnects with a JSON parsing error whenever a command runs, even though the command succeeded. Examination reveals the author added `print("Executing command...")` inside the handler. Why did this cause a protocol failure, and how should it be fixed?
+
+<details>
+<summary>Suggested Answer</summary>
+
+**Why it failed**: Under the `stdio` transport, the MCP host reads JSON-RPC 2.0 frames directly from the child process's standard output (`stdout`). Calling `print()` writes raw text to `stdout`, corrupting the JSON-RPC wire stream. The host cannot parse `"Executing command..."` as JSON and terminates the connection.
+
+**How to fix**: All diagnostic logs, debugging text, and metrics must be written exclusively to standard error (`sys.stderr` in Python, `stderr` in Node, `Console.Error` in C#). Standard output (`sys.stdout`) must be reserved exclusively for formatted JSON-RPC messages.
+
+</details>
+
 ---
 
-[Previous: Lesson 01 — Function Calling & JSON-RPC 2.0 Wire Protocols](./01-function-calling-and-json-rpc-wire-protocols.md) | [Next: Lesson 03 — MCP Server Primitives: Tools, Resources, Prompts & Elicitation](./03-mcp-server-primitives-tools-resources-prompts.md) | [Back to Phase 03 Hub](./README.md)
+## 🧭 Navigation
+
+| Previous | Hub | Next | Capstone Lab |
+|---|---|---|---|
+| [← Lesson 01: Function Calling & JSON-RPC Protocols](01-function-calling-and-json-rpc-wire-protocols.md) | [Phase 03 Overview](README.md) | [Lesson 03: MCP Server Primitives →](03-mcp-server-primitives-tools-resources-prompts.md) | [Capstone Lab: MCP Tool Server →](labs/capstone-mcp-tool-server.md) |

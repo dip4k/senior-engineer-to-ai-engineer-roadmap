@@ -55,20 +55,18 @@ Instead, treat your runtime system as a **Query Planning Dispatcher**:
 
 ```mermaid
 flowchart TD
-    Q["1. Incoming Query"] --> SC{"2. Semantic Cache Hit?"}
-    SC -- "Hit (< 10ms)" --> RET["Fast Cached Answer"]
-    SC -- "Miss" --> ROUTE["3. Adaptive Router & Planner"]
-    ROUTE --> ROUTE_DEC{"4. Route Selection"}
-    ROUTE_DEC -- "Simple / Chit-Chat" --> DIRECT["Direct Model Generation"]
-    ROUTE_DEC -- "Factual Single-Hop" --> HYBRID["Hybrid Search & RRF"]
-    ROUTE_DEC -- "Multi-Part Composite" --> DECOMP["Parallel Sub-Queries"]
-    ROUTE_DEC -- "Holistic Corpus Summary" --> GRAPH["GraphRAG Communities"]
+    Q(["👤 1. Incoming Query"]) --> SC{"🛡️ 2. Semantic Cache Hit?"}
+    SC -- "Hit (< 10ms)" --> RET["⚡ Fast Cached Answer"]
+    SC -- "Miss" --> ROUTE{"🎯 3. Adaptive Route Selection"}
+    ROUTE -- "Simple / Chit-Chat" --> DIRECT["🧠 Direct Model Generation"]
+    ROUTE -- "Factual Single-Hop" --> HYBRID[("🗄️ Hybrid Search & RRF")]
+    ROUTE -- "Multi-Part Composite" --> DECOMP["⚡ Parallel Sub-Queries"]
+    ROUTE -- "Holistic Corpus Summary" --> GRAPH[("🗄️ GraphRAG Communities")]
 
     style Q stroke:#2563eb,stroke-width:2px,fill:none
     style SC stroke:#d97706,stroke-width:2px,fill:none
     style RET stroke:#16a34a,stroke-width:2px,fill:none
     style ROUTE stroke:#7c3aed,stroke-width:2px,fill:none
-    style ROUTE_DEC stroke:#d97706,stroke-width:2px,fill:none
     style DIRECT stroke:#16a34a,stroke-width:2px,fill:none
     style HYBRID stroke:#2563eb,stroke-width:2px,fill:none
     style DECOMP stroke:#7c3aed,stroke-width:2px,fill:none
@@ -110,14 +108,14 @@ When a query contains multiple intents, **Query Decomposition** breaks the compo
 
 ```mermaid
 flowchart TD
-    CQ["Composite Query<br>'Compare Q2 vs Q3 Cloud Margins'"] --> PLAN["Query Decomposer"]
-    PLAN --> SQ1["Sub-Query 1:<br>'Cloud division Q2 margin'"]
-    PLAN --> SQ2["Sub-Query 2:<br>'Cloud division Q3 margin'"]
-    SQ1 --> RET1[("Hybrid Search 1")]
-    SQ2 --> RET2[("Hybrid Search 2")]
-    RET1 --> FUSE["Context Synthesizer"]
+    CQ(["👤 Composite Query<br>'Compare Q2 vs Q3 Cloud Margins'"]) --> PLAN["🎯 Query Decomposer"]
+    PLAN --> SQ1["📄 Sub-Query 1:<br>'Cloud division Q2 margin'"]
+    PLAN --> SQ2["📄 Sub-Query 2:<br>'Cloud division Q3 margin'"]
+    SQ1 --> RET1[("🗄️ Hybrid Search 1")]
+    SQ2 --> RET2[("🗄️ Hybrid Search 2")]
+    RET1 --> FUSE["🎯 Context Synthesizer"]
     RET2 --> FUSE
-    FUSE --> GEN["Final Model Response"]
+    FUSE --> GEN["🧠 Final Model Response"]
 
     style CQ stroke:#2563eb,stroke-width:2px,fill:none
     style PLAN stroke:#7c3aed,stroke-width:2px,fill:none
@@ -142,11 +140,11 @@ Introduced by Yan et al. (arXiv:2401.15884), **Corrective RAG (CRAG)** adds an a
 
 ```mermaid
 flowchart TD
-    RET_DOCS["Retrieved Candidates"] --> EVAL{"Retrieval Evaluator<br>(Confidence Check)"}
-    EVAL -- "Score >= 0.75 (Correct)" --> RECOMPOSE["Decompose & Filter Chunks<br>Prune irrelevant sentences"]
-    EVAL -- "0.35 <= Score < 0.75 (Ambiguous)" --> HYBRID_FIX["Combine Local Chunks<br>+ Secondary Fallback Search"]
-    EVAL -- "Score < 0.35 (Incorrect)" --> FALLBACK["Trigger Web Search or Abstain<br>Do not synthesize on bad data"]
-    RECOMPOSE --> GEN["Grounded Generator"]
+    RET_DOCS["📄 Retrieved Candidates"] --> EVAL{"🛡️ Retrieval Evaluator<br>(Confidence Check)"}
+    EVAL -- "Score >= 0.75 (Correct)" --> RECOMPOSE["🎯 Decompose & Filter Chunks<br>Prune irrelevant sentences"]
+    EVAL -- "0.35 <= Score < 0.75 (Ambiguous)" --> HYBRID_FIX["⚡ Combine Local Chunks<br>+ Secondary Fallback Search"]
+    EVAL -- "Score < 0.35 (Incorrect)" --> FALLBACK["⚠️ Trigger Web Search or Abstain<br>Do not synthesize on bad data"]
+    RECOMPOSE --> GEN["🧠 Grounded Generator"]
     HYBRID_FIX --> GEN
     FALLBACK --> GEN
 

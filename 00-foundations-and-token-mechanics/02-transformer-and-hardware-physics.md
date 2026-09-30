@@ -67,9 +67,9 @@ Below the balance point the job is **memory-bound**: the math units wait for dat
 
 ```mermaid
 flowchart LR
-    V["VRAM<br>(holds all weights)"] --> B["Memory bus<br>(the hallway)"]
-    B --> C["Compute units<br>(the chef)"]
-    C --> T["One new token"]
+    V[("💾 VRAM<br>(holds model weights)")] --> B["🚌 High-Bandwidth Bus<br>(memory pipeline)"]
+    B --> C["⚡ Compute Units<br>(Tensor Cores)"]
+    C --> T["📝 New Token Output"]
     T -.-> V
 
     style V stroke:#2563eb,stroke-width:2px
@@ -125,11 +125,12 @@ That square growth is why long inputs strain memory. [Lesson 06](./06-roofline-a
 
 ```mermaid
 flowchart TD
-    X["Token vectors"] --> QKV["Make query,<br>key, value"]
-    QKV --> S["Score every pair<br>(N × N table)"]
-    S --> W["Mask and softmax<br>(scores → weights)"]
-    W --> O["Blend values<br>(output per token)"]
+    X["🔢 Token Vectors"] --> QKV["⚙️ Project Q, K, V<br>(linear projections)"]
+    QKV --> S["📊 Score Every Pair<br>(N × N attention matrix)"]
+    S --> W["🎭 Causal Mask & Softmax<br>(normalize weights)"]
+    W --> O["✨ Weighted Values Sum<br>(output per token)"]
 
+    style X stroke:#2563eb,stroke-width:2px
     style QKV stroke:#2563eb,stroke-width:2px
     style S stroke:#d97706,stroke-width:2px
     style W stroke:#7c3aed,stroke-width:2px

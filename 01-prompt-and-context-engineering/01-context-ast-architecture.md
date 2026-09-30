@@ -107,26 +107,20 @@ A production Context AST is organized into three distinct operational layers bas
 
 ```mermaid
 flowchart TD
-    subgraph L1["Layer 1: Static Prefix (Immutable / Cached)"]
-        D1["Developer Invariants & Output Constraints"]
-        D2["Golden Few-Shot Demonstrations (ICL)"]
+    subgraph AST["3-LAYER CONTEXT AST ARCHITECTURE"]
+        L1["🔒 Layer 1: Static Prefix<br>(Developer Invariants & Golden Few-Shot)"]
+        L2["🏢 Layer 2: Semi-Dynamic Session<br>(Tenant Policies & Dialogue Working Memory)"]
+        L3["📄 Layer 3: Dynamic Tail<br>(Retrieved RAG Evidence & Sanitized Query)"]
     end
-    subgraph L2["Layer 2: Semi-Dynamic Context (Session-Level)"]
-        S1["Tenant Policies & Active Tool Definitions"]
-        S2["Compacted Dialogue Working Memory"]
-    end
-    subgraph L3["Layer 3: Dynamic Tail (Ephemeral / Per-Request)"]
-        T1["Retrieved RAG Evidence Chunks"]
-        T2["Sanitized User Query Payload"]
-    end
-    Compiler["Context AST Compiler<br>(Sanitization & Role Assembly)"]
-    Wire["Provider Wire Messages<br>(KV-Cache Friendly JSON)"]
 
-    D1 ~~~ S1
-    D2 ~~~ S2
-    S1 ~~~ T1
-    S2 ~~~ T2
-    T2 --> Compiler --> Wire
+    L1 --> Compiler["⚙️ Context AST Compiler<br>(Sanitization, Token Budget & Assembly)"]
+    L2 --> Compiler
+    L3 --> Compiler
+    Compiler --> Wire["🌊 Provider Wire Messages<br>(KV-Cache Optimized JSON)"]
+
+    style AST fill:none,stroke:#2563eb,stroke-width:2px;
+    style Compiler stroke:#7c3aed,stroke-width:2px,fill:none;
+    style Wire stroke:#16a34a,stroke-width:2px,fill:none;
 ```
 
 ### Step-by-Step Architecture Walkthrough:
@@ -147,9 +141,14 @@ Modern LLM wire protocols (OpenAI, Anthropic, Google Gemini, Ollama) partition i
 
 ```mermaid
 flowchart TD
-    Dev["Developer / System Role<br>(Highest Execution Privilege)"] --> User["User Role<br>(Untrusted Input Space)"]
-    Dev --> Assistant["Assistant Role<br>(Model Reasoning & Generation)"]
-    Dev --> Tool["Tool Role<br>(Deterministic Structured Feedback)"]
+    Dev["🛡️ Developer / System Role<br>(Highest Execution Privilege)"] --> User["👤 User Role<br>(Untrusted Input Space)"]
+    Dev --> Assistant["🤖 Assistant Role<br>(Model Reasoning & Output)"]
+    Dev --> Tool["⚡ Tool Role<br>(Structured External Feedback)"]
+
+    style Dev stroke:#2563eb,stroke-width:2px
+    style User stroke:#d97706,stroke-width:2px
+    style Assistant stroke:#7c3aed,stroke-width:2px
+    style Tool stroke:#16a34a,stroke-width:2px
 ```
 
 ### Step-by-Step Role Walkthrough:

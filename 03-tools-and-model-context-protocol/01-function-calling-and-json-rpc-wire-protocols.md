@@ -1,13 +1,15 @@
-# Lesson 01: Function Calling & JSON-RPC Wire Protocols
+# Lesson 01: Function Calling and Remote Procedure Call (JSON-RPC) Wire Protocols
 
-> **Tier**: `HIGH ROI / CORE`  
-> **Estimated Reading Time**: 40 minutes  
-> **Prerequisites**: Phase 00 (Tokenization, Inference Latency), Phase 01 (Structured Outputs, Prompt Templates)  
+> **Tier**: `🟡 Engineering Depth`  
+> **Estimated Reading Time**: 35 minutes  
+> **Prerequisites**: [Lesson 00: Tool Use Fundamentals & MCP](00-tool-use-and-mcp-fundamentals.md), [Phase 01 Lesson 04: Constrained Decoding](../01-prompt-and-context-engineering/04-constrained-decoding-and-schema-fsm.md)  
 > **Target Audience**: Senior Software Engineers, Systems Architects  
-
----
-
+> 
 > **Core Concept**: Language models generate text — they cannot directly execute code, call APIs, or query databases. **Function calling** (also called tool calling) bridges this gap. The model generates a structured JSON request describing which function it wants to call and its parameters. Your application code executes that function and feeds the result back to the model. Under the hood, this communication often follows the **JSON-RPC 2.0** standard.
+> 
+> **Term Ledger**:
+> - `New AI terms introduced`: `Function Calling`, `Tool Schema`, `Tool Call`, `Tool Result`, `JSON-RPC 2.0`, `Context Bombing`.
+> - `AI terms assumed from earlier lessons`: `Token`, `Prompt`, `Inference`, `Context Window`, `Constrained Decoding`.
 
 ---
 
@@ -37,48 +39,65 @@ Think of function calling as an asynchronous **Remote Procedure Call (RPC)**:
 
 The common wire protocol powering this communication is **JSON-RPC 2.0**.
 
+> **Where this analogy breaks**: A standard RPC call executes deterministically on the target server. In function calling, the model does not execute the function. It emits a probabilistic text string containing proposed JSON parameters. If the schema allows ambiguous arguments, the model may hallucinate fields that fail runtime type validation.
+
 ---
 
 ## 2. Architecture & Wire Topology
 
-The single-turn tool invocation loop establishes a clear boundary between model reasoning and application execution:
+The single-turn tool invocation loop establishes a clear boundary between model reasoning and application execution. We break this down into two distinct stages: context preparation with model inference, followed by gateway interception with execution.
+
+### Stage 1: Context Preparation & Inference
 
 ```mermaid
 flowchart TD
-    User(["Human / API Client"]) -->|1. Prompt Input| Host["Host Application"]
-    
-    subgraph ContextAssembly["Context Preparation"]
-        Host -->|2. Assemble System Prompt + Tool Declarations| PromptBuilder["Context Engine"]
-        PromptBuilder -->|3. Compile JSON Schema Draft 2020-12| ToolSchemas[("Tool Registry")]
-    end
-    
-    subgraph ModelInference["Foundation LLM Execution"]
-        PromptBuilder -->|4. Forward Context & Logit Masks| LLM["Foundation Model (Inference Engine)"]
-        LLM -->|5. Constrained Sampling Token Stream| TokenStream["Token Emitter"]
-    end
-    
-    subgraph Interception["Host Gateway Interception"]
-        TokenStream -->|6. finish_reason: tool_calls| Dispatcher["Tool Invocation Dispatcher"]
-        Dispatcher -->|7. Parse & Validate Arguments| Validator["Pydantic / Zod Validator"]
-    end
-    
-    subgraph ExecutionPlane["Execution Plane"]
-        Validator -->|8. Validated Schema| Sandbox["Tool Execution Environment"]
-        Sandbox -->|9. Execute Local/Remote API| ExternalAPI[("PostgreSQL / ERP / REST")]
-        ExternalAPI -->|10. Raw Execution Payload| Compactor["Token Compactor & Sandbox Guard"]
-    end
-    
-    Compactor -->|11. Compacted tool_result| Host
-    Host -->|12. Append tool_result to History| LLM
-    LLM -->|13. Final Grounded Response| User
+    User(["👤 1. User Request"]) --> Host["💻 Host Application"]
+    Host --> ContextEngine["⚡ 2. Context Engine"]
+    ToolSchemas[("🗄️ Tool Registry")] -->|JSON Schemas| ContextEngine
+    ContextEngine --> LLM["🧠 3. LLM Inference Engine"]
+    LLM --> TokenStream["📄 4. Emitted Token Stream"]
+
+    style User fill:none,stroke:#2563eb,stroke-width:2px
+    style Host fill:none,stroke:#2563eb,stroke-width:2px
+    style ContextEngine fill:none,stroke:#2563eb,stroke-width:2px
+    style ToolSchemas fill:none,stroke:#16a34a,stroke-width:2px
+    style LLM fill:none,stroke:#7c3aed,stroke-width:2px
+    style TokenStream fill:none,stroke:#7c3aed,stroke-width:2px
 ```
 
-### Visual Walkthrough
-1. **Prompt Input & Schema Compilation (Steps 1–3)**: The user issues a query. The Host context engine inspects its internal tool registry, serializes tool signatures into strict JSON Schema, and binds them into the inference payload.
-2. **Constrained Model Inference (Steps 4–5)**: The LLM runs auto-regressive decoding. When it decides to invoke a tool, modern inference engines apply grammar-constrained logit masking (Finite State Automata) to force the output into a valid JSON object matching the requested tool's schema.
-3. **Gateway Interception & Validation (Steps 6–7)**: The model stops generating (`finish_reason: "tool_calls"`). The host intercepts the raw string, deserializes it, and validates every argument against strongly typed Pydantic models.
-4. **Execution & Context Compaction (Steps 8–11)**: The host dispatches the call to the actual database or API. The response is intercepted by a Token Compactor to prevent "Context Bombing" (truncating or summarizing massive outputs) before feeding the result back to the model context.
-5. **Grounded Answer Synthesis (Steps 12–13)**: The LLM processes its previous tool call alongside the deterministic runtime output, generating a verified natural language answer for the user.
+#### Walkthrough: Stage 1
+1. **User Request**: The client sends a natural language prompt to the host application.
+2. **Context Engine & Registry**: The host inspects its internal tool registry, serializes tool signatures into JSON Schema Draft 2020-12, and binds them to the prompt context.
+3. **Inference Engine**: The LLM evaluates tokens autoregressively. Finite State Automata apply grammar-constrained logit masks to force valid JSON output matching the chosen schema.
+4. **Token Stream**: The model finishes generating with a stop indicator (`finish_reason: "tool_calls"`).
+
+---
+
+### Stage 2: Gateway Interception & Execution Plane
+
+```mermaid
+flowchart TD
+    TokenStream["📄 1. Token Stream (tool_calls)"] --> Dispatcher["⚡ 2. Tool Dispatcher"]
+    Dispatcher --> Validator{"🛡️ 3. Pydantic Validator"}
+    Validator --> Sandbox["💻 4. Execution Sandbox"]
+    Sandbox --> Compactor["🎯 5. Token Compactor"]
+    Compactor --> Feedback["🧠 6. Context Feedback to LLM"]
+
+    style TokenStream fill:none,stroke:#7c3aed,stroke-width:2px
+    style Dispatcher fill:none,stroke:#2563eb,stroke-width:2px
+    style Validator fill:none,stroke:#16a34a,stroke-width:2px
+    style Sandbox fill:none,stroke:#16a34a,stroke-width:2px
+    style Compactor fill:none,stroke:#d97706,stroke-width:2px
+    style Feedback fill:none,stroke:#2563eb,stroke-width:2px
+```
+
+#### Walkthrough: Stage 2
+1. **Interception**: The host intercepts the raw JSON string before the user sees it.
+2. **Tool Dispatcher**: Routes the call by name to the registered backend function.
+3. **Pydantic Validator**: Deserializes the arguments and enforces strict types, ranges, and invariants.
+4. **Execution Sandbox**: Runs the deterministic code (SQL query, REST API call) within isolated boundaries.
+5. **Token Compactor**: Truncates or summarizes large outputs to prevent Context Bombing before returning data.
+6. **Context Feedback**: Appends the execution result to the conversation history, allowing the LLM to synthesize the final grounded response.
 
 ---
 
@@ -230,7 +249,7 @@ When a tool returns large payloads (such as querying a 50,000-row telemetry tabl
 
 Under the **Think in Code** pattern:
 1. The tool returns an ephemeral reference token: `{"data_handle": "s3://warehouse/telemetry_q3.parquet", "rows": 50000}`.
-2. The LLM generates a sandboxed Python script utilizing `pandas` or `duckdb` to filter and aggregate the data.
+2. The LLM generates a sandboxed Python script using `pandas` or `duckdb` to filter and aggregate the data.
 3. The host executes the script inside an isolated microVM/container and returns only the final summary (e.g., 5 lines of text).
 4. **Token reduction: 98% lower context footprint**.
 
@@ -443,7 +462,7 @@ async def handle_query_ledger(params: QueryLedgerParams) -> Dict[str, Any]:
 ## 7. Systems Failure Modes & Anti-Patterns
 
 ### Failure Mode 1: The Infinite Oscillation Deadlock
-* **Root Cause**: When a tool invocation returns an error (e.g., `404 Not Found`), unconstrained models frequently retry the identical failing call with the exact same arguments in an infinite loop, exhausting API rate limits and token budgets.
+* **Root Cause**: When a tool invocation returns an error, unconstrained models often retry the exact same failing call. This loop exhausts API rate limits and burns token budgets.
 * **Production Fix**: Implement the `ToolExecutionGovernor` sliding-window signature hasher demonstrated above. Trip the circuit breaker if consecutive identical calls exceed 2 turns.
 
 ### Failure Mode 2: Unhandled Runtime Exceptions Dropping Agent Context
@@ -494,4 +513,23 @@ Implement a resilient tool execution runner that parses a stream of raw JSON-RPC
 
 ---
 
-[Next: Lesson 02 — MCP Architecture, Transports & Protocol Lifecycle](./02-mcp-architecture-transports-and-lifecycle.md) | [Back to Phase 03 Hub](./README.md)
+## 11. Quick Check
+
+A backend engineer observes that an agent calling a customer lookup tool produces a JSON-RPC error frame: `{"code": -32602, "message": "Invalid params"}`. What does this specific error code mean under the JSON-RPC 2.0 specification, and which system component is responsible for fixing it?
+
+<details>
+<summary>Suggested Answer</summary>
+
+**Error Code Meaning**: Under the JSON-RPC 2.0 specification, code `-32602` designates **"Invalid params"** (the JSON was structurally valid, but the method parameters did not conform to the expected schema).
+
+**Responsible Component**: The Model / Prompt Layer. The LLM generated arguments that failed validation against the tool's schema (for example, missing a required parameter or passing a string instead of an integer). The host should return this error message into the LLM context so the model can correct its parameters on the next turn.
+
+</details>
+
+---
+
+## 🧭 Navigation
+
+| Previous | Hub | Next | Capstone Lab |
+|---|---|---|---|
+| [← Lesson 00: Tool Use Fundamentals & MCP](00-tool-use-and-mcp-fundamentals.md) | [Phase 03 Overview](README.md) | [Lesson 02: MCP Architecture, Transports & Lifecycle →](02-mcp-architecture-transports-and-lifecycle.md) | [Capstone Lab: MCP Tool Server →](labs/capstone-mcp-tool-server.md) |

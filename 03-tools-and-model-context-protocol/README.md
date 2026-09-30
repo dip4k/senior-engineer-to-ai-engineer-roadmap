@@ -1,7 +1,7 @@
 # Phase 03: Tools and Model Context Protocol (MCP)
 
 > **Level**: Advanced Systems Engineering  
-> **Estimated Duration**: 4.5–5.5 hours  
+> **Estimated Duration**: 5.0–6.0 hours  
 > **Prerequisites**: Phase 00 (Inference Latency & KV Physics), Phase 01 (Structured Outputs & JSON Schema), Phase 02 (Enterprise Knowledge Systems)  
 > **Downstream Dependencies**: Phase 04 (Stateful Agent Orchestration), Phase 05 (AI Security & Firewalls)  
 
@@ -22,7 +22,7 @@ The AI Systems Stack:
 |  - JSON-RPC 2.0 Wire Protocols & Framing                                      |
 |  - MCP Core: Host, Client, Server Topology                                    |
 |  - 5 Primitives: Tools, Resources, Prompts, Sampling, Elicitation              |
-|  - Transports: Local standard I/O (stdio) vs HTTP                              |
+|  - Transports: Local standard I/O (stdio) vs Streamable HTTP                   |
 |  - Sandboxing: Abstract Syntax Tree (AST) validation and MicroVMs              |
 |  - Enterprise Bridges: OAuth, identity propagation, and legacy integrations    |
 +-------------------------------------------------------------------------------+
@@ -40,86 +40,90 @@ You will learn how to connect foundation models to deterministic systems of reco
 
 ## 2. Modular Curriculum Directory
 
-Phase 03 is structured into six self-contained, progressively sequenced lessons:
+Phase 03 is structured into seven self-contained, progressively sequenced lessons:
 
 | Lesson | Title | Tier Badge | Est. Time | Core Systems Concepts |
 |:---:|---|:---:|:---:|---|
-| **01** | [Function Calling & JSON-RPC Wire Protocols](./01-function-calling-and-json-rpc-wire-protocols.md) | `HIGH ROI / CORE` | 40 min | Function calling mechanics; JSON-RPC 2.0; tool schemas; constrained decoding; tool discovery; data sandboxing. |
-| **02** | [MCP Architecture, Transports & Lifecycle](./02-mcp-architecture-transports-and-lifecycle.md) | `HIGH ROI / CORE` | 45 min | Client-Host-Server topology; capability negotiation; local standard I/O pipes (`stdio`); HTTP transports; header routing. |
-| **03** | [MCP Server Primitives: Tools, Resources, Prompts](./03-mcp-server-primitives-tools-resources-prompts.md) | `IMPORTANT / NEXT` | 50 min | The core primitives: Tools (`tools/call`), Resources (`schema://`), Prompts (`prompts/get`), Sampling, and Elicitation (Human-in-the-loop); server SDKs. |
-| **04** | [Reverse Sampling & Host Orchestration](./04-reverse-sampling-and-host-orchestration.md) | `IMPORTANT / NEXT` | 45 min | Host Client Gateways; reverse completions (`sampling/createMessage`); circuit breakers; protecting against massive tool outputs. |
-| **05** | [Sandboxing & Confused Deputy Defenses](./05-sandboxing-security-and-confused-deputy-defenses.md) | `ADVANCED / SPECIALIZED` | 50 min | Confused Deputy attacks; indirect prompt injection; validating database queries; isolated execution environments; execution gates. |
-| **06** | [Enterprise Bridges & Serverless MCP](./06-enterprise-paas-bridges-and-serverless-mcp.md) | `REFERENCE / AWARENESS` | 50 min | Connecting to legacy systems (ERP, CRM); OAuth 2.0 identity propagation; serverless response streaming. |
+| **00** | [Tool Use & MCP Fundamentals](./00-tool-use-and-mcp-fundamentals.md) | `🟢 Core` | 30 min | Tool use execution loop; M x N connector problem; coprocessor mental model; JSON Schema tool definition; Python execution loop. |
+| **01** | [Function Calling & JSON-RPC Wire Protocols](./01-function-calling-and-json-rpc-wire-protocols.md) | `🟡 Engineering Depth` | 40 min | Function calling mechanics; JSON-RPC 2.0; tool schemas; constrained decoding; tool discovery; data sandboxing. |
+| **02** | [MCP Architecture, Transports & Lifecycle](./02-mcp-architecture-transports-and-lifecycle.md) | `🟡 Engineering Depth` | 45 min | Client-Host-Server topology; capability negotiation; local standard I/O pipes (`stdio`); HTTP transports; header routing. |
+| **03** | [MCP Server Primitives: Tools, Resources, Prompts](./03-mcp-server-primitives-tools-resources-prompts.md) | `🟡 Engineering Depth` | 50 min | The core primitives: Tools (`tools/call`), Resources (`schema://`), Prompts (`prompts/get`), Sampling, and Elicitation; server SDKs. |
+| **04** | [Reverse Sampling & Host Orchestration](./04-reverse-sampling-and-host-orchestration.md) | `⚫ Deep Dive` | 45 min | Host Client Gateways; reverse completions (`sampling/createMessage`); circuit breakers; protecting against massive tool outputs. |
+| **05** | [Sandboxing & Confused Deputy Defenses](./05-sandboxing-security-and-confused-deputy-defenses.md) | `🔵 Advanced` | 50 min | Confused Deputy attacks; indirect prompt injection; validating database queries; isolated execution environments; execution gates. |
+| **06** | [Enterprise Bridges & Serverless MCP](./06-enterprise-paas-bridges-and-serverless-mcp.md) | `🔵 Advanced` | 40 min | Connecting to legacy systems (ERP, CRM); OAuth 2.1 identity propagation; serverless response streaming. |
 
 ---
 
 ## 3. Systems Architecture & Wire Topology
 
-The diagram below illustrates the Model Context Protocol (MCP) ecosystem, showing how local user interfaces and cloud orchestrators interact with enterprise tools and databases:
+The Model Context Protocol establishes clear separation of concerns across local development environments and cloud enterprise deployments.
+
+### 1. Local Subprocess Architecture (`stdio`)
+
+For developer workstations and local IDE agents, MCP servers execute as local child processes using standard I/O pipes:
 
 ```mermaid
 flowchart TD
-    subgraph HostEnv["Host Application Boundary (e.g., IDE or Web App)"]
-        User(["Human Operator"]) <--> UI["UI & Session Manager"]
-        UI <--> Orchestrator["Agent Orchestrator"]
-        Orchestrator <--> LLM["Foundation Model"]
-        
-        subgraph MCPClientGateway["MCP Client Gateway"]
-            ClientMgr["MCP Client Connection Manager"]
-            SamplingHandler["Sampling Handler (LLM Callback)"]
-            ElicitHandler["Human-in-the-Loop Renderer"]
-        end
-        
-        Orchestrator <--> ClientMgr
-        SamplingHandler <--> LLM
-        ElicitHandler <--> UI
+    subgraph Host["1. Workstation Host (IDE)"]
+        User(["👤 Human Operator"]) --> IDE["💻 Developer IDE (Cursor / Claude)"]
+        IDE --> Client["⚡ MCP Client Manager"]
     end
 
-    subgraph TransportLayer["Transport Protocols"]
-        StdioPipe["Standard I/O (Local Pipes)"]
-        StreamHTTP["HTTP POST (Remote)"]
+    subgraph Subprocess["2. Local Subprocess (Child Process)"]
+        Server["⚡ MCP Server (SQLite / Filesystem)"] --> DB[("🗄️ Local Files & DB")]
     end
 
-    subgraph LocalServers["Local MCP Servers"]
-        LocalDB["Database Server"]
-        LocalFS["Filesystem Server"]
-    end
+    Client -->|"POSIX Pipe (stdin / stdout)"| Server
 
-    subgraph RemoteServers["Remote MCP Microservices"]
-        RemoteERP["Enterprise Service"]
-        RemoteITIL["IT Management Service"]
-    end
-
-    subgraph EnterpriseBackends["Systems of Record"]
-        Postgres[("Production Database")]
-        GitRepo[("Enterprise Repositories")]
-        LegacyERP[("Legacy Systems")]
-    end
-
-    ClientMgr <==>|OS Pipe| StdioPipe
-    ClientMgr <==>|TLS / JSON-RPC 2.0| StreamHTTP
-
-    StdioPipe <--> LocalDB
-    StdioPipe <--> LocalFS
-
-    StreamHTTP <--> RemoteERP
-    StreamHTTP <--> RemoteITIL
-
-    LocalDB <--> Postgres
-    LocalFS <--> GitRepo
-    RemoteERP <--> LegacyERP
-    RemoteITIL <--> LegacyERP
-
-    %% Reverse Sampling & Elicitation
-    RemoteERP -.->|"sampling/createMessage"| SamplingHandler
-    RemoteERP -.->|"elicitation/request (Form)"| ElicitHandler
+    style Host fill:none,stroke:#3b82f6,stroke-width:2px;
+    style Subprocess fill:none,stroke:#10b981,stroke-width:2px;
 ```
 
-### Architectural Walkthrough
-1. **The Host Boundary**: The Host application houses the user interface, session state, and model orchestrator. The internal MCP Client coordinates multiple server connections.
-2. **Local Transport (`stdio`)**: Local tools run as child processes. Direct OS pipes provide fast communication with a small attack surface. 
-3. **Remote Transport (HTTP)**: Enterprise microservices communicate over HTTP. Self-contained requests allow standard load balancers to scale servers horizontally.
-4. **Governed Execution & Callbacks**: Remote tools can request intermediate model responses via **Sampling** or halt destructive actions to demand human authorization via **Elicitation**.
+### Architectural Walkthrough (Local `stdio`)
+1. **User Action**: The developer submits a prompt or inspection request inside their local IDE.
+2. **Subprocess Management**: The MCP Client Manager spawns the tool server as an OS child process.
+3. **Pipe Transport**: Requests and responses flow through standard input (`stdin`) and standard output (`stdout`) as newline-delimited JSON-RPC 2.0 messages.
+4. **Log Isolation**: Diagnostic logging is directed exclusively to `stderr` to prevent stream framing errors.
+5. **Direct Access**: The server interacts with local files or databases under the developer's workstation permissions.
+
+---
+
+### 2. Cloud Enterprise Gateway Architecture (Streamable HTTP)
+
+In distributed cloud environments, MCP servers deploy as stateless microservices behind Layer-7 API gateways:
+
+```mermaid
+flowchart TD
+    subgraph Host["1. Enterprise Host Platform"]
+        AgentCore["💻 Agent Host Orchestrator"]
+        TokenHandler["🛡️ OAuth 2.1 Token Handler"]
+        TokenHandler -.->|"Injects OBO Token"| AgentCore
+    end
+
+    subgraph CloudInfra["2. Cloud MCP Microservice"]
+        Gateway["🔌 API Gateway / ALB"] --> Server["⚡ Stateless MCP Server (Container)"]
+    end
+
+    subgraph Backend["3. Systems of Record"]
+        ERP[("🗄️ SAP S/4HANA ERP")]
+        CRM[("🗄️ Salesforce CRM")]
+    end
+
+    AgentCore -->|"Streamable HTTP POST /mcp"| Gateway
+    Server -->|"BAPI Mutation"| ERP
+    Server -->|"SOQL Query"| CRM
+
+    style Host fill:none,stroke:#3b82f6,stroke-width:2px;
+    style CloudInfra fill:none,stroke:#8b5cf6,stroke-width:2px;
+    style Backend fill:none,stroke:#10b981,stroke-width:2px;
+```
+
+### Architectural Walkthrough (Remote Enterprise Gateway)
+1. **Host Dispatch**: The agent orchestrator transmits tool invocations over HTTPS using Streamable HTTP.
+2. **Identity Propagation**: The OAuth 2.1 token handler exchanges client credentials for an On-Behalf-Of (OBO) token scoped to backend services.
+3. **Perimeter Routing**: The Enterprise API Gateway validates JWT scopes, terminates TLS, and routes requests to containerized tool microservices.
+4. **Stateless Processing**: The serverless MCP container parses the JSON-RPC frame, verifies business rules, and executes transactions against systems of record.
+5. **Audited Commit**: Mutations are recorded in enterprise ledgers under the calling user's principal name.
 
 ---
 
@@ -128,28 +132,19 @@ flowchart TD
 Choose the path tailored to your engineering objectives:
 
 ```mermaid
-flowchart TD
-    Start(["Start Phase 03"]) --> L1["Lesson 01: Function Calling"]
-    L1 --> L2["Lesson 02: MCP Architecture"]
-    L2 --> L3["Lesson 03: MCP Server Primitives"]
+flowchart LR
+    L0_L1["📄 Foundation<br/>Lessons 00–01"] --> L2_L3["⚡ Protocol Core<br/>Lessons 02–03"]
+    L2_L3 --> L4_L6["🛡️ Enterprise & Security<br/>Lessons 04–06"]
     
-    subgraph FastTrack["⚡ Fast Track: Core Concepts"]
-        L3 --> LabQuick["Capstone Lab: Local stdio Mode"]
-    end
-    
-    subgraph EnterpriseTrack["🏢 Enterprise Track: Full Implementation"]
-        L3 --> L4["Lesson 04: Reverse Sampling"]
-        L4 --> L5["Lesson 05: Sandboxing Defenses"]
-        L5 --> L6["Lesson 06: Enterprise Bridges"]
-        L6 --> LabFull["Capstone Lab: Dual-Transport Integration"]
-    end
-    
-    LabQuick --> Done(["Phase 03 Mastery"])
-    LabFull --> Done
+    L2_L3 --> FastTrack["⚡ Fast Track<br/>Local Lab"]
+    L4_L6 --> EnterpriseTrack["🏢 Enterprise Track<br/>Dual-Transport Capstone"]
+    FastTrack --> Done(["🚀 Phase 03 Complete"])
+    EnterpriseTrack --> Done
 ```
 
-* **⚡ Fast Track (1.5–2 hours)**: For developers building basic tools. Covers Lessons 01–03 and the local capstone lab.
-* **🏢 Enterprise Track (3.5–4.5 hours)**: For engineers building multi-tenant microservices, serverless backends, and security sandboxes. Covers the full 6-lesson sequence.
+### Track Details
+1. **⚡ Fast Track (1.5–2 hours)**: Focuses on core mechanics for developers building local workstation tools. Complete Lessons 00–03 and implement the local `stdio` capstone lab.
+2. **🏢 Enterprise Track (4.0–5.5 hours)**: Designed for platform engineers building production systems. Complete all seven lessons (00–06) and build the full dual-transport capstone with human-in-the-loop step-up gates.
 
 ---
 
@@ -184,4 +179,9 @@ Tested reference implementations are available in the [`examples/`](./examples/)
 
 ---
 
-[Start Lesson 01: Function Calling & JSON-RPC Wire Protocols](./01-function-calling-and-json-rpc-wire-protocols.md)
+## 🧭 Navigation
+
+- [← Previous Phase: Phase 02 Enterprise Knowledge Systems](../02-rag-and-knowledge-systems/README.md)
+- [Start Phase 03: Lesson 00 Tool Use & MCP Fundamentals](./00-tool-use-and-mcp-fundamentals.md)
+- [Next Phase: Phase 04 Stateful Agent Orchestration](../04-agentic-systems-and-orchestration/README.md) →
+

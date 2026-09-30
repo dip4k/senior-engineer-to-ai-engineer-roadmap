@@ -72,15 +72,15 @@ When a prompt cache hit occurs, the serving engine skips matrix multiplications 
 ```mermaid
 flowchart TD
     subgraph ColdRequest["Cold Cache Request (Miss)"]
-        P1["Input Prompt<br>(10,000 Tokens)"] --> GPU1["GPU Tensor Cores<br>(Execute Full Attention)"]
-        GPU1 --> VRAM1["Write KV Tensors to HBM<br>(Latency: ~1,800ms)"]
-        VRAM1 --> Out1["First Output Token Emitted"]
+        P1["📥 Input Prompt<br>(10,000 Tokens)"] --> GPU1["🧠 GPU Tensor Cores<br>(Execute Full Attention)"]
+        GPU1 --> VRAM1[("💾 Write KV to HBM<br>(Latency: ~1,800ms)")]
+        VRAM1 --> Out1["⚡ First Token Emitted"]
     end
 
     subgraph WarmRequest["Subsequent Request (Warm Hit)"]
-        P2["Input Prompt<br>(Identical 10,000 Prefix)"] --> Match["Prefix Hash Check<br>(Hit at Token 10,000)"]
-        Match --> Bypass["Bypass Matrix Math<br>(Read Tensors directly from HBM)"]
-        Bypass --> Out2["First Output Token Emitted<br>(Latency: ~180ms)"]
+        P2["📥 Input Prompt<br>(Identical Prefix)"] --> Match{"🔍 Prefix Hash Check<br>(Hit at Token 10,000)"}
+        Match --> Bypass["⚡ Bypass Matrix Math<br>(Read Tensors from HBM)"]
+        Bypass --> Out2["🚀 First Token Emitted<br>(Latency: ~180ms)"]
     end
 
     style ColdRequest fill:none,stroke:#dc2626,stroke-width:2px
@@ -191,13 +191,13 @@ In classical prompt engineering with Claude or open-source models, developers fr
 
 ```mermaid
 flowchart TD
-    Root["Root: Empty Prefix"] --> PrefixA["Common System Prompt<br>(5,000 Tokens)"]
-    PrefixA --> Branch1["Few-Shot Set 1<br>(1,000 Tokens)"]
-    PrefixA --> Branch2["Few-Shot Set 2<br>(1,000 Tokens)"]
-    PrefixA --> Dynamic["Agent Session A<br>(Dynamic Turns)"]
+    Root[("🌳 Root: Empty Prefix")] --> PrefixA[("💾 System Prompt Prefix<br>(5,000 Tokens Cached)")]
+    PrefixA --> Branch1["🎯 Few-Shot Set 1<br>(1,000 Tokens)"]
+    PrefixA --> Branch2["🎯 Few-Shot Set 2<br>(1,000 Tokens)"]
+    PrefixA --> Dynamic["🤖 Agent Session A<br>(Dynamic Turns)"]
     
-    Branch1 --> User1["Request 1<br>(Unique User Query)"]
-    Branch2 --> User2["Request 2<br>(Unique User Query)"]
+    Branch1 --> User1["👤 Request 1<br>(Unique Query)"]
+    Branch2 --> User2["👤 Request 2<br>(Unique Query)"]
 
     style Root fill:none,stroke:#64748b,stroke-width:2px
     style PrefixA fill:none,stroke:#2563eb,stroke-width:2px

@@ -1,13 +1,15 @@
-# Lesson 03: MCP Server Primitives: Tools, Resources, Prompts & Elicitation
+# Lesson 03: Model Context Protocol (MCP) Server Primitives: Tools, Resources, Prompts & Elicitation
 
-> **Tier**: `🟡 Tier 2: Engineering Depth`  
+> **Tier**: `🟡 Engineering Depth`  
 > **Estimated Reading Time**: 50 minutes  
-> **Prerequisites**: Lesson 02 (MCP Architecture, Transports & Protocol Lifecycle)  
+> **Prerequisites**: [Lesson 02: MCP Architecture, Transports & Lifecycle](02-mcp-architecture-transports-and-lifecycle.md)  
 > **Target Audience**: Senior Software Engineers, Systems Architects  
-
----
-
-> **Core Concept**: An MCP server exposes three types of capabilities to AI applications: **Tools** (executable actions — like calling an API or running a database query), **Resources** (read-only data — like files, documents, or configuration), and **Prompts** (reusable prompt templates with placeholders). Think of it like a REST API: tools are POST/PUT endpoints that change state, resources are GET endpoints that read data, and prompts are pre-built request templates. This lesson explains how to define, schema-validate, and safely expose each primitive.
+> 
+> **Core Concept**: An MCP server exposes distinct types of capabilities to AI applications: **Tools** (executable actions that query or mutate state), **Resources** (passive, read-only data attached via URI schemas), **Prompts** (reusable prompt templates for user workflows), and **Elicitation** (pausing execution to request missing parameters or human confirmation). Think of it like a REST API: tools are POST/PUT mutations, resources are GET queries, and prompts are dynamic request templates.
+> 
+> **Term Ledger**:
+> - `New AI terms introduced`: `MCP Tool`, `MCP Resource`, `MCP Prompt`, `Elicitation`, `Resource URI`.
+> - `AI terms assumed from earlier lessons`: `MCP Host`, `MCP Client`, `MCP Server`, `JSON-RPC 2.0`.
 
 ---
 
@@ -19,21 +21,22 @@ In classic web and API development, architectures separate concerns into distinc
 - **Templates / Views**: For structuring dynamic user presentation (rendering).
 - **OAuth / Webhooks**: For delegating authentication and human step-up authorization.
 
-The Model Context Protocol (MCP) organizes capabilities into **Five Foundational Primitives**:
+The Model Context Protocol (MCP) organizes capabilities into **Foundational Primitives**:
 
 ```text
 +-----------------------------------------------------------------------------------------+
-|                                 The 5 MCP Primitives                                    |
+|                                 The Core MCP Primitives                                 |
 +-----------------------------------------------------------------------------------------+
 | 1. TOOLS       | Active Execution | Model-initiated actions and database mutations      |
 | 2. RESOURCES   | Passive Context  | Host-attached documents, URI schemas, and live feeds|
 | 3. PROMPTS     | Reusable Logic   | Parameterized workflow templates for user/host UIs  |
-| 4. SAMPLING    | Reverse LLM      | Server requests host-mediated model completions     |
-| 5. ELICITATION | Human-in-the-Loop| Server pauses to request user input or auth approval|
+| 4. ELICITATION | Human-in-the-Loop| Server pauses to request user input or auth approval|
 +-----------------------------------------------------------------------------------------+
 ```
 
 Understanding when to expose a capability as a **Tool** versus a **Resource** or **Prompt** is the hallmark of senior AI systems architecture. Exposing everything as a Tool wastes model tokens and introduces severe operational risk.
+
+> **Where this analogy breaks**: In standard REST APIs, the client knows the exact HTTP method and URL paths ahead of time. In an MCP system, the foundation model decides whether and when to call a Tool based on statistical token prediction and semantic descriptions. Furthermore, Resources can be dynamically subscribed to for push notifications, unlike traditional pull-only REST GET requests.
 
 ---
 
@@ -44,9 +47,9 @@ The following sequence traces how an enterprise Host negotiates each primitive w
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Host as Host Application (Client)
-    participant Server as MCP Server
-    actor User as Human Operator
+    participant Host as 💻 Host Application (Client)
+    participant Server as ⚡ MCP Server
+    actor User as 👤 Human Operator
 
     Note over Host,Server: 1. Passive Context: Resources
     Host->>Server: JSON-RPC resources/read (uri: "schema://enterprise/catalog")
@@ -164,75 +167,113 @@ Elicitation supports two primary interaction modes:
 
 ## 4. Multi-Language SDK Implementations
 
-### 1. Python: FastMCP & Official MCP SDK
+### 1. Python Implementation: MCP Primitive Dispatcher
 
-In Python, developers have two production approaches:
-* **Standalone `fastmcp` Library (`pip install fastmcp`)**: Best for enterprise middleware, server composition, and advanced decorators.
-* **Official MCP Python SDK (`pip install mcp`)**: Standard reference implementation (`MCPServer` in v2.0+).
+In production Python, MCP servers can be authored using the standard library with Pydantic v2, or using higher-level frameworks like `fastmcp`. Below is a self-contained, typed implementation demonstrating the 3 core server primitives running offline:
 
 ```python
 """
 enterprise_mcp_server.py
-Production Python FastMCP Server exposing Tools, Resources, and Prompts.
-Requirements: pip install fastmcp pydantic
+Production Python MCP Server exposing Tools, Resources, and Prompts.
+Implements the 3 core primitives using pure Python 3.12+ and Pydantic v2.
 """
 
-from typing import Dict, Any, List
+from typing import Any, Callable, Dict
+import json
 from pydantic import BaseModel, Field
-from fastmcp import FastMCP, Context
 
-# Initialize FastMCP Server with identity
-mcp = FastMCP(
-    name="EnterpriseFinOpsServer",
-    version="2.0.0"
-)
 
 # ---------------------------------------------------------------------------
 # 1. MCP Resource: Passive Catalog Context
 # ---------------------------------------------------------------------------
-@mcp.resource("schema://finops/catalog")
-def get_finops_catalog() -> str:
-    """Returns billing table schemas as markdown to prevent exploratory tool calls."""
-    return """
-    # Enterprise FinOps Catalog
-    - `cloud_spend`: Hourly cloud resource costs across AWS/GCP (columns: timestamp, service, cost_usd).
-    - `cost_centers`: Departmental billing codes (columns: center_id, department, budget_limit).
-    """
+
+class ResourceDefinition(BaseModel):
+    uri: str
+    name: str
+    description: str
+    mime_type: str = "text/plain"
+
 
 # ---------------------------------------------------------------------------
-# 2. MCP Tool: Active Query Execution
+# 2. MCP Tool: Active Query Execution with Typed Schemas
 # ---------------------------------------------------------------------------
+
 class SpendQueryRequest(BaseModel):
-    service_name: str = Field(..., description="Cloud service name, e.g., 'EC2', 'BigQuery'")
+    service_name: str = Field(description="Cloud service name, e.g., 'EC2', 'BigQuery'")
     days: int = Field(default=7, ge=1, le=90, description="Historical query window in days")
 
-@mcp.tool()
-async def query_cloud_spend(request: SpendQueryRequest, ctx: Context) -> Dict[str, Any]:
-    """Retrieves aggregated cloud spend with deterministic token compaction."""
-    await ctx.info(f"Querying cloud spend for service: {request.service_name}")
-    
-    # Defensive data compaction
-    return {
-        "service": request.service_name,
-        "window_days": request.days,
-        "total_spend_usd": 1420.50,
-        "status": "WITHIN_BUDGET"
-    }
 
 # ---------------------------------------------------------------------------
-# 3. MCP Prompt: Parameterized Workflow Template
+# 3. Pure Python 3.12+ MCP Primitive Dispatcher
 # ---------------------------------------------------------------------------
-@mcp.prompt()
-def budget_anomaly_triage(service_name: str, cost_spike_percent: float) -> str:
-    """Pre-engineered prompt template for investigating unexpected cloud cost spikes."""
-    return f"""You are a Principal Cloud FinOps Architect.
-A cost spike of {cost_spike_percent}% has been detected in service '{service_name}'.
-1. Inspect the 'schema://finops/catalog' resource.
-2. Formulate a targeted query via 'query_cloud_spend'.
-3. Identify top cost drivers and propose remediations."""
 
-if __name__ == "__main__":
-    mcp.run()
+class McpPrimitiveServer:
+    def __init__(self, name: str, version: str) -> None:
+        self.name = name
+        self.version = version
+        self._resources: Dict[str, tuple[ResourceDefinition, Callable[[], str]]] = {}
+        self._tools: Dict[str, tuple[type[BaseModel], Callable[..., Any]]] = {}
+        self._prompts: Dict[str, str] = {}
+
+    def register_resource(self, uri: str, name: str, description: str, handler: Callable[[], str]) -> None:
+        defn = ResourceDefinition(uri=uri, name=name, description=description)
+        self._resources[uri] = (defn, handler)
+
+    def register_tool(self, name: str, schema: type[BaseModel], handler: Callable[..., Any]) -> None:
+        self._tools[name] = (schema, handler)
+
+    def register_prompt(self, name: str, template: str) -> None:
+        self._prompts[name] = template
+
+    def handle_read_resource(self, uri: str) -> Dict[str, Any]:
+        if uri not in self._resources:
+            return {"isError": True, "content": f"Resource not found: {uri}"}
+        defn, handler = self._resources[uri]
+        return {
+            "contents": [{"uri": uri, "mimeType": defn.mime_type, "text": handler()}],
+            "isError": False
+        }
+
+    def handle_call_tool(self, name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+        if name not in self._tools:
+            return {"isError": True, "content": f"Unknown tool: {name}"}
+        schema, handler = self._tools[name]
+        validated = schema.model_validate(arguments)
+        result = handler(validated)
+        return {"content": [{"type": "text", "text": json.dumps(result)}], "isError": False}
+
+
+# ---------------------------------------------------------------------------
+# 4. Usage Demonstration
+# ---------------------------------------------------------------------------
+
+server = McpPrimitiveServer("FinOpsServer", "2.0.0")
+
+# Register Resource
+server.register_resource(
+    uri="schema://finops/catalog",
+    name="FinOps Catalog",
+    description="Schema of cloud billing tables",
+    handler=lambda: "cloud_spend(timestamp, service, cost_usd)"
+)
+
+# Register Tool
+def execute_spend_query(req: SpendQueryRequest) -> Dict[str, Any]:
+    return {"service": req.service_name, "spend_usd": 1420.50, "status": "OK"}
+
+server.register_tool("query_cloud_spend", SpendQueryRequest, execute_spend_query)
+
+# Register Prompt
+server.register_prompt(
+    "budget_anomaly_triage",
+    "You are a FinOps Architect. Query cloud spend and propose remediations."
+)
+
+# Test invocations offline
+res = server.handle_read_resource("schema://finops/catalog")
+call = server.handle_call_tool("query_cloud_spend", {"service_name": "BigQuery", "days": 14})
+print(f"Resource Loaded: {not res['isError']}")
+print(f"Tool Result: {call['content'][0]['text']}")
 ```
 
 ---
@@ -317,31 +358,37 @@ public sealed class TelemetryPlugin
 
 ### 4. Meta Llama Stack: MCP Tool Engine Provider
 
-In the open-weights ecosystem, **Meta Llama Stack (`llama-stack`)** provides first-class support for the Model Context Protocol, enabling Llama 3.1/3.3 models to consume standard MCP servers as dynamic tool providers:
+In the open-weights ecosystem, Meta Llama Stack provides first-class support for the Model Context Protocol, enabling Llama 3.1 and 3.3 models to consume standard MCP servers as dynamic tool providers. Below is a typed Pydantic v2 configuration model validating an MCP tool group registration:
 
 ```python
 """
-llama_stack_mcp_client.py
-Configuring an MCP Server inside the Meta Llama Stack Tool Engine.
-Requirements: pip install llama-stack-client
+llama_stack_mcp_config.py
+Configuring an MCP Server endpoint using Pydantic v2 schemas.
+Compatible with Meta Llama Stack tool group declarations.
 """
 
-from llama_stack_client import LlamaStackClient
+from typing import Any, Dict
+from pydantic import BaseModel, Field
 
-client = LlamaStackClient(base_url="http://localhost:5000")
 
-# Register an external MCP server into the Llama Stack agent catalog
-client.toolgroups.register(
+class McpEndpointConfig(BaseModel):
+    uri: str
+    protocol_version: str = "2026-07-28"
+
+
+class ToolGroupRegistration(BaseModel):
+    toolgroup_id: str
+    provider_id: str = "model-context-protocol"
+    mcp_endpoint: McpEndpointConfig
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+# Verify configuration schema offline
+config = ToolGroupRegistration(
     toolgroup_id="enterprise::observability_mcp",
-    provider_id="model-context-protocol",
-    mcp_endpoint={
-        "uri": "http://localhost:8080/mcp",
-        "protocol_version": "2026-07-28"
-    }
+    mcp_endpoint=McpEndpointConfig(uri="http://localhost:8080/mcp")
 )
-
-# Agents instantiated in Llama Stack automatically discover all tools
-# exposed by the registered MCP server via tools/list
+print(f"Registered ToolGroup: {config.toolgroup_id} for MCP URI: {config.mcp_endpoint.uri}")
 ```
 
 ---
@@ -380,7 +427,7 @@ client.toolgroups.register(
 ## 7. Hands-On Lab Exercise
 
 ### Objective
-Build a multi-primitive MCP server in Python (FastMCP) or TypeScript that exposes a database schema as a Resource, a read query as a Tool, and gates service restarts behind an Elicitation form.
+Build a multi-primitive MCP server in Python or TypeScript that exposes a database schema as a Resource, a read query as a Tool, and gates service restarts behind an Elicitation form.
 
 ### Acceptance Criteria
 1. Expose `schema://inventory/database` returning a Markdown table of database columns.
@@ -400,4 +447,23 @@ Build a multi-primitive MCP server in Python (FastMCP) or TypeScript that expose
 
 ---
 
-[Previous: Lesson 02 — MCP Architecture, Transports & Protocol Lifecycle](./02-mcp-architecture-transports-and-lifecycle.md) | [Next: Lesson 04 — Reverse Sampling & Host Orchestration](./04-reverse-sampling-and-host-orchestration.md) | [Back to Phase 03 Hub](./README.md)
+## 9. Quick Check
+
+A software architect wants an AI coding assistant to be aware of a team's 50-page coding standards document. The engineer suggests adding a tool called `get_coding_standard(rule_name: str)`. Why is this an anti-pattern under MCP design guidelines, and which primitive should be used instead?
+
+<details>
+<summary>Suggested Answer</summary>
+
+**Why it is an anti-pattern**: Using a Tool for static documentation forces the model to perform active reasoning turns, emits tool calls, and incurs network roundtrips just to read static rules. If the model does not know what rule name to search for, it either guesses or skips checking entirely.
+
+**Correct Primitive**: Use an **MCP Resource** (such as `docs://engineering/standards/python`). Resources are designed for passive context ingestion. The host application can inspect the resource catalog, bind the document into the context window at session start, or attach it when relevant, with zero tool-calling turns.
+
+</details>
+
+---
+
+## 🧭 Navigation
+
+| Previous | Hub | Next | Capstone Lab |
+|---|---|---|---|
+| [← Lesson 02: MCP Architecture & Transports](02-mcp-architecture-transports-and-lifecycle.md) | [Phase 03 Overview](README.md) | [Lesson 04: Host Orchestration & Governors →](04-reverse-sampling-and-host-orchestration.md) | [Capstone Lab: MCP Tool Server →](labs/capstone-mcp-tool-server.md) |

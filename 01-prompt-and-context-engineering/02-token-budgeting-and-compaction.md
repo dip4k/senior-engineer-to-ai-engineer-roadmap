@@ -123,17 +123,18 @@ A **compaction pipeline** is an automated series of progressive reductions that 
 
 ```mermaid
 flowchart TD
-    Req["Incoming Context<br>(Total Tokens > Target Budget?)"] -->|Under Budget| Run["Dispatch to LLM"]
-    Req -->|Over Budget| T1["Tier 1: Pruning<br>(Minify JSON, strip nulls, cap arrays)"]
-    T1 --> T2["Tier 2: Masking<br>(Summarize old tool outputs, keep status)"]
-    T2 --> T3["Tier 3: Summarization<br>(LLM summarizes older dialog turns)"]
-    T3 --> T4["Tier 4: Externalization<br>(Offload history to S3/GCS with URI pointer)"]
-    T4 --> Guard{"Still Over Budget?"}
+    Req["📥 Incoming Context<br>(Tokens > Target Budget?)"] -->|Under Budget| Run["🚀 Dispatch to LLM"]
+    Req -->|Over Budget| T1["🧹 Tier 1: Pruning<br>(Minify JSON, strip nulls, cap arrays)"]
+    T1 --> T2["🎭 Tier 2: Masking<br>(Summarize old tool outputs, keep status)"]
+    T2 --> T3["🧠 Tier 3: Summarization<br>(Small model summarizes older turns)"]
+    T3 --> T4[("🗄️ Tier 4: Externalization<br>(Offload history to S3/GCS with URI pointer)")]
+    T4 --> Guard{"🛡️ Still Over Budget?"}
     Guard -->|No| Run
-    Guard -->|Yes| Halt["Circuit Breaker<br>(Raise ContextExceededError)"]
+    Guard -->|Yes| Halt["⚠️ Circuit Breaker<br>(Raise ContextExceededError)"]
 
     style Req stroke:#2563eb,stroke-width:2px
     style Run stroke:#16a34a,stroke-width:2px
+    style Guard stroke:#d97706,stroke-width:2px
     style Halt stroke:#dc2626,stroke-width:2px
 ```
 

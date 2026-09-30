@@ -54,24 +54,17 @@ View search as **Dual Coordinate Retrieval**: querying two fundamentally differe
 
 ```mermaid
 flowchart TD
-    subgraph Query_Dispatch["1. Query Dispatch"]
-        Q["User Query:<br>'Audit server SKU-90812 under NDA'"]
-    end
+    Q(["👤 User Query:<br>'Audit server SKU-90812 under NDA'"]) --> BM25[("🗄️ Lexical Inverted Index<br>(Exact term match 'SKU-90812')")]
+    Q --> HNSW[("🗄️ Semantic Vector Graph<br>(Conceptual recall 'server compliance')")]
 
-    subgraph Dual_Engines["2. Dual Coordinate Spaces"]
-        BM25["Lexical Inverted Index<br>• Matches exact term 'SKU-90812'<br>• High keyword precision"]
-        HNSW["Semantic Vector Graph<br>• Traverses to 'server compliance'<br>• High conceptual recall"]
-    end
+    BM25 --> TopSparse["📄 Top-50 Lexical Candidates"]
+    HNSW --> TopDense["📄 Top-50 Semantic Candidates"]
 
-    subgraph Candidate_Pool["3. Candidate Harvest"]
-        TopSparse["Top-50 Lexical Candidates"]
-        TopDense["Top-50 Semantic Candidates"]
-    end
-
-    Q --> BM25
-    Q --> HNSW
-    BM25 --> TopSparse
-    HNSW --> TopDense
+    style Q stroke:#64748b,stroke-width:2px,fill:none;
+    style BM25 stroke:#2563eb,stroke-width:2px,fill:none;
+    style HNSW stroke:#7c3aed,stroke-width:2px,fill:none;
+    style TopSparse stroke:#16a34a,stroke-width:2px,fill:none;
+    style TopDense stroke:#16a34a,stroke-width:2px,fill:none;
 ```
 
 #### Diagram Walkthrough:
@@ -142,14 +135,16 @@ HNSW is the multi-dimensional geometric equivalent of a Skip List:
 
 ```mermaid
 flowchart TD
-    subgraph MultiLayer["HNSW MULTI-LAYER SKIP LIST TRAVERSAL"]
-        L2["Layer 2: Express Highway<br>Sparse entry nodes with long geometric jumps"]
-        L1["Layer 1: Regional Roads<br>Medium density clustering"]
-        L0["Layer 0: Local Base Graph<br>Contains 100% of all indexed vectors"]
+    subgraph MultiLayer["🗺️ HNSW MULTI-LAYER SKIP LIST TRAVERSAL"]
+        L2["🚄 Layer 2: Express Highway<br>Sparse entry nodes with long geometric jumps"]
+        L1["🚗 Layer 1: Regional Roads<br>Medium density clustering"]
+        L0[("🗄️ Layer 0: Local Base Graph<br>Contains 100% of all indexed vectors")]
     end
 
     L2 -->|"1. Long-range jump"| L1
     L1 -->|"2. Regional descent"| L0
+
+    style MultiLayer fill:none,stroke:#2563eb,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:
@@ -159,12 +154,14 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph BaseGraph["LAYER 0: LOCAL BEAM SEARCH NEIGHBORHOOD"]
-        Entry["Candidate Node"] --- N1["Neighbor A"]
-        Entry --- N2["Neighbor B"]
-        N1 --- Target["Nearest Match"]
-        N2 --- N3["Neighbor C"]
+    subgraph BaseGraph["🔍 LAYER 0: LOCAL BEAM SEARCH NEIGHBORHOOD"]
+        Entry["📍 Candidate Node"] --- N1["📍 Neighbor A"]
+        Entry --- N2["📍 Neighbor B"]
+        N1 --- Target["🎯 Nearest Match"]
+        N2 --- N3["📍 Neighbor C"]
     end
+
+    style BaseGraph fill:none,stroke:#16a34a,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:

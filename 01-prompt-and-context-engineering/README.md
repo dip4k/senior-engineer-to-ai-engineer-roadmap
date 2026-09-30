@@ -23,15 +23,22 @@ The diagram below illustrates the end-to-end data lifecycle of a production cont
 
 ```mermaid
 flowchart TD
-    User["Untrusted Client Request / Task Event"] --> AST["1. Context AST Compiler<br>(Pydantic v2 Schema, Role Hierarchy & XML Delimiters)"]
+    User(["👤 Untrusted Client Request / Task Event"]) --> AST["⚙️ 1. Context AST Compiler<br>(Pydantic v2 Schema, Role Hierarchy & XML Delimiters)"]
     
-    AST --> Gov["2. Token Governor & Compaction Pipeline<br>(16K/32K Portfolios, Tier 1 Pruning & Tier 2 Masking)"]
+    AST --> Gov["⏱️ 2. Token Governor & Compaction Pipeline<br>(16K/32K Portfolios, Tier 1 Pruning & Tier 2 Masking)"]
     
-    Gov --> Cache["3. Prefix-Aligned Prompt Caching<br>(Token 0 Immutable Pinned Prefix, HBM KV-Cache Reuse)"]
+    Gov --> Cache[("💾 3. Prefix-Aligned Prompt Caching<br>(Token 0 Immutable Pinned Prefix, HBM KV-Cache Reuse)")]
     
-    Cache --> Sampling["4. FSM Grammar-Constrained Sampling<br>(Outlines / XGrammar GPU Logit Masking: P(illegal)=0)"]
+    Cache --> Sampling["🛡️ 4. FSM Grammar-Constrained Sampling<br>(Outlines / XGrammar GPU Logit Masking: P(illegal)=0)"]
     
-    Sampling --> Out["5. Strict Deserialization & Downstream Microservices<br>(Guaranteed Schema Match, 0% Parsing Errors)"]
+    Sampling --> Out["🚀 5. Strict Deserialization & Downstream Microservices<br>(Guaranteed Schema Match, 0% Parsing Errors)"]
+
+    style User stroke:#64748b,stroke-width:2px
+    style AST stroke:#2563eb,stroke-width:2px
+    style Gov stroke:#d97706,stroke-width:2px
+    style Cache stroke:#16a34a,stroke-width:2px
+    style Sampling stroke:#7c3aed,stroke-width:2px
+    style Out stroke:#16a34a,stroke-width:2px
 ```
 
 ### Step-by-Step Architecture Walkthrough:

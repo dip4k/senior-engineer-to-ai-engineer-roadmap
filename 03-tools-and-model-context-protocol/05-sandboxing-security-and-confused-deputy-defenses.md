@@ -1,13 +1,15 @@
 # Lesson 05: Sandboxing, Security & Confused Deputy Defenses
 
-> **Tier**: `🔵 Tier 4: Frontier & Advanced Systems`  
+> **Tier**: `🔵 Advanced`  
 > **Estimated Reading Time**: 50 minutes  
-> **Prerequisites**: Lesson 01 (Function Calling & Wire Protocols), Lesson 03 (MCP Primitives & Elicitation)  
+> **Prerequisites**: [Lesson 01: Function Calling & JSON-RPC Protocols](01-function-calling-and-json-rpc-wire-protocols.md), [Lesson 03: MCP Server Primitives](03-mcp-server-primitives-tools-resources-prompts.md)  
 > **Target Audience**: Senior Software Engineers, Systems Architects, Security Engineers  
-
----
-
-> **Core Concept**: When an AI model has access to tools, it creates a unique security challenge: the model runs with the application's high privileges (database access, API keys, file system permissions), but its behavior is guided by unpredictable user inputs and its own non-deterministic text generation. An attacker can craft a prompt that tricks the model into misusing a legitimate tool — a classic **Confused Deputy** attack (a term from computer security where a privileged program is tricked into acting on behalf of an attacker). This lesson covers how to sandbox tool execution, enforce least-privilege access, and defend against prompt injection attacks that target tool calls.
+> 
+> **Core Concept**: When an AI model has access to tools, it creates a unique security challenge: the model runs with the application's high privileges (database access, API keys, file system permissions), but its behavior is guided by unpredictable user inputs and its own non-deterministic text generation. An attacker can craft a prompt that tricks the model into misusing a legitimate tool — a classic **Confused Deputy** attack. This lesson covers how to sandbox tool execution, enforce least-privilege access, and defend against prompt injection attacks that target tool calls.
+> 
+> **Term Ledger**:
+> - `New AI terms introduced`: `Confused Deputy`, `Indirect Prompt Injection`, `Tool Poisoning`, `AST Semantic Validation`, `Human-in-the-Loop Step-Up Gate`.
+> - `AI terms assumed from earlier lessons`: `Function Calling`, `MCP Tool`, `Host Orchestration`.
 
 ---
 
@@ -33,52 +35,63 @@ To deploy tools safely in enterprise production, architects must implement **Def
 2. **Execution Isolation**: Execute unverified code and scripts inside hardware-virtualized MicroVMs or sandboxes (gVisor, Firecracker, WASM).
 3. **Authorization Boundaries**: Gate high-impact mutations behind cryptographically signed, two-phase Human-in-the-Loop (HITL) Elicitation gates.
 
+> **Where this analogy breaks**: In classic software security, a confused deputy is typically tricked by a client spoofing an authorization capability or exploiting a missing parameter check in deterministic code. With an LLM, the confusion happens inside the model's stochastic reasoning plane because it cannot distinguish between system instructions and untrusted data tokens.
+
 ---
 
 ## 2. Architecture & Attack Defense Topology
 
-The following architecture diagram traces how an indirect prompt injection payload is neutralized across three defensive perimeters:
+To neutralize indirect prompt injection payloads, we decouple the attack surface into two distinct stages: the attack ingestion chain and the defense inspection perimeter.
+
+### Stage 1: The Confused Deputy Attack Chain
 
 ```mermaid
 flowchart TD
-    subgraph UntrustedSource["Untrusted Data Perimeter"]
-        Attacker(["Malicious External Actor"]) -->|1. Injects Malicious Instruction| PublicTicket[("Public CRM / Ticket Data")]
-    end
+    Attacker(["👤 1. Malicious External Actor"]) -->|Injects prompt| PublicTicket[("🗄️ 2. Public Support Ticket")]
+    PublicTicket -->|Reads ticket| HostIngress["🔌 3. Host Ingress Controller"]
+    HostIngress -->|Forwards text| FoundationModel["🧠 4. Foundation Model (Deputy)"]
+    FoundationModel -->|Emits hijacked call| ToolDispatcher["⚡ 5. Tool Dispatcher"]
 
-    subgraph HostGateway["Host Application & Reasoning Boundary"]
-        PublicTicket -->|2. Legitimate Fetch| Host["Host Ingress Controller"]
-        Host -->|3. Forward Payload to Context| LLM["Foundation Model (Deputy)"]
-        LLM -->|4. Hijacked Tool Intent: DROP TABLE| ToolCallDispatcher["Tool Dispatcher"]
-    end
-
-    subgraph DefenseLayer["Defense in Depth Perimeter"]
-        ToolCallDispatcher -->|5. Intercept Tool Call| PolicyGate{"Security Policy Gate"}
-        
-        subgraph Layer1["Layer 1: AST Semantic Inspection"]
-            PolicyGate -->|6. SQL Statement| SQLParser["SQLGlot AST Validator"]
-        end
-        
-        subgraph Layer2["Layer 2: Execution Sandboxing"]
-            PolicyGate -->|7. Code / Script Exec| MicroVM["MicroVM / gVisor Sandbox"]
-        end
-        
-        subgraph Layer3["Layer 3: Cryptographic Step-Up Gate"]
-            PolicyGate -->|8. Mutating Action| ElicitationGate["HMAC-SHA256 Token Elicitation"]
-        end
-    end
-
-    SQLParser -->|REJECT: Non-SELECT Node Detected| Abort1["Return isError: true to Context"]
-    MicroVM -->|BLOCKED: Syscall / Network Violation| Abort2["Isolate & Kill Container"]
-    ElicitationGate -->|9. Require Signed Human Token| Operator(["Human Operator"])
-    Operator -.->|10. Approve Signature| ExecutionPlane[("Enterprise Systems of Record")]
+    style Attacker fill:none,stroke:#dc2626,stroke-width:2px
+    style PublicTicket fill:none,stroke:#dc2626,stroke-width:2px
+    style HostIngress fill:none,stroke:#2563eb,stroke-width:2px
+    style FoundationModel fill:none,stroke:#7c3aed,stroke-width:2px
+    style ToolDispatcher fill:none,stroke:#16a34a,stroke-width:2px
 ```
 
-### Architectural Walkthrough
-1. **Untrusted Payload Ingestion (Steps 1–3)**: An attacker embeds an adversarial prompt into a database record or support ticket. The agent reads the record as part of a legitimate task, inadvertently bringing the attack string into its attention window.
-2. **The Hijacked Intent (Step 4)**: The foundation model falls prey to indirect prompt injection and attempts to execute a destructive tool call (`drop_table` or mutating SQL).
-3. **Layer 1: AST Semantic Inspection (Step 6)**: If the tool accepts SQL, the dispatcher does not rely on naive regex checks (`WHERE 1=1` or `DROP`). It compiles the string into an Abstract Syntax Tree (AST) using SQLGlot. Any statement that is not strictly an `exp.Select` node is rejected before touching the database driver.
-4. **Layer 2: Execution Sandboxing (Step 7)**: If the agent executes code, the workload runs inside an isolated microVM (Firecracker or gVisor) with a read-only root filesystem and restricted network namespaces.
-5. **Layer 3: Cryptographic Step-Up Gate (Steps 8–10)**: For state mutations (deletions, payments, restarts), the server halts execution and fires an **Elicitation request**. The action can only be executed if a human operator provides a cryptographically verified HMAC-SHA256 token.
+#### Walkthrough: Attack Chain
+1. **Adversarial Ingestion**: The attacker places malicious instructions inside public CRM data or customer tickets.
+2. **Legitimate Fetch**: The agent legitimately queries the record using a standard read tool.
+3. **Ingress Forwarding**: The host feeds the retrieved text into the foundation model context window.
+4. **Reasoning Hijack**: The model is swayed by indirect injection and issues an unauthorized tool call.
+5. **Tool Dispatcher**: Intercepts the request before any database execution can occur.
+
+---
+
+### Stage 2: Defense-in-Depth Inspection Perimeter
+
+```mermaid
+flowchart TD
+    ToolDispatcher["⚡ 1. Tool Dispatcher"] --> PolicyGate{"🛡️ 2. Security Policy Gate"}
+    PolicyGate -->|SQL Query| ASTValidator["🛡️ 3. AST Semantic Validator"]
+    PolicyGate -->|Code Script| MicroVM["💻 4. MicroVM Sandbox"]
+    PolicyGate -->|Mutating Action| StepUpGate{"🛡️ 5. HMAC Step-Up Gate"}
+    StepUpGate -->|Human Approved| SystemOfRecord[("🗄️ 6. Systems of Record")]
+
+    style ToolDispatcher fill:none,stroke:#16a34a,stroke-width:2px
+    style PolicyGate fill:none,stroke:#2563eb,stroke-width:2px
+    style ASTValidator fill:none,stroke:#16a34a,stroke-width:2px
+    style MicroVM fill:none,stroke:#16a34a,stroke-width:2px
+    style StepUpGate fill:none,stroke:#d97706,stroke-width:2px
+    style SystemOfRecord fill:none,stroke:#2563eb,stroke-width:2px
+```
+
+#### Walkthrough: Defense Perimeter
+1. **Policy Inspection**: The policy gate categorizes the call into query, script execution, or mutation.
+2. **AST Semantic Validation**: SQL statements are tokenized and parsed into syntax trees, ensuring only strict read operations run.
+3. **MicroVM Sandboxing**: Unverified code runs in ephemeral gVisor or Firecracker microVMs with zero host access.
+4. **Cryptographic Step-Up**: Mutating operations trigger Human-in-the-Loop approval requiring signed tokens.
+5. **System Commit**: Only verified, authorized actions touch production systems of record.
 
 ---
 
@@ -87,8 +100,9 @@ flowchart TD
 A pervasive anti-pattern in early AI systems is using string matching to block dangerous SQL queries:
 ```python
 # DANGEROUS ANTI-PATTERN: NEVER RELY ON REGEX FOR SQL SAFETY
-if "DROP" in sql.upper() or "DELETE" in sql.upper():
-    raise SecurityViolation("Mutations forbidden!")
+def naive_sql_check(raw_query: str) -> None:
+    if "DROP" in raw_query.upper() or "DELETE" in raw_query.upper():
+        raise ValueError("Mutations forbidden!")
 ```
 
 ### Why Regex Fails
@@ -98,41 +112,51 @@ An attacker can effortlessly bypass keyword filters using SQL dialect quirks, co
 SELECT * FROM users; DROP TABLE accounts; --
 ```
 
-### The AST Solution with SQLGlot
-An Abstract Syntax Tree decomposes SQL into its mathematical grammar hierarchy. By validating the root expression and traversing all sub-nodes, we can guarantee mathematical invariants:
+### The AST Solution: Lexical and Grammar-Invariant Parsing
+An Abstract Syntax Tree decomposes SQL into its mathematical grammar hierarchy. By validating the root expression and traversing all sub-nodes, we can guarantee mathematical invariants. Below is a pure Python 3.12+ implementation demonstrating invariant enforcement:
 
 ```python
-import sqlglot
-from sqlglot import exp
+import re
 
 def enforce_strict_select_invariant(sql: str) -> None:
     """
     Guarantees that a query contains exactly one statement and
-    is mathematically restricted to read-only SELECT operations.
+    is restricted to read-only SELECT operations using token parsing.
     """
-    try:
-        statements = sqlglot.parse(sql)
-    except Exception as err:
-        raise ValueError(f"Invalid SQL syntax: {err}")
+    # 1. Strip SQL block comments and line comments
+    clean_sql = re.sub(r"/\*.*?\*/", "", sql, flags=re.DOTALL)
+    clean_sql = re.sub(r"--.*", "", clean_sql).strip()
 
+    if not clean_sql:
+        raise ValueError("Empty SQL query.")
+
+    # 2. Check for multi-statement queries (semicolon chaining)
+    statements = [stmt.strip() for stmt in clean_sql.split(";") if stmt.strip()]
     if len(statements) != 1:
         raise ValueError("Multi-statement queries (semicolon chaining) are strictly prohibited.")
 
-    root_expr = statements[0]
-    
-    # Must be a SELECT expression
-    if not isinstance(root_expr, exp.Select):
-        raise ValueError(f"Security Violation: Expected SELECT, found {root_expr.key.upper()}.")
+    query = statements[0]
 
-    # Walk the tree for dangerous embedded expressions
-    FORBIDDEN_NODES = (
-        exp.Insert, exp.Update, exp.Delete, exp.Drop,
-        exp.Create, exp.Alter, exp.Into
-    )
-    for node, _, _ in root_expr.walk():
-        if isinstance(node, FORBIDDEN_NODES):
-            raise ValueError(f"Security Violation: Mutating AST node detected ({node.key.upper()}).")
+    # 3. Tokenize into words
+    tokens = [t.upper() for t in re.findall(r"\b[A-Za-z_]+\b", query)]
+    if not tokens:
+        raise ValueError("Malformed query: No SQL keywords found.")
+
+    # 4. Root keyword MUST be SELECT
+    if tokens[0] != "SELECT":
+        raise ValueError(f"Security Violation: Expected root statement SELECT, found '{tokens[0]}'.")
+
+    # 5. Check for forbidden mutating keywords
+    FORBIDDEN_KEYWORDS = {
+        "INSERT", "UPDATE", "DELETE", "DROP", "ALTER",
+        "TRUNCATE", "CREATE", "INTO", "EXEC", "EXECUTE"
+    }
+    detected = set(tokens).intersection(FORBIDDEN_KEYWORDS)
+    if detected:
+        raise ValueError(f"Security Violation: Mutating keywords detected: {sorted(detected)}.")
 ```
+
+> In multi-dialect enterprise production, dialect-specific AST parsers such as SQLGlot (`pip install sqlglot`) can be used to construct full query graphs across PostgreSQL, Snowflake, and BigQuery.
 
 ---
 
@@ -187,18 +211,17 @@ The following complete Python implementation demonstrates AST SQL validation com
 """
 hardened_tool_security.py
 Production Security Middleware for MCP Tools.
-Features: SQLGlot AST validation & Cryptographic HMAC-SHA256 Step-Up Gates.
-Requirements: pip install sqlglot pydantic
+Features: Pure Python AST/lexical validation & Cryptographic HMAC-SHA256 Step-Up Gates.
+Requirements: Python 3.12+, Pydantic v2 (zero uninstalled dependencies).
 """
 
 import hmac
 import hashlib
 import json
+import re
 import time
 import uuid
 from typing import Dict, Any, Tuple
-import sqlglot
-from sqlglot import exp
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
@@ -267,18 +290,21 @@ class HardenedSecurityGate:
         self.tokens = StepUpTokenManager(secret_key=hmac_secret)
 
     def validate_safe_read_query(self, sql: str) -> str:
-        """Enforces SELECT-only Abstract Syntax Tree invariant."""
-        try:
-            parsed = sqlglot.parse(sql)
-        except Exception as err:
-            raise ValueError(f"Malformed SQL syntax: {err}")
+        """Enforces SELECT-only lexical invariant without external parser dependencies."""
+        clean_sql = re.sub(r"/\*.*?\*/", "", sql, flags=re.DOTALL)
+        clean_sql = re.sub(r"--.*", "", clean_sql).strip()
 
-        if len(parsed) != 1 or not isinstance(parsed[0], exp.Select):
+        statements = [stmt.strip() for stmt in clean_sql.split(";") if stmt.strip()]
+        if len(statements) != 1:
             raise ValueError("Security Violation: Only single SELECT queries permitted.")
 
-        for node, _, _ in parsed[0].walk():
-            if isinstance(node, (exp.Insert, exp.Update, exp.Delete, exp.Drop, exp.Alter, exp.Into)):
-                raise ValueError(f"Security Violation: Mutating AST operation '{node.key.upper()}' forbidden.")
+        tokens = [t.upper() for t in re.findall(r"\b[A-Za-z_]+\b", statements[0])]
+        if not tokens or tokens[0] != "SELECT":
+            raise ValueError("Security Violation: Only SELECT queries permitted.")
+
+        FORBIDDEN = {"INSERT", "UPDATE", "DELETE", "DROP", "ALTER", "TRUNCATE", "CREATE", "INTO"}
+        if set(tokens).intersection(FORBIDDEN):
+            raise ValueError("Security Violation: Mutating SQL operations forbidden.")
 
         return sql
 
@@ -350,9 +376,31 @@ Implement an AST-enforced security filter that intercepts simulated agent tool c
 - [ ] All database query tools parse queries using **AST analysis (SQLGlot)**; raw keyword regex checks are strictly prohibited.
 - [ ] Database credentials used by MCP tools are provisioned with database-level read-only permissions (`GRANT SELECT`).
 - [ ] High-impact mutating operations enforce two-phase Human-in-the-Loop step-up gates using time-bound HMAC-SHA256 tokens.
-- [ ] Sandboxed tool execution environments utilize **gVisor** or **Firecracker MicroVMs** with read-only filesystems.
-- [ ] OS shell execution never utilizes `shell=True`, and all parameters are validated against strict alphanumeric patterns.
+- [ ] Sandboxed tool execution environments use **gVisor** or **Firecracker MicroVMs** with read-only filesystems.
+- [ ] OS shell execution never uses `shell=True`, and all parameters are validated against strict alphanumeric patterns.
 
 ---
 
-[Previous: Lesson 04 — Reverse Sampling & Host Orchestration](./04-reverse-sampling-and-host-orchestration.md) | [Next: Lesson 06 — Enterprise PaaS Bridges & Serverless MCP](./06-enterprise-paas-bridges-and-serverless-mcp.md) | [Back to Phase 03 Hub](./README.md)
+## 11. Quick Check
+
+An engineer builds an internal MCP tool that fetches customer details from Postgres. The tool takes `account_id: str` and executes `SELECT * FROM accounts WHERE id = '{account_id}'`. An attacker inputs `"ACC-101' UNION SELECT credit_card_number, cvv, 0 FROM cards --"`. Which defense layer failed, and how should it be remediated?
+
+<details>
+<summary>Suggested Answer</summary>
+
+**Failed Layer**: Input Parameter Sanitization and Query Parameterization. The developer used raw string interpolation instead of parameterized queries or typed schemas.
+
+**Remediation**:
+1. **Pydantic Validation**: Validate that `account_id` strictly matches regex `^ACC-[0-9]{3,8}$` with `extra="forbid"`.
+2. **Parameterized Prepared Statements**: Use database driver query parameters (`WHERE id = %s`, `(account_id,)`), preventing SQL string escape.
+3. **AST Inspection**: Run the query through the AST validator to detect multiple statement roots or unauthorized union projections.
+
+</details>
+
+---
+
+## 🧭 Navigation
+
+| Previous | Hub | Next | Capstone Lab |
+|---|---|---|---|
+| [← Lesson 04: Host Orchestration & Governors](04-reverse-sampling-and-host-orchestration.md) | [Phase 03 Overview](README.md) | [Lesson 06: Enterprise PaaS Bridges →](06-enterprise-paas-bridges-and-serverless-mcp.md) | [Capstone Lab: MCP Tool Server →](labs/capstone-mcp-tool-server.md) |

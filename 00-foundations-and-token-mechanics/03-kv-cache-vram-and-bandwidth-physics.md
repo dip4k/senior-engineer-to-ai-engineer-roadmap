@@ -52,16 +52,18 @@ A request has two phases with opposite hardware behaviour.
 
 ```mermaid
 flowchart LR
-    P["Your prompt<br>(all tokens known)"] --> F["Prefill<br>(process all at once)"]
-    F --> C[("KV cache<br>filled")]
-    C --> D["Decode step<br>(one new token)"]
-    D --> A["Append new Key<br>and Value"]
+    P["💬 Prompt Tokens<br>(all tokens known)"] --> F["⚡ Prefill Phase<br>(compute-bound parallel)"]
+    F --> C[("💾 KV Cache<br>(filled in VRAM)")]
+    C --> D["⏱️ Decode Step<br>(memory-bound serial)"]
+    D --> A["📝 Append Key & Value"]
     A -.-> C
-    D --> O["Stream token<br>to the user"]
+    D --> O["🌊 Stream Token<br>to client (TPS)"]
 
+    style P stroke:#2563eb,stroke-width:2px
     style F stroke:#2563eb,stroke-width:2px
     style D stroke:#d97706,stroke-width:2px
     style C stroke:#16a34a,stroke-width:2px
+    style A stroke:#16a34a,stroke-width:2px
     style O stroke:#7c3aed,stroke-width:2px
 ```
 
@@ -154,11 +156,12 @@ The naive way to give each request a notebook is to reserve one contiguous block
 
 ```mermaid
 flowchart LR
-    R["Request's tokens<br>(logical order)"] --> T["Block table<br>(logical to physical)"]
-    T --> B1["Physical block 7"]
-    T --> B2["Physical block 2"]
-    T --> B3["Physical block 11"]
+    R["📑 Logical Tokens<br>(request sequence)"] --> T["🗺️ Block Table<br>(virtual to physical map)"]
+    T --> B1[("🧊 Physical Block 7")]
+    T --> B2[("🧊 Physical Block 2")]
+    T --> B3[("🧊 Physical Block 11")]
 
+    style R stroke:#2563eb,stroke-width:2px
     style T stroke:#7c3aed,stroke-width:2px
     style B1 stroke:#16a34a,stroke-width:2px
     style B2 stroke:#16a34a,stroke-width:2px

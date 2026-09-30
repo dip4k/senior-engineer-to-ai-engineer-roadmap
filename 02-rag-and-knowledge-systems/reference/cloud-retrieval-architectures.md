@@ -24,12 +24,13 @@ In Microsoft Azure enterprise environments, **Azure AI Search** serves as the ma
 ```mermaid
 flowchart TD
     subgraph Stage1["STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
-        UQ["User Query + Entra ID"] --> PFilter["OData Security Pre-Filter<br>tenant_id eq 'tenant_42'"]
-        PFilter --> HNSW["Dense HNSW / DiskANN Index"]
-        PFilter --> BM25["Sparse BM25 Index"]
-        HNSW --> TopDense["Top 50 Dense Candidates"]
-        BM25 --> TopSparse["Top 50 Sparse Candidates"]
+        UQ(["👤 User Query + Entra ID"]) --> PFilter{"🛡️ OData Security Pre-Filter<br>tenant_id eq 'tenant_42'"}
+        PFilter --> HNSW[("🗄️ Dense HNSW / DiskANN Index")]
+        PFilter --> BM25[("🗄️ Sparse BM25 Index")]
+        HNSW --> TopDense["📄 Top 50 Dense Candidates"]
+        BM25 --> TopSparse["📄 Top 50 Sparse Candidates"]
     end
+    style Stage1 fill:none,stroke:#3b82f6,stroke-width:2px;
 ```
 
 #### Diagram Walkthrough:
@@ -40,11 +41,12 @@ flowchart TD
 ```mermaid
 flowchart TD
     subgraph Stage2["STAGE 2: RRF FUSION & SEMANTIC RERANKING"]
-        Top50["Top 50 Lexical & Dense Candidates"] --> RRF["Reciprocal Rank Fusion<br>Score = sum [ 1 / (60 + rank) ]"]
-        RRF --> Turing["Microsoft Turing Semantic Reranker<br>• Full Cross-Attention Scoring<br>• Extractive Captions & Highlights"]
-        Turing --> Top5["Top 5 High-Precision Chunks"]
-        Top5 --> LLM["To LLM Generator"]
+        Top50["📄 Top 50 Lexical & Dense Candidates"] --> RRF["🎯 Reciprocal Rank Fusion<br>Score = sum [ 1 / (60 + rank) ]"]
+        RRF --> Turing["🧠 Microsoft Turing Semantic Reranker<br>• Full Cross-Attention Scoring<br>• Extractive Captions & Highlights"]
+        Turing --> Top5["📄 Top 5 High-Precision Chunks"]
+        Top5 --> LLM["🧠 To LLM Generator"]
     end
+    style Stage2 fill:none,stroke:#8b5cf6,stroke-width:2px;
 ```
 
 #### Diagram Walkthrough:
@@ -125,29 +127,23 @@ For enterprises operating under strict data sovereignty, financial banking priva
 
 ```mermaid
 flowchart TD
-    subgraph Client["Agent Application"]
-        Agent["Llama Stack Agentic RAG Client"]
+    Agent(["👤 Llama Stack Agent Client"]) --> RAGRouter{"🎯 Agentic RAG Engine<br>(Parametric vs Retrieval)"}
+    
+    subgraph StorageLayer["Sovereign Enterprise Stores"]
+        Qdrant[("🗄️ Vector Store (Qdrant / Milvus / pgvector)")]
+        Inverted[("🗄️ Lexical Store (OpenSearch / BM25)")]
     end
 
-    subgraph LlamaStackServer["META LLAMA STACK SERVER RUNTIME"]
-        VectorIO["Vector IO API Provider<br>(Unified Embeddings & Query Interface)"]
-        RAGRouter["Agentic RAG Engine<br>(Decides Parametric vs Non-Parametric)"]
-        Inference["Llama Model Runtime<br>(vLLM / TGI Serving Engine)"]
-    end
+    RAGRouter -->|"Vector IO Provider"| StorageLayer
+    StorageLayer -->|"Grounded Chunks"| Inference["🧠 Llama Model Runtime<br>(vLLM / TGI Serving Engine)"]
+    RAGRouter -->|"Direct Parametric"| Inference
+    Inference --> Response["📄 Attributed Grounded Response"]
 
-    subgraph StorageLayer["Sovereign Data Stores"]
-        Qdrant[("Qdrant / Milvus / PGVector")]
-        Inverted[("OpenSearch / Tantivy BM25")]
-    end
-
-    Client --> Agent
-    Agent --> RAGRouter
-    RAGRouter --> VectorIO
-    VectorIO --> Qdrant
-    VectorIO --> Inverted
-    VectorIO --> RAGRouter
-    RAGRouter --> Inference
-    Inference --> Client
+    style StorageLayer fill:none,stroke:#10b981,stroke-width:2px;
+    style Agent stroke:#3b82f6,stroke-width:2px,fill:none;
+    style RAGRouter stroke:#8b5cf6,stroke-width:2px,fill:none;
+    style Inference stroke:#7c3aed,stroke-width:2px,fill:none;
+    style Response stroke:#16a34a,stroke-width:2px,fill:none;
 ```
 
 #### Diagram Walkthrough:

@@ -54,15 +54,21 @@ When Chunk 14 is passed into a traditional embedding model:
 
 ```mermaid
 flowchart TD
-    subgraph Traditional["TRADITIONAL CHUNKING: SEVERED ATTENTION"]
-        T_Doc["Full Document<br>'OmniCorp is Vendor ... Vendor indemnifies Client'"] --> T_Split["Split into Chunks Before Encoding"]
-        T_Split --> T_C1["Chunk 1: 'OmniCorp is Vendor'"]
-        T_Split --> T_C2["Chunk 2: 'Vendor indemnifies Client'"]
-        T_C1 --> T_E1["Encoder Pass 1<br>(Attention isolated to Chunk 1)"]
-        T_C2 --> T_E2["Encoder Pass 2<br>(Attention isolated to Chunk 2)"]
-        T_E1 --> T_V1["Vector 1: Generic Entity"]
-        T_E2 --> T_V2["Vector 2: Generic Obligation<br>(Zero mathematical trace of OmniCorp!)"]
+    subgraph Traditional["⚠️ TRADITIONAL CHUNKING: SEVERED ATTENTION"]
+        T_Doc["📄 Full Document<br>'OmniCorp is Vendor ... Vendor indemnifies Client'"] --> T_Split["✂️ Split into Chunks Before Encoding"]
+        T_Split --> T_C1["📄 Chunk 1: 'OmniCorp is Vendor'"]
+        T_Split --> T_C2["📄 Chunk 2: 'Vendor indemnifies Client'"]
+        T_C1 --> T_E1["🧠 Encoder Pass 1<br>(Attention isolated to Chunk 1)"]
+        T_C2 --> T_E2["🧠 Encoder Pass 2<br>(Attention isolated to Chunk 2)"]
+        T_E1 --> T_V1[("🔢 Vector 1: Generic Entity")]
+        T_E2 --> T_V2[("🔢 Vector 2: Generic Obligation<br>(Zero mathematical trace of OmniCorp!)")]
     end
+
+    style Traditional fill:none,stroke:#dc2626,stroke-width:2px
+    style T_Doc stroke:#2563eb,stroke-width:2px
+    style T_E1 stroke:#7c3aed,stroke-width:2px
+    style T_E2 stroke:#7c3aed,stroke-width:2px
+    style T_V2 stroke:#dc2626,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:
@@ -89,20 +95,26 @@ Instead of slicing the text into pieces and embedding each piece in isolation:
 
 ```mermaid
 flowchart TD
-    subgraph Late_Chunking["LATE CHUNKING: DOCUMENT-LEVEL CONTEXTUALIZATION"]
-        Doc["Full Document (up to 8,192 tokens)<br>'OmniCorp is Vendor ... Vendor indemnifies Client'"]
-        Doc --> FullEncoder["Single Long-Context Forward Pass<br>(Full Bidirectional Self-Attention across all tokens)"]
-        FullEncoder --> TokenMatrix["Contextualized Token Matrix H<br>Shape: [Sequence_Length × Dimension]"]
+    subgraph Late_Chunking["✨ LATE CHUNKING: DOCUMENT-LEVEL CONTEXTUALIZATION"]
+        Doc["📄 Full Document (8,192 tokens)<br>'OmniCorp is Vendor ... Vendor indemnifies Client'"]
+        Doc --> FullEncoder["🧠 Single Long-Context Forward Pass<br>(Full Bidirectional Attention across all tokens)"]
+        FullEncoder --> TokenMatrix["📊 Contextualized Token Matrix H<br>Shape: [Seq_Length x Dimension]"]
         
-        TokenMatrix --> Span1["Span 1: Tokens 0 to 142<br>(Entity Definitions)"]
-        TokenMatrix --> Span2["Span 2: Tokens 143 to 310<br>(Indemnity Clause)"]
+        TokenMatrix --> Span1["📐 Span 1: Tokens 0–142<br>(Entity Definitions)"]
+        TokenMatrix --> Span2["📐 Span 2: Tokens 143–310<br>(Indemnity Clause)"]
         
-        Span1 --> Pool1["Mean Pool Span 1 Vectors"]
-        Span2 --> Pool2["Mean Pool Span 2 Vectors"]
+        Span1 --> Pool1["🎯 Mean Pool Span 1"]
+        Span2 --> Pool2["🎯 Mean Pool Span 2"]
         
-        Pool1 --> Vec1["Chunk 1 Vector (High Precision)"]
-        Pool2 --> Vec2["Chunk 2 Vector<br>(Contextualized: Contains OmniCorp attention!)"]
+        Pool1 --> Vec1[("🔢 Chunk 1 Vector (High Precision)")]
+        Pool2 --> Vec2[("🔢 Chunk 2 Vector<br>(Contains OmniCorp attention!)")]
     end
+
+    style Late_Chunking fill:none,stroke:#16a34a,stroke-width:2px
+    style Doc stroke:#2563eb,stroke-width:2px
+    style FullEncoder stroke:#7c3aed,stroke-width:2px
+    style Vec1 stroke:#16a34a,stroke-width:2px
+    style Vec2 stroke:#16a34a,stroke-width:2px
 ```
 
 #### Visual Walkthrough of Late Chunking:

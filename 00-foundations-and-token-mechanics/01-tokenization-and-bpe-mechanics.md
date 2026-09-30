@@ -75,13 +75,15 @@ table size ≈ vocabulary size × numbers per row × bytes per number
 
 ```mermaid
 flowchart LR
-    W["Word<br>'lowest'"] --> C["Single symbols<br>l o w e s t"]
-    C --> M["Apply merges<br>in learned order"]
-    M --> P["Pieces<br>low + est"]
-    P --> I["Token IDs<br>from the vocabulary"]
+    W["📄 Raw Word<br>'lowest'"] --> C["🔤 Single symbols<br>l o w e s t"]
+    C --> M["⚙️ Apply merges<br>in learned order"]
+    M --> P["🧩 Subword pieces<br>low + est"]
+    P --> I[("🔢 Token IDs<br>from vocabulary")]
 
+    style W stroke:#2563eb,stroke-width:2px
     style C stroke:#2563eb,stroke-width:2px
     style M stroke:#7c3aed,stroke-width:2px
+    style P stroke:#2563eb,stroke-width:2px
     style I stroke:#16a34a,stroke-width:2px
 ```
 
@@ -141,15 +143,16 @@ After reading the token IDs, the model produces one raw score for every entry in
 
 ```mermaid
 flowchart LR
-    L["Logits<br>one score per token"] --> S["Divide by T,<br>then softmax"]
-    S --> F["Top-k / top-p<br>trim the tail"]
-    F --> D["Draw one token<br>(or take the max)"]
-    D --> A["Append to text,<br>repeat"]
+    L["📊 Logits<br>(raw score per token)"] --> S["🌡️ Scale by T<br>& Softmax"]
+    S --> F{"🎯 Top-k / Top-p<br>(trim tail)"}
+    F --> D["🎲 Draw token<br>(or take argmax)"]
+    D --> A["📝 Append to text<br>& repeat loop"]
 
     style L stroke:#2563eb,stroke-width:2px
     style S stroke:#d97706,stroke-width:2px
     style F stroke:#d97706,stroke-width:2px
     style D stroke:#16a34a,stroke-width:2px
+    style A stroke:#16a34a,stroke-width:2px
 ```
 
 1. **Logits**: the model's raw scores for every token in the vocabulary.
