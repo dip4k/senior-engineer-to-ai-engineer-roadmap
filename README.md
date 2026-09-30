@@ -2,7 +2,6 @@
 ### Production Architecture, Autonomous Agents & Systems Engineering for Senior Tech Leads
 
 [![Verified: September 2026](https://img.shields.io/badge/Verified-September%202026-blue.svg)](#the-ai-engineering-landscape-then-vs-now)
-[![Full Roadmap: Core Syllabus](https://img.shields.io/badge/Full%20Roadmap-Core%20Syllabus-brightgreen.svg)](./AI_ENGINEER_ROADMAP.md)
 [![Stack: Python 3.12+ | .NET 9](https://img.shields.io/badge/Polyglot-Python%20%7C%20.NET%209-brightgreen.svg)](#hands-on-practice-labs-showcase)
 [![Protocols: MCP | A2A | AG-UI](https://img.shields.io/badge/Protocols-MCP%20%7C%20A2A%20%7C%20AG--UI-orange.svg)](#enterprise-protocols-ecosystem-alignment)
 [![Agentic Dev: Antigravity | Claude Code | Copilot](https://img.shields.io/badge/Agentic%20Dev-Antigravity%20%7C%20Claude%20Code%20%7C%20Copilot-blueviolet.svg)](./LEARNING_WITH_AGENTS.md)
@@ -16,10 +15,6 @@ Have you noticed how easy it is to build a mind-blowing AI demo over a weekend, 
 When you move from traditional Software 1.0 (where an `if` statement behaves the exact same way every single time) to non-deterministic AI (where your core reasoning engine might hallucinate a JSON parameter or get trapped in an infinite loop), it's completely disorienting. 
 
 This repository is not a collection of surface-level tutorials or marketing buzzwords. It is a battle-tested **architectural masterclass** treating Large Language Models not as magical oracles, but as **probabilistic reasoning microservices** governed by deterministic harnesses: finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
-
-> [!IMPORTANT]
-> **Looking for the Full Roadmap / Core Syllabus Without Extra Fluff?**  
-> Explore [**🗺️ The AI Engineer Roadmap (Full Core Syllabus)**](./AI_ENGINEER_ROADMAP.md) — a clean, practical breakdown of every fundamental category, topic, and subtopic explained in plain English (ELI10) without confusing abbreviations or unnecessary marketing fluff.
 
 > [!NOTE]
 > **Calibrated Depth: The 4-Tier Model**
@@ -37,9 +32,14 @@ This repository is not a collection of surface-level tutorials or marketing buzz
 
 ---
 
+## 🗺️ The Complete AI Engineer Roadmap
+
+For engineers looking for an end-to-end conceptual overview before diving into the deep architectural modules, [**The AI Engineer Roadmap**](./AI_ENGINEER_ROADMAP.md) provides the full syllabus. It systematically covers the core disciplines—from LLM foundations, context engineering, and vector retrieval to stateful agent orchestration, security guardrails, evaluation pipelines, and production serving—with straightforward, practical explanations designed for rapid clarity.
+
+---
+
 ## 📑 Table of Contents
 
-* 🗺️ [**Full AI Engineer Roadmap: Core Syllabus**](./AI_ENGINEER_ROADMAP.md) *(Essential concept breakdown without extra fluff, explained in plain English)*
 * 🤖 [**Interactive Learning & Practice with Agents (Antigravity, Claude Code, Copilot)**](./LEARNING_WITH_AGENTS.md) *(Pre-setup agents, skills, and automated grading)*
 * 📖 [**Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) *(Essential 1–2 sentence companion guide across 21 disciplines)*
 1. [The AI Engineering Landscape: Then vs. Now](#the-ai-engineering-landscape-then-vs-now)
@@ -322,8 +322,7 @@ Every topic and lesson across the curriculum is classified using the **4-Tier Le
 
 Navigate directly to the core curriculum tracks, lab directories, and curated catalogs across the repository:
 
-* 🗺️ [**Full AI Engineer Roadmap (Core Syllabus)**](./AI_ENGINEER_ROADMAP.md): Plain-English (ELI10), fluff-free breakdown of all essential categories, topics, and subtopics.
-* 📚 [**Master Curriculum Syllabus (Phases 00–08)**](#master-curriculum-syllabus): Progressive 9-phase systems engineering syllabus from hardware inference to SDLC leadership.
+* 🗺️ [**Master Curriculum Syllabus (Phases 00–08)**](#master-curriculum-syllabus): Progressive 9-phase systems engineering syllabus from hardware inference to SDLC leadership.
 * 🧪 [**Hands-On Practice Labs Showcase**](#hands-on-practice-labs-showcase): 7 runnable enterprise labs (Python/Pydantic & .NET 9) covering stateful agents, MCP, and SAGAs.
 * 🌟 [**The Premier Standalone Engineering Guides**](#the-premier-standalone-engineering-guides): 16 specialized playbooks organized across Interview, Architecture, SRE, and Governance tracks.
 * 🏢 [**Enterprise Architecture Blueprints**](#enterprise-architecture-blueprints): The 7 core enterprise AI archetypes and system design specifications.
