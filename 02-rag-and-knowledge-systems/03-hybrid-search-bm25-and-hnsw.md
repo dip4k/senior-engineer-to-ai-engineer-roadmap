@@ -1,7 +1,9 @@
-# Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics
+# Lesson 03: Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) and Memory Physics
 
-> **Tier**: `🟢 Core` | **Estimated Read Time**: 20 min | **Prerequisites**: [Phase 00: Transformer Latent Spaces](../00-foundations-and-token-mechanics/02-transformer-and-hardware-physics.md), [Phase 02: Ingestion & Chunking](./01-document-parsing-and-chunking.md)  
-> **Core Concept**: Why production search requires combining exact keyword matching (via **BM25**, an inverted index algorithm) with semantic concept proximity (via **HNSW**, a multi-layer vector graph), and how to calculate resident DRAM sizing.
+> **Tier**: `🟡 Engineering Depth` | **Estimated Read Time**: 20 min | **Prerequisites**: [Phase 00: Transformer Latent Spaces](../00-foundations-and-token-mechanics/02-transformer-and-hardware-physics.md), [Phase 02 Lesson 01: Document Parsing and Structural Chunking Strategies](./01-document-parsing-and-chunking.md)  
+> **Core Concept**: Production search requires combining exact keyword matching (via BM25 inverted indices) with semantic concept proximity (via HNSW multi-layer vector graphs), balancing query precision against resident DRAM sizing.  
+> **New AI terms introduced**: BM25 Okapi, Inverted Index, HNSW (Hierarchical Navigable Small World), Skip List Graph, Dot Product, Inner Product, L2 Normalization, Scalar Quantization, Binary Quantization, Matryoshka Representation Learning (MRL).  
+> **AI terms assumed from earlier lessons**: RAG, Vector Database, Dense Embedding, Sparse Lexical Retrieval, Cosine Similarity, Token, Latent Space.
 
 ---
 
@@ -11,7 +13,7 @@ By the end of this lesson, you will be able to:
 - Explain why pure dense vector search fails on exact alphanumeric identifiers, product SKUs, and boolean negations.
 - Implement and tune sparse lexical inverted indexes using **Best Matching 25 (BM25 Okapi)**—the industry standard for exact keyword ranking.
 - Trace the internal graph traversal physics of **Hierarchical Navigable Small World (HNSW)** indexes—a multi-dimensional skip-list data structure for fast vector search.
-- Optimize vector distance calculations using L2 normalization and SIMD/AVX-512 Dot Product acceleration.
+- Optimize vector distance calculations using L2 normalization and SIMD Dot Product acceleration.
 - Calculate the exact resident DRAM memory footprint for multi-million vector datasets across FP32, FP16, INT8 scalar quantization, and binary quantization.
 - Deploy a dual-engine hybrid retrieval pipeline in Python 3.12+ executing parallel lexical and semantic search.
 
@@ -52,21 +54,16 @@ View search as **Dual Coordinate Retrieval**: querying two fundamentally differe
 
 ```mermaid
 flowchart TD
-    subgraph Query_Dispatch["1. QUERY DISPATCH"]
+    subgraph Query_Dispatch["1. Query Dispatch"]
         Q["User Query:<br>'Audit server SKU-90812 under NDA'"]
     end
 
-    subgraph Dual_Engines["2. DUAL COORDINATE SPACES"]
-        subgraph Lexical_Space["Lexical Coordinate Space (Inverted Index)"]
-            BM25["BM25 Postings List<br>• Matches exact term 'SKU-90812'<br>• Matches exact term 'NDA'<br>• High precision, zero semantic blur"]
-        end
-        
-        subgraph Semantic_Space["Semantic Coordinate Space (Spatial Graph)"]
-            HNSW["HNSW Vector Graph<br>• Traverses metric space to 'datacenter compliance'<br>• Matches conceptual synonyms<br>• High semantic recall"]
-        end
+    subgraph Dual_Engines["2. Dual Coordinate Spaces"]
+        BM25["Lexical Inverted Index<br>• Matches exact term 'SKU-90812'<br>• High keyword precision"]
+        HNSW["Semantic Vector Graph<br>• Traverses to 'server compliance'<br>• High conceptual recall"]
     end
 
-    subgraph Candidate_Pool["3. UNIFIED CANDIDATE HARVEST"]
+    subgraph Candidate_Pool["3. Candidate Harvest"]
         TopSparse["Top-50 Lexical Candidates"]
         TopDense["Top-50 Semantic Candidates"]
     end
@@ -77,11 +74,14 @@ flowchart TD
     HNSW --> TopDense
 ```
 
-### Visual Walkthrough:
+#### Diagram Walkthrough:
 1. **Query Dispatch**: The query is split across two engines simultaneously.
 2. **Lexical Space**: The inverted index locates documents containing the exact tokens `"SKU-90812"` and `"NDA"` via fast pointer intersections across postings lists.
-3. **Semantic Space**: The HNSW vector graph navigates through metric space to locate chunks matching the general meaning of "server auditing and non-disclosure agreements."
+3. **Semantic Space**: The HNSW vector graph navigates through metric space to locate chunks matching the general meaning of server auditing and non-disclosure agreements.
 4. **Candidate Harvest**: Both engines return independent top-50 candidate lists, ensuring zero keyword misses while maintaining deep conceptual discovery.
+
+> [!NOTE]
+> **Where this analogy breaks**: A physical highway navigation system operates in fixed 2D or 3D Euclidean space. HNSW operates in high-dimensional non-Euclidean latent spaces (e.g. 1536 dimensions) where intuitive geometric distance breaks down and points cluster together tightly.
 
 ---
 
@@ -103,7 +103,7 @@ Before analyzing the math, let us ground the terminology in familiar software en
 For a query `Q` containing keywords `q_1, q_2, ..., q_n` and a document `D`:
 
 ```text
-BM25_Score(D, Q) = Σ [ IDF(q_i) * ( f(q_i, D) * (k1 + 1) ) / ( f(q_i, D) + k1 * (1 - b + b * (|D| / avgdl)) ) ]
+BM25_Score(D, Q) = sum [ IDF(q_i) * ( f(q_i, D) * (k1 + 1) ) / ( f(q_i, D) + k1 * (1 - b + b * (|D| / avgdl)) ) ]
 ```
 
 Where:
@@ -127,7 +127,7 @@ While BM25 requires exact word matches, dense vector embeddings capture conceptu
 ### 4.1. The O(N) Brute-Force Wall
 In a corpus of 10,000,000 vectors, computing exact cosine similarity against every vector requires O(N) dot products. At 1536 dimensions, a flat linear scan takes **350–600 milliseconds** per query, blowing past production latency SLAs (sub-30ms).
 
-Production vector databases (Qdrant, pgvector, Milvus, Pinecone) bypass this bottleneck using **Approximate Nearest Neighbor (ANN)** search powered by **Hierarchical Navigable Small World (HNSW)** graphs.
+Production vector databases (Qdrant, pgvector, Milvus, Pinecone) bypass this bottleneck using **Approximate Nearest Neighbor (ANN)** search powered by **Hierarchical Navigable Small World (HNSW)** graphs (Malkov & Yashunin, 2018).
 
 ### 4.2. The Skip-List Mental Model
 If you understand the **Skip List** data structure (used in Redis Sorted Sets and LevelDB), you already understand HNSW. 
@@ -141,40 +141,38 @@ HNSW is the multi-dimensional geometric equivalent of a Skip List:
 - **Lower Graph Layers**: Contain progressively denser clusters of vectors with tight neighborhood links.
 
 ```mermaid
-    flowchart TD
-        subgraph Layer2["Layer 2: Express Highway (Sparse, long-range jumps)"]
-            direction LR
-            L2_Entry(["Entry Point"]) -->|Highway Jump| L2_N1["Cluster A"]
-            L2_N1 -.->|Evaluate further| L2_N2["Cluster B"]
-        end
+flowchart TD
+    subgraph MultiLayer["HNSW MULTI-LAYER SKIP LIST TRAVERSAL"]
+        L2["Layer 2: Express Highway<br>Sparse entry nodes with long geometric jumps"]
+        L1["Layer 1: Regional Roads<br>Medium density clustering"]
+        L0["Layer 0: Local Base Graph<br>Contains 100% of all indexed vectors"]
+    end
 
-        subgraph Layer1["Layer 1: Regional Roads (Medium density)"]
-            direction LR
-            L1_N2["Node 2 (Entry)"] -->|Regional Hop| L1_N3["Node 3"]
-            L1_N2 -.->|Evaluate| L1_N1["Node 1"]
-            L1_N3 -.->|Evaluate further| L1_N4["Node 4"]
-        end
-
-        subgraph Layer0["Layer 0: Local Streets (Dense base graph — 100% of vectors)"]
-            direction LR
-            L0_D["Vector D (Entry)"] --- L0_E["Vector E"]
-            L0_D --- L0_C["Vector C"]
-            L0_C --- L0_B["Vector B"]
-            L0_B --- L0_A["Vector A"]
-            L0_D -->|Local Beam Search| L0_Target["Nearest Neighbors"]
-        end
-
-    Layer2 ==>|"Descend: Cluster A → Node 2"| Layer1
-    Layer1 ==>|"Descend: Node 3 → Vector D"| Layer0
+    L2 -->|"1. Long-range jump"| L1
+    L1 -->|"2. Regional descent"| L0
 ```
 
-### Visual Walkthrough of HNSW Traversal:
-1. **Top Layer Search**: Search begins at a single fixed entry point in the highest, sparsest layer (`Layer 2`). Links in this layer span vast semantic distances.
-2. **Greedy Traversal**: The algorithm evaluates distance to all neighbors of the current node, stepping greedily toward the neighbor closest to the query vector.
-3. **Layer Descent**: When no neighbor in `Layer 2` is closer to the query than the current node, the algorithm drops to `Layer 1` at the current node's coordinates.
-4. **Convergence in Base Layer**: The search descends layer-by-layer until reaching `Layer 0` (which contains 100% of all indexed vectors). In `Layer 0`, the algorithm executes fine-grained local beam search to harvest the final nearest neighbors.
+#### Diagram Walkthrough:
+1. **Express Highway**: Search begins at a sparse entry point in the highest layer, making broad semantic jumps across distant vector clusters.
+2. **Regional Descent**: The search drops into medium-density layers at the closest candidate coordinate.
+3. **Local Base Graph**: The search enters Layer 0, where all vectors reside, to perform fine-grained beam search.
 
-### 4.2. Tuning Key HNSW Engineering Knobs
+```mermaid
+flowchart LR
+    subgraph BaseGraph["LAYER 0: LOCAL BEAM SEARCH NEIGHBORHOOD"]
+        Entry["Candidate Node"] --- N1["Neighbor A"]
+        Entry --- N2["Neighbor B"]
+        N1 --- Target["Nearest Match"]
+        N2 --- N3["Neighbor C"]
+    end
+```
+
+#### Diagram Walkthrough:
+1. **Neighborhood Evaluation**: Traversal inspects immediate neighbors of the current candidate node in Layer 0.
+2. **Greedy Stepping**: The algorithm steps greedily toward the neighbor with the highest inner product similarity.
+3. **Convergence**: Search terminates when no unexplored neighbor is closer to the query than the current top-k set.
+
+### 4.3. Tuning Key HNSW Engineering Knobs
 
 | HNSW Parameter | Production Default | Systems Impact & Trade-offs |
 |---|---|---|
@@ -191,8 +189,8 @@ Vector search engines evaluate proximity using one of three standard distance me
 | Distance Metric | Mathematical Formulation | Precondition | Production Performance Profile |
 |---|---|---|---|
 | **Cosine Similarity** | `cos(θ) = (u · v) / (‖u‖_2 * ‖v‖_2)` | Unnormalized vectors | Incurs division and square root overhead per vector evaluation. Range: `[-1, 1]`. |
-| **Dot Product (Inner)** | `u · v = Σ [ u_i * v_i ]` | **Must be L2 Normalized** | **3x faster than Cosine**. When vectors are unit-length (`‖u‖_2 = 1.0`), Dot Product equals Cosine Similarity and compiles to native SIMD/AVX-512 FMA (Fused Multiply-Add) instructions. |
-| **Euclidean Distance (L2)** | `d(u, v) = sqrt( Σ [ (u_i - v_i)^2 ] )` | Raw or normalized | Measures geometric spatial distance. Minimizing L2 distance on normalized vectors is mathematically identical to maximizing Dot Product. |
+| **Dot Product (Inner)** | `u · v = sum [ u_i * v_i ]` | **Must be L2 Normalized** | **3x faster than Cosine**. When vectors are unit-length (`‖u‖_2 = 1.0`), Dot Product equals Cosine Similarity and compiles to native SIMD instructions. |
+| **Euclidean Distance (L2)** | `d(u, v) = sqrt( sum [ (u_i - v_i)^2 ] )` | Raw or normalized | Measures geometric spatial distance. Minimizing L2 distance on normalized vectors is mathematically identical to maximizing Dot Product. |
 
 > **Production Golden Rule**:  
 > Always **L2 normalize your vectors at ingestion time**. Store unit-length vectors and configure your index to use **Dot Product (Inner Product)**. This eliminates the square root and division operations during query traversal, tripling your search throughput.
@@ -201,7 +199,7 @@ Vector search engines evaluate proximity using one of three standard distance me
 
 ## 6. Vector Database RAM Sizing & Quantization Physics
 
-Vector databases are notoriously memory-intensive because HNSW graphs must reside in **active RAM** for fast pointer traversal.
+Vector databases are memory-intensive because HNSW graphs must reside in **active RAM** for fast pointer traversal.
 
 ### 6.1. The Raw FP32 Memory Calculation
 For a collection of `N` vectors at dimensionality `d` indexed with HNSW parameter `M`:
@@ -230,41 +228,33 @@ To scale economically, production systems deploy three compression tiers:
    - Cuts vector memory by **50% to 75%** with negligible (<1%) loss in recall. Supported natively in PostgreSQL `pgvector 0.7+` via `halfvec`.
 3. **Binary Quantization (BQ)**:
    - Converts each floating-point dimension to a single bit (`0` if `x <= 0`, `1` if `x > 0`).
-   - Reduces 1536-dimensional vectors to just 192 bytes (**32x compression!**). Distance calculations execute via CPU `POPCNT` (population count) bitwise operations.
+   - Reduces 1536-dimensional vectors to just 192 bytes (**32x compression**). Distance calculations execute via CPU bitwise operations.
 
 ---
 
-## 7. Enterprise Production Code: Dual-Index Hybrid Engine
+## 7. Enterprise Production Implementation
 
-The following Python 3.12+ implementation demonstrates a production-grade dual-engine search pipeline integrating in-memory BM25 lexical search with normalized dense vector search:
+The following complete, runnable Python 3.12+ script uses Pydantic v2 and standard library math to implement an in-memory dual-engine search pipeline combining BM25 lexical ranking with L2-normalized vector dot product search.
 
 ```python
-"""
-dual_hybrid_engine.py
-Production-grade parallel BM25 and Dense Vector search engine with L2 normalization.
-"""
-
 from __future__ import annotations
 
 import math
 from collections import Counter
-from dataclasses import dataclass, field
-from typing import Any, Dict, List, Tuple
-import numpy as np
+from typing import Any, Dict, List, Optional
+from pydantic import BaseModel, Field
 
 
-@dataclass
-class IndexedDocument:
-    """Represents a discrete knowledge record."""
+class IndexedDocument(BaseModel):
+    """Represents a discrete knowledge record with text and optional vector."""
     doc_id: str
     content: str
-    metadata: Dict[str, Any] = field(default_factory=dict)
-    vector: np.ndarray | None = None
+    vector: Optional[List[float]] = None
+    metadata: Dict[str, Any] = Field(default_factory=dict)
 
 
-@dataclass
-class SearchCandidate:
-    """Candidate match from a search engine."""
+class SearchCandidate(BaseModel):
+    """Candidate match returned by a retrieval engine."""
     doc_id: str
     score: float
     source_engine: str  # 'bm25' or 'dense'
@@ -300,9 +290,7 @@ class BM25LexicalIndex:
             self.term_frequencies[doc.doc_id] = tf
 
             for term in tf.keys():
-                if term not in self.inverted_index:
-                    self.inverted_index[term] = []
-                self.inverted_index[term].append(doc.doc_id)
+                self.inverted_index.setdefault(term, []).append(doc.doc_id)
 
         self.avg_doc_len = total_len / self.corpus_size if self.corpus_size > 0 else 0.0
 
@@ -321,9 +309,9 @@ class BM25LexicalIndex:
             for doc_id in self.inverted_index[term]:
                 tf = self.term_frequencies[doc_id][term]
                 doc_len = self.doc_lengths[doc_id]
-                numerator = tf * (self.k1 + 1.0)
-                denominator = tf + self.k1 * (1.0 - self.b + self.b * (doc_len / self.avg_doc_len))
-                scores[doc_id] += idf_val * (numerator / denominator)
+                num = tf * (self.k1 + 1.0)
+                denom = tf + self.k1 * (1.0 - self.b + self.b * (doc_len / self.avg_doc_len))
+                scores[doc_id] += idf_val * (num / denom)
 
         return [
             SearchCandidate(doc_id=doc_id, score=score, source_engine="bm25")
@@ -336,69 +324,49 @@ class DenseVectorIndex:
 
     def __init__(self):
         self.documents: Dict[str, IndexedDocument] = {}
-        self.matrix: np.ndarray | None = None
-        self.id_map: List[str] = []
+        self.vectors: Dict[str, List[float]] = {}
+
+    def _normalize(self, vec: List[float]) -> List[float]:
+        norm = math.sqrt(sum(x * x for x in vec))
+        return [x / norm if norm > 0 else 0.0 for x in vec]
 
     def index(self, documents: List[IndexedDocument]) -> None:
-        valid_docs = [d for d in documents if d.vector is not None]
-        if not valid_docs:
-            return
+        for d in documents:
+            if d.vector is not None:
+                self.documents[d.doc_id] = d
+                self.vectors[d.doc_id] = self._normalize(d.vector)
 
-        self.id_map = [d.doc_id for d in valid_docs]
-        raw_matrix = np.array([d.vector for d in valid_docs], dtype=np.float32)
+    def search(self, query_vector: List[float], top_k: int = 50) -> List[SearchCandidate]:
+        q_norm = self._normalize(query_vector)
+        scored: List[tuple[str, float]] = []
 
-        # L2 Normalize all vectors at ingestion time
-        norms = np.linalg.norm(raw_matrix, axis=1, keepdims=True)
-        norms[norms == 0] = 1.0
-        self.matrix = raw_matrix / norms
+        for doc_id, vec in self.vectors.items():
+            dot = sum(a * b for a, b in zip(q_norm, vec))
+            scored.append((doc_id, dot))
 
-        for d in valid_docs:
-            self.documents[d.doc_id] = d
-
-    def search(self, query_vector: np.ndarray, top_k: int = 50) -> List[SearchCandidate]:
-        if self.matrix is None or len(self.id_map) == 0:
-            return []
-
-        # L2 Normalize query vector
-        norm_q = np.linalg.norm(query_vector)
-        if norm_q == 0:
-            return []
-        q_unit = (query_vector / norm_q).astype(np.float32)
-
-        # Fast matrix-vector dot product (SIMD accelerated)
-        similarities = np.dot(self.matrix, q_unit)
-        top_indices = np.argsort(similarities)[::-1][:top_k]
-
+        scored.sort(key=lambda x: x[1], reverse=True)
         return [
-            SearchCandidate(
-                doc_id=self.id_map[idx],
-                score=float(similarities[idx]),
-                source_engine="dense"
-            )
-            for idx in top_indices
+            SearchCandidate(doc_id=doc_id, score=score, source_engine="dense")
+            for doc_id, score in scored[:top_k]
         ]
 
 
-# =====================================================================
-# Verification Demonstration
-# =====================================================================
 if __name__ == "__main__":
-    # Create synthetic test corpus
     docs = [
         IndexedDocument(
             doc_id="doc_1",
             content="Hardware specification sheet for cluster node SKU-90812 running under NDA.",
-            vector=np.array([0.1, 0.9, 0.05, 0.2]),
+            vector=[0.1, 0.9, 0.05, 0.2]
         ),
         IndexedDocument(
             doc_id="doc_2",
             content="Hardware specification sheet for cluster node SKU-90813 in public preview.",
-            vector=np.array([0.1, 0.88, 0.06, 0.22]),
+            vector=[0.1, 0.88, 0.06, 0.22]
         ),
         IndexedDocument(
             doc_id="doc_3",
             content="General corporate policy regarding enterprise server procurement and maintenance.",
-            vector=np.array([0.4, 0.1, 0.8, 0.1]),
+            vector=[0.4, 0.1, 0.8, 0.1]
         ),
     ]
 
@@ -409,7 +377,7 @@ if __name__ == "__main__":
     dense.index(docs)
 
     query = "Find technical specs for SKU-90812"
-    query_vec = np.array([0.1, 0.9, 0.05, 0.2])  # Matches vector space of doc_1 and doc_2
+    query_vec = [0.1, 0.9, 0.05, 0.2]
 
     print(f"Query: '{query}'\n")
     print("--- BM25 Lexical Results (Exact Token Match) ---")
@@ -418,7 +386,19 @@ if __name__ == "__main__":
 
     print("\n--- Dense Vector Results (Spatial Proximity) ---")
     for hit in dense.search(query_vec, top_k=2):
-        print(f"  [{hit.source_engine}] Doc: {hit.doc_id} | Cosine/Dot Score: {hit.score:.4f}")
+        print(f"  [{hit.source_engine}] Doc: {hit.doc_id} | Dot Score: {hit.score:.4f}")
+```
+
+### Execution Output:
+```text
+Query: 'Find technical specs for SKU-90812'
+
+--- BM25 Lexical Results (Exact Token Match) ---
+  [bm25] Doc: doc_1 | Score: 0.8252
+
+--- Dense Vector Results (Spatial Proximity) ---
+  [dense] Doc: doc_1 | Dot Score: 1.0000
+  [dense] Doc: doc_2 | Dot Score: 0.9996
 ```
 
 ---
@@ -427,13 +407,38 @@ if __name__ == "__main__":
 
 ### 1. The Unnormalized Dot Product Trap
 - **The Failure**: Configuring your vector database to use Inner Product (Dot Product) without normalizing vector embeddings at ingestion time.
-- **Root Cause**: If vectors are unnormalized, longer documents that produce larger embedding magnitudes will mathematically dominate the dot product, drowning out shorter, highly relevant chunks.
-- **Production Defense**: Ensure your ingestion pipeline applies `vector / np.linalg.norm(vector)` before insertion, or verify that your vector database performs automatic unit-length normalization.
+- **Root Cause**: If vectors are unnormalized, longer documents producing larger embedding magnitudes mathematically dominate the dot product, drowning out shorter, relevant chunks.
+- **Production Defense**: Ensure your ingestion pipeline applies L2 normalization before insertion, or verify that your vector database performs automatic unit-length normalization.
 
 ### 2. HNSW Memory Starvation Under Index Updates
 - **The Failure**: A vector database pod crashes with Out-Of-Memory (OOM) during background index maintenance.
 - **Root Cause**: During continuous document updates or high insert traffic, HNSW re-indexes edges dynamically. Temporary graph construction buffers require an additional **30%–50% overhead above resident memory**.
 - **Production Defense**: Provision vector database memory with a minimum **1.5x buffer** above the raw FP32/FP16 vector calculation. Enable Scalar Quantization (SQ8) to cut baseline DRAM usage by 4x.
+
+---
+
+## 🧠 Quick Check
+
+Test your architectural intuition:
+
+> **Scenario**: A search platform team is provisioning infrastructure for 10 million vectors (1536 dimensions, FP32). They choose HNSW with parameter $M = 32$. The cloud team provisions a single instance with 32 GB RAM.
+>
+> 1. What is the approximate resident DRAM requirement for this index?
+> 2. Will the instance run comfortably in production, and what architectural compression technique should they apply?
+
+<details>
+<summary><b>View Solution</b></summary>
+
+1. **Memory Requirement**:
+   - Vector storage: 10M * 1536 * 4 bytes ≈ 61.4 GB.
+   - HNSW graph links: 10M * (32 * 2 * 8 bytes) ≈ 5.1 GB.
+   - Struct overhead (20%): ≈ 13.3 GB.
+   - **Total Active DRAM Required**: ≈ **80 GB**.
+
+2. **Verdict & Solution**:
+   - The 32 GB instance will crash with Out-Of-Memory (OOM) immediately.
+   - **Remedy**: Apply **Scalar Quantization (SQ8)** or **Matryoshka Representation Learning (MRL)** to reduce vector dimensionality from 1536 to 512, combined with FP16/INT8 storage. This drops memory usage to under 20 GB, fitting safely inside the 32 GB RAM budget.
+</details>
 
 ---
 
@@ -455,6 +460,5 @@ if __name__ == "__main__":
 ## 🧭 Navigation
 
 - **[← Previous Lesson: Late Chunking Deep Dive](./02-late-chunking-deep-dive.md)**
-- **[Phase 02 Hub](./README.md)**
-- **[Next Lesson: Reciprocal Rank Fusion & Cross-Encoder Reranking →](./04-reciprocal-rank-fusion-and-cross-encoders.md)**
-
+- **[Phase 02 Hub: Overview & Architecture Directory](./README.md)**
+- **[Next Lesson: Reciprocal Rank Fusion and Cross-Encoder Reranking →](./04-reciprocal-rank-fusion-and-cross-encoders.md)**

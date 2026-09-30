@@ -1,6 +1,9 @@
-# Document Parsing & Structural Chunking Strategies
+# Lesson 01: Document Parsing and Structural Chunking Strategies
 
-> **Tier**: `HIGH ROI / CORE` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [Phase 01: Context AST](../01-prompt-and-context-engineering/01-context-ast-architecture.md)
+> **Tier**: `🟡 Engineering Depth` | **Estimated Read Time**: 18 min | **Prerequisites**: [Phase 00: BPE Tokenization](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [Phase 02 Lesson 00: RAG Fundamentals](./00-rag-fundamentals-and-retrieval-architectures.md)  
+> **Core Concept**: Production document ingestion requires converting spatial, multi-column PDFs and financial tables into relational structures using layout-aware parsing, Parent-Child hierarchical linking, and contextual enrichment.  
+> **New AI terms introduced**: Layout-Aware Parsing, Parent-Child Chunking, Contextual Retrieval, Visual Patch Retrieval, ColPali, Semantic Chunking.  
+> **AI terms assumed from earlier lessons**: RAG, Token, Embedding, Vector Database, Dense Retrieval, BPE, Context Window, Prompt Caching.
 
 ---
 
@@ -19,7 +22,7 @@ By the end of this lesson, you will be able to:
 
 In enterprise production, your retrieval system is only as good as the structural integrity of its ingestion pipeline: **Garbage in, garbage retrieved.**
 
-Software engineers building initial RAG prototypes typically take a 50-page corporate PDF or SEC 10-K filing, run a naive Python text extractor (such as `pypdf` or `pdfminer`), split the resulting raw string into 500-character blocks, and push them to a vector database.
+Software engineers building initial RAG prototypes typically take a 50-page corporate PDF or SEC 10-K filing. They run a naive text extractor (such as `pypdf` or `pdfminer`), split the resulting text into 500-character blocks, and push them to a vector database.
 
 Under production enterprise workloads, this naive approach collapses catastrophically:
 
@@ -28,16 +31,16 @@ Under production enterprise workloads, this naive approach collapses catastrophi
 ```mermaid
 flowchart TD
     subgraph Failures["NAIVE EXTRACTION FAILURE MODES IN PRODUCTION"]
-        F1["Multi-Column Cross-Bleeding<br>Line 1 of Col 1 is concatenated with Line 1 of Col 2,<br>producing nonsensical sentences."]
-        F2["Tabular Coordinate Destruction<br>Financial balance sheet rows are flattened into raw text strings,<br>completely severing column headers from numerical cells."]
-        F3["Arbitrary Boundary Severance<br>A fixed 500-token cut slices directly through a critical legal clause:<br>'Subject to Section 12.4, the liability cap is...' | SPLIT | '...$0 for negligence.'"]
+        F1["Multi-Column Cross-Bleeding<br>Line 1 of Col 1 concatenates with Line 1 of Col 2,<br>producing scrambled sentences."]
+        F2["Tabular Coordinate Destruction<br>Financial balance sheet rows are flattened into raw text,<br>severing column headers from numbers."]
+        F3["Arbitrary Boundary Severance<br>A fixed 500-token cut slices a critical legal clause:<br>'Subject to Section 12.4, liability is...' | CUT | '...$0.'"]
     end
 ```
 
 #### Diagram Walkthrough:
-1. **Multi-Column Cross-Bleeding**: Naive extractors scan text left-to-right across the raw page coordinates. In a two-column whitepaper or analyst report, line 1 of the left column merges horizontally into line 1 of the right column, corrupting syntax and syntax-aware embeddings.
+1. **Multi-Column Cross-Bleeding**: Naive extractors scan text left-to-right across raw page coordinates. In a two-column whitepaper or analyst report, line 1 of the left column merges horizontally into line 1 of the right column, corrupting sentence grammar and embeddings.
 2. **Tabular Coordinate Destruction**: Tables are two-dimensional spatial coordinate matrices. Flattening a balance sheet converts `Row: Operating Expenses | Q1: 4.2M | Q2: 4.8M` into `Operating Expenses 4.2M 4.8M`, destroying the semantic relationship between column headers and values.
-3. **Arbitrary Boundary Severance**: Blind token slicing splits sentences, clauses, and entity names mid-stream. If a liability cap condition is severed from the dollar figure, the LLM hallucinates an unconditional indemnity.
+3. **Arbitrary Boundary Severance**: Blind token slicing splits sentences, clauses, and entity names mid-stream. If a liability cap condition is severed from the dollar figure, the language model hallucinates an unconditional indemnity.
 
 ---
 
@@ -73,11 +76,14 @@ flowchart TD
     Hierarchy -.->|Relational Pointer| ParentStore
 ```
 
-### Visual Normalizer Walkthrough:
+#### Visual Normalizer Walkthrough:
 1. **Raw Ingestion (Stage 1)**: Ingests complex PDFs containing headers, footers, sidebars, multi-column flows, and complex financial matrices.
 2. **Layout Detection & Reconstruction (Stage 2)**: Layout engines use geometric bounding polygons to sequence columns in natural reading order, while tables are synthesized into structured Markdown or HTML tables.
 3. **Hierarchy & Context Prepending**: Text is split into small, precise child chunks (100–200 tokens) linked to large parent sections (1,000–2,000 tokens), and prepended with document context summaries.
 4. **Normalized Indexing (Stage 3)**: Child chunks are embedded into vector storage for high-precision retrieval; when a child chunk hits, the database retrieves its parent section to pass to the LLM.
+
+> [!NOTE]
+> **Where this analogy breaks**: A relational ETL pipeline outputs discrete normalized rows into strict database tables. Document normalizers output text chunks that still retain fuzzy natural language nuances and overlapping boundaries needed for transformer attention.
 
 ---
 
@@ -150,7 +156,7 @@ The company reported revenue of $48.2 million, an increase of 12% over the previ
 If a user queries: *"What was Acme Corp's European operating margin in Q3 2024?"*, vector search will struggle to match this chunk because the text does not contain "Acme Corp", "European", or "Q3 2024".
 
 ### The Solution:
-Anthropic's **Contextual Retrieval** pattern uses a fast model (such as Claude 3.5 Haiku or Gemini 2.0 Flash) during ingestion to generate a 50–100 token situational summary of where the chunk sits within the parent document. This summary is prepended to the chunk text *before* vector embedding and BM25 index creation:
+Anthropic's **Contextual Retrieval** pattern uses a fast model (such as Claude 3.5 Haiku as of 2024-10 or Gemini 2.0 Flash as of 2025-01) during ingestion. The model generates a 50–100 token situational summary of where the chunk sits within the parent document. This summary is prepended to the chunk text *before* vector embedding and BM25 index creation:
 
 ```text
 [Context: This chunk is from Acme Corp's Q3 2024 SEC Form 10-Q, Section 2 (Management Discussion of European Operations).]
@@ -169,7 +175,7 @@ By leveraging **Prompt Caching** (Phase 01 Lesson 03), the parent document is pl
 
 ## 7. The Frontier Alternative: ColPali (Vision-Language Retrieval)
 
-While layout-aware text extraction is the current industry standard, cutting-edge systems (2025–2026) are adopting **Vision-Language Document Retrieval** via **ColPali** (Faysse et al., 2024):
+While layout-aware text extraction is the current industry standard, cutting-edge systems (2025–2026) are adopting **Vision-Language Document Retrieval** via **ColPali** (Faysse et al., July 2024):
 
 - **Core Concept**: ColPali completely bypasses OCR, text extractors, layout parsers, and chunking algorithms.
 - **Mechanics**:
@@ -311,8 +317,27 @@ if __name__ == "__main__":
 - **Architectural Remedy**: Always calibrate chunk length using the **exact tokenizer of the target embedding model**. If chunk tokens exceed the model's sequence ceiling, the model silently truncates trailing tokens without throwing an error, creating blind spots in your vector space.
 
 ### 3. Contextual Prepending Contamination
-- **The Failure**: An engineer instructs the contextual summarizer model to *"Explain what this chunk is about in 200 words."* The generated summary becomes longer than the chunk itself, diluting the original factual content and causing semantic drift.
+- **The Failure**: An engineer instructs the contextual summarizer model to write a 200-word summary. The generated summary becomes longer than the chunk itself, diluting the original factual content and causing semantic drift.
 - **Architectural Remedy**: Strictly bound the context summary to **under 50 tokens** focusing purely on situational coordinates: Company, Document Title, Date, Section, and Target Entities.
+
+---
+
+## 🧠 Quick Check
+
+Test your architectural intuition:
+
+> **Scenario**: An engineering team is indexing corporate PDFs containing borderless quarterly balance sheets. The naive text extractor flattens `Operating Margin` rows into unaligned numbers `21.4% 18.2% 14.1%`. 
+>
+> When an auditor queries: *"What was our Q2 Operating Margin?"*, the vector search returns irrelevant paragraphs. Which parsing pattern eliminates this failure, and why?
+
+<details>
+<summary><b>View Solution</b></summary>
+
+**Recommended Pattern**: **Layout-Aware Tabular Reconstruction to GitHub Flavored Markdown (Pipe Tables)**.
+
+**Why it works**:
+A layout-aware parsing engine detects table bounding boxes and cell coordinates across columns and rows. It reconstructs the tabular grid as a Markdown pipe table (`| Quarter | Operating Margin |`). Modern embedding models are heavily trained on Markdown and code repositories, allowing their attention layers to preserve row-to-column coordinate bindings in vector space.
+</details>
 
 ---
 
@@ -333,7 +358,7 @@ if __name__ == "__main__":
 
 ## 🧭 Navigation
 
-- **[← Phase 02 Hub](./README.md)**
+- **[← Lesson 00: RAG Fundamentals and Memory Architectures](./00-rag-fundamentals-and-retrieval-architectures.md)**
+- **[Phase 02 Hub: Overview & Architecture Directory](./README.md)**
 - **[Next Lesson: Late Chunking Deep Dive →](./02-late-chunking-deep-dive.md)**
 - **[Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](./labs/capstone-enterprise-rag-pipeline.md)**
-

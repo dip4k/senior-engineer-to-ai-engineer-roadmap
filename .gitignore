@@ -1153,19 +1153,8 @@ CURRICULUM_*.md
 
 # Agent and skill definitions are source files, not generated reports
 !.agents/**/*.md
+!0[0-8]-*/**/*.md
 !.claude/agents/*.md
 
-.curriculum-reports/archive/phase1-workflow-transcript-2026.md
-.curriculum-reports/phase-00/lesson-01-report.md
-.curriculum-reports/phase-00/lesson-02-report.md
-.curriculum-reports/phase-00/lesson-03-report.md
-.curriculum-reports/phase-00/lesson-04-report.md
-.curriculum-reports/phase-00/lesson-05-report.md
-.curriculum-reports/phase-00/lesson-06-report.md
-.curriculum-reports/phase-00/PHASE_00_REVIEW.md
-.curriculum-reports/phase-01/lesson-00-report.md
-.curriculum-reports/phase-01/lesson-01-report.md
-.curriculum-reports/phase-01/lesson-02-report.md
-.curriculum-reports/phase-01/lesson-03-report.md
-.curriculum-reports/phase-01/lesson-04-report.md
-.curriculum-reports/phase-01/lesson-05-report.md
+.curriculum-reports/
+

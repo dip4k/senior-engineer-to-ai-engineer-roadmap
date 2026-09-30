@@ -9,7 +9,7 @@
 Imagine you have to take the hardest history exam in the world:
 
 * **Without RAG (Closed-Book Exam):** The teacher takes away all your books. You have to answer purely from memory. If you forget a date or who won a battle, your brain panics and might invent a fake answer that sounds convincing. That is called **hallucination**.
-* **With RAG (Open-Book Exam):** The teacher lets you bring the entire school library. But the library has 100,000 books, and you only have 30 seconds to answer. You have a super-fast librarian helper who runs into the library stacks, pulls out the exact 3 pages you need, hands them to you, and you read those 3 pages to write down the perfect, verified answer.
+* **With RAG (Open-Book Exam):** The teacher lets you bring the entire school library. But the library has 100,000 books, and you only have 30 seconds to answer. A super-fast librarian helper runs into the library stacks and pulls out the exact 3 pages you need. They hand them to you. You read those 3 pages and write down the verified answer.
 
 **RAG** stands for **Retrieval-Augmented Generation**:
 1. **Retrieval**: Finding the exact right pages in the library.
@@ -20,7 +20,7 @@ Imagine you have to take the hardest history exam in the world:
 
 ## 🗺️ The Modern RAG Blueprint
 
-Modern production RAG is split into two distinct operational phases: **Phase 1: The Librarian's Prep** (offline ingestion before any question is asked) and **Phase 2: The Student's Test Day** (online runtime when a user asks a question).
+Modern production RAG is split into two distinct operational phases. **Phase 1: The Librarian's Prep** handles offline ingestion before questions arrive. **Phase 2: The Student's Test Day** executes online runtime retrieval when a user asks a question.
 
 ### Stage 1: The Librarian's Prep (Offline Dual-Index Ingestion)
 
@@ -120,7 +120,7 @@ flowchart TD
 
   Instruction: Base your response exclusively on the context above. Include citations.
   ```
-* ⚠️ **What happens if you skip this?** If you stuff 50 messy chunks into the model, the model suffers from the **"Lost in the Middle"** phenomenon—it remembers the first and last chunk, but completely ignores what is in the center.
+* ⚠️ **What happens if you skip this?** If you stuff 50 messy chunks into the model, it suffers from the **"Lost in the Middle"** phenomenon. The model remembers the first and last chunks, but ignores text in the center.
 
 ### Block 7: The Fact-Checker Bouncer (Evaluations & Guardrails)
 * 🧒 **The Analogy:** Before the student hands their test paper to the teacher, an independent hall monitor checks every single sentence against the open textbook. If the student wrote something that isn't highlighted in the book, the monitor erases it!
@@ -193,22 +193,28 @@ When executives ask: *"Why don't we fine-tune a custom internal foundation model
 
 ## 📚 Curriculum Roadmap: Phase 02 Modular Lessons
 
-Phase 02 is organized into 6 modular engineering lessons, a cloud architecture reference appendix, and an automated hands-on capstone lab:
+Phase 02 is organized into 8 modular engineering lessons, a cloud architecture reference appendix, and an automated hands-on capstone lab:
 
 | # | Lesson / Module | Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
 |---|---|---|---|---|---|
-| **01** | [Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) | `HIGH ROI / CORE` | 18 min | Layout-aware boundary detection, tables, Parent-Child hierarchies, Contextual Retrieval prepending, and ColPali visual patch retrieval. | Prevent semantic fragmentation from flattened PDF reading orders and destroyed tables. |
-| **02** | [Late Chunking Deep Dive: Deferred Pooling](./02-late-chunking-deep-dive.md) | `REFERENCE / AWARENESS` | 22 min | Full-document token self-attention matrices with deferred chunk span mean-pooling. | Eliminate chunk-boundary context amnesia and resolve ambiguous pronouns across chunk cuts. |
-| **03** | [Hybrid Search: Lexical (BM25), Vector Graphs (HNSW/DiskANN) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) | `HIGH ROI / CORE` | 20 min | Inverted index mechanics, BM25 term saturation/normalization, HNSW skip list layers, SIMD dot products, DRAM sizing, and DiskANN NVMe scaling. | Build a dual-coordinate retrieval engine combining exact keyword precision with semantic latent recall. |
-| **04** | [Reciprocal Rank Fusion & Cross-Encoder Reranking](./04-reciprocal-rank-fusion-and-cross-encoders.md) | `IMPORTANT / NEXT` | 22 min | Score normalization fallacy, RRF harmonic rank math (`k = 60`), Bi-Encoder vs Cross-Encoder attention, and IR metrics (MRR, NDCG). | Fuse disparate lexical and vector candidate ranks and achieve >92% MRR@10 under sub-150ms P99 budgets. |
-| **05** | [Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation](./05-predicate-filtering-and-acorn.md) | `ADVANCED / SPECIALIZED` | 20 min | Graph disconnection vs filter starvation, ACORN 2-hop navigation waypoints, PostgreSQL `pgvector 0.7+` iterative scans and RLS. | Enforce strict enterprise multi-tenant isolation without dropping recall or stalling graph traversal. |
-| **06** | [Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Traversal](./06-graphrag-and-entity-traversal.md) | `ADVANCED / SPECIALIZED` | 24 min | Global dataset-wide aggregation failures, Leiden community clustering, LightRAG/Fast-GraphRAG incremental updates, and UNSPSC ontologies. | Answer holistic, corpus-wide analytical questions without hallucinations or unconstrained semantic bleed. |
-| **Ref** | [Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md) | Reference | 15 min | Managed cloud architectures: Azure AI Search, AWS Textract geometry, and GCP Vertex AI Grounding. | Evaluate managed cloud search services vs. custom self-hosted retrieval infrastructure. |
-| **Lab** | [Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](./labs/capstone-enterprise-rag-pipeline.md) | Hands-on Lab | 60 min | End-to-end verified hybrid RAG pipeline with strict tenant isolation, RRF fusion, and citation verification. | Automated test suite verification passing `python scripts/verify_lab.py --lab 1`. |
+| **00** | [RAG Fundamentals & Retrieval Architectures](./00-rag-fundamentals-and-retrieval-architectures.md) | `🟢 Core` | 14 min | Core RAG lifecycle, bi-encoders vs cross-encoders, and chunk citation offsets. | Establish clear baseline retrieval and generation contracts before deep indexing. |
+| **01** | [Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) | `🟢 Core` | 18 min | Layout-aware boundary detection, tables, Parent-Child hierarchies, Contextual Retrieval prepending, and ColPali visual patch retrieval. | Prevent semantic fragmentation from flattened PDF reading orders and destroyed tables. |
+| **02** | [Late Chunking Deep Dive: Deferred Pooling](./02-late-chunking-deep-dive.md) | `⚫ Deep Dive` | 22 min | Full-document token self-attention matrices with deferred chunk span mean-pooling. | Eliminate chunk-boundary context amnesia and resolve ambiguous pronouns across chunk cuts. |
+| **03** | [Hybrid Search: Lexical (BM25), Vector Graphs (HNSW/DiskANN) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md) | `🟢 Core` | 20 min | Inverted index mechanics, BM25 term saturation/normalization, HNSW skip list layers, SIMD dot products, DRAM sizing, and DiskANN NVMe scaling. | Build a dual-coordinate retrieval engine combining exact keyword precision with semantic latent recall. |
+| **04** | [Reciprocal Rank Fusion & Cross-Encoder Reranking](./04-reciprocal-rank-fusion-and-cross-encoders.md) | `🟡 Engineering Depth` | 22 min | Score normalization fallacy, RRF harmonic rank math (`k = 60`), Bi-Encoder vs Cross-Encoder attention, and IR metrics (MRR, NDCG). | Fuse disparate lexical and vector candidate ranks and achieve >92% MRR@10 under sub-150ms P99 budgets. |
+| **05** | [Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation](./05-predicate-filtering-and-acorn.md) | `🔵 Advanced` | 20 min | Graph disconnection vs filter starvation, ACORN 2-hop navigation waypoints, PostgreSQL `pgvector 0.8.0+` iterative scans and RLS. | Enforce strict enterprise multi-tenant isolation without dropping recall or stalling graph traversal. |
+| **06** | [Graph Retrieval-Augmented Generation (GraphRAG) & Entity Traversal](./06-graphrag-and-entity-traversal.md) | `🔵 Advanced` | 24 min | Global dataset-wide aggregation failures, Leiden community clustering, LightRAG/Fast-GraphRAG incremental updates, and domain taxonomies. | Answer holistic, corpus-wide analytical questions without hallucinations or unconstrained semantic bleed. |
+| **07** | [Query Planning, Adaptive Routing, and Corrective Retrieval (CRAG)](./07-query-planning-adaptive-routing-and-crag.md) | `🟡 Engineering Depth` | 22 min | Semantic dilution, adaptive query routing, sub-query decomposition, Corrective RAG (CRAG), and semantic caching. | Eliminate multi-hop retrieval failure and guard against low-confidence context hallucinations. |
+| **Ref** | [Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md) | `Platform Appendix` | 15 min | Managed cloud architectures: Azure AI Search, AWS Textract geometry, and GCP Vertex AI Grounding. | Evaluate managed cloud search services vs. custom self-hosted retrieval infrastructure. |
+| **Lab** | [Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](./labs/capstone-enterprise-rag-pipeline.md) | `Hands-on Lab` | 60 min | End-to-end verified hybrid RAG pipeline with strict tenant isolation, RRF fusion, and citation verification. | Automated test suite verification passing `python scripts/verify_lab.py --lab 1`. |
 
 ---
 
 ### Detailed Module Architecture Guides
+
+### [00. RAG Fundamentals & Retrieval Architectures](./00-rag-fundamentals-and-retrieval-architectures.md) `🟢 Core`
+- **Focus**: Why LLMs require external retrieval systems, the two-phase lifecycle (offline ingestion vs. online runtime), bi-encoders vs. cross-encoders, and exact character citation tracking.
+- **Mental Model**: The Open-Book Research Assistant.
 
 ### [01. Document Parsing & Structural Chunking Strategies](./01-document-parsing-and-chunking.md) `🟢 Core`
 - **Focus**: The upstream reality of enterprise data. Multi-column PDF reading orders, borderless financial table reconstruction, hierarchical parent-child (small-to-big) chunking, Anthropic Contextual Retrieval prepending, and ColPali visual patch retrieval.
@@ -227,12 +233,16 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 - **Mental Model**: Two-Stage Rank-Harmonic Evidence Scoring.
 
 ### [05. Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation](./05-predicate-filtering-and-acorn.md) `🔵 Advanced`
-- **Focus**: Solving the filtered vector search dilemma: why pre-filtering causes graph disconnection and post-filtering causes filter starvation. The ACORN paradigm (2-hop neighborhood exploration). Production PostgreSQL `pgvector` 0.7+ iterative scans (`hnsw.iterative_scan`) and Row Level Security (RLS) enforcement.
+- **Focus**: Solving the filtered vector search dilemma: why pre-filtering causes graph disconnection and post-filtering causes filter starvation. The ACORN paradigm (2-hop neighborhood exploration). Production PostgreSQL `pgvector` 0.8.0+ iterative scans (`hnsw.iterative_scan`) and Row Level Security (RLS) enforcement.
 - **Mental Model**: The Filtered Metric Subgraph & Cryptographic Tenant Perimeter.
 
-### [06. Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Entity Traversal](./06-graphrag-and-entity-traversal.md) `🔵 Advanced`
-- **Focus**: The failure of vector search on global aggregation queries. Microsoft GraphRAG hierarchical community detection (Leiden clustering), community summaries, and dynamic incremental updates (LightRAG / Fast-GraphRAG). Constraining entity extraction and multi-hop Cypher queries with formal enterprise ontologies (UNSPSC, MDM) to eliminate semantic bleed.
+### [06. Graph Retrieval-Augmented Generation (GraphRAG) & Entity Traversal](./06-graphrag-and-entity-traversal.md) `🔵 Advanced`
+- **Focus**: The failure of vector search on global aggregation queries. Microsoft GraphRAG hierarchical community detection (Leiden clustering), community summaries, and dynamic incremental updates (LightRAG / Fast-GraphRAG). Constraining entity extraction and multi-hop Cypher queries with formal enterprise taxonomies (UNSPSC, MDM) to eliminate semantic bleed.
 - **Mental Model**: The Dual-Memory Nexus (Vector Associations constrained by Symbolic Taxonomies).
+
+### [07. Query Planning, Adaptive Routing, and Corrective Retrieval (CRAG)](./07-query-planning-adaptive-routing-and-crag.md) `🟡 Engineering Depth`
+- **Focus**: Replacing static linear retrieval with dynamic execution. Resolving multi-part semantic dilution through automated query decomposition, routing queries across specialized indexes (Direct, Hybrid, Filtered, GraphRAG), enforcing Corrective RAG (CRAG) confidence gates, and in-memory semantic caching.
+- **Mental Model**: The Query Planning Dispatcher.
 
 ### [Reference: Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md) `Platform Appendix`
 - **Focus**: Reference configurations for managed enterprise platforms: Azure AI Search (OData security filters, Microsoft Turing Semantic Ranker), AWS Textract (`BLOCK` geometry), Azure Document Intelligence (`prebuilt-layout`), and Google Cloud Vertex AI Search & Grounding.
@@ -258,8 +268,8 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 
 | Engineering Role | Recommended Lesson Focus | Primary Deliverables |
 |---|---|---|
-| **AI Systems Architect** | Read All Lessons + Appendix | End-to-end architecture, memory budgets, ontology design, and multi-tenant security. |
-| **Backend / Software Engineer** | Lessons 01, 03, 04 + Capstone Lab | Dual-engine hybrid search, RRF candidate fusion, cross-encoder latency budgeting, and lab verification. |
+| **AI Systems Architect** | Read All Lessons + Appendix | End-to-end architecture, memory budgets, knowledge graph schema design, and multi-tenant security. |
+| **Backend / Software Engineer** | Lessons 01, 03, 04, 07 + Capstone Lab | Dual-engine hybrid search, RRF candidate fusion, cross-encoder latency budgeting, and lab verification. |
 | **Data / Search Platform Lead** | Lessons 02, 03, 05, 06 | Late Chunking, HNSW memory physics, ACORN predicate search, and GraphRAG knowledge graphs. |
 | **Cloud Solutions Architect** | Lessons 01, 04, 05 + Appendix | Managed Azure AI Search / AWS Textract pipelines, OData pre-filters, and enterprise RBAC. |
 
@@ -272,12 +282,14 @@ Phase 02 is organized into 6 modular engineering lessons, a cloud architecture r
 - **Next Phase**: **[Phase 03: Tools & Model Context Protocol (MCP) →](../03-tools-and-model-context-protocol/README.md)**
 
 ### Direct Chapter & Lesson Directory
+- **[Lesson 00: RAG Fundamentals & Retrieval Architectures](./00-rag-fundamentals-and-retrieval-architectures.md)**
 - **[Lesson 01: Document Parsing & Layout-Aware Chunking](./01-document-parsing-and-chunking.md)**
 - **[Lesson 02: Late Chunking Deep Dive: Deferred Pooling](./02-late-chunking-deep-dive.md)**
 - **[Lesson 03: Hybrid Search: Lexical Keyword Matching (BM25), Vector Proximity Graphs (HNSW) & Memory Physics](./03-hybrid-search-bm25-and-hnsw.md)**
 - **[Lesson 04: Reciprocal Rank Fusion & Cross-Encoder Reranking](./04-reciprocal-rank-fusion-and-cross-encoders.md)**
 - **[Lesson 05: Predicate Filtering: Multi-Tenant Security & ACORN Graph Navigation](./05-predicate-filtering-and-acorn.md)**
-- **[Lesson 06: Graph Retrieval-Augmented Generation (GraphRAG) & Ontological Entity Traversal](./06-graphrag-and-entity-traversal.md)**
+- **[Lesson 06: Graph Retrieval-Augmented Generation (GraphRAG) & Entity Traversal](./06-graphrag-and-entity-traversal.md)**
+- **[Lesson 07: Query Planning, Adaptive Routing, and Corrective Retrieval (CRAG)](./07-query-planning-adaptive-routing-and-crag.md)**
 - **[Platform Appendix: Enterprise Cloud Retrieval Architectures](./reference/cloud-retrieval-architectures.md)**
 - **[Hands-On Capstone Lab: Enterprise Multi-Tenant Hybrid RAG](./labs/capstone-enterprise-rag-pipeline.md)**
 

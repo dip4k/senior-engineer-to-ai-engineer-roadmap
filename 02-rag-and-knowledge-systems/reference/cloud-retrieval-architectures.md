@@ -1,72 +1,56 @@
 # Reference Architecture: Enterprise Cloud Retrieval Platforms
 
-> **Role**: Platform Reference Appendix | **Focus**: Azure AI Search, AWS Textract, Azure Document Intelligence, Google Cloud Vertex AI
+> **Role**: Platform Reference Appendix | **Focus**: Azure AI Search, AWS Textract, Azure Document Intelligence, Google Cloud Vertex AI, Meta Llama Stack
 
 ---
 
 ## 1. Overview & Cloud Grounding Role
 
-While Lessons 01 through 06 establish the universal, platform-agnostic algorithms and data structures of enterprise Information Retrieval, many enterprise organizations standardize on managed cloud retrieval platforms.
+While Lessons 00 through 06 establish the universal, platform-agnostic algorithms and data structures of enterprise Information Retrieval, many enterprise organizations standardize on managed cloud retrieval platforms.
 
 This appendix provides reference deployment architectures, query specifications, and ingestion patterns for:
 1. **Azure AI Search & Microsoft Foundry** (Enterprise Hybrid Search & Semantic Reranking)
 2. **Azure Document Intelligence** (`prebuilt-layout` Document Decomposition)
 3. **AWS Textract** (`AnalyzeDocument` Spatial Geometry Trees)
 4. **Google Cloud Vertex AI Search & Grounding** (Enterprise Datastores & Web Grounding)
+5. **Meta Llama Stack** (`vector_io` API & Agentic RAG)
 
 ---
 
 ## 2. Azure AI Search Architecture (Microsoft Ecosystem)
 
-In Microsoft Azure enterprise environments, **Azure AI Search** serves as the gold-standard managed retrieval engine, providing native two-stage hybrid search, multi-tenant RBAC, and integrated deep cross-attention semantic reranking.
+In Microsoft Azure enterprise environments, **Azure AI Search** serves as the managed retrieval engine, providing native two-stage hybrid search, multi-tenant RBAC, and integrated deep cross-attention semantic reranking.
 
 ```mermaid
 flowchart TD
-    subgraph Client["API CLIENT / ORCHESTRATOR"]
-        UQ["User Query + Entra ID JWT Token"]
+    subgraph Stage1["STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
+        UQ["User Query + Entra ID"] --> PFilter["OData Security Pre-Filter<br>tenant_id eq 'tenant_42'"]
+        PFilter --> HNSW["Dense HNSW / DiskANN Index"]
+        PFilter --> BM25["Sparse BM25 Index"]
+        HNSW --> TopDense["Top 50 Dense Candidates"]
+        BM25 --> TopSparse["Top 50 Sparse Candidates"]
     end
-
-    subgraph AzureAISearch["AZURE AI SEARCH ENGINE"]
-        subgraph Stage1["STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
-            PFilter["OData Security Pre-Filter<br>(search.in(tenant_id, 'tenant_42') and security_groups/any(...))"]
-            
-            subgraph DenseEngine["Dense Vector Engine"]
-                HNSW["HNSW / DiskANN Index<br>(Cosine / Dot Product)"]
-            end
-            
-            subgraph SparseEngine["Sparse Lexical Engine"]
-                BM25["BM25 Inverted Index<br>(Custom Tokenizers & Analyzers)"]
-            end
-            
-            PFilter --> HNSW
-            PFilter --> BM25
-            HNSW --> TopDense["Top 50 Dense Candidates"]
-            BM25 --> TopSparse["Top 50 Sparse Candidates"]
-        end
-
-        subgraph Fusion["STAGE 2: RECIPROCAL RANK FUSION (RRF)"]
-            RRF["RRF Merging & Normalization<br>RRF_Score = 1/(60 + r_dense) + 1/(60 + r_sparse)"]
-            TopDense --> RRF
-            TopSparse --> RRF
-            RRF --> Top50["Top 50 Fused Candidates"]
-        end
-
-        subgraph Stage3["STAGE 3: MICROSOFT TURING SEMANTIC RERANKER"]
-            Turing["Turing Cross-Attention Transformer<br>• Semantic Relevance Grading (0.00 - 4.00)<br>• Extractive Captions with Highlight Offsets<br>• Extractive Answers"]
-            Top50 --> Turing
-            Turing --> Top5["Top 5 High-Precision Chunks with Grounded Captions"]
-        end
-    end
-
-    UQ --> PFilter
-    Top5 --> LLM["To LLM Generator (OpenAI / Azure Foundry)"]
 ```
 
-### Visual Walkthrough of Azure AI Search:
-1. **Security Pre-Filter**: Client request arrives with an Entra ID token. Azure AI Search evaluates an OData filter expression *before* vector exploration, ensuring no cross-tenant information is accessed.
+#### Diagram Walkthrough:
+1. **Security Pre-Filter**: Client requests arrive with an Entra ID JWT token. Azure AI Search evaluates an OData security filter expression *before* vector traversal, ensuring zero cross-tenant contamination.
 2. **Parallel Hybrid Retrieval**: The query executes simultaneously against the Lucene-based BM25 inverted index and the HNSW/DiskANN vector index.
-3. **Internal RRF Fusion**: The top 50 candidates from each engine are merged using Reciprocal Rank Fusion.
-4. **Microsoft Turing Semantic Reranker**: The fused candidates are evaluated by Microsoft's proprietary Turing cross-encoder, which reorders results and generates **Extractive Captions** with exact character offsets.
+3. **Candidate Output**: Both engines return independent top-50 candidate pools for rank harmonization.
+
+```mermaid
+flowchart TD
+    subgraph Stage2["STAGE 2: RRF FUSION & SEMANTIC RERANKING"]
+        Top50["Top 50 Lexical & Dense Candidates"] --> RRF["Reciprocal Rank Fusion<br>Score = sum [ 1 / (60 + rank) ]"]
+        RRF --> Turing["Microsoft Turing Semantic Reranker<br>• Full Cross-Attention Scoring<br>• Extractive Captions & Highlights"]
+        Turing --> Top5["Top 5 High-Precision Chunks"]
+        Top5 --> LLM["To LLM Generator"]
+    end
+```
+
+#### Diagram Walkthrough:
+1. **RRF Merging**: Top candidate ranks from dense and sparse search are combined using Reciprocal Rank Fusion.
+2. **Turing Semantic Reranker**: Microsoft's proprietary Turing cross-encoder scores token-to-token semantic relevance.
+3. **Extractive Captions**: The reranker returns the definitive top-5 chunks with character highlight offsets for prompt context assembly.
 
 ### Production Query Payload Example
 ```json
@@ -110,7 +94,7 @@ Enterprise pipelines ingest complex artifacts: multi-column whitepapers, financi
 
 ## 4. Document Parser Architectural Comparison Matrix
 
-| Architectural Feature | Naive Text Extractors (`pypdf`, `pymupdf`) | Azure Document Intelligence (`prebuilt-layout`) | AWS Textract (`AnalyzeDocument`) | Frontier Multimodal Vision (ColPali / GPT-4o) |
+| Architectural Feature | Naive Text Extractors (`pypdf`, `pymupdf`) | Azure Document Intelligence (`prebuilt-layout`) | AWS Textract (`AnalyzeDocument`) | Frontier Multimodal Vision (ColPali) |
 |---|---|---|---|---|
 | **Multi-Column Reading Order** | Fails (merges lines horizontally) | **Near Perfect (Geometric polygon sort)** | **Near Perfect (Layout blocks)** | Excellent (Native visual attention) |
 | **Complex Borderless Tables** | Completely scrambled | **Exceptional (Outputs valid Markdown/HTML)** | **Exceptional (Cell coordinate grid)** | Good (Risk of hallucinating numbers) |
@@ -135,9 +119,9 @@ In Google Cloud environments, **Vertex AI Search & Grounding** enables hybrid en
 
 ---
 
-## 6. Open-Source & Sovereign Enterprise Retrieval: Meta Llama Stack (Vector IO & Agentic RAG)
+## 6. Open-Source & Sovereign Enterprise Retrieval: Meta Llama Stack
 
-For enterprises operating under strict data sovereignty, financial banking privacy, or defense air-gap requirements, managed hyperscaler clouds may be prohibited. The **Meta Llama Stack (`llama-stack`)** provides the industry standard open-weights enterprise retrieval architecture:
+For enterprises operating under strict data sovereignty, financial banking privacy, or defense air-gap requirements, managed hyperscaler clouds may be prohibited. The **Meta Llama Stack (`llama-stack`)** provides an open-weights enterprise retrieval architecture:
 
 ```mermaid
 flowchart TD
@@ -148,7 +132,7 @@ flowchart TD
     subgraph LlamaStackServer["META LLAMA STACK SERVER RUNTIME"]
         VectorIO["Vector IO API Provider<br>(Unified Embeddings & Query Interface)"]
         RAGRouter["Agentic RAG Engine<br>(Decides Parametric vs Non-Parametric)"]
-        Inference["Llama 3.1 / 3.3 (128K Context Window)<br>(vLLM / TGI Serving Engine)"]
+        Inference["Llama Model Runtime<br>(vLLM / TGI Serving Engine)"]
     end
 
     subgraph StorageLayer["Sovereign Data Stores"]
@@ -166,17 +150,23 @@ flowchart TD
     Inference --> Client
 ```
 
+#### Diagram Walkthrough:
+1. **Client Dispatch**: The agent client dispatches queries to the Llama Stack runtime.
+2. **Dynamic RAG Router**: Evaluates whether external knowledge is needed for the query.
+3. **Unified Vector IO**: Queries sovereign vector databases and inverted text indices through a standardized API.
+4. **Attributed Synthesis**: Passes grounded evidence to the inference engine for response generation.
+
 ### Key Architectural Components:
 1. **Unified Vector IO Provider Interface**: Abstracted API allowing organizations to switch seamlessly between Milvus, Qdrant, Chroma, and PostgreSQL `pgvector` without altering application code.
-2. **Native Agentic RAG**: Unlike naive static pipelines that retrieve chunks on every prompt, the Llama Stack Agent dynamically inspects user queries, determines if external knowledge is required, queries the vector provider, and synthesizes answers with attribution.
-3. **128K Context Exploitation**: Leverages Llama 3.1/3.3 native 128K context windows to ingest larger, enriched document spans while maintaining sub-second inference via prompt caching and vLLM integration.
-4. **Safety & Compliance Moderation**: Plugs directly into **Llama Guard 3** and **Prompt Guard** to sanitize incoming retrieval queries and filter toxic or compromised external data before context insertion.
+2. **Native Agentic RAG**: Unlike naive static pipelines that retrieve chunks on every prompt, the Llama Stack Agent dynamically inspects user queries. It determines if external knowledge is required, queries the vector provider, and synthesizes answers with attribution.
+3. **128K Context Exploitation**: Leverages native 128K context windows to ingest larger, enriched document spans while maintaining sub-second inference via prompt caching and vLLM integration.
+4. **Safety & Compliance Moderation**: Plugs directly into **Llama Guard** and **Prompt Guard** to sanitize incoming retrieval queries and filter toxic or compromised external data before context insertion.
 
 ---
 
 ## 🧭 Navigation
 
 - **[← Phase 02 Hub](../README.md)**
-- **[Lesson 01: Document Parsing & Layout-Aware Chunking](../01-document-parsing-and-chunking.md)**
+- **[Lesson 00: RAG Fundamentals and Memory Architectures](../00-rag-fundamentals-and-retrieval-architectures.md)**
+- **[Lesson 01: Document Parsing and Structural Chunking Strategies](../01-document-parsing-and-chunking.md)**
 - **[Capstone Lab: Enterprise Multi-Tenant Hybrid RAG →](../labs/capstone-enterprise-rag-pipeline.md)**
-
