@@ -50,6 +50,44 @@
 
 ---
 
+## 🗺️ Master Visual Roadmap
+
+```mermaid
+flowchart TD
+    subgraph Track1["Stage 1: Core Primitives (The Model & The Context)"]
+        C1["**1. AI & LLM Fundamentals**<br>(Tokens, Next-Word Math, Sampling)"] --> C2["**2. Prompt & Context Engineering**<br>(Context AST, Schemas, Prefix Caching)"]
+    end
+
+    subgraph Track2["Stage 2: Knowledge Retrieval (The Library Helpers)"]
+        C3["**3. Embeddings & Vector Search**<br>(Idea Galaxy & Coordinate Math)"] --> C4["**4. Retrieval-Augmented Generation**<br>(Contextual Chunking, BM25, RRF)"]
+    end
+
+    subgraph Track3["Stage 3: Autonomous Action & Defense (The Agent)"]
+        C5["**5. AI Agents & Stateful Loops**<br>(MCP Tools, Memory, Durable WAL)"] --> C6["**6. Reliability, Safety & Guardrails**<br>(Dual-LLM Quarantine, Fallbacks)"]
+    end
+
+    subgraph Track4["Stage 4: Production Operations (Scale & Evaluation)"]
+        C7["**7. Evaluation & Observability**<br>(LLM Judges, OTel Spans, Tracing)"] --> C8["**8. Production Serving & LLMOps**<br>(vLLM, Continuous Batching, KV Cache)"]
+    end
+
+    C2 --> C3
+    C4 --> C5
+    C6 --> C7
+
+    style Track1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style Track2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style Track3 fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style Track4 fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+```
+
+### Visual Roadmap Walkthrough:
+1. **Stage 1 (Blue / Primitives)**: Learn how models read text word-by-word (tokens) and how to package instructions into structured, cached prompts.
+2. **Stage 2 (Green / Knowledge)**: Turn text into coordinates (embeddings) and combine keyword indexes with vector search to give the model open-book access (RAG).
+3. **Stage 3 (Amber / Autonomous Action)**: Connect the model to tools over the Model Context Protocol (MCP), log actions to disk before executing (WAL), and guard against prompt injections.
+4. **Stage 4 (Purple / Scale & Evals)**: Measure system accuracy with automated judges and OpenTelemetry, and serve high-throughput traffic using continuous batching.
+
+---
+
 ## 1. **AI & LLM Fundamentals**
 ### Learn how smart computer brains read your text and guess the next words.
 

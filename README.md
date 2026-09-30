@@ -14,7 +14,13 @@ Have you noticed how easy it is to build a mind-blowing AI demo over a weekend, 
 
 When you move from traditional Software 1.0 (where an `if` statement behaves the exact same way every single time) to non-deterministic AI (where your core reasoning engine might hallucinate a JSON parameter or get trapped in an infinite loop), it's completely disorienting. 
 
-This repository is not a collection of surface-level tutorials or marketing buzzwords. It is a battle-tested **architectural masterclass** treating Large Language Models not as magical oracles, but as **probabilistic reasoning microservices** governed by deterministic harnesses: finite-state-machine schemas, standardized wire protocols (MCP), hardware-aware KV-caches, and automated CI/CD evaluation gates.
+### 🧒 The Mental Model (Explain Like I'm 10)
+Think of it this way: 
+* In traditional software, your computer is like a **high-speed calculator**—give it `2 + 2`, and it deterministically outputs `4` every single time.
+* An LLM, on the other hand, is like a **brilliant but forgetful intern in a jar**. It doesn't calculate; it predicts what comes next based on patterns. If you ask it a question without giving it the right reference books, it panics and makes up a convincing fake story (**hallucination**) just to sound helpful.
+* **The AI Engineer's Job**: We don't train the model from scratch. We build the **deterministic titanium harness** around that probabilistic brain: feeding it exact library pages (**RAG**), giving it safe hands and feet (**MCP Tools**), logging its actions to disk before it acts (**WAL Event Stores**), and fact-checking its output before the user ever sees it (**CI/CD Evaluation Gates**).
+
+---
 
 > [!NOTE]
 > **Calibrated Depth: The 4-Tier Model**
@@ -64,22 +70,31 @@ If you stepped away from AI engineering in early 2024 and returned today, you wo
 
 ```mermaid
 flowchart LR
-    subgraph Y2024["Early 2024: Prompt Alchemy"]
+    subgraph Y2024["Early 2024: Prompt Alchemy (Fragile / Vibe-Driven)"]
         direction TB
-        A1["Unstructured Prompts<br>('Please return JSON')"] --> B1["Monolithic Black Box LLM"]
+        A1["Unstructured Prompts<br>('Please return valid JSON')"] --> B1["Monolithic Black Box LLM<br>(Raw text completion)"]
         B1 --> C1["Fragile Regex Parsing<br>& In-Memory Loops"]
-        C1 --> D1["Manual Human Vibe Checks"]
+        C1 --> D1["Manual Human Vibe Checks<br>(No automated gates)"]
     end
 
-    subgraph Y2026["September 2026: Systems Engineering"]
+    subgraph Y2026["September 2026: Systems Engineering (Software 3.0)"]
         direction TB
-        A2["Context Engineering & AST<br>(Pydantic / FSM Grammar)"] --> B2["Reasoning Engines with Thinking Tokens<br>(Claude 4, o3/o4-mini, DeepSeek-R1)"]
-        B2 --> C2["Standardized Protocols<br>(MCP + A2A + AG-UI)"]
-        C2 --> D2["Automated CI/CD Eval Gates<br>(OpenTelemetry Spans & Judges)"]
+        A2["Context Engineering & AST<br>(Pydantic v2 / Constrained FSM)"] --> B2["Reasoning Engines<br>(Thinking Tokens & Step Planning)"]
+        B2 --> C2["Standardized Wire Protocols<br>(MCP + A2A + Sandboxes)"]
+        C2 --> D2["Automated CI/CD Eval Gates<br>(OTel Spans & Judge Rubrics)"]
     end
 
     Y2024 ==> Y2026
+
+    style Y2024 fill:#fff5f5,stroke:#dc2626,stroke-width:2px
+    style Y2026 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
+
+### Visual Architecture Walkthrough:
+1. **The Early 2024 Trap**: Applications relied on ad-hoc prompts asking models nicely to produce JSON. Fragile regex and while-loops broke constantly under production traffic, with quality checked only by human "vibes."
+2. **The 2026 Systems Standard**: Foundation models operate as probabilistic microservices bounded by typed schemas (Pydantic v2), standardized foreign-function interfaces (MCP), and automated regression evaluation gates in CI/CD.
+
+---
 
 ### 📊 Architectural Evolution
 
@@ -104,24 +119,42 @@ The curriculum progresses systematically from silicon and hardware inference rea
 
 ```mermaid
 flowchart TD
-    S0["Phase 00: Foundations & Token Mechanics<br>• Colossus Scale • Test-Time Compute • KV-Cache • Thinking Tokens"] --> S1
-    S1["Phase 01: Context Engineering — The Master Discipline<br>• Context AST • 13K Budgeting • 4-Tier Compaction • Schema Masking"] --> S2
+    S0["**Phase 00: Foundations & Token Mechanics**<br>• Hardware Physics • KV-Cache VRAM • Thinking Tokens"] --> S1
+    S1["**Phase 01: Context Engineering**<br>• Context AST • Token Budgeting • Schema Masking"] --> S2
     S1 --> S3
     
-    subgraph CoreTracks["Parallel Industrial Tracks"]
-        S2["Phase 02: Advanced Enterprise RAG<br>• Late Chunking • Hybrid (HNSW+BM25) • Llama Stack Vector IO • GraphRAG"]
-        S3["Phase 03: Tools & Model Context Protocol<br>• Stateless MCP 2026 • Streamable HTTP • Llama Stack MCP • MicroVMs"]
+    subgraph CoreTracks["Parallel Core Tracks: Retrieval & Wire Protocols"]
+        S2["**Phase 02: Advanced Enterprise RAG**<br>• Late Chunking • Hybrid BM25+HNSW • GraphRAG"]
+        S3["**Phase 03: Tools & Model Context Protocol**<br>• MCP Wire Protocol • ABAC Policies • Sandboxed Tools"]
     end
     
     S2 --> S4
     S3 --> S4
     
-    S4["Phase 04: Agentic Systems & Orchestration<br>• Loop Engineering • CodeAct • Checkpointing • Tri-Protocol Stack"] --> S5
-    S5["Phase 05: AI Security, Guardrails & Trust<br>• Dual-LLM Quarantine • Canary Tokens • OWASP Top 10"] --> S6
-    S6["Phase 06: Evals, Observability & Telemetry<br>• Binary Evals • Golden Datasets • OpenTelemetry GenAI Spans"] --> S7
-    S7["Phase 07: Production Deployment & LLMOps<br>• Resilient AI Gateways • Batch APIs • Dual-Tier Caching • Edge AI"] --> S8
-    S8["Phase 08: AI-Augmented SDLC & Leadership<br>• Agentic Coding (Big 7) • Trust Gap • AGENT.md Contracts • Verified Engineering"]
+    subgraph AgenticTracks["Execution, Safety & Observability"]
+        S4["**Phase 04: Stateful Agentic Systems**<br>• Bounded ReAct • Durable WAL EventStore • Checkpointing"] --> S5
+        S5["**Phase 05: AI Security & Guardrails**<br>• Dual-LLM Quarantine • Prompt Injection • Threat Modeling"] --> S6
+        S6["**Phase 06: GenAI Evals & Observability**<br>• LLM-as-a-Judge • OpenTelemetry Spans • Drift Detection"]
+    end
+
+    S6 --> S7
+    subgraph ProductionTracks["Production Serving & AI SDLC"]
+        S7["**Phase 07: Production LLMOps & Serving**<br>• Continuous Batching • PagedAttention • AI Gateways"] --> S8
+        S8["**Phase 08: AI-Augmented SDLC & Leadership**<br>• Spec-Driven Development • Headless CI/CD • Governance"]
+    end
+
+    style S0 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style S1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style CoreTracks fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style AgenticTracks fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style ProductionTracks fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
 ```
+
+### Visual Curriculum Walkthrough:
+1. **Foundations (Phases 00 & 01)**: Master silicon realities, KV cache memory footprint, and how to compile prompts into structured Context ASTs.
+2. **Retrieval & External Knowledge (Phases 02 & 03)**: Build hybrid retrieval systems (BM25 + HNSW) and connect models to real systems using the standardized Model Context Protocol (MCP).
+3. **Autonomous Execution & Defense (Phases 04 & 05)**: Move to durable agent loops backed by Write-Ahead Logs (WAL) and wrap untrusted inputs in Dual-LLM quarantine pipelines.
+4. **Production Operations (Phases 06, 07, 08)**: Measure golden signals with OpenTelemetry, serve high-throughput continuous batching inference (vLLM), and scale autonomous agent teams in enterprise CI/CD.
 
 ### 📚 Syllabus & Module Directory
 

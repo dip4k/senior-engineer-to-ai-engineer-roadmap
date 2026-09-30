@@ -7,7 +7,7 @@
 
 ```mermaid
 flowchart LR
-    subgraph NonAI["TRADITIONAL SOFTWARE (1.0 & 2.0)"]
+    subgraph NonAI["Traditional Software (1.0 & 2.0: Deterministic & Statistical)"]
         direction TB
         B1["Imperative Code & Relational Schemas"]
         B2["Static Business Rules & Cron Jobs"]
@@ -15,16 +15,24 @@ flowchart LR
         B4["Fragile with Unstructured Ambiguity"]
     end
     
-    NonAI -- "EVOLUTION TO REASONING HARNESS" --> AISolution
-    
-    subgraph AISolution["AI-NATIVE SYSTEMS (3.0)"]
+    subgraph AISolution["AI-Native Systems (3.0: Reasoning & Harness)"]
         direction TB
-        A1["Probabilistic Reasoning Engines"]
+        A1["Probabilistic Reasoning Microservices"]
         A2["Deterministic Guardrail Harness"]
         A3["Model Context Protocol (MCP)"]
         A4["Continuous CI/CD Evaluation Gates"]
     end
+
+    B2 --> A2
+    B4 --> A1
+
+    style NonAI fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style AISolution fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
+
+### Visual Architecture Walkthrough:
+1. **The Traditional Baseline**: Software 1.0 & 2.0 excel at deterministic business logic and specialized statistical classification, but break when confronted with unstructured ambiguity or multi-step reasoning.
+2. **The Systems Harness**: Software 3.0 pairs probabilistic reasoning engines with deterministic software harnesses (schemas, MCP tools, stateful WALs, and CI/CD evaluation gates) to deliver reliable production systems.
 
 ---
 
@@ -39,7 +47,7 @@ The transition to AI engineering does **not** require throwing away that experie
 To understand where foundation models fit in production, let's trace how we got here:
 
 ```mermaid
-flowchart LR
+flowchart TD
     subgraph S1["Software 1.0 (Non-AI: Purely Deterministic)"]
         A1["Code: Handcrafted Logic"] --> B1["Data: Structured Records"]
         B1 --> C1["Output: Deterministic Output"]
@@ -55,7 +63,23 @@ flowchart LR
         B3 --> C3["Harness: State Machines & MCP"]
         C3 --> D3["Output: Goal Completion"]
     end
+
+    C1 ~~~ A2
+    C2 ~~~ A3
+
+    style S1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style S2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style S3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
+
+### 📊 Software Evolution Comparison Table
+
+| Dimension | Software 1.0 (Deterministic) | Software 2.0 (Statistical ML) | Software 3.0 (AI-Native / Agentic) |
+|---|---|---|---|
+| **Core Primitives** | Handcrafted imperative code & SQL | Trained neural weights & vectors | Prompt Context AST + Reasoning Microservice |
+| **System Behavior** | 100% deterministic logic | Statistical classification & scoring | Probabilistic planning & autonomous tool calls |
+| **Failure Modes** | Fails on unstructured text & ambiguity | Fails on out-of-distribution domain shifts | Fails on hallucinations & unconstrained loops |
+| **Engineering Harness** | Unit tests & static compilers | Data curation & GPU training pipelines | Pydantic schemas, MCP, WAL event stores & CI/CD evals |
 
 #### Step 1: Software 1.0 — The Non-AI Deterministic Baseline
 - **How we built it**: Handcrafted imperative code (`if/else`, switch statements, procedural logic) operating over strictly structured relational databases (SQL, schemas, ACID transactions).
@@ -204,8 +228,18 @@ flowchart LR
         M3C --> M3D["Multi-Agent Swarms & SDLC Leadership"]
     end
 
-    Month1 --> Month2 --> Month3
+    M1D --> M2A
+    M2D --> M3A
+
+    style Month1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style Month2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style Month3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
+
+### Visual 90-Day Progression Walkthrough:
+1. **Month 1 (Blue / Precision Core)**: Build rock-solid foundations: token economics, structured prompt ASTs, hybrid search retrieval, and MCP tools.
+2. **Month 2 (Amber / Industrial Systems)**: Advance to stateful actor loops, resilient client SDKs, dual-LLM quarantine security, and human approval gates.
+3. **Month 3 (Green / Production LLMOps)**: Productionize with OpenTelemetry tracing, automated CI/CD binary evaluation gates, resilient AI gateways, and spec-driven agent leadership.
 
 ### Phase Breakdown
 
