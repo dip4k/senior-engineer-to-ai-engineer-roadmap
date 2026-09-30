@@ -1,6 +1,8 @@
 # AI Engineer Roadmap
 
 > A simple, practical roadmap for software engineers transitioning to AI engineering. Every category, topic, and subtopic is explained in simple, everyday terms (ELI10) without confusing abbreviations.
+>
+> [← Master Curriculum & Architecture (README.md)](./README.md) • [📖 Glossary by Practice](./ai-engineering-glossary-by-practice.md) • [🤖 Learning with Agents](./LEARNING_WITH_AGENTS.md)
 
 ---
 
@@ -315,3 +317,21 @@
 - **8.4.1 End-to-End Pipeline Integration** -> Connecting Document Ingestion -> RAG Retrieval -> Agent Reasoning -> Tool Execution -> Guardrails -> Output.
 - **8.4.2 Auditability & Compliance** -> Storing complete execution logs and human approval timestamps for corporate governance and regulatory review.
 - **8.4.3 CI/CD Evaluation Gates** -> Automatically running your test suite of evals before deploying any new prompt, model version, or tool to production.
+ 
+---
+ 
+## 🧭 Navigation
+ 
+- **Master Curriculum Syllabus**: [← Back to Master Curriculum & Architecture (README.md)](./README.md)
+- **Practice Glossary**: [📖 Production AI & Agentic Glossary by Practice](./ai-engineering-glossary-by-practice.md)
+- **Interactive Agents**: [🤖 Interactive Learning & Practice with Agents](./LEARNING_WITH_AGENTS.md)
+- **Phase Hubs**:
+  - [Phase 00: Foundations & Token Mechanics](./00-foundations-and-token-mechanics/README.md)
+  - [Phase 01: Prompt & Context Engineering](./01-prompt-and-context-engineering/README.md)
+  - [Phase 02: RAG & Knowledge Systems](./02-rag-and-knowledge-systems/README.md)
+  - [Phase 03: Tools & Model Context Protocol](./03-tools-and-model-context-protocol/README.md)
+  - [Phase 04: Agentic Systems & Orchestration](./04-agentic-systems-and-orchestration/README.md)
+  - [Phase 05: AI Security & Guardrails](./05-ai-security-and-guardrails/README.md)
+  - [Phase 06: Evals & Observability](./06-evals-and-observability/README.md)
+  - [Phase 07: High-Throughput Serving & LLMOps](./07-production-deployment-and-llmops/README.md)
+  - [Phase 08: AI-Augmented SDLC & Leadership](./08-ai-augmented-sdlc-and-leadership/README.md)
