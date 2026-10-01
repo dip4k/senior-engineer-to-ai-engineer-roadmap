@@ -1,10 +1,14 @@
-# Agent Memory Systems: 4-Tier Memory Hierarchy & Memory-as-a-Service
+# Lesson 04: Agent Memory Systems & Cognitive Architectures
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟡 Tier 2: Depth` | Estimated Reading Time: 45 min
+> **Tier**: `🟡 Engineering Depth` | Estimated Reading Time: 35 min
 >
-> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 03: Stateful Sessions & Durable Write-Ahead Logs](03-stateful-sessions-and-durable-wal-persistence.md), [Phase 02: Enterprise Retrieval & Knowledge Systems](../02-rag-and-knowledge-systems/README.md)
-
-> **Core Concept**: In Lesson 03, we learned how Write-Ahead Logs preserve agent state across crashes and restarts. But WAL persistence only saves *what happened in the current session*. What if the agent needs to remember a user's preferences from last week, or recall that a similar database deployment failed last month? Language models have no built-in memory between API calls. To build agents that remember user preferences and past solutions without overwhelming the prompt context, engineers structure memory into a 4-Tier Hierarchy: Working Memory (active prompt), Short-Term Buffer (session history), Long-Term Memory (episodic experiences and semantic facts with recency decay), and Procedural Memory (how-to rules). Modern architectures manage this using Memory-as-a-Service platforms like Letta and Mem0.
+> **Prerequisites**: [Lesson 00: Agentic Systems Fundamentals](00-agentic-systems-and-control-plane-fundamentals.md), [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 03: Stateful Sessions & Durable Write-Ahead Logs](03-stateful-sessions-and-durable-wal-persistence.md)
+>
+> **Core Concept**: Language models possess no memory between requests. To remember user preferences and past solutions without overwhelming prompt context, systems organize memory into a 4-Tier Hierarchy: Working Memory (active prompt), Short-Term Buffer (session history), Long-Term Memory (episodic experiences and semantic facts with recency decay), and Procedural Memory (operational rules). Modern architectures manage this using Memory-as-a-Service platforms like Letta and Mem0.
+>
+> **Term Ledger**:
+> * **New AI terms introduced**: `Working Memory`, `Short-Term Memory Buffer`, `Long-Term Memory`, `Episodic Memory`, `Semantic Memory`, `Procedural Memory`, `Memory Compaction`, `Letta / MemGPT Architecture`.
+> * **AI terms assumed from earlier lessons**: `AI Agent`, `Context Window`, `Token`, `Prompt`, `Write-Ahead Log (WAL)`, `Retrieval-Augmented Generation (RAG)`.
 
 ---
 
@@ -16,35 +20,36 @@ When teams first try to give an agent "memory," they usually swing between two e
 
 ```mermaid
 flowchart TD
-    classDef fail fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef ok fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    subgraph ExtremeA["EXTREME A: THE CONTEXT FIREHOSE (Naive Full Append)"]
-        direction TB
-        EA1["Dump all 20 past conversations into the prompt"]:::fail
-        --> EA2["Context reaches 60,000+ tokens"]:::fail
-        --> EA3["High latency + huge API bills + model ignores instructions"]:::fail
+    subgraph Extremes["⚠️ Ungoverned Anti-Patterns"]
+        EA["💥 Context Firehose<br/>60k tokens, high cost, lost-in-middle"]
+        EB["💥 Amnesiac Discard<br/>Zero persistence, repeated explanations"]
     end
 
-    subgraph ExtremeB["EXTREME B: THE AMNESIAC AGENT (Stateless Discard)"]
-        direction TB
-        EB1["Discard all history at the end of each session"]:::fail
-        --> EB2["Zero persistence across sessions"]:::fail
-        --> EB3["User must re-explain rules and preferences every day"]:::fail
+    subgraph Balanced["🛡️ 4-Tier Cognitive Memory"]
+        M1["🧠 1. Working Memory (Context Window)"]
+        M2["⏱️ 2. Short-Term Buffer (Active Session)"]
+        M3["🗄️ 3. Long-Term Store (Episodic and Semantic)"]
+        M4["📜 4. Procedural Playbooks (Schemas and Rules)"]
+        M1 <--> M2
+        M1 <--> M3
+        M1 <--> M4
     end
 
-    subgraph Balanced["THE PRODUCTION SOLUTION: 4-TIER MEMORY HIERARCHY"]
-        direction TB
-        M1["Working Context (Focused & Lean)"]:::ok
-        M2["Short-Term Buffer (Active Session)"]:::ok
-        M3["Long-Term Vector & Fact Store (Recalled on Demand)"]:::ok
-        M4["Procedural Playbooks (Fixed System Rules)"]:::ok
-    end
+    Extremes -.->|"Replaced by"| Balanced
+
+    style Extremes fill:none,stroke:#dc2626,stroke-width:2px
+    style Balanced fill:none,stroke:#16a34a,stroke-width:2px
+    style EA stroke:#dc2626,stroke-width:2px,fill:none
+    style EB stroke:#dc2626,stroke-width:2px,fill:none
+    style M1 stroke:#2563eb,stroke-width:2px,fill:none
+    style M2 stroke:#d97706,stroke-width:2px,fill:none
+    style M3 stroke:#16a34a,stroke-width:2px,fill:none
+    style M4 stroke:#7c3aed,stroke-width:2px,fill:none
 ```
 
 ### Why Both Extremes Fail
 
-1. **The Context Firehose**: Stuffing months of chat history into every prompt wastes money, slows down response times, and causes the model to assign lower attention probability to instructions positioned in the middle of very long prompts—a measured phenomenon researchers call "Lost in the Middle."
+1. **The Context Firehose**: Stuffing months of chat history into every prompt wastes money and slows down responses. It also triggers 'Lost in the Middle' degradation, where models ignore critical instructions buried in the prompt.
 2. **The Amnesiac Agent**: Wiping history completely frustrates users, who have to repeatedly specify their preferred programming language, cloud environment, or corporate spending rules.
 3. **The Solution**: Mirroring human cognitive architecture by organizing memory into distinct tiers based on speed, retention time, and purpose.
 
@@ -54,21 +59,34 @@ flowchart TD
 
 Enterprise systems organize agent memory into four clear tiers:
 
+> [!NOTE]
+> **Where this analogy breaks**: In human memory, biological consolidation happens automatically during sleep without software intervention. In an AI agent, memory consolidation requires active, scheduled software jobs (summarizers, vector indexing, graph extraction) that incur token costs and API latency.
+
 ```mermaid
 flowchart TD
-    classDef wm fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef st fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef lt fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef pm fill:#ede7f6,stroke:#512da8,stroke-width:2px;
+    WM["🧠 1. WORKING MEMORY<br>• Active prompt context window<br>• Immediate scratchpad thoughts"]
+    
+    ST["⏱️ 2. SHORT-TERM BUFFER<br>• Sliding window of recent turns<br>• In-memory session state"]
+    
+    LT["🗄️ 3. LONG-TERM MEMORY<br/>• Episodic post-mortems and reflections<br/>• Semantic preferences and facts"]
+    
+    PM["📜 4. PROCEDURAL MEMORY<br/>• Fixed system instructions<br/>• Tool schemas and operating rules"]
 
-    WM["1. WORKING MEMORY\n• The active prompt context window\n• Immediate scratchpad thoughts and current tool outputs\n• Fast, in-memory, but limited in size"]:::wm
-    
-    WM <--> ST["2. SHORT-TERM BUFFER\n• Recent conversation turns in the active session\n• In-memory sliding window (e.g., last 4 to 6 turns)\n• Maintains smooth back-and-forth dialogue"]:::st
-    
-    WM <--> LT["3. LONG-TERM MEMORY\n• Persistent storage across sessions\n• Episodic: Past event logs and post-mortem reflections\n• Semantic: User preferences, company policies, and facts\n• Scored by relevance and recency"]:::lt
-    
-    WM <--> PM["4. PROCEDURAL MEMORY\n• System instructions and operational guidelines\n• Tool schemas (JSON schemas) and few-shot examples\n• Fixed rules defining how the agent operates"]:::pm
+    ST -->|"Inject recent turns"| WM
+    LT -->|"Recall relevant facts"| WM
+    PM -->|"Inject operational rules"| WM
+
+    style WM stroke:#7c3aed,stroke-width:2px,fill:none
+    style ST stroke:#d97706,stroke-width:2px,fill:none
+    style LT stroke:#16a34a,stroke-width:2px,fill:none
+    style PM stroke:#2563eb,stroke-width:2px,fill:none
 ```
+
+### Walkthrough: 4-Tier Memory Hierarchy
+1. **Working Memory**: The immediate token context window holding the active scratchpad and current step.
+2. **Short-Term Buffer**: A sliding FIFO window of recent turns maintaining conversational continuity.
+3. **Long-Term Memory**: Persistent vector and document stores queried via semantic retrieval.
+4. **Procedural Memory**: Fixed operational schemas, system instructions, and tool definitions.
 
 ### The 4 Tiers Explained Simply
 
@@ -109,19 +127,30 @@ Where:
 
 ```mermaid
 flowchart LR
-    classDef calc fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef pass fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef drop fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    Q(["👤 User Query:<br>'Deploy Database'"]) --> Sim["🔍 Semantic Similarity<br>(Score: 0.92)"]
+    Time["⏱️ Age: 30 Days<br>(720 Hours)"] --> Decay["📉 Recency Multiplier<br>exp(-0.005 * 720) = 0.027"]
+    
+    Sim & Decay --> Combine["⚖️ Combined Score<br>0.92 * 0.027 = 0.025"]
+    Combine --> Threshold{"🛡️ Score >= 0.50?"}
+    
+    Threshold -- "Fail" --> Drop["⚠️ Discard Outdated Fact"]
+    Threshold -- "Pass" --> Keep["✅ Inject into Working Memory"]
 
-    Q["User Query:\n'Deploy Database'"] --> Sim["Semantic Similarity Check\nRaw Similarity = 0.92"]:::calc
-    Time["Age: 30 Days (720 Hours)"] --> Decay["Recency Decay Multiplier\nexp(-0.005 * 720) = 0.027"]:::calc
-    
-    Sim & Decay --> Combine["Combined Score:\n0.92 * 0.027 = 0.025"]:::calc
-    Combine --> Threshold{"Score >= 0.50?"}:::calc
-    
-    Threshold -- "Fails Threshold" --> Drop["Discarded: Outdated Fact"]:::drop
-    Threshold -- "Passes" --> Keep["Injected into Working Memory"]:::pass
+    style Q stroke:#64748b,stroke-width:2px
+    style Sim stroke:#2563eb,stroke-width:2px
+    style Time stroke:#64748b,stroke-width:2px
+    style Decay stroke:#d97706,stroke-width:2px
+    style Combine stroke:#7c3aed,stroke-width:2px
+    style Threshold stroke:#d97706,stroke-width:2px
+    style Drop stroke:#dc2626,stroke-width:2px
+    style Keep stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough: Recency Decay Pipeline
+1. **Semantic Similarity**: Vector cosine comparison matches historical memories against the incoming prompt.
+2. **Exponential Age Penalty**: The elapsed time applies an exponential decay multiplier.
+3. **Composite Scoring**: Multiplication blends relevance and recency into a unified confidence metric.
+4. **Threshold Gate**: Memories below the relevance threshold are discarded, preventing stale information from entering context.
 
 #### How Recency Decay Works in Practice
 
@@ -137,29 +166,35 @@ In production architectures, memory management is decoupled from the agent runti
 
 ```mermaid
 flowchart TD
-    classDef agent fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef maas fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef store fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    User["User Application"] --> Agent["Autonomous Agent Worker\n(Stateless Execution Node)"]:::agent
+    User(["👤 User Application"]) --> Agent["💻 Agent Worker Node<br/>Stateless Execution"]
     
-    Agent <-->|"Queries & updates memory"| MaaS["MEMORY-AS-A-SERVICE ENGINE\n(e.g., Letta / Mem0)"]:::maas
+    Agent -->|"1. Request context"| MaaS["⚡ Memory-as-a-Service Engine<br/>Letta / Mem0"]
+    MaaS -.->|"4. Inject memory slice"| Agent
     
-    subgraph StorageBackends["DURABLE STORAGE"]
-        direction LR
-        Core["Core Profile\n(User preferences & persona)"]:::store
-        Vec["Archival Vector Store\n(Past conversation logs)"]:::store
-        Graph["Knowledge Graph\n(Entity relationships)"]:::store
+    subgraph StorageBackends["🗄️ Durable Storage Tiers"]
+        Core["📋 Core Profile<br/>Preferences and Persona"]
+        Vec[("🗄️ Archival Store<br/>Vector Embeddings")]
+        Graph["🌐 Knowledge Graph<br/>Entity Relationships"]
     end
 
-    MaaS <--> Core & Vec & Graph
-    
-    Agent -->|"1. User sends message"| MaaS
-    MaaS -->|"2. Injects relevant memory slice"| Agent
-    Agent -->|"3. Calls tool: update_user_rule()"| MaaS
-    Agent -->|"4. Sends conversation logs"| MaaS
-    MaaS -->|"5. Asynchronously extracts facts"| StorageBackends
+    MaaS -->|"2. Read / Write"| Core
+    MaaS -->|"2. Read / Write"| Vec
+    MaaS -->|"3. Graph Query"| Graph
+
+    style User stroke:#64748b,stroke-width:2px,fill:none
+    style Agent stroke:#2563eb,stroke-width:2px,fill:none
+    style MaaS stroke:#7c3aed,stroke-width:2px,fill:none
+    style StorageBackends fill:none,stroke:#16a34a,stroke-width:2px
+    style Core stroke:#2563eb,stroke-width:2px,fill:none
+    style Vec stroke:#16a34a,stroke-width:2px,fill:none
+    style Graph stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+### Walkthrough: Memory-as-a-Service Architecture
+1. **Request Interception**: Incoming queries reach the stateless agent worker.
+2. **Context Injection**: The memory service queries storage backends and injects relevant memory slices.
+3. **Self-Editing Tools**: The model modifies persistent memory blocks via dedicated tool calls.
+4. **Asynchronous Fact Extraction**: Background workers index conversations and update long-term knowledge graphs.
 
 ### Two Major Frameworks Explained
 
@@ -179,17 +214,20 @@ If an agent embeds a customer's personal data into a vector database, removing t
 
 ```mermaid
 flowchart LR
-    classDef plain fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef enc fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef kms fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef shred fill:#ffebee,stroke:#c62828,stroke-width:2px;
-
-    UserData["Customer Personal Data"]:::plain --> KMS["Key Management Service\n(Issues dedicated User Key K_101)"]:::kms
-    KMS --> Enc["Data Encrypted with Key K_101\nStored alongside non-identifying embedding"]:::enc
-    Enc --> DB["Vector Database & Storage"]:::enc
+    UserData["📄 Personal Data"] --> KMS["🔑 Cloud KMS<br>(Dedicated Key K_101)"]
+    KMS --> Enc["🔒 AES-256-GCM Encrypted<br>(Stored alongside embedding)"]
+    Enc --> DB[("🗄️ Vector Database and Store")]
     
-    Request["Deletion Request Arrives"] --> Destroy["Destroy User Key K_101 in Key Service"]:::shred
-    Destroy --> Result["Stored payload becomes unreadable random noise\nInstantly deleted without database re-indexing!"]:::shred
+    Request["🚨 Deletion Request"] --> Destroy["💥 Destroy Key K_101 in KMS"]
+    Destroy --> Result["✅ Instant Cryptographic Erasure<br>(Data becomes random noise)"]
+
+    style UserData stroke:#64748b,stroke-width:2px,fill:none
+    style KMS stroke:#2563eb,stroke-width:2px,fill:none
+    style Enc stroke:#d97706,stroke-width:2px,fill:none
+    style DB stroke:#16a34a,stroke-width:2px,fill:none
+    style Request stroke:#dc2626,stroke-width:2px,fill:none
+    style Destroy stroke:#dc2626,stroke-width:2px,fill:none
+    style Result stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 #### How Crypto-Shredding Works
@@ -406,7 +444,23 @@ if __name__ == "__main__":
 
 ---
 
-## 7. Key Takeaways & Summary
+## 7. Quick Check
+
+A customer support agent needs to remember that a VIP user prefers Python over TypeScript for all code examples, and also needs access to a 500-page internal knowledge base.
+
+How should the agent architect partition these two memory requirements across the memory hierarchy?
+
+<details>
+<summary>View Answer</summary>
+
+**Partitioning Architecture**:
+1. **User Language Preference**: Store in **Core Memory (RAM)** as a pinned profile block inside the working context. The model reads it on every turn without needing vector search and can update it using self-editing memory tools (`update_user_preference`).
+2. **500-Page Knowledge Base**: Store in **Archival Memory (Disk/SSD)** as chunked embeddings in a vector database. The agent retrieves relevant chunks on-demand via semantic search tools rather than stuffing the raw document into active prompt context.
+</details>
+
+---
+
+## 8. Key Takeaways & Summary
 
 * **Models are Stateless by Nature**: Real persistence requires external storage systems and clean memory layers.
 * **The 4-Tier Memory Hierarchy**:
@@ -422,7 +476,7 @@ if __name__ == "__main__":
 
 ## 🧭 Navigation
 
-| [← Lesson 03: Stateful Sessions & Durable Write-Ahead Logs](03-stateful-sessions-and-durable-wal-persistence.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 05: Multi-Agent Coordination & The Tri-Protocol Stack →](05-multi-agent-coordination-and-a2a-protocols.md) |
-|:---:|:---:|:---:|
-| **Previous Lesson** | **Phase Hub** | **Next Lesson** |
-| [Lab 1: Stateful Agent & Human Approvals](labs/lab1-stateful-agent-hitl.md) | [Lab 5: Agent Memory Systems](labs/lab5-agent-memory-system.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+* **Previous Lesson**: [← Lesson 03: Stateful Sessions, Durable Write-Ahead Logs & Distributed Sagas](03-stateful-sessions-and-durable-wal-persistence.md)
+* **Phase 04 Hub**: [Phase 04 Overview](README.md)
+* **Next Lesson**: [Lesson 05: Multi-Agent Coordination, Handoffs, and the Linux Foundation Agent2Agent (A2A) Protocol →](05-multi-agent-coordination-and-a2a-protocols.md)
+* **Capstone Lab**: [Capstone Challenge: Code Review Agent Engine](labs/capstone-code-review-engine.md)

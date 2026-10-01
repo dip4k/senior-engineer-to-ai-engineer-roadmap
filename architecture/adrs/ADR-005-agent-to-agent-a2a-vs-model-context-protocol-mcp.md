@@ -32,19 +32,18 @@ Attempting to solve both problems with a single protocol leads to catastrophic a
 
 ```mermaid
 flowchart TD
-    subgraph Horizontal["HORIZONTAL AGENT FEDERATION: Agent2Agent (A2A) Protocol"]
-        direction LR
-        AgentA["Client Triage Agent<br>(Customer Operations)"] <-->|"A2A Task Envelope<br>(Task State • Capability Card • SLAs)"| AgentB["Domain Specialist Agent<br>(Billing & Financial Ledger)"]
+    subgraph Horizontal["Horizontal A2A Federation Layer"]
+        AgentA["🤖 Client Triage Agent<br>(Customer Operations)"] <-->|"A2A Task Envelope<br>(Task State • Capability Card • SLAs)"| AgentB["💳 Domain Specialist Agent<br>(Billing and Financial Ledger)"]
     end
 
-    subgraph VerticalA["VERTICAL INTEGRATION: Model Context Protocol (MCP 2026)"]
-        AgentA -->|"JSON-RPC tools/call"| MCP_CRM["MCP CRM Server<br>(Salesforce / Zendesk)"]
-        AgentA -->|"JSON-RPC resources/read"| MCP_KB["MCP Knowledge Server<br>(Hybrid Vector Search)"]
+    subgraph VerticalA["Vertical MCP Tool Layer A"]
+        AgentA -->|"JSON-RPC tools/call"| MCP_CRM["🏢 MCP CRM Server<br>(Salesforce / Zendesk)"]
+        AgentA -->|"JSON-RPC resources/read"| MCP_KB["📚 MCP Knowledge Server<br>(Hybrid Vector Search)"]
     end
 
-    subgraph VerticalB["VERTICAL INTEGRATION: Model Context Protocol (MCP 2026)"]
-        AgentB -->|"JSON-RPC tools/call"| MCP_ERP["MCP ERP Server<br>(SAP / NetSuite Stored Proc)"]
-        AgentB -->|"JSON-RPC tools/call"| MCP_Stripe["MCP Payment Server<br>(Stripe Refund Gateway)"]
+    subgraph VerticalB["Vertical MCP Tool Layer B"]
+        AgentB -->|"JSON-RPC tools/call"| MCP_ERP["⚙️ MCP ERP Server<br>(SAP / NetSuite Stored Proc)"]
+        AgentB -->|"JSON-RPC tools/call"| MCP_Stripe["💰 MCP Payment Server<br>(Stripe Refund Gateway)"]
     end
 ```
 

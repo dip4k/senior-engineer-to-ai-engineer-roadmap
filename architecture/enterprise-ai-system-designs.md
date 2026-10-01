@@ -41,21 +41,21 @@ An autonomous multi-step reconciliation engine combining deterministic schema va
 
 ```mermaid
 flowchart TD
-    BankFeeds["Bank & Invoice Feeds"] --> Ingest["Ingestion & Layout Parser"]
-    Ingest --> Agent["Reconciliation Agent (Claude 3.7 / MAF 1.0)"]
+    BankFeeds["🏦 Bank and Invoice Feeds"] --> Ingest["📄 Ingestion and Layout Parser"]
+    Ingest --> Agent["🤖 Reconciliation Agent (Claude 3.7 / MAF 1.0)"]
     
-    Agent --> MCP_DB["Stateless MCP: ERP & SQL Database"]
-    MCP_DB --> MatchCheck{"Discrepancy > $5,000?"}
+    Agent --> MCP_DB["⚙️ Stateless MCP: ERP and SQL Database"]
+    MCP_DB --> MatchCheck{"⚖️ Discrepancy > $5,000?"}
     
-    MatchCheck -- "No" --> AutoBook["Execute Ledger Entry via MCP"]
-    MatchCheck -- "Yes" --> HITL["Suspend Graph: HMAC Approval Nonce"]
+    MatchCheck -- "No" --> AutoBook["💳 Execute Ledger Entry via MCP"]
+    MatchCheck -- "Yes" --> HITL["⏸️ Suspend Graph: HMAC Approval Nonce"]
     
-    HITL --> Operator["Finance Controller Approval"]
+    HITL --> Operator["👤 Finance Controller Approval"]
     Operator --> AutoBook
     
-    AutoBook --> SagaCheck{"Commit Succeeded?"}
-    SagaCheck -- "Yes" --> Audit[("Immutable ERP Journal")]
-    SagaCheck -- "No" --> Compensate["Saga Rollback: Reverse Ledger Entry"]
+    AutoBook --> SagaCheck{"⚖️ Commit Succeeded?"}
+    SagaCheck -- "Yes" --> Audit[("💾 Immutable ERP Journal")]
+    SagaCheck -- "No" --> Compensate["🔄 Saga Rollback: Reverse Ledger Entry"]
 ```
 
 #### Architectural Walkthrough:
@@ -137,22 +137,22 @@ An autonomous SRE diagnostic and remediation agent built on the **Google Agent D
 
 ```mermaid
 flowchart TD
-    Alert["Alert: High Latency & Pod Crashes"] --> DiagAgent["Diagnostic Agent (Read-Only IAM)"]
+    Alert["🚨 Alert: High Latency and Pod Crashes"] --> DiagAgent["🔍 Diagnostic Agent (Read-Only IAM)"]
     
-    DiagAgent --> Telemetry["OpenTelemetry Spans & K8s Event Logs"]
-    Telemetry --> RCA["Isolate Root Cause: OOMKilled in Service B"]
+    DiagAgent --> Telemetry["📊 OpenTelemetry Spans and K8s Logs"]
+    Telemetry --> RCA["🔬 Isolate Root Cause: OOMKilled in Service B"]
     
-    RCA --> PlanAgent["Remediation Planner"]
-    PlanAgent --> SafeCheck{"Blast Radius Assessment"}
+    RCA --> PlanAgent["📋 Remediation Planner"]
+    PlanAgent --> SafeCheck{"⚖️ Blast Radius Assessment"}
     
-    SafeCheck -- "Low Risk (Restart Pod)" --> Sandbox["Ephemeral Container Execution (gVisor)"]
-    SafeCheck -- "High Risk (Cluster Rollback)" --> HITL["Slack Step-Up Approval Gate"]
+    SafeCheck -- "Low Risk (Restart Pod)" --> Sandbox["🔒 Ephemeral Container Execution (gVisor)"]
+    SafeCheck -- "High Risk (Cluster Rollback)" --> HITL["⏸️ Slack Step-Up Approval Gate"]
     
-    HITL --> OnCallSRE["SRE One-Click Authorization"]
+    HITL --> OnCallSRE["👤 SRE One-Click Authorization"]
     OnCallSRE --> Sandbox
     
-    Sandbox --> Verify["Post-Remediation Health Metric Probe"]
-    Verify --> PostMortem["Auto-Generate Post-Mortem ADR"]
+    Sandbox --> Verify["🩺 Post-Remediation Health Metric Probe"]
+    Verify --> PostMortem["📝 Auto-Generate Post-Mortem ADR"]
 ```
 
 #### Architectural Walkthrough:
@@ -186,22 +186,22 @@ A CI/CD-native autonomous coding agent that executes on GitHub webhooks, parses 
 
 ```mermaid
 flowchart TD
-    PR["GitHub PR Created / Updated"] --> Webhook["CI/CD Webhook Worker"]
-    Webhook --> Context["Extract Diff + AST + AGENT.md Rules"]
+    PR["📝 GitHub PR Created / Updated"] --> Webhook["⚡ CI/CD Webhook Worker"]
+    Webhook --> Context["🔍 Extract Diff + AST + AGENT.md Rules"]
     
-    Context --> CodeAgent["Coding Agent (Claude Code / o3-mini)"]
-    CodeAgent --> TestGen["Synthesize Unit Tests for Modified Logic"]
+    Context --> CodeAgent["🤖 Coding Agent (Claude Code / o3-mini)"]
+    CodeAgent --> TestGen["🧪 Synthesize Unit Tests for Modified Logic"]
     
-    TestGen --> Sandbox["Docker Isolated Test Runner"]
-    Sandbox --> TestResult{"All Tests Pass & Coverage >= 80%?"}
+    TestGen --> Sandbox["🔒 Docker Isolated Test Runner"]
+    Sandbox --> TestResult{"⚖️ All Tests Pass and Coverage >= 80%?"}
     
-    TestResult -- "Pass" --> Comment["Post Inline GitHub Code Review"]
-    TestResult -- "Fail" --> AutoPatch["Agent Generates Self-Correction Diff"]
+    TestResult -- "Pass" --> Comment["💬 Post Inline GitHub Code Review"]
+    TestResult -- "Fail" --> AutoPatch["🔄 Agent Generates Self-Correction Diff"]
     AutoPatch --> Sandbox
     
-    Comment --> MergeGate{"Architectural Violations?"}
-    MergeGate -- "None" --> Approve["Mark Check Run: SUCCESS"]
-    MergeGate -- "Violations" --> Block["Mark Check Run: FAILED (Actionable Fix Required)"]
+    Comment --> MergeGate{"⚖️ Architectural Violations?"}
+    MergeGate -- "None" --> Approve["✅ Mark Check Run: SUCCESS"]
+    MergeGate -- "Violations" --> Block["🛑 Mark Check Run: FAILED (Actionable Fix Required)"]
 ```
 
 #### Architectural Walkthrough:
@@ -235,25 +235,25 @@ A multi-agent customer operations swarm utilizing a fast classification model fo
 
 ```mermaid
 flowchart TD
-    Customer["Customer Inbound Message"] --> Gateway["Omnichannel Gateway"]
-    Gateway --> Triage["Triage Agent (Fast SLM Classifier)"]
+    Customer["👤 Customer Inbound Message"] --> Gateway["🚪 Omnichannel Gateway"]
+    Gateway --> Triage["🤖 Triage Agent (Fast SLM Classifier)"]
     
-    Triage --> A2A_Envelope["A2A Task Envelope (Customer ID + Intent)"]
-    A2A_Envelope --> Broker{"A2A Delegation Router"}
+    Triage --> A2A_Envelope["✉️ A2A Task Envelope (Customer ID + Intent)"]
+    A2A_Envelope --> Broker{"🔀 A2A Delegation Router"}
     
-    Broker -->|"Billing Intent"| BillingAgent["Billing Specialist Agent"]
-    Broker -->|"Tech Outage"| TechAgent["Technical Support Agent"]
-    Broker -->|"Account Lockout"| SecAgent["Identity & Security Agent"]
+    Broker -->|"Billing Intent"| BillingAgent["💳 Billing Specialist Agent"]
+    Broker -->|"Tech Outage"| TechAgent["💻 Technical Support Agent"]
+    Broker -->|"Account Lockout"| SecAgent["🛡️ Identity and Security Agent"]
     
-    BillingAgent --> MCP_Billing["Stateless MCP: Stripe / ERP"]
-    TechAgent --> MCP_Logs["Stateless MCP: Service Status & Logs"]
-    SecAgent --> MCP_Auth["Stateless MCP: Okta / Entra ID"]
+    BillingAgent --> MCP_Billing["⚙️ Stateless MCP: Stripe / ERP"]
+    TechAgent --> MCP_Logs["⚙️ Stateless MCP: Service Status and Logs"]
+    SecAgent --> MCP_Auth["🔑 Stateless MCP: Okta / Entra ID"]
     
-    MCP_Billing --> FinalCheck["Resolution Asserter"]
+    MCP_Billing --> FinalCheck["⚖️ Resolution Asserter"]
     MCP_Logs --> FinalCheck
     MCP_Auth --> FinalCheck
     
-    FinalCheck --> Response["Deliver Verified Response to Customer"]
+    FinalCheck --> Response["✅ Deliver Verified Response to Customer"]
 ```
 
 #### Architectural Walkthrough:
@@ -287,30 +287,30 @@ A unified enterprise AI Gateway providing dual-tier caching (L1 SHA-256 exact ha
 
 ```mermaid
 flowchart TD
-    Client["Internal App / Microservice"] --> Gateway["Enterprise AI Gateway"]
+    Client["📱 Internal App / Microservice"] --> Gateway["🛡️ Enterprise AI Gateway"]
     
-    Gateway --> Quota{"Tenant Budget Available?"}
-    Quota -- "Exceeded" --> Err429["HTTP 429 Quota Exceeded"]
-    Quota -- "Approved" --> L1["L1: SHA-256 Exact Hash Cache (Redis)"]
+    Gateway --> Quota{"⚖️ Tenant Budget Available?"}
+    Quota -- "Exceeded" --> Err429["🛑 HTTP 429 Quota Exceeded"]
+    Quota -- "Approved" --> L1["⚡ L1: SHA-256 Exact Hash Cache (Redis)"]
     
-    L1 -- "Hit (<2ms)" --> Stream["SSE Token Response"]
-    L1 -- "Miss" --> L2["L2: Semantic Vector Cache (pgvector)"]
+    L1 -- "Hit (<2ms)" --> Stream["📡 SSE Token Response"]
+    L1 -- "Miss" --> L2["🧠 L2: Semantic Vector Cache (pgvector)"]
     
     L2 -- "Hit (>=0.92 Sim)" --> Stream
-    L2 -- "Miss" --> Router["Resilience & Fallback Router"]
+    L2 -- "Miss" --> Router["🔀 Resilience and Fallback Router"]
     
-    Router --> CB1{"Primary Provider Healthy?"}
-    CB1 -- "Yes" --> P1["Primary: Claude 3.7 Sonnet / GPT-4.5"]
-    CB1 -- "Tripped (429/5xx)" --> CB2{"Secondary Provider Healthy?"}
+    Router --> CB1{"⚡ Primary Provider Healthy?"}
+    CB1 -- "Yes" --> P1["☁️ Primary: Claude 3.7 Sonnet / GPT-4.5"]
+    CB1 -- "Tripped (429/5xx)" --> CB2{"⚡ Secondary Provider Healthy?"}
     
-    CB2 -- "Yes" --> P2["Secondary: Google Gemini 2.5 Pro"]
-    CB2 -- "Tripped" --> P3["Tertiary: Local Self-Hosted vLLM"]
+    CB2 -- "Yes" --> P2["☁️ Secondary: Google Gemini 2.5 Pro"]
+    CB2 -- "Tripped" --> P3["🖥️ Tertiary: Local Self-Hosted vLLM"]
     
     P1 --> Stream
     P2 --> Stream
     P3 --> Stream
     
-    Stream -.-> OTel[("OpenTelemetry GenAI Spans & Audit Ledger")]
+    Stream -.-> OTel[("📊 OpenTelemetry GenAI Spans and Audit Ledger")]
 ```
 
 #### Architectural Walkthrough:
@@ -343,32 +343,32 @@ A CI/CD quality gate implementing the Hamel Husain 3-level evaluation methodolog
 
 ```mermaid
 flowchart TD
-    PR["Prompt / RAG / Model Update PR"] --> CI_Runner["CI/CD Evaluation Runner"]
+    PR["📝 Prompt / RAG / Model Update PR"] --> CI_Runner["⚙️ CI/CD Evaluation Runner"]
     
     subgraph Level1["Level 1: Deterministic Gates (<1s)"]
-        CI_Runner --> Schema["JSON Schema Validation"]
-        CI_Runner --> Regex["Regex Format Asserters"]
-        CI_Runner --> Latency["Token & Budget Thresholds"]
+        CI_Runner --> Schema["📋 JSON Schema Validation"]
+        CI_Runner --> Regex["🔍 Regex Format Asserters"]
+        CI_Runner --> Latency["💰 Token and Budget Thresholds"]
     end
     
-    Level1 --> L1_Check{"All L1 Passed?"}
-    L1_Check -- "Fail" --> BlockPR["Block PR (Deterministic Defect)"]
+    Level1 --> L1_Check{"⚖️ All L1 Passed?"}
+    L1_Check -- "Fail" --> BlockPR["🛑 Block PR (Deterministic Defect)"]
     
-    subgraph Level2["Level 2: Binary LLM Judges (Golden Dataset)"]
-        L1_Check -- "Pass" --> GoldenSet["Load Curated Golden Test Set (200 Cases)"]
-        GoldenSet --> JudgeModel["Evaluator LLM (Claude 3.7 Sonnet / o3)"]
-        JudgeModel --> BinaryRubric["Binary Chain-of-Thought Assertions"]
+    subgraph Level2["Level 2: Binary LLM Judges"]
+        L1_Check -- "Pass" --> GoldenSet["💾 Load Curated Golden Test Set (200 Cases)"]
+        GoldenSet --> JudgeModel["🧠 Evaluator LLM (Claude 3.7 Sonnet / o3)"]
+        JudgeModel --> BinaryRubric["⚖️ Binary Chain-of-Thought Assertions"]
     end
     
-    BinaryRubric --> ScoreCheck{"Pass Rate >= 98% & Zero Regressions?"}
+    BinaryRubric --> ScoreCheck{"⚖️ Pass Rate >= 98% and Zero Regressions?"}
     ScoreCheck -- "No" --> BlockPR
-    ScoreCheck -- "Yes" --> Deploy["Deploy to Staging / Production"]
+    ScoreCheck -- "Yes" --> Deploy["🚀 Deploy to Staging / Production"]
     
-    subgraph Level3["Level 3: Online Production Observability"]
-        Deploy --> LiveTraffic["Live Inference Traffic"]
-        LiveTraffic --> OTelSpans["OpenTelemetry GenAI Spans"]
-        OTelSpans --> DriftDetector["Drift & Anomaly Detection (Langfuse)"]
-        DriftDetector --> Feedback["Curate Hard Failures into Golden Set"]
+    subgraph Level3["Level 3: Online Observability"]
+        Deploy --> LiveTraffic["👥 Live Inference Traffic"]
+        LiveTraffic --> OTelSpans["📊 OpenTelemetry GenAI Spans"]
+        OTelSpans --> DriftDetector["🔍 Drift and Anomaly Detection (Langfuse)"]
+        DriftDetector --> Feedback["🔄 Curate Hard Failures into Golden Set"]
     end
 ```
 
@@ -403,17 +403,17 @@ The **Dual-LLM Privilege Separation (Quarantine) Pattern**: An unprivileged "Rea
 
 ```mermaid
 flowchart TD
-    UntrustedData["Untrusted Ingress<br>(Customer Email / Scraped Web / PDF)"] --> ReaderLLM["Unprivileged Reader LLM<br>• ZERO Tools Registered<br>• ZERO Mutating Credentials<br>• Constrained JSON Grammar"]
+    UntrustedData["📥 Untrusted Ingress<br>(Customer Email / Scraped Web / PDF)"] --> ReaderLLM["🔒 Unprivileged Reader LLM<br>• ZERO Tools Registered<br>• ZERO Mutating Credentials<br>• Constrained JSON Grammar"]
     
-    ReaderLLM --> SanitizedJSON["Strictly Typed JSON DTO<br>{ sender, amount, items }"]
+    ReaderLLM --> SanitizedJSON["📄 Strictly Typed JSON DTO<br>{ sender, amount, items }"]
     
-    SanitizedJSON --> CanaryGate{"Canary Token or Schema Violation?"}
-    CanaryGate -- "Violation Detected" --> QuarantineAlert["Quarantine & Alert SIEM"]
+    SanitizedJSON --> CanaryGate{"⚖️ Canary Token or Schema Violation?"}
+    CanaryGate -- "Violation Detected" --> QuarantineAlert["🛑 Quarantine and Alert SIEM"]
     
-    CanaryGate -- "Clean" --> ControllerLLM["Privileged Controller LLM<br>• Authenticated Context<br>• Enterprise System Prompts"]
+    CanaryGate -- "Clean" --> ControllerLLM["🧠 Privileged Controller LLM<br>• Authenticated Context<br>• Enterprise System Prompts"]
     
-    ControllerLLM --> MCP_Tools["Authorized MCP Tools<br>(Database, Refund API, Jira)"]
-    MCP_Tools --> Result["Grounded Safe Execution"]
+    ControllerLLM --> MCP_Tools["⚙️ Authorized MCP Tools<br>(Database, Refund API, Jira)"]
+    MCP_Tools --> Result["✅ Grounded Safe Execution"]
 ```
 
 #### Architectural Walkthrough:
@@ -447,25 +447,25 @@ An autonomous multi-agent mesh where specialized agents continuously model deman
 
 ```mermaid
 flowchart TD
-    Kafka["Real-Time IoT & POS Sales Stream"] --> MeshRouter["Supply Chain Event Router"]
+    Kafka["📡 Real-Time IoT and POS Sales Stream"] --> MeshRouter["🔀 Supply Chain Event Router"]
     
-    MeshRouter --> DemandAgent["Demand Forecast Agent<br>(SKU Velocity & Trends)"]
-    MeshRouter --> FreightAgent["Logistics & Freight Agent<br>(Carrier APIs & Transit Times)"]
-    MeshRouter --> WarehouseAgent["Warehouse Capacity Agent<br>(Rack Space & Labor Bounds)"]
+    MeshRouter --> DemandAgent["📈 Demand Forecast Agent<br>(SKU Velocity and Trends)"]
+    MeshRouter --> FreightAgent["🚚 Logistics and Freight Agent<br>(Carrier APIs and Transit Times)"]
+    MeshRouter --> WarehouseAgent["🏢 Warehouse Capacity Agent<br>(Rack Space and Labor Bounds)"]
     
-    DemandAgent --> Arbiter["Consensus Allocation Arbiter"]
+    DemandAgent --> Arbiter["⚖️ Consensus Allocation Arbiter"]
     FreightAgent --> Arbiter
     WarehouseAgent --> Arbiter
     
-    Arbiter --> Proposal["Formulate Transfer Proposal"]
-    Proposal --> BudgetCheck{"Transfer Cost < $25,000 & ROI > 3.0?"}
+    Arbiter --> Proposal["📋 Formulate Transfer Proposal"]
+    Proposal --> BudgetCheck{"⚖️ Transfer Cost < $25,000 and ROI > 3.0?"}
     
-    BudgetCheck -- "Yes" --> ERP_Commit["Commit Rebalance in ERP via MCP"]
-    BudgetCheck -- "No" --> HumanReview["Escalate to Supply Chain Director"]
+    BudgetCheck -- "Yes" --> ERP_Commit["⚙️ Commit Rebalance in ERP via MCP"]
+    BudgetCheck -- "No" --> HumanReview["👤 Escalate to Supply Chain Director"]
     
-    ERP_Commit --> CarrierConfirm{"Carrier Booking Confirmed?"}
-    CarrierConfirm -- "Yes" --> Complete["Complete Transfer Execution"]
-    CarrierConfirm -- "No" --> Rollback["Saga Rollback: Release Warehouse Reserve"]
+    ERP_Commit --> CarrierConfirm{"⚖️ Carrier Booking Confirmed?"}
+    CarrierConfirm -- "Yes" --> Complete["✅ Complete Transfer Execution"]
+    CarrierConfirm -- "No" --> Rollback["🔄 Saga Rollback: Release Warehouse Reserve"]
 ```
 
 #### Architectural Walkthrough:
@@ -499,19 +499,19 @@ A privacy-preserving enterprise compliance agent integrating an inbound **PII To
 
 ```mermaid
 flowchart TD
-    Employee["Employee Inquiry (e.g., Benefits / Leave)"] --> Enclave["Corporate Secure Enclave"]
+    Employee["👤 Employee Inquiry (e.g., Benefits / Leave)"] --> Enclave["🏢 Corporate Secure Enclave"]
     
-    Enclave --> PII_Vault["Pre-Inference PII Tokenization Vault<br>(Masks SSN, Names, Health Data)"]
-    PII_Vault --> RegionRouter["Jurisdiction & Policy Router<br>(EU GDPR / US State Laws)"]
+    Enclave --> PII_Vault["🔒 Pre-Inference PII Tokenization Vault<br>(Masks SSN, Names, Health Data)"]
+    PII_Vault --> RegionRouter["⚖️ Jurisdiction and Policy Router<br>(EU GDPR / US State Laws)"]
     
-    RegionRouter --> RAG["Localized Hybrid Policy RAG (pgvector)"]
-    RAG --> Agent["Compliance Reasoning Agent<br>(Claude 3.7 / GPT-4.5)"]
+    RegionRouter --> RAG["📚 Localized Hybrid Policy RAG (pgvector)"]
+    RAG --> Agent["🤖 Compliance Reasoning Agent<br>(Claude 3.7 / GPT-4.5)"]
     
-    Agent --> RawResponse["Grounded Response with Surrogate Tokens"]
-    RawResponse --> DeToken["De-Tokenization Vault (Within Enclave)"]
+    Agent --> RawResponse["📄 Grounded Response with Surrogate Tokens"]
+    RawResponse --> DeToken["🔓 De-Tokenization Vault (Within Enclave)"]
     
-    DeToken --> CleanResponse["Rendered Private Response to Employee"]
-    CleanResponse -.-> WORMAudit[("WORM Compliance Audit Storage")]
+    DeToken --> CleanResponse["✅ Rendered Private Response to Employee"]
+    CleanResponse -.-> WORMAudit[("💾 WORM Compliance Audit Storage")]
 ```
 
 #### Architectural Walkthrough:
@@ -577,32 +577,32 @@ All mutations to transactional ERPs are strictly mediated via the **Model Contex
 ```mermaid
 flowchart TD
     subgraph Inbound["Multi-Channel Intake Layer"]
-        Req["User Requisition<br>(Slack / Teams / Copilot Studio / Portal)"]
+        Req["👤 User Requisition<br>(Slack / Teams / Copilot Studio / Portal)"]
     end
 
     subgraph MeshCore["Autonomous Procurement Agent Mesh"]
-        IntakeAgent["1. Intake & Routing Agent<br>(Taxonomy Mapping & Policy FSM)"]
-        CompareAgent["2. Compare Agent<br>(RFP Evaluation & Supplier Benchmarking)"]
-        SourceIQ["3. SourceIQ Agent<br>(Spend Analytics & Contract Arbitrage)"]
+        IntakeAgent["🤖 1. Intake and Routing Agent<br>(Taxonomy Mapping and Policy FSM)"]
+        CompareAgent["⚖️ 2. Compare Agent<br>(RFP Evaluation and Benchmarking)"]
+        SourceIQ["📊 3. SourceIQ Agent<br>(Spend Analytics and Arbitrage)"]
     end
 
-    subgraph SemanticLayer["Authoritative Enterprise Semantic Layer (Cube / MetricFlow)"]
-        Taxonomy["Taxonomy & Catalog Mapping<br>(UNSPSC / eCl@ss Harmonization)"]
-        MetricModels["Standardized Metric Models<br>(Committed Spend, YTD Budget, SLA Metrics)"]
-        AccessControl["Governance & Row-Level Security (RLS)"]
+    subgraph SemanticLayer["Authoritative Semantic Layer"]
+        Taxonomy["🏷️ Taxonomy and Catalog Mapping<br>(UNSPSC / eCl@ss Harmonization)"]
+        MetricModels["📈 Standardized Metric Models<br>(Committed Spend, YTD Budget, SLA Metrics)"]
+        AccessControl["🔒 Governance and Row-Level Security"]
     end
 
-    subgraph DataPlane["Data & Storage Plane"]
-        ERPs[("Transactional ERPs<br>(SAP Ariba / Coupa / NetSuite)")]
-        ContractRAG[("Contract Knowledge Graph<br>(GraphRAG + Leiden Summaries)")]
-        InvoiceStream[("Real-Time Invoice Telemetry<br>(Kafka / Event Hub)")]
+    subgraph DataPlane["Data and Storage Plane"]
+        ERPs[("🏢 Transactional ERPs<br>(SAP Ariba / Coupa / NetSuite)")]
+        ContractRAG[("📚 Contract Knowledge Graph<br>(GraphRAG + Leiden Summaries)")]
+        InvoiceStream[("📡 Real-Time Invoice Telemetry<br>(Kafka / Event Hub)")]
     end
 
-    subgraph ExecutionPlane["Governance & Execution Plane"]
-        HITL{"Policy & Spend Threshold<br>(Spend > $10k or Risk > 0.4?)"}
-        SignOff["Procurement & Budget Owner<br>(HMAC Nonce Approval)"]
-        MCP_Gateway["Stateless MCP Gateway<br>(Idempotent ERP Mutation Tools)"]
-        AuditLog[("WORM Immutable Audit Vault<br>(SOX / ISO 42001 Compliance)")]
+    subgraph ExecutionPlane["Governance and Execution Plane"]
+        HITL{"⚖️ Policy and Spend Threshold<br>(Spend > $10k or Risk > 0.4?)"}
+        SignOff["✍️ Procurement and Budget Owner<br>(HMAC Nonce Approval)"]
+        MCP_Gateway["⚙️ Stateless MCP Gateway<br>(Idempotent ERP Mutation Tools)"]
+        AuditLog[("💾 WORM Immutable Audit Vault<br>(SOX / ISO 42001 Compliance)")]
     end
 
     %% Flow connections
@@ -626,7 +626,7 @@ flowchart TD
     SignOff --> MCP_Gateway
 
     MCP_Gateway -->|"Saga Commit"| ERPs
-    MCP_Gateway -->|"Trace & Payload Signoff"| AuditLog
+    MCP_Gateway -->|"Trace and Payload Signoff"| AuditLog
 ```
 
 #### Architectural Walkthrough:

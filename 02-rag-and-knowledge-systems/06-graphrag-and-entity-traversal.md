@@ -45,23 +45,25 @@ To bridge statistical vectors and deterministic relational structures, enterpris
 
 ```mermaid
 flowchart TD
-    subgraph Nexus["THE DUAL-MEMORY RETRIEVAL NEXUS"]
-        subgraph VectorMemory["Vector Retrieval Space (Unstructured)"]
-            V["🧠 Fuzzy Semantic Proximity<br>• Good for natural language<br>• Matches synonyms & paraphrases<br>• Blind to graph topologies"]
-        end
-
-        subgraph GraphMemory["Symbolic Knowledge Graph (Structured)"]
-            G[("🗄️ Deterministic Property Graph<br>• Formal taxonomic hierarchies<br>• Multi-hop relational traversals<br>• Auditable edge provenance")]
-        end
+    Query(["👤 User Query"])
+    
+    subgraph Nexus["🧠 THE DUAL-MEMORY RETRIEVAL NEXUS"]
+        V["🧠 Fuzzy Vector Space<br>(Semantic proximity & synonyms)"]
+        G[("🗄️ Symbolic Knowledge Graph<br>(Deterministic multi-hop edges)")]
     end
 
-    Query(["👤 User Query"]) --> VectorMemory
-    Query --> GraphMemory
-    VectorMemory --> Synthesis["🎯 Grounded Multi-Hop Synthesis"]
-    GraphMemory --> Synthesis
-    style Nexus fill:none,stroke:#64748b,stroke-width:2px;
-    style VectorMemory fill:none,stroke:#3b82f6,stroke-width:2px;
-    style GraphMemory fill:none,stroke:#10b981,stroke-width:2px;
+    Synthesis["🎯 Grounded Multi-Hop Synthesis"]
+
+    Query --> V
+    Query --> G
+    V --> Synthesis
+    G --> Synthesis
+
+    style Nexus fill:none,stroke:#64748b,stroke-width:2px
+    style Query stroke:#64748b,stroke-width:2px
+    style V stroke:#2563eb,stroke-width:2px
+    style G stroke:#16a34a,stroke-width:2px
+    style Synthesis stroke:#7c3aed,stroke-width:2px
 ```
 
 #### Diagram Walkthrough:
@@ -81,7 +83,7 @@ Developed by Microsoft Research (Edge et al., April 2024, arXiv:2404.16130), **G
 
 ```mermaid
 flowchart TD
-    subgraph Ingestion["1. HIERARCHICAL GRAPHRAG INDEXING"]
+    subgraph Ingestion["⚙️ 1. HIERARCHICAL GRAPHRAG INDEXING"]
         Docs["📄 Raw Enterprise Corpus"] --> Extract["🧠 LLM Entity & Relation Extraction"]
         Extract --> Graph[("🗄️ Global Knowledge Graph<br>Entities and Relations")]
         Graph --> Leiden["🎯 Leiden Community Detection<br>(Clusters connected entity subgraphs)"]
@@ -97,7 +99,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph QueryModes["2. DUAL QUERY MODALITIES"]
+    subgraph QueryModes["🔍 2. DUAL QUERY MODALITIES"]
         Q_Local(["👤 Local Query:<br>'Vendor X compliance history'"]) --> LocalSearch["🎯 Local Search Engine<br>1. Match seed entity<br>2. Traverse 1-2 hop neighborhood<br>3. Extract connected claims"]
         
         Q_Global(["👤 Global Query:<br>'Systemic supply chain risks'"]) --> GlobalSearch["⚡ Global Search (Map-Reduce)<br>1. Query community summaries<br>2. Parallel map evaluations<br>3. Reduce into global report"]
@@ -133,7 +135,7 @@ When engineers deploy open-ended GraphRAG without schema constraints, enterprise
 
 ```mermaid
 flowchart TD
-    subgraph Extraction["1. TAXONOMY-GUIDED EXTRACTION"]
+    subgraph Extraction["🏷️ 1. TAXONOMY-GUIDED EXTRACTION"]
         RawDoc["📄 Raw Invoice:<br>'Purchased 50 ThinkPad laptops'"] --> LLM_Ext["🧠 LLM Extractor with Strict Schema"]
         SchemaDB[("🗄️ Formal Enterprise Taxonomies<br>• UNSPSC (Code 43211503)<br>• Corporate MDM Catalog<br>• RACI Matrix Schema")]
         SchemaDB -->|Taxonomy Schemas| LLM_Ext

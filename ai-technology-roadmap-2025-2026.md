@@ -19,13 +19,12 @@ As of late 2026, AI engineering has passed several foundational inflection point
 ```mermaid
 flowchart TD
     subgraph S1["1. Modern AI Stack (2025–2026)"]
-        direction TB
-        A["Interface & Development<br>• Spec-Driven Development (SDD)<br>• Autonomous SWE Agents (CodeRabbit, Qodo)"]
-        B["Agentic Protocols & Security<br>• Model Context Protocol (MCP - Linux Foundation)<br>• MicroVM Sandboxes (Firecracker / E2B)"]
-        C["Inference & Reasoning Scaling<br>• Test-Time Compute (PRM, MCTS, Long-CoT)<br>• Speculative Decoding (EAGLE-3, P-EAGLE)"]
-        D["Context & Data Infrastructure<br>• RadixAttention KV Caches (SGLang/vLLM)<br>• GraphRAG (Neo4j / Community Summaries)"]
-        E["Edge Runtime & SLMs<br>• Frontier SLMs (Phi-4, Qwen 2.5)<br>• 1.58-Bit Ternary Quantization (BitNet)"]
-        F["Governance & Quality Gates<br>• Automated Continuous Evals (Promptfoo)<br>• ISO 42001 & EU AI Act Auditing"]
+        A["💻 Interface and Development<br>• Spec-Driven Development (SDD)<br>• Autonomous SWE Agents (CodeRabbit, Qodo)"]
+        B["🔌 Agentic Protocols and Security<br>• Model Context Protocol (MCP - Linux Foundation)<br>• MicroVM Sandboxes (Firecracker / E2B)"]
+        C["⚡ Inference and Reasoning Scaling<br>• Test-Time Compute (PRM, MCTS, Long-CoT)<br>• Speculative Decoding (EAGLE-3, P-EAGLE)"]
+        D["🧠 Context and Data Infrastructure<br>• RadixAttention KV Caches (SGLang/vLLM)<br>• GraphRAG (Neo4j / Community Summaries)"]
+        E["📱 Edge Runtime and SLMs<br>• Frontier SLMs (Phi-4, Qwen 2.5)<br>• 1.58-Bit Ternary Quantization (BitNet)"]
+        F["🛡️ Governance and Quality Gates<br>• Automated Continuous Evals (Promptfoo)<br>• ISO 42001 and EU AI Act Auditing"]
         
         A --> B --> C --> D --> E --> F
     end
@@ -96,17 +95,17 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    Q["User Query"] --> Router{"Query Classifier"}
-    Router -->|"Semantic / Specific"| Dense["Dense Vector Search<br>(HNSW Index)"]
-    Router -->|"Exact Keywords / IDs"| Sparse["Sparse Lexical Search<br>(BM25 / SPLADE)"]
-    Router -->|"Multi-Hop / Relational"| Graph["GraphRAG Traversal<br>(Community Summaries)"]
+    Q["👤 User Query"] --> Router{"🔀 Query Classifier"}
+    Router -->|"Semantic / Specific"| Dense["🧠 Dense Vector Search<br>(HNSW Index)"]
+    Router -->|"Exact Keywords / IDs"| Sparse["📑 Sparse Lexical Search<br>(BM25 / SPLADE)"]
+    Router -->|"Multi-Hop / Relational"| Graph["🕸️ GraphRAG Traversal<br>(Community Summaries)"]
     
-    Dense --> RRF["Reciprocal Rank Fusion<br>(RRF)"]
+    Dense --> RRF["⚡ Reciprocal Rank Fusion<br>(RRF)"]
     Sparse --> RRF
     Graph --> RRF
     
-    RRF --> Rerank["Cross-Encoder Reranker"]
-    Rerank --> Context["Compacted Grounded Context"]
+    RRF --> Rerank["🎯 Cross-Encoder Reranker"]
+    Rerank --> Context["📄 Compacted Grounded Context"]
 ```
 
 ---
@@ -166,22 +165,35 @@ flowchart LR
 ## 🗓️ Phased Implementation Plan (0–12 Months)
 
 ```mermaid
-gantt
-    title AI Systems Engineering Roadmap (2025–2026)
-    dateFormat  YYYY-MM-DD
-    section Phase 1: Foundations
-    Standardize IDE Contracts (SPEC.md, AGENTS.md) :2026-10-01, 60d
-    Automated CI/CD Eval Gates (Promptfoo/DeepEval) :2026-10-15, 60d
-    Deploy Internal MCP Tool Servers              :2026-11-01, 60d
-    section Phase 2: Performance
-    RadixAttention & Prefix Caching (SGLang/vLLM)  :2026-12-01, 75d
-    Speculative Decoding (EAGLE-3 Integration)    :2026-12-15, 60d
-    MicroVM Sandboxed Execution (Firecracker/E2B)  :2027-01-01, 75d
-    Hybrid RAG + Knowledge Graph (GraphRAG)        :2027-01-15, 90d
-    section Phase 3: Scaling & Edge
-    Dynamic Test-Time Compute Router               :2027-03-01, 90d
-    Edge SLM Deployments (Phi-4, BitNet 1.58-Bit)  :2027-04-01, 90d
-    ISO 42001 & EU AI Act Audit Readiness         :2027-05-01, 90d
+flowchart LR
+    subgraph P1["Phase 1: Foundations (M0-M3)"]
+        T1["📝 IDE Contracts (SPEC.md / AGENTS.md)"]
+        T2["🧪 Automated CI/CD Eval Gates"]
+        T3["🔌 Internal MCP Tool Servers"]
+        T1 --> T2 --> T3
+    end
+
+    subgraph P2["Phase 2: Performance (M3-M6)"]
+        T4["⚡ RadixAttention and Prefix Caches"]
+        T5["🎯 Speculative Decoding (EAGLE-3)"]
+        T6["🔒 MicroVM Execution (Firecracker)"]
+        T7["🕸️ Hybrid RAG and GraphRAG"]
+        T4 --> T5 --> T6 --> T7
+    end
+
+    subgraph P3["Phase 3: Scaling and Edge (M6-M12)"]
+        T8["🔀 Test-Time Compute Router"]
+        T9["📱 Edge SLMs (Phi-4, BitNet 1.58b)"]
+        T10["🛡️ ISO 42001 and EU AI Act Audit"]
+        T8 --> T9 --> T10
+    end
+
+    T3 --> T4
+    T7 --> T8
+
+    style P1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
+    style P2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
+    style P3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
 ```
 
 ### Key Takeaway for Engineering Leaders

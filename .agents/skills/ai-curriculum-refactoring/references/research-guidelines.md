@@ -24,12 +24,12 @@ Never permit an agent to directly rewrite curriculum files based on raw web sear
 
 ```mermaid
 flowchart TD
-    S1["1. Research<br>(web search)"] --> S2["2. Verify<br>(Primary Sources)"]
-    S2 --> S3["3. Classify<br>(Tag Finding)"]
-    S3 --> S4["4. Evaluate<br>(Stability & Value)"]
-    S4 --> S5["5. Recommend<br>(CURRICULUM_RESEARCH.md)"]
-    S5 --> S6["6. Human Approval<br>(Checkpoint)"]
-    S6 --> S7["7. Integrate & Validate<br>(Refactor Lesson)"]
+    S1["🔍 1. Research<br>(web search)"] --> S2["📜 2. Verify<br>(Primary Sources)"]
+    S2 --> S3["🏷️ 3. Classify<br>(Tag Finding)"]
+    S3 --> S4["⚖️ 4. Evaluate<br>(Stability and Value)"]
+    S4 --> S5["📝 5. Recommend<br>(CURRICULUM_RESEARCH.md)"]
+    S5 --> S6["👤 6. Human Approval<br>(Checkpoint)"]
+    S6 --> S7["✅ 7. Integrate and Validate<br>(Refactor Lesson)"]
 ```
 
 1. **Research**: Use the available web search tool to investigate emerging patterns, benchmark results, or protocol specifications.

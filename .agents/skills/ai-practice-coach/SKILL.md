@@ -34,14 +34,14 @@ The coach guides learners across 8 progressive mastery milestones:
 
 ```mermaid
 flowchart TD
-    M1["Milestone 1: LLM Silicon, Compute & Token Mechanics<br>(KV-Cache, TTFT/TPS, Memory Bandwidth, Reasoning Tokens)"] --> M2
-    M2["Milestone 2: Context Engineering & Compaction<br>(Context AST, Prompt Caching, Sliding Window, Hierarchical Memory)"] --> M3
-    M3["Milestone 3: Modern Retrieval & Knowledge Systems<br>(Hybrid RAG, BM25 + Dense, Late Chunking, Reciprocal Rank Fusion, GraphRAG)"] --> M4
-    M4["Milestone 4: Tool Execution & Protocol Engineering<br>(Model Context Protocol JSON-RPC, Function Calling Schemas, Sandboxing)"] --> M5
-    M5["Milestone 5: Autonomous Agents & Multi-Agent Orchestration<br>(ReAct, Finite State Machines, Write-Ahead Logs, A2A, Supervisor-Worker)"] --> M6
-    M6["Milestone 6: Security, Quarantine & Red Teaming<br>(Indirect Prompt Injection, Dual-LLM Perimeter, PII Masking, Crypto-Shredding)"] --> M7
-    M7["Milestone 7: Evals, Observability & Telemetry<br>(LLM-as-a-Judge, Groundedness/Faithfulness, OpenTelemetry GenAI Spans, CI/CD Gates)"] --> M8
-    M8["Milestone 8: High-Throughput Serving & LLMOps<br>(vLLM, SGLang, Speculative Decoding, PagedAttention, Semantic Caching)"]
+    M1["🧱 Milestone 1: LLM Silicon, Compute and Tokens<br>(KV-Cache, TTFT/TPS, Memory Bandwidth, Reasoning Tokens)"] --> M2
+    M2["📝 Milestone 2: Context Engineering and Compaction<br>(Context AST, Prompt Caching, Sliding Window, Hierarchical Memory)"] --> M3
+    M3["📚 Milestone 3: Retrieval and Knowledge Systems<br>(Hybrid RAG, BM25 + Dense, Late Chunking, Reciprocal Rank Fusion, GraphRAG)"] --> M4
+    M4["🔌 Milestone 4: Tool Execution and Protocols<br>(Model Context Protocol JSON-RPC, Function Calling Schemas, Sandboxing)"] --> M5
+    M5["🤖 Milestone 5: Autonomous Agents and Orchestration<br>(ReAct, Finite State Machines, Write-Ahead Logs, A2A, Supervisor-Worker)"] --> M6
+    M6["🛡️ Milestone 6: Security, Quarantine and Red Teaming<br>(Indirect Prompt Injection, Dual-LLM Perimeter, PII Masking, Crypto-Shredding)"] --> M7
+    M7["📊 Milestone 7: Evals, Observability and Telemetry<br>(LLM-as-a-Judge, Groundedness/Faithfulness, OpenTelemetry GenAI Spans, CI/CD Gates)"] --> M8
+    M8["⚡ Milestone 8: High-Throughput Serving and LLMOps<br>(vLLM, SGLang, Speculative Decoding, PagedAttention, Semantic Caching)"]
 ```
 
 ---

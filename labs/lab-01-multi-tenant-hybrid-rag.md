@@ -1,8 +1,10 @@
 # Lab 1: Multi-Tenant Hybrid RAG with Reciprocal Rank Fusion & Strict Isolation
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb)
+
 > **Enterprise Retrieval Pipeline**: Dense HNSW Vector Search + Sparse BM25 Inverted Index + Reciprocal Rank Fusion (RRF `k=60`) + Tenant-Level Pre-Filtering  
 > 
-> [🔙 Back to Module 02: RAG & Knowledge](../02-rag-and-knowledge-systems/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Retrieval Core](../agent-forge/agent_forge/retrieval/)
+> [🔙 Back to Module 02: RAG & Knowledge](../02-rag-and-knowledge-systems/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Retrieval Core](../agent-forge/agent_forge/retrieval/) • [📓 Interactive Colab Visualizer](../notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb)
 
 ---
 
@@ -16,21 +18,20 @@ This lab implements a production-grade **Multi-Tenant Hybrid RAG Engine** that f
 
 ```mermaid
 flowchart TD
-    UserQuery["User Query + Tenant ID<br>(e.g. 'SKU-9942', Tenant: 'tenant_a')"] --> Ingestion["Pre-Filtering & Query Dispatch"]
+    UserQuery["👤 User Query + Tenant ID<br>(e.g. 'SKU-9942', Tenant: 'tenant_a')"] --> Ingestion["🔍 Pre-Filtering and Query Dispatch"]
     
     subgraph IsolatedSearch["Tenant-Isolated Search Execution"]
-        direction TB
-        Ingestion --> SparseSearch["1. Sparse BM25 Search<br>(Exact Keyword Matching)"]
-        Ingestion --> DenseSearch["2. Dense Vector Search<br>(Semantic Similarity Embeddings)"]
+        Ingestion --> SparseSearch["🔤 1. Sparse BM25 Search<br>(Exact Keyword Matching)"]
+        Ingestion --> DenseSearch["🧠 2. Dense Vector Search<br>(Semantic Similarity Embeddings)"]
     end
     
-    SparseSearch --> SparseRanks["Sparse Candidates & Ranks<br>(doc_a: Rank 1, doc_c: Rank 2)"]
-    DenseSearch --> DenseRanks["Dense Candidates & Ranks<br>(doc_a: Rank 2, doc_d: Rank 1)"]
+    SparseSearch --> SparseRanks["📄 Sparse Candidates and Ranks<br>(doc_a: Rank 1, doc_c: Rank 2)"]
+    DenseSearch --> DenseRanks["📄 Dense Candidates and Ranks<br>(doc_a: Rank 2, doc_d: Rank 1)"]
     
-    SparseRanks --> RRF["3. Reciprocal Rank Fusion (RRF)<br>Score(d) = Σ [ 1 / (60 + rank_m(d)) ]"]
+    SparseRanks --> RRF["⚖️ 3. Reciprocal Rank Fusion (RRF)<br>Score(d) = Σ [ 1 / (60 + rank_m(d)) ]"]
     DenseRanks --> RRF
     
-    RRF --> TopResults["Top-K Deduplicated Results<br>(Enforced: doc_b belonging to tenant_b NEVER enters)"]
+    RRF --> TopResults["🎯 Top-K Deduplicated Results<br>(Enforced: doc_b belonging to tenant_b NEVER enters)"]
 ```
 
 #### Diagram Walkthrough:

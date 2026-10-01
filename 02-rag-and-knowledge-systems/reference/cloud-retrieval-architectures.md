@@ -23,7 +23,7 @@ In Microsoft Azure enterprise environments, **Azure AI Search** serves as the ma
 
 ```mermaid
 flowchart TD
-    subgraph Stage1["STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
+    subgraph Stage1["⚡ STAGE 1: HYBRID MULTI-RETRIEVAL (< 30ms)"]
         UQ(["👤 User Query + Entra ID"]) --> PFilter{"🛡️ OData Security Pre-Filter<br>tenant_id eq 'tenant_42'"}
         PFilter --> HNSW[("🗄️ Dense HNSW / DiskANN Index")]
         PFilter --> BM25[("🗄️ Sparse BM25 Index")]
@@ -40,7 +40,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph Stage2["STAGE 2: RRF FUSION & SEMANTIC RERANKING"]
+    subgraph Stage2["🎯 STAGE 2: RRF FUSION & SEMANTIC RERANKING"]
         Top50["📄 Top 50 Lexical & Dense Candidates"] --> RRF["🎯 Reciprocal Rank Fusion<br>Score = sum [ 1 / (60 + rank) ]"]
         RRF --> Turing["🧠 Microsoft Turing Semantic Reranker<br>• Full Cross-Attention Scoring<br>• Extractive Captions & Highlights"]
         Turing --> Top5["📄 Top 5 High-Precision Chunks"]
@@ -129,7 +129,7 @@ For enterprises operating under strict data sovereignty, financial banking priva
 flowchart TD
     Agent(["👤 Llama Stack Agent Client"]) --> RAGRouter{"🎯 Agentic RAG Engine<br>(Parametric vs Retrieval)"}
     
-    subgraph StorageLayer["Sovereign Enterprise Stores"]
+    subgraph StorageLayer["🗄️ Sovereign Enterprise Stores"]
         Qdrant[("🗄️ Vector Store (Qdrant / Milvus / pgvector)")]
         Inverted[("🗄️ Lexical Store (OpenSearch / BM25)")]
     end

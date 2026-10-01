@@ -14,6 +14,35 @@ Build an end-to-end, production-grade **Context Assembly and Execution Engine** 
 
 ---
 
+## 🏛️ Pipeline System Architecture
+
+```mermaid
+flowchart TD
+    Raw["📄 Raw Financial Logs & Manual"] --> AST["🌳 1. Context AST Compiler"]
+    AST --> Sanitize["🛡️ 2. Delimiter Sandbox & Cleaner"]
+    Sanitize --> Cache["💾 3. KV Prefix Cache Alignment"]
+    Cache --> FSM["⚙️ 4. Schema FSM Logit Masking"]
+    FSM --> Deser["✅ 5. Pydantic Strict Audit Report"]
+
+    style Raw stroke:#64748b,stroke-width:2px
+    style AST stroke:#2563eb,stroke-width:2px
+    style Sanitize stroke:#d97706,stroke-width:2px
+    style Cache stroke:#16a34a,stroke-width:2px
+    style FSM stroke:#7c3aed,stroke-width:2px
+    style Deser stroke:#16a34a,stroke-width:2px
+```
+
+### Diagram Walkthrough: Context Engineering Execution Pipeline
+
+1. **Raw Financial Logs & Manual**: Ingests dense compliance policies (>1,024 tokens) and untrusted transaction payload streams.
+2. **Context AST Compiler**: Compiles prompt into structured static, semi-dynamic, and dynamic sections adhering to primacy-recency anchoring.
+3. **Delimiter Sandbox & Cleaner**: Escapes XML breakout tokens (`</regulatory_context>`) to neutralize prompt injection vulnerabilities.
+4. **KV Prefix Cache Alignment**: Aligns prompt prefix across 128-token boundaries, establishing ephemeral cache breakpoints for a 90% read discount.
+5. **Schema FSM Logit Masking**: Constrains token generation at the logit level so that only syntactically valid JSON matching `ComplianceAuditReport` can be sampled.
+6. **Strict Audit Report**: Deserializes verified compliance violations with 100% type safety and zero runtime schema drift.
+
+---
+
 ## 🗺️ Architectural Mapping to Phase 01 Lessons
 
 This capstone integrates the core patterns established across the Phase 01 curriculum:

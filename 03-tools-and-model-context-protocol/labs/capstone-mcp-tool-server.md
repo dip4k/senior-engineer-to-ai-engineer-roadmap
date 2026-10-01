@@ -17,14 +17,14 @@ However, your Chief Information Security Officer (CISO) has issued a strict mand
 
 ```mermaid
 flowchart TD
-    subgraph Clients["Client Layer"]
+    subgraph Clients["💻 Client Layer"]
         STDIO(["💻 STDIO Transport<br/>Local Dev Workstation<br/>(Cursor / Claude Desktop)"])
         HTTP["🔌 Streamable HTTP Transport<br/>Remote Cloud Gateway<br/>(Kubernetes / FastAPI)"]
     end
 
     SERVER["⚡ Dual-Transport MCP Server<br/>(Observability & Diagnostics)"]
 
-    subgraph Capabilities["Server Capabilities"]
+    subgraph Capabilities["⚡ Server Capabilities"]
         TOOLS["⚡ Read-Only Tools<br/>• Schema Inspect<br/>• CPU/Mem Metric<br/>• Read System Log"]
         HITL{"🛡️ HITL Elicitation Gateway<br/>• Propose Action<br/>• Verify HMAC Token<br/>• Commit Mutate"}
         RESOURCES[("🗄️ Passive Resources<br/>• schema://db/catalog<br/>• metrics://live")]

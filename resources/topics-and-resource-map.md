@@ -312,9 +312,9 @@ If you have limited time and need to maximize your architectural ROI, study thes
 
 ```mermaid
 flowchart TD
-    Step1["1. Anthropic: Building Effective Agents<br>Master workflows vs autonomous loops"] --> Step2
-    Step2["2. MCP Specification (JSON-RPC 2.0)<br>Understand open tool & resource standards"] --> Step3
-    Step3["3. Jina AI: Late Chunking Paper<br>Solve semantic boundary degradation in RAG"] --> Step4
-    Step4["4. Hamel Husain: Creating LLM Judges<br>Calibrate automated binary evaluation gates"] --> Step5
-    Step5["5. vLLM: PagedAttention & RadixAttention<br>Master GPU memory physics & inference scale"]
+    Step1["🤖 1. Anthropic: Building Effective Agents<br>Master workflows vs autonomous loops"] --> Step2
+    Step2["🔌 2. MCP Specification (JSON-RPC 2.0)<br>Understand open tool and resource standards"] --> Step3
+    Step3["📄 3. Jina AI: Late Chunking Paper<br>Solve semantic boundary degradation in RAG"] --> Step4
+    Step4["⚖️ 4. Hamel Husain: Creating LLM Judges<br>Calibrate automated binary evaluation gates"] --> Step5
+    Step5["⚡ 5. vLLM: PagedAttention and RadixAttention<br>Master GPU memory physics and inference scale"]
 ```

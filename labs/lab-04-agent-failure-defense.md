@@ -1,8 +1,10 @@
 # Lab 4: Agent Failure Defense, Rate Limiting & Streaming Token Buckets
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb)
+
 > **Production Gateway Defense**: Dual-Phase Streaming Token Bucket + Upfront Token Reservation + Post-Stream Settlement + TPM/RPM Throttling  
 > 
-> [🔙 Back to Module 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Gateway Core](../agent-forge/agent_forge/gateway/)
+> [🔙 Back to Module 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Gateway Core](../agent-forge/agent_forge/gateway/) • [📓 Interactive Colab Defense](../notebooks/05_token_bucket_and_failure_defense.ipynb)
 
 ---
 
@@ -17,16 +19,16 @@ This lab delivers an enterprise-grade **Dual-Phase Token Bucket Limiter** design
 
 ```mermaid
 flowchart TD
-    UserReq["Inbound Streaming Request<br>(Estimated tokens: 2,000)"] --> Acquire["1. TokenBucketLimiter.acquire()<br>Check TPM & RPM Buckets"]
+    UserReq["👤 Inbound Streaming Request<br>(Estimated tokens: 2,000)"] --> Acquire["📥 1. TokenBucketLimiter.acquire()<br>Check TPM and RPM Buckets"]
     
-    Acquire --> CheckCap{"Tokens Available?<br>(TPM Remaining >= 2,000)"}
-    CheckCap -- "No" --> Throttled["429 RateLimitError<br>(Throttled; return retry-after header)"]
+    Acquire --> CheckCap{"⚖️ Tokens Available?<br>(TPM Remaining >= 2,000)"}
+    CheckCap -- "No" --> Throttled["🛑 429 RateLimitError<br>(Throttled; return retry-after header)"]
     
-    CheckCap -- "Yes" --> Reserve["2. Upfront Token Reservation<br>Deduct 2,000 tokens from Bucket"]
-    Reserve --> Stream["3. Stream Tokens from LLM<br>(Actual generated: 1,200 tokens)"]
+    CheckCap -- "Yes" --> Reserve["🔒 2. Upfront Token Reservation<br>Deduct 2,000 tokens from Bucket"]
+    Reserve --> Stream["⚡ 3. Stream Tokens from LLM<br>(Actual generated: 1,200 tokens)"]
     
-    Stream --> Settle["4. TokenBucketLimiter.settle()<br>Delta = 2,000 - 1,200 = 800 tokens"]
-    Settle --> Refund["5. Refund Unused Reservation<br>Add 800 tokens back to Bucket"]
+    Stream --> Settle["📊 4. TokenBucketLimiter.settle()<br>Delta = 2,000 - 1,200 = 800 tokens"]
+    Settle --> Refund["💰 5. Refund Unused Reservation<br>Add 800 tokens back to Bucket"]
 ```
 
 #### Diagram Walkthrough:

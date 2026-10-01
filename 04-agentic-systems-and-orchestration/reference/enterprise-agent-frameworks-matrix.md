@@ -40,7 +40,7 @@ This reference provides an objective architectural evaluation of the dominant fr
 MAF represents the synthesis of Microsoft's two previously competing agent initiatives: Semantic Kernel and AutoGen.
 * **The Core Architecture**: MAF organizes execution into an **Asynchronous Actor Mesh**. Each agent is an independent actor that processes incoming messages sequentially from an internal mailbox.
 * **Plugin Architecture**: Tools are packaged as strongly typed plugins using native C# attributes (`[KernelFunction]`) or Python decorators, supporting enterprise dependency injection out-of-the-box.
-* **Enterprise Fit**: If your organization runs on Microsoft Azure, C#/.NET microservices, and utilizes Azure OpenAI Service, MAF is the premier choice.
+* **Enterprise Fit**: If your organization runs on Microsoft Azure, C#/.NET microservices, and uses Azure OpenAI Service, MAF is the premier choice.
 
 ### 3.2 LangGraph (Cyclical Graph Architecture)
 Created by the LangChain team to overcome the limitations of linear prompt chains, LangGraph models agent execution as a stateful, cyclical graph.
@@ -68,28 +68,34 @@ Use this decision logic when evaluating frameworks for enterprise initiatives:
 
 ```mermaid
 flowchart TD
-    classDef q fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef pick fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    Start{"🏢 Primary Tech Stack & Infrastructure?"}
+    
+    Start -->|".NET 8/9 / Azure AI Foundry"| MAF["Choose: 🔷 Microsoft Agent Framework (MAF)"]
+    Start -->|"Google Cloud / Vertex AI / Gemini"| ADK["Choose: 🌐 Google ADK & agents-cli"]
+    Start -->|"On-Premise / Air-Gapped / Llama"| Llama["Choose: 🦙 Meta Llama Stack"]
+    Start -->|"Python / Multi-Cloud / Agnostic"| Q2{"⚖️ Workflow Complexity?"}
+    
+    Q2 -->|"Strict Cyclical Graph / Multi-Hour State / HITL"| LG["Choose: 🔄 LangGraph"]
+    Q2 -->|"Type-Safe Microservice / FastAPI / DI"| PAI["Choose: 🛡️ PydanticAI"]
+    Q2 -->|"Peer-to-Peer Handoffs / OpenAI Native"| OAI["Choose: 🤖 OpenAI Agents SDK"]
 
-    Start["What is your primary tech stack & infrastructure?"]:::q
-    
-    Start -->|".NET 8/9 / Azure AI Foundry"| MAF["Choose: Microsoft Agent Framework (MAF)"]:::pick
-    Start -->|"Google Cloud / Vertex AI / Gemini"| ADK["Choose: Google ADK & agents-cli"]:::pick
-    Start -->|"On-Premise / Air-Gapped / Llama"| Llama["Choose: Meta Llama Stack"]:::pick
-    Start -->|"Python / Multi-Cloud / Agnostic"| Q2{"What is the workflow complexity?"}:::q
-    
-    Q2 -->|"Strict Cyclical Graph / Multi-Hour State / HITL"| LG["Choose: LangGraph"]:::pick
-    Q2 -->|"Type-Safe Microservice / FastAPI / DI"| PAI["Choose: PydanticAI"]:::pick
-    Q2 -->|"Peer-to-Peer Handoffs / OpenAI Native"| OAI["Choose: OpenAI Agents SDK"]:::pick
+    style Start stroke:#2563eb,stroke-width:2px,fill:none
+    style Q2 stroke:#2563eb,stroke-width:2px,fill:none
+    style MAF stroke:#16a34a,stroke-width:2px,fill:none
+    style ADK stroke:#16a34a,stroke-width:2px,fill:none
+    style Llama stroke:#16a34a,stroke-width:2px,fill:none
+    style LG stroke:#16a34a,stroke-width:2px,fill:none
+    style PAI stroke:#16a34a,stroke-width:2px,fill:none
+    style OAI stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Prose Diagram Walkthrough: Framework Selection Tree
 
-1. **Infrastructure Alignment**: If your enterprise is standardized on Microsoft Azure and C#/.NET, choose **Microsoft Agent Framework (MAF)** to leverage native dependency injection and Azure IAM. If standardized on Google Cloud and Gemini, select **Google ADK**. For on-premise air-gapped deployments utilizing open-weight models, deploy the **Meta Llama Stack**.
+1. **Infrastructure Alignment**: If your enterprise is standardized on Microsoft Azure and C#/.NET, choose **Microsoft Agent Framework (MAF)** to leverage native dependency injection and Azure IAM. If standardized on Google Cloud and Gemini, select **Google ADK**. For on-premise air-gapped deployments using open-weight models, deploy the **Meta Llama Stack**.
 2. **Workflow Complexity (Python/Multi-Cloud)**:
    * For complex, cyclical multi-turn state machines requiring durable database checkpointing and time-travel debugging, select **LangGraph**.
    * For typed backend microservices, data extraction pipelines, and FastAPI integrations requiring dependency injection and high performance, select **PydanticAI**.
-   * For interactive multi-agent support swarms utilizing dynamic peer handoffs, select the **OpenAI Agents SDK**.
+   * For interactive multi-agent support swarms using dynamic peer handoffs, select the **OpenAI Agents SDK**.
 
 ---
 

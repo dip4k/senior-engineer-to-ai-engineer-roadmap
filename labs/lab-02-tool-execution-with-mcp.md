@@ -1,8 +1,10 @@
 # Lab 2: Tool Execution with Model Context Protocol (MCP) & Policy Guardrails
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb)
+
 > **Standardized Execution Boundary**: JSON-RPC 2.0 Schemas + Tool Discovery Registry + ABAC Policy Engine + Human-in-the-Loop Step-Up Gates  
 > 
-> [🔙 Back to Module 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge MCP Core](../agent-forge/agent_forge/mcp/)
+> [🔙 Back to Module 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge MCP Core](../agent-forge/agent_forge/mcp/) • [📓 Interactive Colab Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
 
 ---
 

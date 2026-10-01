@@ -64,12 +64,12 @@ For developer workstations and local IDE agents, MCP servers execute as local ch
 
 ```mermaid
 flowchart TD
-    subgraph Host["1. Workstation Host (IDE)"]
+    subgraph Host["💻 1. Workstation Host (IDE)"]
         User(["👤 Human Operator"]) --> IDE["💻 Developer IDE (Cursor / Claude)"]
         IDE --> Client["⚡ MCP Client Manager"]
     end
 
-    subgraph Subprocess["2. Local Subprocess (Child Process)"]
+    subgraph Subprocess["⚙️ 2. Local Subprocess (Child Process)"]
         Server["⚡ MCP Server (SQLite / Filesystem)"] --> DB[("🗄️ Local Files & DB")]
     end
 
@@ -94,17 +94,17 @@ In distributed cloud environments, MCP servers deploy as stateless microservices
 
 ```mermaid
 flowchart TD
-    subgraph Host["1. Enterprise Host Platform"]
+    subgraph Host["💻 1. Enterprise Host Platform"]
         AgentCore["💻 Agent Host Orchestrator"]
         TokenHandler["🛡️ OAuth 2.1 Token Handler"]
         TokenHandler -.->|"Injects OBO Token"| AgentCore
     end
 
-    subgraph CloudInfra["2. Cloud MCP Microservice"]
+    subgraph CloudInfra["☁️ 2. Cloud MCP Microservice"]
         Gateway["🔌 API Gateway / ALB"] --> Server["⚡ Stateless MCP Server (Container)"]
     end
 
-    subgraph Backend["3. Systems of Record"]
+    subgraph Backend["🗄️ 3. Systems of Record"]
         ERP[("🗄️ SAP S/4HANA ERP")]
         CRM[("🗄️ Salesforce CRM")]
     end

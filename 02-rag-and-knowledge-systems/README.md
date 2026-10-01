@@ -131,18 +131,132 @@ flowchart TD
 
 ---
 
-## 📊 Old RAG (2023) vs. Modern Production RAG (2026)
+## 🏗️ The Production Ingestion Pipeline (Offline Data Engineering Flow)
 
-| Feature / Dimension | Naive RAG Prototype (2023) | Modern Enterprise RAG Pipeline (2026) |
-|---|---|---|
-| **Chunking** | Blind fixed 500-character slices | Layout-aware semantic parsing + Contextual summary prepending |
-| **Search Engine** | Dense vector search only | **Hybrid Search**: Dense Vectors (HNSW) + Sparse Keywords (BM25) |
-| **Score Merging** | Heuristic distance thresholds | **Reciprocal Rank Fusion (RRF)** (`k = 60`) |
-| **Precision Filter** | None (sends raw top-k to LLM) | **Cross-Encoder Reranker** (token-to-token attention) |
-| **Security & RBAC** | None (searches entire corpus) | **Predicate-aware filtering** (ACORN graph routing / Postgres RLS) |
-| **Safety Net** | "Trust the model's vibes" | **Groundedness & Faithfulness Evals** with abstention |
+In enterprise systems, retrieval quality is mathematically bounded by the structural fidelity of your ingestion pipeline: **Garbage in, garbage retrieved**. 
+
+The ingestion flow is a decoupled, asynchronous ETL pipeline triggered whenever enterprise documents are created, updated, or synced via Change Data Capture (CDC):
+
+```mermaid
+flowchart TD
+    subgraph Sources["1. Multi-Source Ingestion"]
+        S1["📄 Multi-Column PDFs"]
+        S2["📊 Financial Spreadsheets"]
+        S3["📝 Markdown & Docs"]
+        S4["🗄️ Relational DB Records"]
+    end
+
+    subgraph Parsing["2. Structural Extraction & Layout Analysis"]
+        P1["📐 Layout Boundary Detection<br>(Bounding boxes & reading order)"]
+        P2["📊 Tabular Structure Preservation<br>(HTML/Markdown table matrices)"]
+        P3["🧹 Text Cleaning & Unicode Normalization"]
+    end
+
+    subgraph Chunking["3. Advanced Chunking Engine"]
+        C1["👨‍👦 Hierarchical Parent-Child Linking<br>(Small 128t child + Large 512t parent)"]
+        C2["⏳ Late Chunking Embeddings<br>(Post-attention contextual pooling)"]
+        C3["🏷️ Contextual Prepending<br>(Inject doc title & section summaries)"]
+    end
+
+    subgraph Indexing["4. Dual-Index & Graph Storage"]
+        I1[("🗄️ Dense Vector Index<br>HNSW / DiskANN (Cosine)")]
+        I2[("🗄️ Sparse Inverted Index<br>Okapi BM25 / SPLADE")]
+        I3[("🕸️ Knowledge Graph Store<br>Entities, Triples & Communities")]
+        I4["🛡️ Multi-Tenant RBAC Metadata<br>(Strict tenant_id pre-filtering)"]
+    end
+
+    Sources --> Parsing
+    Parsing --> Chunking
+    Chunking --> Indexing
+
+    style Sources fill:none,stroke:#2563eb,stroke-width:2px
+    style Parsing fill:none,stroke:#d97706,stroke-width:2px
+    style Chunking fill:none,stroke:#7c3aed,stroke-width:2px
+    style Indexing fill:none,stroke:#16a34a,stroke-width:2px
+```
+
+### Ingestion Pipeline Walkthrough:
+1. **Source Ingestion & Polling**: Connectors ingest heterogeneous enterprise documents (PDFs, DOCX, Confluence, Jira, Postgres) across event streams (Kafka/CDC) or batch jobs.
+2. **Layout-Aware Parsing**: Replaces naive text extractors with spatial polygon boundary detection to preserve two-column reading flow and table matrices without horizontal text cross-bleeding.
+3. **Hierarchical & Contextual Chunking**: Breaks text into small "child" chunks for laser-focused semantic retrieval while retaining pointers to larger "parent" sections. Chunks are prepended with document-level summaries to eliminate ambiguous pronouns (*"Contextual Retrieval"*).
+4. **Dual & Graph Indexing**: Every chunk is indexed twice: once into high-dimensional vector graphs (e.g. HNSW) for conceptual matching and once into inverted text indexes (BM25) for exact alphanumeric codes. Entity relationships are extracted into knowledge graphs.
+5. **Security & Metadata Tagging**: Every chunk is stamped with immutable tenant IDs, access control lists (ACLs), source URIs, and byte offsets for auditable provenance.
 
 ---
+
+## 🔄 The Three Evolutionary Paradigms of RAG
+
+Modern AI systems engineering categorizes RAG into three distinct evolutionary paradigms:
+
+```mermaid
+flowchart TD
+    subgraph P1["Paradigm 1: Traditional (Naive) RAG (2023)"]
+        Q1["User Query"] --> EMB1["Embed Query"] --> VEC1["Vector DB Top-K"] --> LLM1["Direct Prompt Stuffing"]
+    end
+
+    subgraph P2["Paradigm 2: Improved (Advanced) RAG (2024-2025)"]
+        Q2["User Query"] --> PRE["Query Expansion / HyDE"]
+        PRE --> DUAL["Hybrid Search (BM25 + Dense)"]
+        DUAL --> RRF["RRF Fusion (k=60)"]
+        RRF --> RERANK["Cross-Encoder Reranker"]
+        RERANK --> LLM2["Grounded Prompt + XML Citations"]
+    end
+
+    subgraph P3["Paradigm 3: AI-Assisted (Agentic / Adaptive) RAG (2025-2026)"]
+        Q3["User Query"] --> ROUTE{"Adaptive Router"}
+        ROUTE -- "Composite" --> DECOMP["Sub-Query Decomposition"]
+        ROUTE -- "Factual" --> CRAG["Corrective RAG (CRAG)"]
+        CRAG --> CONF{"Confidence Evaluation"}
+        CONF -- "High (>= 0.75)" --> SYNTH["Synthesis with Self-RAG Critique"]
+        CONF -- "Low (< 0.35)" --> WEB["External Fallback Search"]
+        SYNTH --> VERIFY{"Hallucination Bouncer"}
+    end
+
+    style P1 fill:none,stroke:#dc2626,stroke-width:2px
+    style P2 fill:none,stroke:#2563eb,stroke-width:2px
+    style P3 fill:none,stroke:#16a34a,stroke-width:2px
+```
+
+### Detailed Paradigm Breakdown:
+
+#### 1. Traditional (Naive) RAG: Linear Retrieve-then-Generate
+- **Workflow**: Simple linear pipeline: `Query → Vector Embedding → Cosine Top-K → Prompt Stuffing → Generation`.
+- **Strengths**: Minimal latency (15–30 ms retrieval), low engineering complexity, trivial to prototype.
+- **Production Vulnerabilities**:
+  - *Exact-Match Blindspot*: Consistently fails on specific part numbers, legal codes, and invoice IDs (`ERR_AUTH_504`, `SKU-9942`).
+  - *Context Dilution & Lost-in-the-Middle*: Stuffs raw chunks into the prompt, degrading recall when crucial answers are placed in the middle.
+  - *Zero Guardrails*: Blindly trusts that retrieved chunks are relevant, causing confident hallucinations when retrieval recall fails.
+
+#### 2. Improved (Advanced) RAG: High-Precision Hybrid Pipeline
+- **Workflow**: Enhanced two-stage pipeline: `Layout-Aware Ingestion → Hybrid (Dense HNSW + Sparse BM25) Search → Reciprocal Rank Fusion (RRF k=60) → Cross-Encoder Reranking → XML Context Assembly with Citation Offsets`.
+- **Strengths**: Eliminates exact-match blindspots, achieves high precision (95%+), enforces tenant pre-filtering, and guarantees auditable inline citations.
+- **Production Role**: The standard baseline architecture for high-volume enterprise production applications.
+
+#### 3. AI-Assisted (Agentic / Adaptive) RAG: Dynamic Reasoning & Self-Correction
+- **Workflow**: Iterative reasoning loop: `Query Routing → Sub-Query Decomposition → Multi-Hop Traversal (GraphRAG) → Pre-Generation Confidence Evaluation (CRAG) → Self-Correction / Fallback Search → Groundedness Verification`.
+- **Strengths**:
+  - *Multi-Hop Synthesis*: Answers complex questions that require stitching facts across distinct documents (*"Compare Q3 revenue across divisions and explain supply chain delays"*).
+  - *Self-Correction*: Evaluates retrieval relevance *before* answering. If confidence is low, it reformulates the query or triggers web search instead of hallucinating.
+  - *Cost Optimization*: Routes simple questions to direct model memory or semantic caches, reserving multi-stage retrieval for complex queries.
+
+---
+
+## 📊 Comprehensive RAG Architectural Comparison Matrix
+
+| Evaluation Dimension | 1. Traditional (Naive) RAG | 2. Improved (Advanced) RAG | 3. AI-Assisted (Agentic) RAG |
+| :--- | :--- | :--- | :--- |
+| **Pipeline Topology** | Rigid Linear Pipe | Two-Stage Filter & Refine | Dynamic Iterative Reasoning Loop |
+| **Chunking Strategy** | Fixed character slices (500 chars) | Parent-Child & Contextual Prepending | Semantic / Agentic Boundary Splitting |
+| **Retrieval Engines** | Dense Vector Search only | **Hybrid**: Dense Vectors + Sparse BM25 | Multi-Source: Hybrid + GraphRAG + Tools |
+| **Rank Harmonization** | Arbitrary distance threshold | **Reciprocal Rank Fusion (RRF `k=60`)** | RRF + Dynamic Relevance Grading |
+| **Precision Filtering** | None (sends raw top-K to model) | **Cross-Encoder Reranker** (BGE/Cohere) | Corrective RAG (CRAG) Confidence Gates |
+| **Multi-Part Queries** | Severe semantic dilution failure | Partial (expanded queries) | **Automated Sub-Query Decomposition** |
+| **Error Handling** | Blind generation (hallucinates) | Abstains if context is empty | **Self-RAG reflection & fallback search** |
+| **Median Query Latency** | 300 ms – 700 ms | 600 ms – 1,200 ms | 1,500 ms – 4,000 ms |
+| **Production Fit** | Prototyping / Internal FAQs | **Enterprise Production Core (Standard)** | **Complex Research, Compliance & Multi-Hop** |
+
+---
+
 
 ## 🧠 Quick Check to See if it Clicked
 

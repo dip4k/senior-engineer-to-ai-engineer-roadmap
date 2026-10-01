@@ -23,11 +23,11 @@
 
 ```mermaid
 flowchart TD
-    subgraph CLIENT_TIER["1. Client Application Tier"]
+    subgraph CLIENT_TIER["📱 1. Client Application Tier"]
         Req(["👤 Incoming Client Request<br>(Prompt + User / System Tokens)"])
     end
 
-    subgraph PROXY_TIER["2. Enterprise Token Budgeting Proxy"]
+    subgraph PROXY_TIER["🛡️ 2. Enterprise Token Budgeting Proxy"]
         direction TB
 
         T_Profile["🔤 Step 1: Token Profiler<br>• Count exact tokens (tiktoken / tokenizers)<br>• Add message framing overhead (+3/msg)"]
@@ -49,7 +49,7 @@ flowchart TD
         Breach -- "No (Safe to Execute)" --> Dispatch
     end
 
-    subgraph BACKEND_TIER["3. LLM Serving Tier"]
+    subgraph BACKEND_TIER["🧠 3. LLM Serving Tier"]
         GPU_Cluster["🧠 GPU Cluster / Provider API<br>(NVIDIA H100 / Cloud Endpoint)"]
         Dispatch --> GPU_Cluster
     end
@@ -65,21 +65,31 @@ flowchart TD
     style GPU_Cluster stroke:#16a34a,stroke-width:2px
 ```
 
+### Diagram Walkthrough: Token Budgeting & KV Protection Pipeline
+
+1. **Client Request Ingestion**: The client application passes prompt tokens, user metadata, and target model identifiers into the proxy.
+2. **Step 1 (Token Profiler)**: Computes exact BPE token counts and accounts for message framing overhead (+3 to +4 tokens per message turn).
+3. **Step 2 (KV-Cache & Prompt Cache Estimator)**: Computes active memory pressure based on batch size, context length, and PagedAttention block count. Checks for cached prompt prefix matches (eligible for 50–90% billing discounts).
+4. **Step 3 (Sliding-Window TPM Governor)**: Tracks the tenant's rolling 60-second token consumption against contracted rate limits.
+5. **Breach Decision**: If VRAM headroom falls below 15% or TPM exceeds quota, returns an immediate `HTTP 429` (with RFC 7807 problem details) rather than crashing the GPU.
+6. **Dispatch**: Safe requests proceed to the GPU cluster or cloud endpoint with guaranteed memory headroom.
+
 ---
 
 ## 🛠️ Core Architectural Components & Implementation Steps
 
 1. **Exact Multi-Model Token Profiler:**
-   - Detect the target model family (As of 2026-09: `gpt-4.5`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
+   - Detect the target model family (As of 2026: `gpt-4o`, `claude-3-7-sonnet`, `gemini-2.5-flash`, `llama-3.3-70b`).
    - Use the appropriate native tokenizer bindings (`tiktoken` / `tokenizers` / C# `Microsoft.ML.Tokenizers`).
    - Profile incoming `system`, `user`, and `tool_calls` payloads with per-message framing overhead (+3 to +4 tokens per message).
 
-2. **In-Flight GPU KV-Cache & VRAM Allocation Estimator:**
+2. **In-Flight GPU KV-Cache & PagedAttention Allocation Estimator:**
    - Compute required KV-cache footprint using the formula:
      ```text
-     KV Cache (Bytes) = 2 × 2 bytes × Layers × Heads_KV × Head_Dim × Batch × Sequence_Length
+     KV Cache (Bytes) = 2 × 2 bytes × Layers × Heads_KV × Head_Dim × Context_Tokens × Concurrent_Batch
      ```
-   - Maintain an in-memory concurrent allocation counter across running inferences.
+   - In PagedAttention architectures (such as vLLM), compute memory in discrete block increments (16 or 32 tokens per block).
+   - Account for **Prompt Caching Economics**: Detect static prefix matches (>1,024 tokens). Apply a 90% discount on input tokens and 0 additional KV write overhead for warm cached blocks.
    - If an incoming request pushes total GPU KV-cache allocation past threshold (e.g., 85% of available VRAM), enqueue or reject before invoking downstream providers.
 
 3. **Sliding-Window Token-Per-Minute (TPM) Governor:**
@@ -87,7 +97,7 @@ flowchart TD
    - Return standard rate limiting headers: `X-RateLimit-Limit-Tokens`, `X-RateLimit-Remaining-Tokens`, `Retry-After`.
 
 4. **Telemetry & Failure Recovery (RFC 7807):**
-   - Emit OpenTelemetry spans with attributes: `llm.provider`, `llm.model`, `llm.tokens.prompt`, `llm.cost.estimated_usd`.
+   - Emit OpenTelemetry spans with attributes: `llm.provider`, `llm.model`, `llm.tokens.prompt`, `llm.tokens.cached`, `llm.cost.estimated_usd`.
    - On budget or rate limit breach, return HTTP 429 / 400 with an RFC 7807 compliant problem details JSON object.
 
 ---
@@ -97,6 +107,7 @@ flowchart TD
 - **Baseline Test:** Send 10 concurrent valid 500-token prompts and assert `HTTP 200` with correct token counts and estimated costs.
 - **TPM Ceiling Test:** Fire a burst of requests exceeding the 100,000 TPM limit; assert immediate `HTTP 429` with valid `Retry-After` header.
 - **KV-Cache Overflow Protection:** Simulate a 128k context request against a constrained budget; assert early rejection before dispatching to the upstream LLM API.
+- **Prompt Cache Savings Test:** Submit two consecutive requests sharing an identical 4,000-token system prompt prefix; assert that the second request calculates at least a 50% cost discount on input tokens.
 
 ---
 

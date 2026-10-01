@@ -30,13 +30,13 @@ The engineering organization is evaluating two primary quantization paths:
 
 ```mermaid
 flowchart TD
-    subgraph INT4["4-BIT WEIGHT-ONLY SCHEME (AWQ / GPTQ)"]
-        W4["INT4 Compressed Weights (VRAM)"] --> Dequant["Register Dequantization Engine<br>(Unpack INT4 → Convert to FP16)"]
-        Dequant --> Compute16["FP16 Tensor Cores Compute<br>(Higher Latency & Memory Stalls)"]
+    subgraph INT4["4-Bit Weight-Only Scheme"]
+        W4["💾 INT4 Compressed Weights (VRAM)"] --> Dequant["⚙️ Register Dequantization Engine<br>(Unpack INT4 → Convert to FP16)"]
+        Dequant --> Compute16["🐢 FP16 Tensor Cores Compute<br>(Higher Latency and Memory Stalls)"]
     end
 
-    subgraph NativeFP8["NATIVE FP8 SCHEME (Hopper / Blackwell)"]
-        W8["FP8 E4M3 Weights & Activations (VRAM)"] --> GEMM["Native FP8 Tensor Cores<br>(Direct Hardware Execution • 2x FLOPs • Zero Dequant)"]
+    subgraph NativeFP8["Native FP8 Scheme"]
+        W8["💾 FP8 E4M3 Weights and Activations (VRAM)"] --> GEMM["⚡ Native FP8 Tensor Cores<br>(Direct Hardware Execution • 2x FLOPs • Zero Dequant)"]
     end
 ```
 

@@ -107,7 +107,7 @@ A production Context AST is organized into three distinct operational layers bas
 
 ```mermaid
 flowchart TD
-    subgraph AST["3-LAYER CONTEXT AST ARCHITECTURE"]
+    subgraph AST["🌳 3-LAYER CONTEXT AST ARCHITECTURE"]
         L1["🔒 Layer 1: Static Prefix<br>(Developer Invariants & Golden Few-Shot)"]
         L2["🏢 Layer 2: Semi-Dynamic Session<br>(Tenant Policies & Dialogue Working Memory)"]
         L3["📄 Layer 3: Dynamic Tail<br>(Retrieved RAG Evidence & Sanitized Query)"]

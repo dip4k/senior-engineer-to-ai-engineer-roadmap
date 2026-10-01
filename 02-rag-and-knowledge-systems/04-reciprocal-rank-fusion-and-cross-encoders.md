@@ -55,7 +55,7 @@ Instead, separate retrieval into two decoupled, specialized stages:
 
 ```mermaid
 flowchart TD
-    subgraph Stage1["STAGE 1: DUAL RETRIEVAL & RRF FUSION (< 25ms)"]
+    subgraph Stage1["⚡ STAGE 1: DUAL RETRIEVAL & RRF FUSION (< 25ms)"]
         Q(["👤 User Query"]) --> BM25[("🗄️ Sparse BM25 Index")]
         Q --> HNSW[("🗄️ Dense HNSW Graph")]
         BM25 --> TopBM25["📄 Top-50 Lexical Ranks"]
@@ -74,7 +74,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph Stage2["STAGE 2: DEEP CROSS-ATTENTION RERANKING (< 100ms)"]
+    subgraph Stage2["🧠 STAGE 2: DEEP CROSS-ATTENTION RERANKING (< 100ms)"]
         Fused["📄 Top-50 Fused Candidates"] --> Cross["🧠 Cross-Encoder Reranker<br>Full token-to-token attention"]
         Cross --> Filter{"🛡️ Relevance Score > 0.70?"}
         Filter -- "Yes" --> Top5["📄 Definitive Top-5 Evidence Chunks"]
@@ -139,14 +139,14 @@ To design an optimal retrieval pipeline, you must understand the architectural d
 
 ```mermaid
 flowchart TD
-    subgraph BiEncoder["BI-ENCODER (Dual Encoder - Fast & Asymmetric)"]
+    subgraph BiEncoder["⚡ BI-ENCODER (Dual Encoder - Fast & Asymmetric)"]
         Q1(["👤 Query 'Q'"]) --> E1["🧠 Transformer Encoder"]
         D1["📄 Document 'D'"] --> E2["🧠 Transformer Encoder"]
         E1 --> Sim["🎯 Dot Product / Cosine Similarity"]
         E2 --> Sim
     end
 
-    subgraph CrossEncoder["CROSS-ENCODER (Deep Interaction - High Precision)"]
+    subgraph CrossEncoder["🎯 CROSS-ENCODER (Deep Interaction - High Precision)"]
         Concat["📄 Concat: [CLS] Query [SEP] Doc"] --> FullTrans["🧠 Deep Transformer Cross-Attention"]
         FullTrans --> Score["🎯 Relevance Score (0.0 to 1.0)"]
     end

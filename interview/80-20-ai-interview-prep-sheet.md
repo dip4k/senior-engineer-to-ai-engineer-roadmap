@@ -20,15 +20,14 @@ All interview topics and blueprints are calibrated against the curriculum's [Arc
 
 ```mermaid
 flowchart TD
-    subgraph Triad["THE 80/20 AI ARCHITECT INTERVIEW TRIAD"]
-        direction TB
-        Title["System Design • Hardware Reality • Defensive Controls"]
+    subgraph Triad["The AI Architect Interview Triad"]
+        Title["📐 System Design • Hardware Reality • Defensive Controls"]
     end
     
-    Triad --> PC["PHYSICAL CONSTRAINTS<br/>• KV-Cache VRAM Math<br/>• TTFT vs. TPS Latency<br/>• Token Asymmetry Cost<br/>• FlashAttention / RoPE"]
-    Triad --> SDP["SYSTEM DESIGN PATTERNS<br/>• Hybrid RAG & RRF<br/>• ReAct vs. Workflows<br/>• Model Context Protocol<br/>• Dual-LLM Quarantine"]
+    Triad --> PC["🖥️ PHYSICAL CONSTRAINTS<br/>• KV-Cache VRAM Math<br/>• TTFT vs. TPS Latency<br/>• Token Asymmetry Cost<br/>• FlashAttention / RoPE"]
+    Triad --> SDP["🏗️ SYSTEM DESIGN PATTERNS<br/>• Hybrid RAG and RRF<br/>• ReAct vs. Workflows<br/>• Model Context Protocol<br/>• Dual-LLM Quarantine"]
     
-    PC --> DPH["DETERMINISTIC PRODUCTION HARNESS<br/>Binary Evals • OpenTelemetry Traces • Strict FSM Grammars"]
+    PC --> DPH["🛡️ DETERMINISTIC PRODUCTION HARNESS<br/>Binary Evals • OpenTelemetry Traces • Strict FSM Grammars"]
     SDP --> DPH
 ```
 
@@ -90,25 +89,25 @@ In a Senior or Staff AI Engineer interview, interviewers do not care if you can 
 
 ```mermaid
 flowchart TD
-    UserQuery["User Query + RBAC Tenant JWT"] --> Rewriter["Query Reformulation & Sub-Query Decomposition"]
+    UserQuery["👤 User Query + RBAC Tenant JWT"] --> Rewriter["🔍 Query Reformulation and Decomposition"]
     
-    subgraph ParallelSearch["Stage 1: Asynchronous Parallel Retrieval"]
-        Rewriter -->|"Sparse BM25 Search"| SparseDB[("Elasticsearch / OpenSearch BM25")]
-        Rewriter -->|"Dense Embedding"| DenseDB[("pgvector / Azure AI Search / Qdrant")]
+    subgraph ParallelSearch["Stage 1: Parallel Retrieval"]
+        Rewriter -->|"Sparse BM25 Search"| SparseDB[("🔤 Elasticsearch / OpenSearch BM25")]
+        Rewriter -->|"Dense Embedding"| DenseDB[("🧠 pgvector / Azure AI Search / Qdrant")]
     end
 
-    SparseDB -->|"Top-50 Keyword Matches"| RRF["Stage 2: Reciprocal Rank Fusion (RRF Algorithm)"]
+    SparseDB -->|"Top-50 Keyword Matches"| RRF["⚖️ Stage 2: Reciprocal Rank Fusion (RRF Algorithm)"]
     DenseDB -->|"Top-50 Cosine Matches"| RRF
 
-    RRF -->|"Top-25 Fused Candidates"| CrossEncoder["Stage 3: Cross-Encoder Reranker (Cohere / BGE-Reranker)"]
+    RRF -->|"Top-25 Fused Candidates"| CrossEncoder["🎯 Stage 3: Cross-Encoder Reranker (Cohere / BGE)"]
     
-    CrossEncoder -->|"Threshold Filter: Score >= 0.72"| Threshold{"Relevance Gate"}
-    Threshold -->|"High Confidence (Top-5 Chunks)"| Splicer["Context Splicer (<context> XML Tags)"]
-    Threshold -->|"Low Confidence (< 0.72)"| Fallback["Corrective RAG (CRAG) Web Fallback / Graceful Abstain"]
+    CrossEncoder -->|"Threshold Filter: Score >= 0.72"| Threshold{"⚖️ Relevance Gate"}
+    Threshold -->|"High Confidence (Top-5 Chunks)"| Splicer["📄 Context Splicer (<context> XML Tags)"]
+    Threshold -->|"Low Confidence (< 0.72)"| Fallback["🛑 Corrective RAG (CRAG) Fallback"]
 
-    Splicer --> Generator["Stage 4: LLM Synthesis (Temperature=0, XML Framing)"]
-    Generator --> GroundingVerif["Stage 5: NLI Citation Entailment Verification"]
-    GroundingVerif -->|"Verified Grounds"| ClientResponse["Final Verified Enterprise Response with Citations"]
+    Splicer --> Generator["🤖 Stage 4: LLM Synthesis (Temperature=0)"]
+    Generator --> GroundingVerif["🛡️ Stage 5: NLI Entailment Verification"]
+    GroundingVerif -->|"Verified Grounds"| ClientResponse["✅ Final Verified Response with Citations"]
 ```
 
 ---
@@ -117,24 +116,26 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Client["Client Microservice / Frontend"] --> APIGW["Enterprise AI Gateway (FastAPI / ASP.NET Core)"]
+    Client["📱 Client Microservice / Frontend"] --> APIGW["🚪 Enterprise AI Gateway (FastAPI / .NET)"]
     
-    APIGW --> TenantLimiter["Tenant Rate Limiter (Token Bucket: TPM & RPM)"]
-    TenantLimiter --> L1Exact["L1 Exact Cache (SHA-256 Prompt Hash -> Redis)"]
+    APIGW --> TenantLimiter["⚖️ Tenant Rate Limiter (TPM and RPM)"]
+    TenantLimiter --> L1Exact["⚡ L1 Exact Cache (SHA-256 Hash -> Redis)"]
     
-    L1Exact -->|"Cache Hit (0ms GPU)"| InstantReturn["Immediate Return (0 Cost)"]
-    L1Exact -->|"Cache Miss"| L2Semantic["L2 Semantic Cache (Embedding Cosine >= 0.95)"]
+    L1Exact -->|"Cache Hit (0ms GPU)"| InstantReturn["✅ Immediate Return (0 Cost)"]
+    L1Exact -->|"Cache Miss"| L2Semantic["🧠 L2 Semantic Cache (Cosine >= 0.95)"]
     
-    L2Semantic -->|"Semantic Hit"| SemanticReturn["Immediate Cached Return"]
-    L2Semantic -->|"Cache Miss"| Router["Circuit Breaker & Fallback Router (LiteLLM)"]
+    L2Semantic -->|"Semantic Hit"| SemanticReturn["✅ Immediate Cached Return"]
+    L2Semantic -->|"Cache Miss"| Router["🔀 Circuit Breaker and Fallback Router"]
     
-    subgraph MultiProviderCluster["Provider Tiering & Automatic Failover"]
-        Router -->|"Primary: Claude 3.5 Sonnet"| AnthropicAPI["Anthropic Endpoint"]
-        Router -.->|"429 / Outage Failover"| GoogleAPI["Google Gemini 2.0 Flash"]
-        Router -.->|"Tertiary Failover"| AzureAPI["Azure OpenAI GPT-4o"]
+    subgraph MultiProviderCluster["Provider Tiering and Failover"]
+        Router -->|"Primary: Claude 3.5 Sonnet"| AnthropicAPI["☁️ Anthropic Endpoint"]
+        Router -.->|"429 / Outage Failover"| GoogleAPI["☁️ Google Gemini 2.0 Flash"]
+        Router -.->|"Tertiary Failover"| AzureAPI["☁️ Azure OpenAI GPT-4o"]
     end
 
-    AnthropicAPI & GoogleAPI & AzureAPI --> StreamProcessor["SSE Stream Engine with HttpContext Abort Detection"]
+    AnthropicAPI --> StreamProcessor["📡 SSE Stream Engine with Abort Detection"]
+    GoogleAPI --> StreamProcessor
+    AzureAPI --> StreamProcessor
     StreamProcessor --> Client
 ```
 
@@ -144,20 +145,20 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    PR["Incoming GitHub PR / Issue"] --> Orchestrator["Orchestrator Agent (Claude 3.7 / GPT-4o)"]
+    PR["📋 Incoming GitHub PR / Issue"] --> Orchestrator["🤖 Orchestrator Agent (Claude 3.7 / GPT-4o)"]
     
-    subgraph MCPArchitecture["Model Context Protocol (MCP) Integration"]
-        Orchestrator <-->|"JSON-RPC 2.0 (stdio / SSE)"| MCPHost["MCP Host Controller"]
-        MCPHost <-->|"Inspect Repo Files"| GitMCP["Git & File System MCP Server"]
-        MCPHost <-->|"Read Database DDL"| PostgresMCP["PostgreSQL MCP Server"]
-        MCPHost <-->|"Execute Unit Tests"| DockerMCP["Sandboxed Test Execution MCP Server"]
+    subgraph MCPArchitecture["MCP Protocol Integration"]
+        Orchestrator <-->|"JSON-RPC 2.0 (stdio / SSE)"| MCPHost["🔌 MCP Host Controller"]
+        MCPHost <-->|"Inspect Repo Files"| GitMCP["📁 Git and File System MCP Server"]
+        MCPHost <-->|"Read Database DDL"| PostgresMCP["💾 PostgreSQL MCP Server"]
+        MCPHost <-->|"Execute Unit Tests"| DockerMCP["📦 Sandboxed Test Execution MCP Server"]
     end
 
-    DockerMCP --> Sandbox{"Docker / gVisor Isolated Container"}
-    Sandbox -->|"Tests Fail (Assertion Error)"| Reflector["Reflexion Engine: Error Scratchpad Analysis"]
+    DockerMCP --> Sandbox{"🔒 Docker / gVisor Isolated Container"}
+    Sandbox -->|"Tests Fail (Assertion Error)"| Reflector["🔄 Reflexion Engine: Error Analysis"]
     Reflector -->|"Self-Correction Prompt"| Orchestrator
-    Sandbox -->|"All Tests Green"| Reviewer["Evaluator Agent (Architecture & Security Gate)"]
-    Reviewer --> PRCommit["Submit Verified Git Commit & Pull Request"]
+    Sandbox -->|"All Tests Green"| Reviewer["🛡️ Evaluator Agent (Security Gate)"]
+    Reviewer --> PRCommit["🚀 Submit Verified Git Commit and PR"]
 ```
 
 ---
@@ -166,19 +167,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    UserMsg["Customer Support Inquiry"] --> TriageRouter["Triage & Sentiment Router (Fast SLM: LLaMA 3.2 3B)"]
+    UserMsg["👤 Customer Support Inquiry"] --> TriageRouter["🔀 Triage and Sentiment Router (Fast SLM)"]
     
-    TriageRouter -->|"Billing / Refund"| BillingAgent["Specialized Billing Agent"]
-    TriageRouter -->|"Technical Outage"| TechAgent["Specialized Technical Support Agent"]
-    TriageRouter -->|"Account Security"| SecurityAgent["Identity & Security Agent"]
+    TriageRouter -->|"Billing / Refund"| BillingAgent["💳 Specialized Billing Agent"]
+    TriageRouter -->|"Technical Outage"| TechAgent["💻 Specialized Technical Support Agent"]
+    TriageRouter -->|"Account Security"| SecurityAgent["🛡️ Identity and Security Agent"]
     
-    BillingAgent --> RefundAction{"Refund Amount > \$100?"}
-    RefundAction -->|"Yes (State Mutation)"| HITLGate["Human-in-the-Loop Approval Interceptor"]
-    HITLGate -->|"CSR Signs HMAC Token"| ExecuteRefund["Execute Stripe / ERP Refund API"]
-    RefundAction -->|"No (Low Risk)"| AutoRefund["Execute Auto-Refund"]
+    BillingAgent --> RefundAction{"⚖️ Refund Amount > \$100?"}
+    RefundAction -->|"Yes (State Mutation)"| HITLGate["⏸️ Human-in-the-Loop Interceptor"]
+    HITLGate -->|"CSR Signs HMAC Token"| ExecuteRefund["💸 Execute Stripe / ERP Refund API"]
+    RefundAction -->|"No (Low Risk)"| AutoRefund["✅ Execute Auto-Refund"]
     
-    TechAgent --> KnowledgeBase["Internal Knowledge RAG (pgvector)"]
-    SecurityAgent --> AuditTrail["SIEM Immutable Audit Logger (WORM Storage)"]
+    TechAgent --> KnowledgeBase["📚 Internal Knowledge RAG (pgvector)"]
+    SecurityAgent --> AuditTrail["💾 SIEM Immutable Audit Logger"]
 ```
 
 ---
@@ -190,7 +191,7 @@ sequenceDiagram
     autonumber
     actor Client as Client / Microservice
     participant Triage as Triage Agent (Active)
-    participant Governor as Cycle & Token Governor
+    participant Governor as Cycle and Token Governor
     participant Broker as A2A Event Broker (Kafka / Redis)
     participant Billing as Billing Specialist (Active)
     participant HITL as HITL Approval Interceptor
@@ -242,7 +243,7 @@ sequenceDiagram
 ```mermaid
 stateDiagram-v2
     [*] --> SUBMITTED: Envelope Created
-    SUBMITTED --> ACK: Signature & Schema Validated
+    SUBMITTED --> ACK: Signature and Schema Validated
     SUBMITTED --> FAILED: Auth / Schema Invariant Violation
     
     ACK --> PROCESSING: Worker Node Allocated

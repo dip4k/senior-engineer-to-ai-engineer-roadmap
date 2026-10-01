@@ -23,31 +23,31 @@ To address these challenges, enterprise architectures adopt the **Google Agent2A
 
 ```mermaid
 flowchart TD
-    subgraph IngressLayer["1. Ingress & Fast Triage"]
-        Customer["Customer Request<br>('Billing dispute on locked account')"] --> Triage["Triage Agent (Fast SLM Classifier)<br>• Extracts Account ID<br>• Detects Multi-Intent Boundary"]
+    subgraph IngressLayer["1. Ingress and Fast Triage"]
+        Customer["👤 Customer Request<br>('Billing dispute on locked account')"] --> Triage["🤖 Triage Agent (Fast SLM Classifier)<br>• Extracts Account ID<br>• Detects Multi-Intent Boundary"]
     end
 
-    subgraph A2A_Mesh["2. Horizontal Federation: Agent2Agent (A2A Protocol)"]
-        Triage --> Router{"A2A Delegation Broker<br>(Inspects Capability Cards)"}
+    subgraph A2A_Mesh["2. Horizontal A2A Federation"]
+        Triage --> Router{"🔀 A2A Delegation Broker<br>(Inspects Capability Cards)"}
         
-        Router -->|"Task Envelope (Hops: 1/3)"| Billing["Billing Specialist Agent<br>• Domain Capability Card<br>• Scoped Auth Token"]
+        Router -->|"Task Envelope (Hops: 1/3)"| Billing["💳 Billing Specialist Agent<br>• Domain Capability Card<br>• Scoped Auth Token"]
         
-        Billing -->|"A2A Sub-Task (Hops: 2/3)"| SecAgent["Security Specialist Agent<br>• Domain Capability Card<br>• Identity Verification"]
+        Billing -->|"A2A Sub-Task (Hops: 2/3)"| SecAgent["🛡️ Security Specialist Agent<br>• Domain Capability Card<br>• Identity Verification"]
     end
 
-    subgraph MCP_Layer["3. Vertical Integration: Model Context Protocol (MCP 2026)"]
-        Billing -->|"tools/call"| MCP_ERP["MCP ERP Server<br>(Stateless SAP/Postgres)"]
-        SecAgent -->|"tools/call"| MCP_Okta["MCP Identity Server<br>(Okta / Entra ID)"]
+    subgraph MCP_Layer["3. Vertical MCP Tool Layer"]
+        Billing -->|"tools/call"| MCP_ERP["⚙️ MCP ERP Server<br>(Stateless SAP/Postgres)"]
+        SecAgent -->|"tools/call"| MCP_Okta["🔑 MCP Identity Server<br>(Okta / Entra ID)"]
     end
 
-    subgraph Governance["4. State & Safety Governance"]
-        Triage --> WAL[("EventStore Write-Ahead Log<br>(Saga Checkpoints & State)")]
+    subgraph Governance["4. State and Safety Governance"]
+        Triage --> WAL[("📜 EventStore Write-Ahead Log<br>(Saga Checkpoints and State)")]
         Billing --> WAL
         SecAgent --> WAL
         
-        SecAgent --> Complete{"Task Resolved?"}
-        Complete -- "Yes" --> Response["Synthesize Verified Response to Customer"]
-        Complete -- "Hop Limit (>=3)" --> HITL["Halt Loop & Escalate to Human Lead"]
+        SecAgent --> Complete{"⚖️ Task Resolved?"}
+        Complete -- "Yes" --> Response["✅ Synthesize Verified Response to Customer"]
+        Complete -- "Hop Limit (>=3)" --> HITL["🚨 Halt Loop and Escalate to Human Lead"]
     end
 ```
 

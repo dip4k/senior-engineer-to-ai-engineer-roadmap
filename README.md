@@ -47,6 +47,7 @@ For engineers looking for an end-to-end conceptual overview before diving into t
 ## 📑 Table of Contents
 
 * 🤖 [**Interactive Learning & Practice with Agents (Antigravity, Claude Code, Copilot)**](./LEARNING_WITH_AGENTS.md) *(Pre-setup agents, skills, and automated grading)*
+* 📓 [**Interactive Google Colab Companion Notebooks**](./notebooks/README.md) *(8 visual, 1-click executable labs with zero local setup)*
 * 📖 [**Production AI & Agentic Glossary by Practice**](./ai-engineering-glossary-by-practice.md) *(Essential 1–2 sentence companion guide across 21 disciplines)*
 1. [The AI Engineering Landscape: Then vs. Now](#the-ai-engineering-landscape-then-vs-now)
 2. [Master Curriculum Syllabus (Phases 00–08)](#master-curriculum-syllabus)
@@ -70,18 +71,16 @@ If you stepped away from AI engineering in early 2024 and returned today, you wo
 
 ```mermaid
 flowchart LR
-    subgraph Y2024["Early 2024: Prompt Alchemy (Fragile / Vibe-Driven)"]
-        direction TB
-        A1["Unstructured Prompts<br>('Please return valid JSON')"] --> B1["Monolithic Black Box LLM<br>(Raw text completion)"]
-        B1 --> C1["Fragile Regex Parsing<br>& In-Memory Loops"]
-        C1 --> D1["Manual Human Vibe Checks<br>(No automated gates)"]
+    subgraph Y2024["Early 2024: Prompt Alchemy"]
+        A1["📄 Unstructured Prompts<br>('Please return valid JSON')"] --> B1["⬛ Monolithic Black Box LLM<br>(Raw text completion)"]
+        B1 --> C1["⚠️ Fragile Regex Parsing<br>and In-Memory Loops"]
+        C1 --> D1["👁️ Manual Human Vibe Checks<br>(No automated gates)"]
     end
 
-    subgraph Y2026["September 2026: Systems Engineering (Software 3.0)"]
-        direction TB
-        A2["Context Engineering & AST<br>(Pydantic v2 / Constrained FSM)"] --> B2["Reasoning Engines<br>(Thinking Tokens & Step Planning)"]
-        B2 --> C2["Standardized Wire Protocols<br>(MCP + A2A + Sandboxes)"]
-        C2 --> D2["Automated CI/CD Eval Gates<br>(OTel Spans & Judge Rubrics)"]
+    subgraph Y2026["September 2026: Systems Eng"]
+        A2["📝 Context Engineering and AST<br>(Pydantic v2 / Constrained FSM)"] --> B2["🧠 Reasoning Engines<br>(Thinking Tokens and Planning)"]
+        B2 --> C2["🔌 Standardized Wire Protocols<br>(MCP + A2A + Sandboxes)"]
+        C2 --> D2["🧪 Automated CI/CD Eval Gates<br>(OTel Spans and Judge Rubrics)"]
     end
 
     B1 ==>|Evolution to Systems| B2
@@ -129,28 +128,28 @@ The curriculum progresses systematically from silicon and hardware inference rea
 
 ```mermaid
 flowchart TD
-    S0["**Phase 00: Foundations & Token Mechanics**<br>• Hardware Physics • KV-Cache VRAM • Thinking Tokens"] --> S1
-    S1["**Phase 01: Context Engineering**<br>• Context AST • Token Budgeting • Schema Masking"] --> S2
+    S0["🧱 **Phase 00: Foundations and Tokens**<br>• Hardware Physics • KV-Cache VRAM • Thinking Tokens"] --> S1
+    S1["📝 **Phase 01: Context Engineering**<br>• Context AST • Token Budgeting • Schema Masking"] --> S2
     S1 --> S3
     
-    subgraph CoreTracks["Parallel Core Tracks: Retrieval & Wire Protocols"]
-        S2["**Phase 02: Advanced Enterprise RAG**<br>• Late Chunking • Hybrid BM25+HNSW • GraphRAG"]
-        S3["**Phase 03: Tools & Model Context Protocol**<br>• MCP Wire Protocol • ABAC Policies • Sandboxed Tools"]
+    subgraph CoreTracks["Parallel Core Tracks"]
+        S2["📚 **Phase 02: Advanced Enterprise RAG**<br>• Late Chunking • Hybrid BM25+HNSW • GraphRAG"]
+        S3["🔌 **Phase 03: Tools and MCP Protocol**<br>• MCP Wire Protocol • ABAC Policies • Sandboxed Tools"]
     end
     
     S2 --> S4
     S3 --> S4
     
-    subgraph AgenticTracks["Execution, Safety & Observability"]
-        S4["**Phase 04: Stateful Agentic Systems**<br>• Bounded ReAct • Durable WAL EventStore • Checkpointing"] --> S5
-        S5["**Phase 05: AI Security & Guardrails**<br>• Dual-LLM Quarantine • Prompt Injection • Threat Modeling"] --> S6
-        S6["**Phase 06: GenAI Evals & Observability**<br>• LLM-as-a-Judge • OpenTelemetry Spans • Drift Detection"]
+    subgraph AgenticTracks["Execution, Safety and Evals"]
+        S4["🤖 **Phase 04: Stateful Agentic Systems**<br>• Bounded ReAct • Durable WAL EventStore • Checkpointing"] --> S5
+        S5["🛡️ **Phase 05: AI Security and Guardrails**<br>• Dual-LLM Quarantine • Prompt Injection • Threat Modeling"] --> S6
+        S6["📊 **Phase 06: GenAI Evals and Telemetry**<br>• LLM-as-a-Judge • OpenTelemetry Spans • Drift Detection"]
     end
 
     S6 --> S7
-    subgraph ProductionTracks["Production Serving & AI SDLC"]
-        S7["**Phase 07: Production LLMOps & Serving**<br>• Continuous Batching • PagedAttention • AI Gateways"] --> S8
-        S8["**Phase 08: AI-Augmented SDLC & Leadership**<br>• Spec-Driven Development • Headless CI/CD • Governance"]
+    subgraph ProductionTracks["Production Serving and SDLC"]
+        S7["⚡ **Phase 07: Production LLMOps and Serving**<br>• Continuous Batching • PagedAttention • AI Gateways"] --> S8
+        S8["👥 **Phase 08: AI SDLC and Leadership**<br>• Spec-Driven Development • Headless CI/CD • Governance"]
     end
 
     style S0 stroke:#2563eb,stroke-width:2px
@@ -199,17 +198,33 @@ Choose the track tailored to your current focus and engineering background:
 
 Master production patterns through runnable, verified implementations in Python (Pydantic v2) and C# (.NET 9):
 
-| Lab | Name | Core Architectural Deliverable | Lab Location |
-|:---:|:---|:---|:---|
-| **01** | **Multi-Tenant Hybrid RAG** | Sparse BM25 + Dense vector search with Reciprocal Rank Fusion (RRF `k=60`) and strict tenant isolation. | [`lab-01-multi-tenant-hybrid-rag.md`](./labs/lab-01-multi-tenant-hybrid-rag.md) |
-| **02** | **Tool Execution with MCP** | Typed MCP tool server exposing secure JSON-RPC schemas governed by an ABAC Policy Engine. | [`lab-02-tool-execution-with-mcp.md`](./labs/lab-02-tool-execution-with-mcp.md) |
-| **03** | **Stateful Agent Orchestration** | Bounded ReAct state machine appending transitions to an EventStore Write-Ahead Log (WAL) with crash recovery. | [`lab-03-stateful-agent-orchestration.md`](./labs/lab-03-stateful-agent-orchestration.md) |
-| **04** | **Agent Failure Defense** | TokenBucketLimiter managing upfront token reservations and post-stream settlement against TPM/RPM limits. | [`lab-04-agent-failure-defense.md`](./labs/lab-04-agent-failure-defense.md) |
-| **05** | **AI Observability & Tracing** | OpenTelemetry GenAI semantic conventions distributed tracing (`gen_ai.client.token.usage`). | [`lab-05-ai-observability-tracing.md`](./labs/lab-05-ai-observability-tracing.md) |
-| **06** | **Dual-LLM Quarantine Guardrails** | Dual-LLM privilege quarantine isolating untrusted external inputs from privileged execution perimeters. | [`lab-06-dual-llm-quarantine-guardrails.md`](./labs/lab-06-dual-llm-quarantine-guardrails.md) |
-| **07** | **Hybrid ML Fairness & Explainability** | Regulated financial credit & procurement pipeline: tabular ML risk scoring, Fairlearn bias audit, and SHAP attributions. | [`lab-07-hybrid-ml-fairness-and-explainability.md`](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) |
+| Lab | Name | Core Architectural Deliverable | Lab Location | Interactive Colab |
+|:---:|:---|:---|:---|:---:|
+| **01** | **Multi-Tenant Hybrid RAG** | Sparse BM25 + Dense vector search with Reciprocal Rank Fusion (RRF `k=60`) and strict tenant isolation. | [`lab-01-multi-tenant-hybrid-rag.md`](./labs/lab-01-multi-tenant-hybrid-rag.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) |
+| **02** | **Tool Execution with MCP** | Typed MCP tool server exposing secure JSON-RPC schemas governed by an ABAC Policy Engine. | [`lab-02-tool-execution-with-mcp.md`](./labs/lab-02-tool-execution-with-mcp.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
+| **03** | **Stateful Agent Orchestration** | Bounded ReAct state machine appending transitions to an EventStore Write-Ahead Log (WAL) with crash recovery. | [`lab-03-stateful-agent-orchestration.md`](./labs/lab-03-stateful-agent-orchestration.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/04_stateful_agent_and_wal_replay.ipynb) |
+| **04** | **Agent Failure Defense** | TokenBucketLimiter managing upfront token reservations and post-stream settlement against TPM/RPM limits. | [`lab-04-agent-failure-defense.md`](./labs/lab-04-agent-failure-defense.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb) |
+| **05** | **AI Observability & Tracing** | OpenTelemetry GenAI semantic conventions distributed tracing (`gen_ai.client.token.usage`). | [`lab-05-ai-observability-tracing.md`](./labs/lab-05-ai-observability-tracing.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb) |
+| **06** | **Dual-LLM Quarantine Guardrails** | Dual-LLM privilege quarantine isolating untrusted external inputs from privileged execution perimeters. | [`lab-06-dual-llm-quarantine-guardrails.md`](./labs/lab-06-dual-llm-quarantine-guardrails.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
+| **07** | **Hybrid ML Fairness & Explainability** | Regulated financial credit & procurement pipeline: tabular ML risk scoring, Fairlearn bias audit, and SHAP attributions. | [`lab-07-hybrid-ml-fairness-and-explainability.md`](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb) |
 
 *All 7 canonical labs are automatically verified via `python scripts/verify_lab.py --all`. For specialized agentic deep-dive exercises (HITL approval, A2A swarms, cycle detection, and distributed sagas), explore the [`04-agentic-systems-and-orchestration/labs/`](./04-agentic-systems-and-orchestration/labs/) directory. For the unified enterprise platform harness synthesizing these lab patterns, see [**AgentForge**](#2-enterprise-architecture-platform-core-system-design) under Enterprise Architecture below.*
+
+### 📓 Interactive Google Colab Companion Notebook Suite
+*(Comprehensive catalog, algorithm visualizers, and offline setup in [`notebooks/README.md`](./notebooks/README.md))*
+
+In addition to headless CLI evaluation, this curriculum provides 8 standalone, interactive Jupyter notebooks for visual experimentation and parameter tuning—launchable with 1 click in Google Colab with zero local setup:
+
+| Notebook | Focus & Interactive Visualizations | Phase / Lab Target | Colab 1-Click Launch |
+| :--- | :--- | :--- | :---: |
+| **[`00_token_mechanics_and_kv_cache.ipynb`](./notebooks/00_token_mechanics_and_kv_cache.ipynb)** | Byte-Pair Encoding (BPE), MHA/GQA/MLA KV-cache memory calculator, Roofline bandwidth ceiling | [Phase 00: Foundations](./00-foundations-and-token-mechanics/README.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/00_token_mechanics_and_kv_cache.ipynb) |
+| **[`01_prompt_caching_and_budgeting.ipynb`](./notebooks/01_prompt_caching_and_budgeting.ipynb)** | Prefix caching economics, Needle-In-A-Haystack (NIAH) depth heatmap, Context AST budgeting | [Phase 01: Prompt Engineering](./01-prompt-and-context-engineering/README.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/01_prompt_caching_and_budgeting.ipynb) |
+| **[`02_hybrid_rag_and_rrf_visualizer.ipynb`](./notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb)** | BM25 sparse + dense embeddings, Reciprocal Rank Fusion (`k=60`) visualizer, multi-tenant pre-filter | [Phase 02 / Lab 01](./labs/lab-01-multi-tenant-hybrid-rag.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) |
+| **[`03_mcp_client_and_tool_inspector.ipynb`](./notebooks/03_mcp_client_and_tool_inspector.ipynb)** | MCP JSON-RPC 2.0 frames, ABAC policy engine blocking mutations (`DROP`, `DELETE`), HITL approval | [Phase 03 / Lab 02](./labs/lab-02-tool-execution-with-mcp.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
+| **[`04_stateful_agent_and_wal_replay.ipynb`](./notebooks/04_stateful_agent_and_wal_replay.ipynb)** | Step-by-step ReAct loop, Write-Ahead Log event persistence, mid-flight crash & event replay debugger | [Phase 04 / Lab 03](./labs/lab-03-stateful-agent-orchestration.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/04_stateful_agent_and_wal_replay.ipynb) |
+| **[`05_token_bucket_and_failure_defense.ipynb`](./notebooks/05_token_bucket_and_failure_defense.ipynb)** | Streaming token bucket reservation vs settlement, circuit breaker state machine transitions | [Phase 05 / Lab 04](./labs/lab-04-agent-failure-defense.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb) |
+| **[`06_eval_flywheel_and_trace_trees.ipynb`](./notebooks/06_eval_flywheel_and_trace_trees.ipynb)** | OTel GenAI distributed trace trees, latency waterfall plots, LLM-as-a-judge eval matrices | [Phase 06 / Lab 05 & 06](./labs/lab-05-ai-observability-tracing.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb) |
+| **[`07_ml_fairness_and_shap_explainability.ipynb`](./notebooks/07_ml_fairness_and_shap_explainability.ipynb)** | Regulated tabular scoring, Fairlearn 80% (4/5ths) rule audit, SHAP waterfall feature attributions | [Phase 07 / Lab 07](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb) |
 
 ---
 
@@ -271,18 +286,18 @@ The curriculum maps directly to the seven primary enterprise AI architectural ar
 
 ```mermaid
 flowchart TD
-    subgraph Knowledge["1. Knowledge & Tool Layer"]
+    subgraph Knowledge["1. Knowledge and Tool Layer"]
         A1["🔍 Enterprise Grounded Search<br>(Phases 01, 02, 05)"]
         A2["⚡ Autonomous Tool Agent<br>(Phases 01, 03, 05)"]
-        A3["🔌 Copilot Studio & PaaS Bridge<br>(Phases 03, 04, 07)"]
+        A3["🔌 Copilot Studio and PaaS Bridge<br>(Phases 03, 04, 07)"]
     end
 
-    subgraph Orchestration["2. Orchestration & Runtime Layer"]
+    subgraph Orchestration["2. Orchestration and Runtime"]
         A4["🤖 Multi-Agent Systems<br>(Phases 04, 06, 07)"]
         A5["🛡️ Resilient AI Gateway<br>(Phases 00, 05, 07)"]
     end
 
-    subgraph Quality["3. Quality & Delivery Layer"]
+    subgraph Quality["3. Quality and Delivery Layer"]
         A6["🎯 Continuous Evals Flywheel<br>(Phases 01, 06, 08)"]
         A7["🚀 Autonomous SDLC Pipeline<br>(Phases 03, 04, 08)"]
     end
@@ -320,24 +335,20 @@ Modern AI systems engineering relies on open, standardized protocols rather than
 
 ```mermaid
 flowchart TD
-    subgraph S1["Anthropic & Open Protocols"]
-        direction TB
-        B1["🧠 Claude 4 & Claude Code CLI"] --> B2["⚡ Model Context Protocol (MCP)"]
+    subgraph S1["Anthropic and Protocols"]
+        B1["🧠 Claude 4 and Claude Code CLI"] --> B2["⚡ Model Context Protocol (MCP)"]
     end
 
     subgraph S2["Google Agent Ecosystem"]
-        direction TB
         C1["🧠 Google GenAI SDK"] --> C2["⚡ Agent2Agent (A2A) Protocol"]
     end
 
-    subgraph S3["Microsoft & OpenAI Platforms"]
-        direction TB
-        D1["🧠 Agent Framework (MAF 1.0)"] --> D2["⚡ Azure AI Foundry & SDK"]
+    subgraph S3["Microsoft and OpenAI"]
+        D1["🧠 Agent Framework (MAF 1.0)"] --> D2["⚡ Azure AI Foundry and SDK"]
     end
 
-    subgraph S4["Open-Source Runtime & Standards"]
-        direction TB
-        E1["🧠 PydanticAI & LangGraph"] --> E2["⚡ OpenTelemetry GenAI Spans"]
+    subgraph S4["Open-Source Runtime"]
+        E1["🧠 PydanticAI and LangGraph"] --> E2["⚡ OpenTelemetry GenAI Spans"]
     end
 
     style S1 fill:none,stroke:#3b82f6,stroke-width:2px;

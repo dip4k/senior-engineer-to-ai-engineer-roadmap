@@ -1,4 +1,4 @@
-### Lab 2: Multi-Agent Swarm with Dynamic Handoffs (A2A Protocol) [MUST-HAVE] 🔴
+### Lab 2: Multi-Agent Swarm with Dynamic Handoffs (A2A Protocol) 🔴
 
 #### Scenario & Enterprise Problem
 In customer support operations, inquiries frequently span multiple organizational units (e.g., "My bill was charged twice, and my API key is broken"). Routing all messages through a monolithic central supervisor causes quadratic token growth (O(N^2)) and high latency. Agents must be able to directly transfer execution to peer agents along with an isolated, strongly typed context contract.

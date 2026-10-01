@@ -16,6 +16,37 @@ Build a standalone, production-grade **Enterprise Multi-Tenant Hybrid RAG Pipeli
 
 ---
 
+## 🏛️ Pipeline System Architecture
+
+```mermaid
+flowchart TD
+    Query(["👤 User Query + Tenant Auth Context"]) --> PreFilter{"🛡️ 1. Query-Time Metadata Filter"}
+    PreFilter --> ParallelRet[("🗄️ 2. Parallel BM25 & Dense Retrieval")]
+    ParallelRet --> RRF["⚖️ 3. Reciprocal Rank Fusion (k=60)"]
+    RRF --> CrossEnc{"🔍 4. Cross-Encoder Reranker & Pruning"}
+    CrossEnc --> Synthesis["🧠 5. Grounded LLM Response Generator"]
+    Synthesis --> CitationCheck["✅ 6. Deterministic Citation Verifier"]
+
+    style Query stroke:#64748b,stroke-width:2px
+    style PreFilter stroke:#d97706,stroke-width:2px
+    style ParallelRet stroke:#2563eb,stroke-width:2px
+    style RRF stroke:#d97706,stroke-width:2px
+    style CrossEnc stroke:#7c3aed,stroke-width:2px
+    style Synthesis stroke:#7c3aed,stroke-width:2px
+    style CitationCheck stroke:#16a34a,stroke-width:2px
+```
+
+### Diagram Walkthrough: Enterprise Hybrid RAG Execution Pipeline
+
+1. **User Query + Tenant Auth Context**: Intercepts user query and strictly binds caller tenant credentials.
+2. **Query-Time Metadata Filter**: Enforces hard SQL-level or payload-level partitioning before scoring vectors to eliminate cross-tenant leakage.
+3. **Parallel BM25 & Dense Retrieval**: Executes lexical keyword search and cosine similarity concurrently against tenant-isolated indexes.
+4. **Reciprocal Rank Fusion**: Merges candidate rankings using the harmonic RRF formula (`k = 60`) to balance exact keyword hits and semantic associations.
+5. **Cross-Encoder Reranker**: Performs full-attention cross-scoring on top-20 candidates, discarding irrelevant chunks below the 0.70 threshold.
+6. **Citation Verifier**: Validates that all generated inline citations (`[DocId:ChunkId]`) match retrieved evidence, rejecting or abstaining if unsupported claims are made.
+
+---
+
 ## 2. Architectural Specifications & Acceptance Criteria
 
 | Inspection Dimension | Production Acceptance Standard | Automated Verification Check |

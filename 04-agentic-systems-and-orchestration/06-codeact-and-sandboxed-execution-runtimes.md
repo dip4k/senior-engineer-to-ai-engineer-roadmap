@@ -1,10 +1,13 @@
 # Code-as-Action (CodeAct) & Sandboxed Execution Runtimes
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `⚫ Tier 4: Deep Dive` | Estimated Reading Time: 50 min
+> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🔵 Advanced` | Estimated Reading Time: 35 min
 >
 > **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
-
+>
 > **Core Concept**: In Lesson 05, we learned how multi-agent systems delegate work across specialized agents via standardized protocols. But so far, every tool has been a pre-written function with a fixed signature. What if the agent needs to write and execute its own code to solve a problem? Code-as-Action (CodeAct) replaces the slow, multi-turn JSON tool-calling pattern with direct executable script generation. The model writes a short Python script, and the harness runs it inside a hardened sandbox. This eliminates dozens of network round-trips, but introduces severe security risks that require operating-system-level isolation.
+>
+> **New AI terms introduced**: `CodeAct (Code-as-Action)`, `sandboxed execution runtime`, `in-memory data compaction`.
+> **AI terms assumed from earlier lessons**: `ReAct loop`, `tool call`, `context window`, `token`, `harness`, `scaffold`, `agent`.
 
 ---
 
@@ -28,26 +31,36 @@ While clean and easy to understand for simple single-step queries, JSON tool cal
 
 ```mermaid
 flowchart TD
-    classDef json fill:#ffebee,stroke:#c62828,stroke-width:1px;
-    classDef code fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    subgraph JSONFlow["CLASSICAL JSON TOOL CALLING: 8 Turns of Network Ping-Pong"]
+    subgraph JSONFlow["⚠️ Multi-Turn JSON Ping-Pong"]
         direction TB
-        J1["Turn 1: Model emits JSON for query_users()"]:::json
-        --> JR1["Host runs query_users() -> Returns 200 users over network"]
-        --> J2["Turn 2: Model inspects user 1, emits JSON for fetch_orders()"]:::json
-        --> JR2["Host runs fetch_orders(user_1)"]
-        --> J3["Turn 3: Model inspects user 2, emits JSON for fetch_orders()"]:::json
-        --> JR3["Host runs fetch_orders(user_2)"]
-        --> J4["Turns 4-8: Repetitive network round-trips for every item... (High Latency, High Token Spend)"]:::json
+        J1["📜 Turn 1: Emit JSON<br/>query_users()"]
+        --> JR1["🌐 Host runs query_users()<br/>200 users over network"]
+        --> J2["📜 Turn 2: Emit JSON<br/>fetch_orders(user_1)"]
+        --> JR2["🌐 Host runs fetch_orders(user_1)"]
+        --> J3["📜 Turn 3: Emit JSON<br/>fetch_orders(user_2)"]
+        --> JR3["🌐 Host runs fetch_orders(user_2)"]
+        --> J4["💥 Turns 4-8: Repetitive trips<br/>High latency and token spend"]
     end
 
-    subgraph CodeActFlow["CODE-AS-ACTION (CodeAct): 1 Turn Expressive Script"]
+    subgraph CodeActFlow["✅ Single-Turn CodeAct"]
         direction TB
-        C1["Turn 1: Model emits a concise 5-line Python script directly:\nusers = query_users()\noverdue = [u for u in users if fetch_orders(u.id).has_overdue]\nprint(f'Total overdue accounts: {len(overdue)}')"]:::code
-        --> CR1["Sandboxed Python kernel executes loop locally in 15 milliseconds"]
-        --> C2["Turn 2: Model reads clean final stdout summary and answers (Task Complete!)"]:::code
+        C1["💻 Turn 1: Emits Python script<br/>users = query_users()<br/>overdue = filter_orders(users)"]
+        --> CR1["⚡ Sandboxed Kernel executes locally<br/>Completes in 15 milliseconds"]
+        --> C2["🎯 Turn 2: Reads stdout summary<br/>Task complete in 1 round-trip"]
     end
+
+    style JSONFlow fill:none,stroke:#dc2626,stroke-width:2px
+    style CodeActFlow fill:none,stroke:#16a34a,stroke-width:2px
+    style J1 stroke:#dc2626,stroke-width:1px,fill:none
+    style JR1 stroke:#64748b,stroke-width:1px,fill:none
+    style J2 stroke:#dc2626,stroke-width:1px,fill:none
+    style JR2 stroke:#64748b,stroke-width:1px,fill:none
+    style J3 stroke:#dc2626,stroke-width:1px,fill:none
+    style JR3 stroke:#64748b,stroke-width:1px,fill:none
+    style J4 stroke:#dc2626,stroke-width:1px,fill:none
+    style C1 stroke:#16a34a,stroke-width:2px,fill:none
+    style CR1 stroke:#16a34a,stroke-width:1px,fill:none
+    style C2 stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Prose Diagram Walkthrough: JSON Ping-Pong vs. CodeAct Execution
@@ -70,6 +83,8 @@ To build an intuitive mental model:
 * **JSON Tool Calling** is like dining at a restaurant by handing the waiter individual paper slips with one ingredient at a time. You hand him a slip that says "bring water." He walks back to the kitchen, brings water, and waits. You drink a sip. Then you hand him a second slip: "check if the kitchen has fresh mushrooms." He walks back, checks, and returns to tell you yes. Then you write a third slip: "bring pasta with mushrooms." Every trivial step requires a full trip between table and kitchen.
 * **CodeAct** is like writing a concise recipe slip directly for the chef: *"Check if you have fresh mushrooms. If yes, make the mushroom risotto; if no, make the cacio e pepe. Bring out the pasta along with a glass of water."* The kitchen executes your control logic locally and serves the completed meal in one trip.
 
+> **Where this analogy breaks**: A restaurant kitchen has human chefs who clarify ambiguous slips. A code sandbox is an unthinking operating system process. If the model emits syntax errors or an infinite loop, the sandbox does not interpret intent—it crashes or executes until a hard wall-clock kill signal fires.
+
 ---
 
 ## 2. The Mental Model: What is Code-as-Action (CodeAct)?
@@ -84,7 +99,7 @@ Modern frontier models are remarkably proficient at writing Python code. Why?
 
 1. **Massive Pre-Training Exposure**: Foundation models have digested petabytes of public GitHub repositories, technical documentation, Stack Overflow threads, and test suites. They understand Python syntax, idiomatic list comprehensions, control flow, and standard libraries far more naturally than complex, nested JSON schemas.
 2. **Native Control Flow**: Programming languages already have built-in solutions for loops (`for`, `while`), conditional branching (`if`/`elif`/`else`), exception handling (`try`/`except`), and data filtering. Forcing an AI model to recreate control flow by making repeated network calls is an unnecessary architectural tax.
-3. **In-Memory Intermediate State**: In Python, an agent can pass the output of one function directly into another (`data = fetch(); filtered = [d for d in data if d.active]`) without serializing 50 kilobytes of intermediate JSON into the prompt context window.
+3. **In-Memory Intermediate State**: In Python, an agent passes outputs directly between functions (`data = fetch(); filtered = [d for d in data if d.active]`). This avoids serializing 50 kilobytes of intermediate JSON into the prompt context window.
 
 ### Real-World Production Champions of CodeAct
 
@@ -103,40 +118,57 @@ In Lesson 02, we introduced the critical distinction between the **Harness** and
 
 ```mermaid
 flowchart TD
-    classDef scaffold fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef harness fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef model fill:#ede7f6,stroke:#512da8,stroke-width:2px;
+    User(["👤 User Prompt"]) --> State["🔄 Graph State Machine"]
+    State --> Rules["⚖️ Routing Rules & Branching"]
+    Rules --> Model["🧠 Model Reasoning Core"]
+    Model --> Code["💻 Executable Script Output"]
 
-    subgraph Scaffold["THE SCAFFOLD (Application Structure & Routing)"]
-        S1["Graph State Machine (LangGraph / DAG Nodes)"]:::scaffold
-        S2["Routing Rules & Branching Logic"]:::scaffold
-        S3["Conversation History & Message Dispatch"]:::scaffold
-    end
-
-    subgraph Harness["THE HARNESS (Operational Armor & Safety Containment)"]
-        H1["Isolated Sandboxes (Google gVisor / AWS Firecracker)"]:::harness
-        H2["Strict System Call Filters (seccomp / allowlists)"]:::harness
-        H3["Hardware Resource Limits (cgroups: CPU, RAM, PIDs)"]:::harness
-        H4["Wall-Clock Asynchronous Timeouts"]:::harness
-        H5["Output Stream Truncation (stdout/stderr guardrails)"]:::harness
-    end
-
-    Model["Model Reasoning Engine (LLM)"]:::model
-    
-    Scaffold --> Model
-    Model --> Scaffold
-    Harness -.->|"Encloses & Intercepts"| Model
-    Harness -.->|"Shields Host Infrastructure"| Scaffold
+    style User stroke:#64748b,stroke-width:1px,fill:none
+    style State stroke:#2563eb,stroke-width:2px,fill:none
+    style Rules stroke:#2563eb,stroke-width:1px,fill:none
+    style Model stroke:#7c3aed,stroke-width:2px,fill:none
+    style Code stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+### Diagram Walkthrough: Scaffold Control Flow
+
+1. **User Prompt**: Supplies goal and constraints to the application.
+2. **Graph State Machine**: Maintains conversational context and active task status.
+3. **Routing Rules**: Evaluates DAG branching logic to pick the next specialist.
+4. **Model Reasoning Core**: Analyzes state and synthesizes an executable Python script.
+5. **Script Output**: Passes the code directly to the harness for execution.
+
+```mermaid
+flowchart TD
+    CodeIn["💻 Candidate Python Script"] --> AST["🔍 Static AST Inspector"]
+    AST --> Sandbox["🛡️ MicroVM Sandbox<br/>gVisor / Firecracker"]
+    Sandbox --> Cgroups["⏱️ Hardware Quotas<br/>cgroups CPU & RAM Quotas"]
+    Cgroups --> Filter["✂️ Stream Truncation<br/>Stdout Cap"]
+    Filter --> CleanOut["✅ Safe stdout Result"]
+
+    style CodeIn stroke:#16a34a,stroke-width:2px,fill:none
+    style AST stroke:#d97706,stroke-width:2px,fill:none
+    style Sandbox stroke:#d97706,stroke-width:2px,fill:none
+    style Cgroups stroke:#d97706,stroke-width:1px,fill:none
+    style Filter stroke:#d97706,stroke-width:1px,fill:none
+    style CleanOut stroke:#16a34a,stroke-width:2px,fill:none
+```
+
+### Diagram Walkthrough: Harness Containment Pipeline
+
+1. **Candidate Python Script**: Enters the defensive harness from the model.
+2. **Static AST Inspector**: Blocks forbidden modules and dunder reflection.
+3. **MicroVM Sandbox**: Runs code in a guest kernel isolated from the host.
+4. **Hardware Quotas**: Enforces CPU, memory, and wall-clock timeout tripwires.
+5. **Output Stream Truncation**: Truncates standard streams to prevent context flooding.
+6. **Safe Result**: Returns compact text output back to the host application.
 
 ### The Window Washer Analogy Revisited
 
 * **The Scaffold** is the movable metal platform suspended outside a 50-story building. It defines how workers move between floors, where they place their tools, and how they navigate across the facade. In software, your scaffold is your LangGraph graph, PydanticAI agent, prompt template, or message routing logic.
-* **The Harness** is the heavy-duty fall-arrest system: the industrial body harness, the independent steel lifeline anchored to the roof, the deceleration lanyard that absorbs kinetic shock, and the wind sensor that cuts power to the platform winch when gusts exceed 40 miles per hour. If the platform tilts or a worker slips, the harness prevents a fatal fall.
-
-In CodeAct:
-* The **Scaffold** prompts the model and captures the Python code snippet it produces.
-* The **Harness** catches that code snippet, validates its syntax tree, executes it inside an isolated sandbox, enforces strict limits on CPU, memory, and execution time, intercepts forbidden system calls, and truncates the output before returning it to the host application.
+* **The Harness** is the heavy-duty fall-arrest system. It includes the industrial body harness, the steel lifeline anchored to the roof, and the deceleration lanyard. Wind sensors cut power to the winch when gusts exceed 40 miles per hour.
+* In CodeAct, the **Scaffold** prompts the model and captures the Python code snippet it produces.
+* The **Harness** catches that code snippet and validates its syntax tree. It executes the script inside an isolated sandbox with strict CPU, memory, and time limits. Finally, it intercepts system calls and truncates output.
 
 ---
 
@@ -145,8 +177,9 @@ In CodeAct:
 Executing code written by an AI model in real time introduces serious security risks. If an agent emits:
 
 ```python
+# Illustrative dangerous script attempting host file deletion:
 import os, shutil
-shutil.rmtree("/var/lib/postgresql/data")
+shutil.rmtree("./ephemeral_test_dir", ignore_errors=True)
 ```
 
 ...and your application executes that snippet directly in its own Python runtime using `exec()`, your entire host machine and database can be destroyed in milliseconds.
@@ -174,24 +207,21 @@ Production CodeAct platforms organize code isolation into three architectural ti
 
 ```mermaid
 flowchart TD
-    classDef l1 fill:#ffebee,stroke:#c62828,stroke-width:1px;
-    classDef l2 fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef l3 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    subgraph IsolationLevels["🔒 Sandboxed Isolation Spectrum"]
+        T1["🐧 Tier 1: Container Namespaces (Docker)<br/>• Shared host Linux kernel<br/>• Vulnerable to kernel escalation<br/>• Cold start: 500ms to 1s | Basic isolation"]
+        
+        T2["🛡️ Tier 2: Syscall Interception (gVisor)<br/>• User-space kernel intercepts 300+ syscalls<br/>• Blocks direct host kernel access<br/>• Cold start: ~150ms | Strong isolation"]
+        
+        T3["🔒 Tier 3: Hardware MicroVMs (Firecracker)<br/>• Dedicated minimal guest kernel on KVM<br/>• Hardware virtualization boundary<br/>• Cold start: 5ms | Maximum isolation"]
 
-    subgraph Level1["TIER 1: LINUX NAMESPACES & CGROUPS (Standard Docker)"]
-        direction TB
-        L1_Desc["• Shares the host Linux operating system kernel\n• Vulnerable to kernel privilege escalation exploits\n• Cold Start: 500ms to 1s\n• Isolation Level: MODERATE (Insufficient for multi-tenant untrusted code)"]:::l1
+        T1 -->|"Upgrade security"| T2
+        T2 -->|"Maximum defense"| T3
     end
 
-    subgraph Level2["TIER 2: USER-SPACE SYSTEM CALL INTERCEPTION (Google gVisor / runsc)"]
-        direction TB
-        L2_Desc["• User-space Go kernel intercepts and virtualizes all 300+ Linux system calls\n• Untrusted agent code never interacts directly with the host kernel\n• Cold Start: ~150ms\n• Isolation Level: STRONG (Zero host kernel privilege leaks)"]:::l2
-    end
-
-    subgraph Level3["TIER 3: HARDWARE-ASSISTED MICROVMS (AWS Firecracker / Linux KVM)"]
-        direction TB
-        L3_Desc["• Minimalist Linux virtual machine running on KVM hypervisors\n• Dedicated guest kernel with stripped-down virtual devices\n• Cold Start: 5ms to 25ms\n• Memory Footprint: ~5MB per microVM\n• Isolation Level: MAXIMUM (Hardware-enforced ring 0 CPU boundaries)"]:::l3
-    end
+    style IsolationLevels fill:none,stroke:#16a34a,stroke-width:2px
+    style T1 stroke:#dc2626,stroke-width:2px,fill:none
+    style T2 stroke:#d97706,stroke-width:2px,fill:none
+    style T3 stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Prose Diagram Walkthrough: Sandboxing Isolation Levels
@@ -207,30 +237,47 @@ flowchart TD
 Beyond security and latency, CodeAct provides a major architectural advantage: **Ephemeral In-Memory Data Compaction**.
 
 ```mermaid
-flowchart LR
-    classDef sand fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef ctx fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    Prompt["Agent Prompt"] -->|"1. Emits Python data script"| Box["Hardened Sandbox RAM\n• Downloads 50MB CSV file\n• Inspects 1,000,000 database rows\n• Finds 3 critical anomalies"]:::sand
+flowchart TD
+    Prompt["📜 Agent Prompt"] -->|"1. Emits Python data script"| Box["💾 Hardened Sandbox RAM<br/>• Downloads 50MB CSV file<br/>• Inspects 1,000,000 rows in memory<br/>• Identifies 3 critical anomalies"]
     
-    Box -->|"2. Only final print() summary returned\n(40 Tokens of Clean Data)"| Ctx["Model Context Window\n(Zero Context Bloat!)"]:::ctx
+    Box -->|"2. Returns print summary"| Ctx["🧠 Model Context Window<br/>40 tokens of clean data (zero bloat)"]
+
+    style Prompt stroke:#2563eb,stroke-width:2px,fill:none
+    style Box stroke:#d97706,stroke-width:2px,fill:none
+    style Ctx stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+### Walkthrough: Ephemeral Data Compaction
+1. **Script Emission**: The model generates a short Python script to process a massive remote dataset.
+2. **In-Memory Transformation**: The isolated sandbox pulls 50MB of raw CSV rows directly into guest RAM.
+3. **Targeted Filtering**: Native list comprehensions identify 3 anomalous rows without host intervention.
+4. **Context Window Protection**: Only 40 tokens of concise summary text return to prompt context, discarding intermediate state.
 
 ### How Ephemeral Compaction Protects Context Windows
 
 In classical JSON tool calling, if an agent queries an API that returns 5,000 records, all 5,000 JSON records must be converted into text and appended directly into the conversation history. This immediately bloats the prompt context, degrades model reasoning, and incurs heavy API costs.
 
 In CodeAct:
-1. The 50-megabyte CSV file or 5,000-record JSON payload is loaded directly into the sandbox's temporary memory (such as a pandas DataFrame or SQLite table).
-2. The agent runs a concise 3-line filter script:
+1. The 50-megabyte CSV file or 5,000-record JSON payload is loaded directly into the sandbox's temporary memory (such as an in-memory database or parsed collection).
+2. The agent runs a concise filter script:
 
 ```python
-import pandas as pd
-df = pd.read_csv("heavy_orders.csv")
-anomalies = df[df["fraud_score"] > 0.95]
-print(anomalies[["order_id", "amount", "user_id"]].to_string())
+import csv
+import io
+
+csv_payload = """order_id,amount,user_id,fraud_score
+ORD-101,250.00,USR-99,0.12
+ORD-102,4900.00,USR-41,0.98
+ORD-103,15.50,USR-82,0.01
+ORD-104,8200.00,USR-19,0.99
+"""
+
+reader = csv.DictReader(io.StringIO(csv_payload))
+anomalies = [row for row in reader if float(row["fraud_score"]) > 0.95]
+for item in anomalies:
+    print(f"Flagged: {item['order_id']} | Amount: ${item['amount']} | Score: {item['fraud_score']}")
 ```
-3. Only the 3 flagged records (roughly 40 tokens of text) are printed to standard output (`stdout`) and returned to the model's prompt context. The 50-megabyte raw dataset in sandbox memory is discarded when the sandbox terminates.
+3. Only the 2 flagged records (roughly 25 tokens of text) are printed to standard output (`stdout`) and returned to the model's prompt context. The large raw dataset in sandbox memory is discarded when the sandbox terminates.
 
 ---
 
@@ -506,6 +553,28 @@ To put CodeAct and sandboxed runtime engineering into practice:
 * **Local Control Flow and Compaction**: CodeAct handles loops, branching, and data filtering locally inside sandbox memory, returning only high-signal text outputs to the model's context window.
 * **The Scaffold vs. The Harness**: Scaffolds structure the conversation graph and message routing; harnesses provide the protective armor: sandboxes, system call filters, resource limits, and timeout tripwires.
 * **Never Rely on In-Process Python AST Validation**: True isolation requires out-of-process isolation boundaries such as Google gVisor (`runsc`) or AWS Firecracker microVMs with strict memory, CPU, and network controls.
+
+---
+
+## 10. Quick Check
+
+1. Why does CodeAct outperform classical JSON tool calling for iterative data-processing workflows?
+<details>
+<summary>Answer</summary>
+JSON tool calling requires round-tripping every single step (loop iteration, filter, intermediate payload) across the network between host application and LLM inference engine. In contrast, CodeAct writes native code (such as Python) that executes loops and filtering locally inside a sandbox in milliseconds. It returns only the final summary to prompt context, saving tens of network round-trips and thousands of prompt tokens.
+</details>
+
+2. Why is in-process Python AST validation insufficient for executing untrusted, model-generated code?
+<details>
+<summary>Answer</summary>
+Python is a dynamically typed, highly introspective language. Attackers or hallucinating models can bypass static AST checks using dunder reflection (such as `().__class__.__bases__[0].__subclasses__()`). This allows traversing the live runtime object graph to invoke `os.system` without importing `os` or `sys`. True containment requires out-of-process isolation (gVisor or Firecracker microVMs).
+</details>
+
+3. What is ephemeral in-memory data compaction in CodeAct, and how does it prevent context window degradation?
+<details>
+<summary>Answer</summary>
+Ephemeral data compaction loads heavy raw payloads (such as 50 MB CSV files or thousands of raw JSON database rows) exclusively into sandbox volatile memory. The generated code filters and processes the dataset in-memory, printing only the condensed findings (such as 3 anomaly records or a single aggregate number) to standard output. The raw data never enters the prompt context window and is cleanly discarded when the sandbox process terminates.
+</details>
 
 ---
 

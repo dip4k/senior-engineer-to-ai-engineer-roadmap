@@ -52,19 +52,17 @@ P99 TTFT for Legitimate Users: Spiked from 140ms to 32,500ms
 
 ```mermaid
 flowchart TD
-    subgraph BrokenFlow["BROKEN FLOW: Silent Disconnect & Zombie Runaway"]
-        direction TB
-        ClientA["Browser Client<br>(Closes tab after 8s)"] -.->|TCP FIN / Drop| LB1["Ingress Load Balancer<br>(Silently buffers)"]
-        LB1 -.->|No Signal| Gate1["API Gateway<br>(Iterates blindly without disconnect check)"]
-        Gate1 -->|Requests continue| GPU1["H100 GPU Cluster (vLLM)<br>(Generates all 16k tokens • 100% compute waste)"]
+    subgraph BrokenFlow["Broken: Silent Disconnect Flow"]
+        ClientA["📱 Browser Client<br>(Closes tab after 8s)"] -.->|TCP FIN / Drop| LB1["⚖️ Ingress Load Balancer<br>(Silently buffers)"]
+        LB1 -.->|No Signal| Gate1["🚪 API Gateway<br>(Iterates blindly without disconnect check)"]
+        Gate1 -->|Requests continue| GPU1["🔥 H100 GPU Cluster (vLLM)<br>(Generates all 16k tokens • 100% compute waste)"]
     end
 
-    subgraph InoculatedFlow["INOCULATED FLOW: Active Disconnect & Upstream Abort"]
-        direction TB
-        ClientB["Browser Client<br>(Closes tab after 8s)"] -.->|TCP FIN / Drop| LB2["Ingress Load Balancer"]
-        LB2 -->|TCP Socket Severed| Gate2["API Gateway<br>• SSE Heartbeat Probe<br>• request.is_disconnected() == True"]
-        Gate2 -->|Raise asyncio.CancelledError| Cancel["Task Cancellation Context"]
-        Cancel -->|RPC engine.abort(request_id)| GPU2["H100 GPU Cluster (vLLM)<br>(KV Cache freed immediately • Zero compute waste)"]
+    subgraph InoculatedFlow["Fixed: Active Abort Flow"]
+        ClientB["📱 Browser Client<br>(Closes tab after 8s)"] -.->|TCP FIN / Drop| LB2["⚖️ Ingress Load Balancer"]
+        LB2 -->|TCP Socket Severed| Gate2["🚪 API Gateway<br>• SSE Heartbeat Probe<br>• request.is_disconnected() == True"]
+        Gate2 -->|Raise asyncio.CancelledError| Cancel["🛑 Task Cancellation Context"]
+        Cancel -->|RPC engine.abort(request_id)| GPU2["⚡ H100 GPU Cluster (vLLM)<br>(KV Cache freed immediately • Zero compute waste)"]
     end
 ```
 

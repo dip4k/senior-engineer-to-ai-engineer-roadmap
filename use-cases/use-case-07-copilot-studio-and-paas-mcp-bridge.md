@@ -16,29 +16,29 @@ Rather than authoring brittle, point-to-point custom connectors for each PaaS pl
 ```mermaid
 flowchart TD
     subgraph Client["Low-Code Conversational Layer"]
-        User(["Enterprise User"]) <--> Teams["Microsoft Teams / Web Canvas"]
-        Teams <--> CS["Microsoft Copilot Studio<br>(Generative AI Orchestrator)"]
+        User(["👤 Enterprise User"]) <--> Teams["💬 Microsoft Teams / Web Canvas"]
+        Teams <--> CS["🤖 Microsoft Copilot Studio<br>(Generative AI Orchestrator)"]
     end
 
-    subgraph Identity["Enterprise Identity & Trust Boundary"]
-        Entra["Microsoft Entra ID (Azure AD)<br>• OIDC / OAuth 2.0 SSO<br>• On-Behalf-Of (OBO) Token Exchange<br>• App Scope: api://mcp-bridge/Tools.Execute"]
+    subgraph Identity["Identity and Trust Boundary"]
+        Entra["🔐 Microsoft Entra ID (Azure AD)<br>• OIDC / OAuth 2.0 SSO<br>• On-Behalf-Of (OBO) Token Exchange<br>• App Scope: api://mcp-bridge/Tools.Execute"]
     end
 
-    subgraph Gateway["Perimeter & Traffic Management"]
-        APIM["Azure API Management (APIM)<br>• JWT Validation & Scope Verification<br>• SSE HTTP Stream Buffering Disabled<br>• Rate Limiting & Distributed Tracing"]
+    subgraph Gateway["Perimeter and Gateway Layer"]
+        APIM["🛡️ Azure API Management (APIM)<br>• JWT Validation and Scope Verification<br>• SSE HTTP Stream Buffering Disabled<br>• Rate Limiting and Tracing"]
     end
 
     subgraph Compute["Serverless MCP Execution Runtime"]
-        ACA["Azure Container Apps (FastMCP Python / .NET 9)<br>• Scale-to-Zero Container Environment<br>• Persistent SSE Transport (`/sse`, `/messages`)<br>• User Context & Claims Extraction<br>• Managed Identity (MI) Integration"]
+        ACA["⚙️ Azure Container Apps (FastMCP Python / .NET 9)<br>• Scale-to-Zero Container Environment<br>• Persistent SSE Transport (`/sse`, `/messages`)<br>• User Context and Claims Extraction<br>• Managed Identity (MI) Integration"]
     end
 
-    subgraph Grounding["Enterprise Grounding & Retrieval"]
-        AISearch[("Azure AI Search<br>• Dense HNSW + Sparse BM25 Fusion<br>• Microsoft Turing Semantic Reranker<br>• OData Query-Time ACL Pre-Filtering")]
+    subgraph Grounding["Grounding and Retrieval Layer"]
+        AISearch[("🔍 Azure AI Search<br>• Dense HNSW + Sparse BM25 Fusion<br>• Microsoft Turing Semantic Reranker<br>• OData Query-Time ACL Pre-Filtering")]
     end
 
     subgraph SoR["Systems of Record (SoR)"]
-        SAP[("SAP S/4HANA<br>(BAPIs via RFC / OData)")]
-        SNOW[("ServiceNow<br>(Table API / ITIL Workflows)")]
+        SAP[("🏢 SAP S/4HANA<br>(BAPIs via RFC / OData)")]
+        SNOW[("🎫 ServiceNow<br>(Table API / ITIL Workflows)")]
     end
 
     User -.->|1. Authenticate SSO| Entra

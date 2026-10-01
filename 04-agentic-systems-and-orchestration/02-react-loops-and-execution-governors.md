@@ -1,10 +1,14 @@
-# Agent Architecture: Harness Engineering, Autonomous Loops & Execution Governors
+# Lesson 02: Autonomous ReAct Loops & Execution Governors
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟢 Tier 1: Core` | Estimated Reading Time: 45 min
+> **Tier**: `🟡 Engineering Depth` | Estimated Reading Time: 35 min
 >
-> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
-
-> **Core Concept**: In Lesson 01, we learned to keep the control plane in code and use the language model as a reasoning worker. But what governs the reasoning cycle itself? Autonomous agents rely on two complementary architectural pillars: the **Harness** (the operational runtime, safety boundaries, and tool environment that wraps the model) and **Loop Engineering** (the design of recursive reasoning cycles that prevent infinite loops, detect stalled progress, and guarantee convergence). Without both, an agent is little more than an unconstrained while-loop that burns through API budgets.
+> **Prerequisites**: [Lesson 00: Agentic Systems Fundamentals](00-agentic-systems-and-control-plane-fundamentals.md), [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
+>
+> **Core Concept**: Autonomous agents rely on two complementary pillars: the Harness (the operational runtime, sandboxes, and permission tiers wrapping the model) and Loop Engineering (recursive reasoning cycles that prevent infinite loops, detect stalled progress, and guarantee convergence). Without both, an agent is an unconstrained while-loop that burns through API budgets.
+>
+> **Term Ledger**:
+> * **New AI terms introduced**: `ReAct Pattern`, `Harness Engineering`, `Loop Engineering`, `Execution Governor`, `Action Hashing`, `Budget Decay`, `Ping-Pong Cycle`.
+> * **AI terms assumed from earlier lessons**: `AI Agent`, `Control Plane`, `Compute Plane`, `Prompt`, `Token`, `Context Window`, `Function Calling`, `Tool Schema`.
 
 ---
 
@@ -13,57 +17,68 @@
 In many beginner tutorials, an autonomous agent is built using a simple while-loop:
 
 ```python
-# ❌ THE UNGOVERNED AGENT LOOP (A PRODUCTION OUTAGE WAITING TO HAPPEN)
+# Illustrative anti-pattern: An ungoverned while loop
+task_finished = True  # In production, this flag depends on model output
+messages: list[dict[str, str]] = []
+tools: list[str] = []
+
 while not task_finished:
-    thought, tool_call = llm.generate_step(messages, tools)
-    observation = execute_tool(tool_call)
-    messages.append({"role": "assistant", "content": thought})
-    messages.append({"role": "tool", "content": observation})
+    # An ungoverned loop continues until budget or context is exhausted
+    break
 ```
 
-In a production system, this simple loop is extremely dangerous:
-* When an external service returns an unexpected error (like an HTTP 403 Forbidden or an empty search result), the language model continues generating tool calls. It rephrases its output slightly and **retries the exact same failing action** over and over—because from the model's perspective, a failed observation is simply more input text to respond to.
-* Every turn appends more text to the message list. Because models charge per input token, and each turn re-sends the *entire* accumulated conversation, API costs grow rapidly. Response times slow down, and the model assigns lower attention probability to its original instructions as they get buried under pages of intermediate output (a phenomenon researchers call "Lost in the Middle").
-* If a tool mutates a production database or charges a payment, an unconstrained loop can perform duplicate actions before anyone notices.
+In production, this naive loop causes severe outages:
+* **Failing Retries**: When an external service returns an error, the model rephrases slightly and repeats the failing action indefinitely.
+* **Context Saturation**: Accumulated messages inflate token costs and slow down inference, diluting the original prompt instructions.
+* **Unguarded Mutations**: Unconstrained loops can duplicate database writes or payment authorizations before engineers notice.
 
-To build agents that can safely run in production, we need two distinct engineering disciplines:
+To build agents that run safely in production, we need two engineering disciplines:
 1. **Harness Engineering**: The protective environment and safety mechanisms that wrap around the model.
 2. **Loop Engineering**: The structured design of the iterative cycle itself to ensure the agent makes progress and terminates cleanly.
 
+### The ReAct Cycle
+
 ```mermaid
-flowchart TD
-    classDef harness fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef loop fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef model fill:#f9f9f9,stroke:#333,stroke-width:1px;
+flowchart LR
+    T["💡 1. Thought<br>(Reasoning)"] --> A["⚡ 2. Action<br>(Tool Call)"]
+    A --> O["👁️ 3. Observation<br>(Tool Output)"]
+    O --> T
 
-    subgraph TheHarness["1. THE AGENT HARNESS (The Operational Armor)"]
-        direction TB
-        H1["Execution Sandboxing & Process Limits"]:::harness
-        H2["Tool Permissions & Human Approval Gates"]:::harness
-        H3["State Checkpointing & Write-Ahead Logs"]:::harness
-        H4["Observation Trimming & Context Cleaning"]:::harness
-    end
-
-    subgraph TheLoop["2. LOOP ENGINEERING (The Autonomous Cycle)"]
-        direction TB
-        L1["Reasoning Cycles: Thought → Action → Observation"]:::loop
-        L2["Duplicate Action Detection (SHA-256 Hashing)"]:::loop
-        L3["Progressive Budget & Temperature Decay"]:::loop
-        L4["Convergence Monitoring & Safe Escape Hatches"]:::loop
-    end
-
-    Model["Foundation Language Model (Reasoning Engine)"]:::model
-
-    TheHarness -.->|"Encloses and protects"| Model
-    TheLoop -->|"Directs the execution flow of"| Model
-    TheHarness -.->|"Intercepts and bounds"| TheLoop
+    style T stroke:#7c3aed,stroke-width:2px
+    style A stroke:#2563eb,stroke-width:2px
+    style O stroke:#16a34a,stroke-width:2px
 ```
 
-### Prose Diagram Walkthrough: Harness vs. Loop
+### Walkthrough: The ReAct Cycle
+1. **Thought**: The model evaluates current context and decides its next strategic step.
+2. **Action**: The model outputs a typed tool call with specific arguments.
+3. **Observation**: The external environment executes the tool and returns output data.
+4. **Re-evaluation**: The observation is appended to context, driving the next iteration.
 
-1. **The Model (The Reasoning Engine)**: The foundation model is responsible for semantic text processing—understanding user intent, interpreting observations, and proposing which tool to call with what parameters.
-2. **The Harness (The Body & Armor)**: The harness is the software infrastructure surrounding the model. It provides tool connectivity, isolates code execution, enforces security rules, takes state snapshots, and trims bulky responses before they reach the model.
-3. **The Loop (The Behavioral Strategy)**: Loop engineering defines how the agent iterates. It controls how the agent processes observations, detects when it is stuck in repetitive cycles, reduces randomness as turns elapse, and triggers safe exit routines when limits are reached.
+### The Governed Agent Architecture
+
+```mermaid
+flowchart TD
+    Harness["🛡️ Agent Harness<br>(Sandboxes & Permissions)"] --> Router{"⚖️ Governor Dispatch"}
+    Router --> HashCheck["🔍 Action Hash Filter<br>(Cycle Detection)"]
+    Router --> BudgetGov["⏱️ Budget Decay<br>(Turns & Tokens)"]
+    HashCheck --> LLM["🧠 Model Compute Plane"]
+    BudgetGov --> LLM
+    LLM --> Verify["💾 State Checkpointer"]
+
+    style Harness stroke:#2563eb,stroke-width:2px
+    style Router stroke:#d97706,stroke-width:2px
+    style HashCheck stroke:#d97706,stroke-width:2px
+    style BudgetGov stroke:#d97706,stroke-width:2px
+    style LLM stroke:#7c3aed,stroke-width:2px
+    style Verify stroke:#16a34a,stroke-width:2px
+```
+
+### Walkthrough: The Governed Agent Architecture
+1. **Harness Boundary**: Tool executions pass through sandboxes and permission gates.
+2. **Governor Dispatch**: Incoming action requests are inspected by execution governors.
+3. **Action Hash & Budget Gates**: Duplicate calls and budget overruns are caught before hitting external APIs.
+4. **Model Execution & Checkpoint**: Approved steps run through the model and persist to the state log.
 
 ---
 
@@ -80,20 +95,30 @@ In software:
 > **The Scaffold Fallacy**:
 > Engineering teams often spend weeks debating which agent framework to use (switching between LangChain, CrewAI, AutoGen, and LangGraph) while completely neglecting the harness. When their agent burns through $1,000 in an hour or loops on a failing database write, they blame "model hallucinations." The model did not fail—their system lacked a safety harness.
 
+> [!NOTE]
+> **Where this analogy breaks**: A physical window washer's harness is passive hardware that arrests a fall via gravity and tension. An AI software harness is an active software control plane that must continuously intercept, parse, sanitize, and validate every inbound token stream and outbound API call.
+
 ### The 4 Core Systems of an Agent Harness
 
 ```mermaid
 flowchart LR
-    classDef c1 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef c2 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef c3 fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef c4 fill:#ede7f6,stroke:#512da8,stroke-width:2px;
+    H_Core["🛡️ Agent Harness Systems"] --> C1["💻 1. Sandboxing<br>(CPU/RAM limits & isolation)"]
+    H_Core --> C2["🚨 2. Interceptors<br>(Permissions & HITL gates)"]
+    H_Core --> C3["💾 3. Checkpointing<br>(WAL logs & crash recovery)"]
+    H_Core --> C4["📄 4. Context Projection<br>(Pruning & token budgeting)"]
 
-    H_Core["Agent Harness Systems"] --> C1["1. Execution Sandboxing\n• CPU & RAM limits\n• Wall-clock timeouts\n• Process isolation"]:::c1
-    H_Core --> C2["2. Safety Interceptors\n• Read vs Write tool tiers\n• Human approval gates\n• Policy assertions"]:::c2
-    H_Core --> C3["3. Checkpointing & State\n• Write-Ahead Logs\n• Crash recovery\n• Transaction journals"]:::c3
-    H_Core --> C4["4. Context Projection\n• Truncating large JSON\n• Stripping null fields\n• Caching older outputs"]:::c4
+    style H_Core stroke:#2563eb,stroke-width:2px
+    style C1 stroke:#16a34a,stroke-width:2px
+    style C2 stroke:#d97706,stroke-width:2px
+    style C3 stroke:#2563eb,stroke-width:2px
+    style C4 stroke:#7c3aed,stroke-width:2px
 ```
+
+### Walkthrough: Harness Subsystems
+1. **Execution Sandboxing**: Runs unvetted tools inside isolated processes with strict CPU, memory, and timeout caps.
+2. **Safety Interceptors**: Divides tools into read vs write tiers and blocks high-risk mutations without human authorization.
+3. **Checkpointing & State**: Maintains Write-Ahead Logs to allow session resumption and rollback after system crashes.
+4. **Context Projection**: Compresses and cleans large tool payloads to prevent context window saturation.
 
 #### 1. Execution Sandboxing and Resource Limits
 Never execute model-generated scripts or unvetted tools directly in your main application process. A production harness enforces:
@@ -129,31 +154,34 @@ Formalized by Yao et al. (2022), the **ReAct (Reasoning + Acting)** pattern comb
 
 ```mermaid
 flowchart TD
-    classDef step fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef thought fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef action fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef obs fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef term fill:#ede7f6,stroke:#512da8,stroke-width:2px;
+    Goal(["🎯 User Task / Objective"]) --> T1["💡 1. Thought<br>(Reasoning & Sub-goal)"]
+    T1 --> A1["⚡ 2. Action<br>(Tool Call with Args)"]
+    A1 --> O1["👁️ 3. Observation<br>(Sanitized Output)"]
+    O1 --> R1["🔍 4. Reflection<br>(Goal Verification)"]
+    R1 --> Check{"🛡️ Is Goal Achieved?"}
+    Check -- "No (Need data)" --> T1
+    Check -- "Yes" --> Final["✅ 5. Final Deliverable<br>(Synthesized Result)"]
 
-    Goal["User Task / Objective"]:::step --> T1["1. THOUGHT (Reasoning)\nWhat do I know so far? What data is missing?\nFormulate a specific sub-goal."]:::thought
-    
-    T1 --> A1["2. ACTION (Tool Call)\nEmit structured tool call with parameters\ne.g., query_customer(id='401')"]:::action
-    
-    A1 --> O1["3. OBSERVATION (Environment Feedback)\nThe harness runs the tool and returns\nthe sanitized output."]:::obs
-    
-    O1 --> R1["4. REFLECTION (Verification)\nDid the tool answer my question?\nDo I have enough data to finish?"]:::thought
-    
-    R1 --> Check{"Is the Goal\nAchieved?"}
-    
-    Check -- "No (Need more data)" --> T1
-    Check -- "Yes (Task complete)" --> Final["5. FINAL DELIVERABLE\nSynthesize verified response for user"]:::term
+    style Goal stroke:#64748b,stroke-width:2px
+    style T1 stroke:#7c3aed,stroke-width:2px
+    style A1 stroke:#2563eb,stroke-width:2px
+    style O1 stroke:#16a34a,stroke-width:2px
+    style R1 stroke:#7c3aed,stroke-width:2px
+    style Check stroke:#d97706,stroke-width:2px
+    style Final stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough: ReAct Reasoning Loop
+1. **Thought**: The model evaluates current context and formulates a specific sub-goal.
+2. **Action**: The model emits a structured tool call with typed parameters.
+3. **Observation**: The harness executes the tool in an isolated sandbox and returns sanitized results.
+4. **Reflection**: The model checks if the observation satisfies the goal or requires further iteration.
 
 #### Why ReAct Outperforms Simple Approaches
 
-* **Pure Chain-of-Thought (Reasoning Only)**: If a model generates text without access to tools, it has no mechanism to verify external facts. When it reaches an unknown piece of data, it fills the gap with statistically plausible but fabricated answers (hallucination).
-* **Pure Action (Calling Tools Without Thinking)**: If a model calls tools without an intermediate reasoning step, it cannot plan multi-step sequences, diagnose why a query failed, or synthesize observations from multiple sources.
-* **The ReAct Combination**: The reasoning step guides which tool to select; the tool observation grounds the next reasoning step in verified real-world facts.
+* **Pure Reasoning**: Without tools, models hallucinate when encountering missing data.
+* **Pure Action**: Calling tools without intermediate reasoning prevents error diagnosis and multi-step planning.
+* **The ReAct Combination**: Reasoning guides tool selection; observations ground reasoning in real data.
 
 ### Overcoming Short-Sighted Drift: Plan-and-Execute
 
@@ -176,7 +204,7 @@ To understand why loop governance is essential, consider this real-world product
 >
 > *By 2:45 AM, the agent had executed **240 autonomous loop cycles**, consumed **38 million tokens**, generated **$570 in API charges**, and flooded the internal secrets vault with **950 requests per second**—tripping enterprise rate limiters and locking human engineers out of the system!"*
 
-If that agent had been equipped with loop governance, Turn 3 would have detected that the agent was repeating the same failing action, applied budget decay, halted the loop, and escalated to an on-call engineer within 45 seconds at a total cost of $0.04.
+With loop governance, Turn 3 would detect the repetitive failure. The governor applies budget decay, halts the cycle, and escalates to an on-call engineer within 45 seconds at a cost of $0.04.
 
 ---
 
@@ -186,29 +214,40 @@ To prevent infinite loops, deadlocks, and runaway costs, a production agent runt
 
 ```mermaid
 flowchart TD
-    classDef gate fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef step fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef alert fill:#ffebee,stroke:#c62828,stroke-width:2px;
-
-    Start["Agent Proposes Next Tool Call"]:::step --> HashCheck{"1. Action Fingerprinting\nHas this exact call run recently?"}:::gate
+    Start["🎯 Agent Proposes Tool Call"] --> HashCheck{"🔍 1. Action Fingerprint<br>(Duplicate check?)"}
     
-    HashCheck -- "Duplicate Found (Cycle!)" --> Escape["4. Safe Escape Hatch\n• Save state snapshot\n• Compile partial findings\n• Alert human engineer"]:::alert
+    HashCheck -- "Duplicate Found" --> Escape["🚨 4. Safe Escape Hatch<br>(Snapshot & alert human)"]
+    HashCheck -- "Unique Action" --> Exec["⚡ Execute Tool in Sandbox"]
     
-    HashCheck -- "Unique Action" --> Exec["Harness Executes Tool in Sandbox"]:::step
+    Exec --> Observe["👁️ Sanitize & Trim Output"]
+    Observe --> ConvergenceCheck{"⚖️ 3. Convergence Check<br>(Making progress?)"}
     
-    Exec --> Observe["Sanitize & Trim Observation"]:::step
+    ConvergenceCheck -- "Stalled" --> Escape
+    ConvergenceCheck -- "Progressing" --> BudgetCheck{"⏱️ 2. Budget Decay<br>(Tokens/turns remain?)"}
     
-    Observe --> ConvergenceCheck{"3. Convergence Check\nIs the agent making real progress?"}:::gate
-    
-    ConvergenceCheck -- "Stalled / Repeating thoughts" --> Escape
-    ConvergenceCheck -- "Progressing" --> BudgetCheck{"2. Progressive Budget Decay\nTurns & Tokens Remaining?"}:::gate
-    
-    BudgetCheck -- "Budget Exhausted" --> Escape
-    BudgetCheck -- "Budget Healthy" --> CheckDone{"Goal Finished?"}:::gate
+    BudgetCheck -- "Exhausted" --> Escape
+    BudgetCheck -- "Healthy" --> CheckDone{"🛡️ Goal Finished?"}
     
     CheckDone -- "No" --> Start
-    CheckDone -- "Yes" --> Terminal["Return Final Verified Result"]:::step
+    CheckDone -- "Yes" --> Terminal["✅ Return Final Result"]
+
+    style Start stroke:#64748b,stroke-width:2px
+    style HashCheck stroke:#d97706,stroke-width:2px
+    style Escape stroke:#dc2626,stroke-width:2px
+    style Exec stroke:#2563eb,stroke-width:2px
+    style Observe stroke:#16a34a,stroke-width:2px
+    style ConvergenceCheck stroke:#d97706,stroke-width:2px
+    style BudgetCheck stroke:#d97706,stroke-width:2px
+    style CheckDone stroke:#d97706,stroke-width:2px
+    style Terminal stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough: Loop Governance Execution Flow
+1. **Action Fingerprinting**: Computes a SHA-256 hash of tool name and canonical arguments. If repeated, execution halts.
+2. **Tool Execution**: Approved actions run inside the sandboxed harness.
+3. **Convergence Check**: Evaluates whether the model is making measurable progress towards the target objective.
+4. **Budget Decay**: Verifies remaining turn and token allotments before authorizing another reasoning iteration.
+5. **Escape Routing**: Stalled or exhausted runs route cleanly to safe exit routines rather than throwing unhandled exceptions.
 
 ### 1. Action Fingerprinting (Detecting Duplicate Tool Calls)
 When a tool fails, models tend to retry the exact same tool call with trivial cosmetic changes. To prevent this, the runtime calculates a cryptographic hash of the tool name and its sorted parameters:
@@ -258,19 +297,11 @@ When a limit is reached or a loop is detected, a poorly designed system crashes 
 
 ---
 
-## 5. Frontier Reasoning Models: Grok-3 and Meta Llama Stack
+## 5. Reasoning Models and Tool Stacks in Autonomous Loops
 
-In 2025 and 2026, the landscape expanded with specialized reasoning models and standardized tool stacks. Understanding how they interact with agent loops is essential:
-
-### xAI Grok-3: Test-Time Reasoning Compute in Loops
-* **Reasoning Tokens**: In its "Think" mode, Grok-3 generates internal reasoning tokens before outputting its visible response. This allows the model to explore hypotheses and backtrack internally.
-* **Balancing Latency**: In an agent loop, spending thousands of reasoning tokens on *every simple tool call* introduces substantial latency (often 15 to 30 seconds per turn).
-* **The Recommended Practice**: Use standard fast models for straightforward tool parameter extraction, and reserve deep reasoning models (like Grok-3 Thinking mode) for initial task planning and complex failure analysis.
-
-### Meta Llama Stack: Standardized Agent Tool Engines
-* **Standardized Infrastructure**: Meta's Llama Stack provides an open-source standard for agent components—tool execution, memory, and safety guardrails.
-* **The Responses API**: Llama Stack has adopted a unified Responses API pattern, handling tool discovery, planning, and multi-turn execution behind a consistent interface.
-* **Built-in Security Boundaries**: The Llama Stack integrates **Llama Guard** directly into the tool loop, automatically checking tool parameters for prompt injections or unauthorized system commands before execution.
+Reasoning models with test-time compute (such as o1, o3, Grok-3 Thinking) change loop dynamics:
+* **Latency Trade-offs**: Generating internal reasoning tokens before every tool invocation adds 15–30 seconds per turn. Reserve reasoning models for high-level plan decomposition, and route standard tool extraction to low-latency models.
+* **Standardized Tool Engines**: Tool execution runtimes (like Meta Llama Stack and PydanticAI) standardize security checks, running guardrails on tool arguments before dispatch.
 
 ---
 
@@ -494,7 +525,23 @@ if __name__ == "__main__":
 
 ---
 
-## 7. Key Takeaways & Summary
+## 7. Quick Check
+
+An AI coding agent enters an infinite loop trying to fix a failing test suite. On every turn, it changes a variable name in `utils.py`, runs `pytest`, receives the same syntax error, and repeats.
+
+Which loop governor mechanism catches this failure earliest, and how does it prevent cost explosion?
+
+<details>
+<summary>View Answer</summary>
+
+**Mechanism**: **Action Fingerprinting with a SHA-256 Sliding Window Buffer**.
+
+**Engineering Operation**: The governor hashes the tool name (`run_test`) and its sorted parameters (`{"target": "utils.py"}`) or tracks code diff hashes. If the exact same action and error signature recur within the last $N$ turns without environment changes, the runtime blocks the network call immediately. It injects a synthetic error message prompting an alternative strategy or escalates to a human engineer, preventing runaway token consumption.
+</details>
+
+---
+
+## 8. Key Takeaways & Summary
 
 * **Harness vs. Loop**: The **Harness** is the operational armor (sandboxes, permission tiers, checkpointing, and output trimming). The **Loop** is the iterative behavior (deliberation, action selection, and cycle management). You need both for production systems.
 * **ReAct Combines Thinking and Action**: Thinking guides which tool to select; tool observations ground the thinking in real facts. Pure reasoning hallucinates; pure action lacks planning.
@@ -509,7 +556,7 @@ if __name__ == "__main__":
 
 ## 🧭 Navigation
 
-| [← Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 03: Stateful Sessions & Durable WAL →](03-stateful-sessions-and-durable-wal-persistence.md) |
-|:---:|:---:|:---:|
-| **Previous Lesson** | **Phase Hub** | **Next Lesson** |
-| [Lab 1: Stateful Agent & Human Approvals](labs/lab1-stateful-agent-hitl.md) | [Lab 3: Infinite Loop Governors](labs/lab3-infinite-loops.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+* **Previous Lesson**: [← Lesson 01: Workflows vs. Autonomous Agents & Orchestration Patterns](01-workflows-vs-agents-and-orchestration-patterns.md)
+* **Phase 04 Hub**: [Phase 04 Overview](README.md)
+* **Next Lesson**: [Lesson 03: Stateful Sessions, Durable WAL & Distributed Sagas →](03-stateful-sessions-and-durable-wal-persistence.md)
+* **Capstone Lab**: [Capstone Challenge: Code Review Agent Engine](labs/capstone-code-review-engine.md)

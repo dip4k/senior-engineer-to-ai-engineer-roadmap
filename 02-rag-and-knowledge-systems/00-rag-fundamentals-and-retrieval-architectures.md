@@ -50,11 +50,11 @@ To solve this problem, software engineers must understand where an AI model stor
 
 ```mermaid
 flowchart LR
-    subgraph Parametric["Parametric Memory (Weights)"]
+    subgraph Parametric["🧠 Parametric Memory (Weights)"]
         W["🧠 Frozen Model Parameters<br>• Trained once at high cost<br>• Fuzzy statistical memory<br>• Cannot cite sources<br>• No access control"]
     end
 
-    subgraph NonParametric["Non-Parametric Memory (Storage)"]
+    subgraph NonParametric["🗄️ Non-Parametric Memory (Storage)"]
         D[("🗄️ External Databases & Indices<br>• Updated in real time<br>• Verifiable document provenance<br>• Exact source citations<br>• Strict multi-tenant RBAC")]
     end
 
@@ -118,13 +118,13 @@ A production RAG system separates work into three distinct operational stages:
 
 ```mermaid
 flowchart TD
-    subgraph Offline["1. OFFLINE INGESTION & INDEXING"]
+    subgraph Offline["⚙️ 1. OFFLINE INGESTION & INDEXING"]
         Docs["📄 Enterprise Docs"] --> Split["✂️ Parse & Chunk"]
         Split --> VDB[("🗄️ Dense Vector Index<br>(HNSW / DiskANN)")]
         Split --> KDB[("🗄️ Sparse Inverted Index<br>(BM25 Okapi)")]
     end
 
-    subgraph Online["2. ONLINE QUERY & GENERATION"]
+    subgraph Online["🌐 2. ONLINE QUERY & GENERATION"]
         Query(["👤 User Query"]) --> Search["🔍 Hybrid Search"]
         Search --> Rerank["🎯 Cross-Encoder Rerank"]
         Rerank --> LLM["🧠 Grounded LLM Response"]

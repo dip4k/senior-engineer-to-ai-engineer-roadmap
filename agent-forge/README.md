@@ -31,25 +31,25 @@ The system is decomposed into 6 decoupled, single-responsibility modules:
 
 ```mermaid
 flowchart TD
-    subgraph Ingress ["1. Ingress & Gateway"]
-        Query["Client Query"] --> Gateway["AI Gateway<br>(Token-Bucket Limiter • Semantic Cache)"]
+    subgraph Ingress ["1. Ingress and Gateway"]
+        Query["👤 Client Query"] --> Gateway["🚪 AI Gateway<br>(Token-Bucket Limiter • Semantic Cache)"]
     end
 
-    subgraph CorePlatform ["2. Durable Execution & Retrieval"]
-        Gateway --> Orchestrator["Durable Orchestrator<br>(Turn Loop • Tool Repair • Checkpointing)"]
-        Orchestrator <--> WAL[("Event Store (WAL)<br>Append-Only Ledger")]
-        Orchestrator <--> HybridEngine["Hybrid Retriever<br>(Dense HNSW + Sparse BM25 + RRF)"]
+    subgraph CorePlatform ["2. Durable Execution and Engine"]
+        Gateway --> Orchestrator["🔄 Durable Orchestrator<br>(Turn Loop • Tool Repair • Checkpointing)"]
+        Orchestrator <--> WAL[("💾 Event Store (WAL)<br>Append-Only Ledger")]
+        Orchestrator <--> HybridEngine["🔍 Hybrid Retriever<br>(Dense HNSW + Sparse BM25 + RRF)"]
     end
 
     subgraph MCPPlane ["3. Zero-Trust MCP Tool Plane"]
-        Orchestrator --> PolicyEngine{"Policy Engine<br>(Auto-Refund Cap: $100)"}
-        PolicyEngine -->|"Permitted"| MCPClient["MCP 2026 Client"]
-        MCPClient --> Tools["Order Server | Payment Server | Policy Server"]
+        Orchestrator --> PolicyEngine{"🛡️ Policy Engine<br>(Auto-Refund Cap: $100)"}
+        PolicyEngine -->|"Permitted"| MCPClient["🔌 MCP 2026 Client"]
+        MCPClient --> Tools["⚙️ Order Server | Payment Server | Policy Server"]
     end
 
-    subgraph Governance ["4. Observability & CI Gates"]
-        Orchestrator -.-> OTel["OpenTelemetry GenAI Tracer"]
-        OTel -.-> EvalGate["CI Quality Gate<br>(Trajectory Diff • Groundedness)"]
+    subgraph Governance ["4. Observability and CI Gates"]
+        Orchestrator -.-> OTel["📊 OpenTelemetry GenAI Tracer"]
+        OTel -.-> EvalGate["✅ CI Quality Gate<br>(Trajectory Diff • Groundedness)"]
     end
 ```
 

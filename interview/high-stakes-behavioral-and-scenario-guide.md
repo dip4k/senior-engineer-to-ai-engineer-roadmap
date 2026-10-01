@@ -22,13 +22,13 @@ At the Senior (L5), Staff (L6/L7), and Staff AI Engineer levels, behavioral inte
 ```mermaid
 flowchart TD
     subgraph SixArchetypes["THE 6 HIGH-STAKES STORY ARCHETYPES"]
-        direction TB
-        A1["1. Cascading Outages & Blast Radius Containment"]
-        A2["2. Silent Failures of AI/ML Systems in Production"]
-        A3["3. High-Stakes Disagreements & Pushing Back on AI Hype"]
-        A4["4. Sunk Cost Fallacy: Killing a Multi-Month Project"]
-        A5["5. Team Conflicts, Deadlocks & Toxic Senior Dynamics"]
-        A6["6. Ethical Dilemmas, Privacy & Compliance Guardrails"]
+        A1["💥 1. Cascading Outages and Containment"]
+        A2["⚠️ 2. Silent Failures in Production"]
+        A3["🗣️ 3. Pushing Back on AI Hype"]
+        A4["🛑 4. Sunk Cost Fallacy and Teardowns"]
+        A5["🤝 5. Team Conflicts and Deadlocks"]
+        A6["⚖️ 6. Ethical Dilemmas and Compliance"]
+        A1 --> A2 --> A3 --> A4 --> A5 --> A6
     end
 ```
 

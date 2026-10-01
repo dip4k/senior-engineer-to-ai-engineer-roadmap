@@ -1,4 +1,4 @@
-# Lab 5: Agent Memory & State Management System [MUST-HAVE] 🔴
+# Lab 5: Agent Memory & State Management System 🔴
 
 > **"An agent without memory is just a stateless function with an expensive API bill. But an agent with naive memory is an unpredictable liability waiting to leak user secrets at 2 AM."**
 
@@ -48,7 +48,7 @@
 
 ---
 
-## 1. The 2 AM War Story: The Amnesiac Agent & The Vector Data Leak [MUST-HAVE] 🔴
+## 1. The 2 AM War Story: The Amnesiac Agent & The Vector Data Leak 🔴
 
 It is 2:14 AM on the Tuesday before Black Friday. Your Slack PagerDuty channel erupts with 47 high-severity alerts. 
 
@@ -56,7 +56,7 @@ You lead the AI platform team at *FinHealth*, an enterprise wealth management an
 
 The implementation team did what 90% of tutorials recommend:
 1. Every time a user chats, an asynchronous worker takes the conversation turn, embeds it using a popular embedding model, and inserts the vector into a shared cloud vector database.
-2. In each turn, the agent takes the user’s incoming prompt, runs a top-K cosine similarity query across the vector collection, and prepends the top 5 chunks into the LLM system prompt as `"Relevant Past Memories"`.
+2. In each turn, the agent takes the user’s incoming prompt. It runs a top-K cosine similarity query across the vector collection and prepends the top 5 chunks into the system prompt as `"Relevant Past Memories"`.
 
 Sounds reasonable, right? Here is what actually happened at 2:00 AM:
 
@@ -71,20 +71,35 @@ The engineering channel is in full panic. Marcus had just been shown the deeply 
 
 ```mermaid
 flowchart TD
-    subgraph BAD_ARCH["THE NAIVE MEMORY PIPELINE (WAR STORY)"]
-        UserA["User Marcus (Tenant 8412)\nQuery: 'Deductions'"] --> Embedder["Embedding Model"]
-        Embedder --> VectorDB[("Shared Vector DB\n(NO Tenant Isolation Filtering)")]
-        VectorDB -->|Top Cosine Match:\n'Deduction medical St. Jude'| Leak["RETRIEVED DATA OF SARAH (Tenant 9104)"]
-        Leak --> LLM["LLM Prompt Assembly"]
-        LLM --> Disaster["CRITICAL PRIVACY VIOLATION\n$5M GDPR & HIPAA Fine Exposure"]
+    subgraph BAD_ARCH["⚠️ THE NAIVE MEMORY PIPELINE (WAR STORY)"]
+        UserA(["👤 Marcus (Tenant 8412)<br/>Query: 'Deductions'"]) --> Embedder["🧠 Embedding Model"]
+        Embedder --> VectorDB[("🗄️ Shared Vector DB<br/>NO Tenant Isolation Filtering")]
+        VectorDB -->|Top Cosine Match:\n'Deduction medical St. Jude'| Leak["💥 RETRIEVED DATA OF SARAH (Tenant 9104)"]
+        Leak --> LLM["🧠 LLM Prompt Assembly"]
+        LLM --> Disaster["🚨 CRITICAL PRIVACY VIOLATION<br/>$5M GDPR & HIPAA Fine Exposure"]
     end
-    style BAD_ARCH fill:#ffebee,stroke:#c62828,stroke-width:2px
+
+    style BAD_ARCH fill:none,stroke:#dc2626,stroke-width:2px
+    style UserA stroke:#64748b,stroke-width:1px,fill:none
+    style Embedder stroke:#7c3aed,stroke-width:1px,fill:none
+    style VectorDB stroke:#dc2626,stroke-width:2px,fill:none
+    style Leak stroke:#dc2626,stroke-width:2px,fill:none
+    style LLM stroke:#7c3aed,stroke-width:1px,fill:none
+    style Disaster stroke:#dc2626,stroke-width:2px,fill:none
 ```
+
+### Diagram Walkthrough: The Naive Cross-Tenant Memory Leak
+
+1. **User Ingress**: Marcus (Tenant 8412) submits a query about tax deductions.
+2. **Global Embedding**: The query vector is generated without tenant scope metadata.
+3. **Unfiltered Search**: The vector database queries a shared flat index, matching on pure cosine similarity.
+4. **Data Contamination**: The system retrieves confidential tax records belonging to Sarah (Tenant 9104).
+5. **Prompt Injection**: Marcus receives unauthorized PII in his chat response, violating GDPR and HIPAA.
 
 When you inspect the incident telemetry, you uncover three catastrophic architectural flaws:
 1. **The Multi-Tenant Vector Swamp**: The vector store was a single flat index. The developer forgot the `filter={"tenant_id": current_tenant}` clause in the query payload. Because Marcus and Sarah both used phrases like *"tax deduction"* and *"medical expenses"*, cosine similarity happily crossed the security boundary.
 2. **The Amnesia Problem (Contradiction Ignorance)**: Two days earlier, Sarah had typed: *"Wait, don't use that deduction, my CPA said it was invalid."* But the naive vector store had both facts stored. The retrieval pipeline picked the older, higher-scoring vector and completely missed the retraction!
-3. **The Un-Shreddable Vector**: When Sarah’s lawyer filed an emergency GDPR Article 17 "Right to Be Forgotten" request that morning, the compliance team demanded all Sarah's personal data be wiped within 4 hours. The vector database administrators realized that deleting specific records in an Approximate Nearest Neighbor (ANN) index based on Hierarchical Navigable Small World (HNSW) graphs left ghost vectors in index segments and required an 8-hour index re-indexing job that locked production!
+3. **The Un-Shreddable Vector**: Deleting specific records in an Approximate Nearest Neighbor (ANN) HNSW index left ghost vectors in index segments. Re-indexing required an 8-hour rebuild job that locked the production database!
 
 By 6:00 AM, the CEO was on a crisis bridge with legal counsel. 
 
@@ -92,7 +107,7 @@ This lab exists so you will **never** live through that morning. Let's build age
 
 ---
 
-## 2. Agent Memory Taxonomy: The 'Student\'s Desk' Mental Model [MUST-HAVE] 🔴
+## 2. Agent Memory Taxonomy: The 'Student\'s Desk' Mental Model 🔴
 
 When engineers discuss "Agent Memory," they often conflate five completely different architectural subsystems into one vague bucket. To design clean systems, we need an unambiguous mental model.
 
@@ -102,25 +117,35 @@ Imagine a top-tier student named Maya preparing for a gruelling 8-hour universit
 
 ```mermaid
 flowchart TD
-    Desk["MAYA'S STUDY DESK (THE AGENT ARCHITECTURE)"]
+    Desk["🏛️ MAYA'S STUDY DESK (THE AGENT ARCHITECTURE)"]
     
-    subgraph Tier1["1. WORKING MEMORY (The Sticky Note)"]
-        WM["Active Scratchpad\n• Context Window Tokens\n• Current prompt & active tool output\n• Microsecond access, wiped when exam ends"]
+    subgraph Tier1["1. 📝 WORKING MEMORY (The Sticky Note)"]
+        WM["📝 Active Scratchpad<br/>• Context Window Tokens<br/>• Current prompt & active tool output<br/>• Microsecond access, wiped when exam ends"]
     end
     
-    subgraph Tier2["2. SHORT-TERM MEMORY (The Spiral Notebook)"]
-        STM["Session / Thread Buffer\n• Today's dialogue history\n• Checkpointed to SQLite/Redis\n• Preserved across network drops"]
+    subgraph Tier2["2. 📓 SHORT-TERM MEMORY (The Spiral Notebook)"]
+        STM["📓 Session / Thread Buffer<br/>• Today's dialogue history<br/>• Checkpointed to SQLite/Redis<br/>• Preserved across network drops"]
     end
     
-    subgraph Tier3["3. LONG-TERM MEMORY (The Study Room Library)"]
-        LTM_SEM["Semantic Memory (Textbooks & Encyclopedia)\n• World knowledge & static user facts\n• 'User prefers dark mode & Python'"]
-        LTM_EPI["Episodic Memory (Personal Diary)\n• 'On Oct 12, booking flight AA401 failed with 502'"]
-        LTM_PRO["Procedural Memory (Recipe Book & Muscle Memory)\n• 'How to safely execute a zero-downtime SQL migration'"]
+    subgraph Tier3["3. 📚 LONG-TERM MEMORY (The Study Room Library)"]
+        LTM_SEM["📖 Semantic Memory (Textbooks & Encyclopedia)<br/>• World knowledge & static user facts<br/>• 'User prefers dark mode & Python'"]
+        LTM_EPI["🗓️ Episodic Memory (Personal Diary)<br/>• 'On Oct 12, booking flight AA401 failed with 502'"]
+        LTM_PRO["⚙️ Procedural Memory (Recipe Book & Muscle Memory)<br/>• 'How to safely execute a zero-downtime SQL migration'"]
     end
 
     Desk --> Tier1
     Desk --> Tier2
     Desk --> Tier3
+
+    style Desk stroke:#2563eb,stroke-width:2px,fill:none
+    style Tier1 fill:none,stroke:#2563eb,stroke-width:2px
+    style Tier2 fill:none,stroke:#d97706,stroke-width:2px
+    style Tier3 fill:none,stroke:#16a34a,stroke-width:2px
+    style WM stroke:#2563eb,stroke-width:1px,fill:none
+    style STM stroke:#d97706,stroke-width:1px,fill:none
+    style LTM_SEM stroke:#16a34a,stroke-width:1px,fill:none
+    style LTM_EPI stroke:#16a34a,stroke-width:1px,fill:none
+    style LTM_PRO stroke:#16a34a,stroke-width:1px,fill:none
 ```
 
 #### 1. Working Memory (The Sticky Note on Maya’s Monitor)
@@ -151,17 +176,15 @@ This persists across days, months, or years, surviving across hundreds of indepe
 ```mermaid
 sequenceDiagram
     autonumber
-    actor User as User (Deepak)
-    participant Agent as Agent Orchestrator
-    participant WM as Working Memory (Context Window)
-    participant STM as Short-Term Store (Checkpointer / Redis)
-    participant LTM as Long-Term Store (Vector + Graph)
-    participant Gov as Governance & Crypto Gate
+    actor User as 👤 User (Deepak)
+    participant Agent as 🤖 Agent & Crypto Gate
+    participant WM as 📝 Working Memory (Context Window)
+    participant STM as 📓 Short-Term Store (Checkpointer)
+    participant LTM as 📚 Long-Term Store (Vector + Graph)
 
     User->>Agent: "Deploy the billing service like we did last Tuesday."
     
-    Agent->>Gov: Validate User Auth & Fetch Decryption Key (K_tenant)
-    Gov-->>Agent: Key Verified & Active
+    Agent->>Agent: Validate User Auth & Fetch Decryption Key (K_tenant)
     
     par Parallel Recall
         Agent->>STM: Fetch last 3 turns of active thread
@@ -182,9 +205,17 @@ sequenceDiagram
     Agent->>STM: Checkpoint updated graph state
 ```
 
+**Walkthrough:**
+1. **User Request**: User sends natural language prompt referencing past activities.
+2. **Key Retrieval**: Agent verifies tenant authentication and fetches `K_tenant`.
+3. **Parallel Recall**: Short-term thread history and long-term episodic/semantic memories are retrieved concurrently.
+4. **Context Assembly**: Recalled facts are injected into working memory within the context window.
+5. **Execution**: The LLM synthesizes memory with current instructions and reports execution status.
+6. **Consolidation**: The new interaction is encrypted, persisted to long-term memory, and short-term state is checkpointed.
+
 ---
 
-## 3. Memory-as-a-Service (MaaS) Landscape [GOOD-TO-HAVE] 🟡
+## 3. Memory-as-a-Service (MaaS) Landscape 🟡
 
 As enterprise agent adoption accelerated between 2024 and 2026, building custom memory subsystems from raw vector databases became an anti-pattern. A new category emerged: **Memory-as-a-Service (MaaS)**.
 
@@ -194,12 +225,18 @@ Let's evaluate the four dominant architectures in production today.
 
 ```mermaid
 flowchart LR
-    subgraph Vendors["MEMORY ARCHITECTURE PARADIGMS"]
-        M0["Mem0\n• Adaptive Extraction\n• User/Session/Agent scopes\n• Hybrid Vector+KeyValue"]
-        ZP["Zep / Graphiti\n• Dynamic Temporal Knowledge Graph\n• Bi-temporal edge tracking\n• Sub-graph BFS retrieval"]
-        LG["LangGraph Store\n• Namespaced Key-Value/Doc Store\n• Embedded in graph checkpoints\n• Deep state machine coupling"]
-        VX["Google Vertex AI Memory Bank\n• Enterprise Managed Agent Engine\n• Google IAM & VPC Service Controls\n• Native Gemini Context Caching"]
+    subgraph Vendors["🏢 MEMORY ARCHITECTURE PARADIGMS"]
+        M0["🧠 Mem0<br/>• Adaptive Extraction<br/>• User/Session/Agent scopes<br/>• Hybrid Vector+KeyValue"]
+        ZP["🕸️ Zep / Graphiti<br/>• Dynamic Temporal Knowledge Graph<br/>• Bi-temporal edge tracking<br/>• Sub-graph BFS retrieval"]
+        LG["📦 LangGraph Store<br/>• Namespaced Key-Value/Doc Store<br/>• Embedded in graph checkpoints<br/>• Deep state machine coupling"]
+        VX["🌐 Google Vertex AI Memory Bank<br/>• Enterprise Managed Agent Engine<br/>• Google IAM & VPC Service Controls<br/>• Native Gemini Context Caching"]
     end
+
+    style Vendors fill:none,stroke:#2563eb,stroke-width:2px
+    style M0 stroke:#2563eb,stroke-width:1px,fill:none
+    style ZP stroke:#7c3aed,stroke-width:1px,fill:none
+    style LG stroke:#16a34a,stroke-width:1px,fill:none
+    style VX stroke:#d97706,stroke-width:1px,fill:none
 ```
 
 #### Deep Dive into the Solutions
@@ -235,7 +272,7 @@ flowchart LR
 
 ---
 
-## 4. Advanced Memory Retrieval Patterns [MUST-HAVE] 🔴
+## 4. Advanced Memory Retrieval Patterns 🔴
 
 Shoving raw semantic similarity into production is how agents fail. Here are the five production-grade memory retrieval patterns required for mission-critical enterprise systems.
 
@@ -252,17 +289,30 @@ Where:
 - `Δt` is the elapsed time since the memory was last accessed or updated.
 - `S` is Memory Stability (the strength or importance of the memory).
 
-In agent architecture, a memory created 10 minutes ago should almost always have higher priority than an identical semantic memory recorded 6 months ago, **unless** the older memory has massive structural importance (e.g., an allergy or root password).
+In agent systems, recent memories usually outrank older ones. However, high-importance memories (such as passwords or critical safety rules) remain durable despite decay.
 
 ```mermaid
 flowchart LR
-    Mem[("Memory Ingestion")] --> Score["Score Calculator"]
-    Score --> Vec["Vector Semantic Similarity: S_sim\n(0.0 to 1.0)"]
-    Score --> Imp["Importance Score: S_imp\n(1.0 to 10.0)"]
-    Score --> Dec["Temporal Decay: e^(-λ * Δt)\n(0.0 to 1.0)"]
+    Mem[("📥 Memory Ingestion")] --> Score["⚖️ Score Calculator"]
+    Score --> Vec["📐 Vector Semantic Similarity: S_sim<br/>(0.0 to 1.0)"]
+    Score --> Imp["🌟 Importance Score: S_imp<br/>(1.0 to 10.0)"]
+    Score --> Dec["⏳ Temporal Decay: e^(-λ * Δt)<br/>(0.0 to 1.0)"]
     
-    Vec & Imp & Dec --> Unified["Final Retrieval Score:\nScore = (w_sim * S_sim) + (w_imp * S_imp_norm) + (w_rec * S_decay)"]
+    Vec & Imp & Dec --> Unified["🎯 Final Retrieval Score<br/>Score = (w_sim * S_sim) + (w_imp * S_imp_norm) + (w_rec * S_decay)"]
+
+    style Mem stroke:#2563eb,stroke-width:2px,fill:none
+    style Score stroke:#2563eb,stroke-width:1px,fill:none
+    style Vec stroke:#7c3aed,stroke-width:1px,fill:none
+    style Imp stroke:#d97706,stroke-width:1px,fill:none
+    style Dec stroke:#64748b,stroke-width:1px,fill:none
+    style Unified stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+**Walkthrough:**
+1. **Memory Ingestion**: Candidate memory node enters the scoring pipeline.
+2. **Multi-Signal Computation**: Engine computes semantic similarity, importance, and elapsed time.
+3. **Temporal Decay**: The Ebbinghaus exponential decay formula calculates recency retention.
+4. **Weighted Fusion**: Signals combine into a single composite score for candidate ranking.
 
 The mathematical production formula for composite memory ranking:
 
@@ -313,19 +363,29 @@ Where:
 
 ```mermaid
 flowchart TD
-    Query["User Query: 'Fix error ERR_K8S_AUTH in billing cluster'"] --> Split
+    Query["👤 User Query: 'Fix error ERR_K8S_AUTH in billing cluster'"] --> Split{"🔀 Query Dispatch"}
     
-    subgraph Search["HYBRID RETRIEVAL PIPELINE"]
-        Split --> Dense["Dense Vector Search\n(Concepts: Kubernetes auth failure)"]
-        Split --> Sparse["Sparse BM25 Search\n(Exact Token: 'ERR_K8S_AUTH')"]
+    subgraph Search["🔍 HYBRID RETRIEVAL PIPELINE"]
+        Split --> Dense["📐 Dense Vector Search<br/>Concepts: Kubernetes auth failure"]
+        Split --> Sparse["📑 Sparse BM25 Search<br/>Exact Token: 'ERR_K8S_AUTH'"]
         
-        Dense --> RankD["Dense Ranking List\n1. Memory #12 (score 0.89)\n2. Memory #45 (score 0.84)\n3. Memory #03 (score 0.79)"]
-        Sparse --> RankS["Sparse Ranking List\n1. Memory #03 (score 18.2)\n2. Memory #99 (score 12.1)\n3. Memory #12 (score 9.4)"]
+        Dense --> RankD["📊 Dense Ranking List<br/>1. Memory #12 (0.89)<br/>2. Memory #45 (0.84)<br/>3. Memory #03 (0.79)"]
+        Sparse --> RankS["📊 Sparse Ranking List<br/>1. Memory #03 (18.2)<br/>2. Memory #99 (12.1)<br/>3. Memory #12 (9.4)"]
         
-        RankD & RankS --> RRF["Reciprocal Rank Fusion (k=60)\nRRF(d) = Σ 1 / (60 + rank_i)"]
+        RankD & RankS --> RRF["⚖️ Reciprocal Rank Fusion k=60<br/>RRF(d) = Σ 1 / (60 + rank_i)"]
     end
     
-    RRF --> TopM["Top-Ranked Memory #03\n(Merged conceptual meaning + exact error code match)"]
+    RRF --> TopM["🎯 Top-Ranked Memory #03<br/>Merged conceptual meaning + exact error code match"]
+
+    style Search fill:none,stroke:#2563eb,stroke-width:2px
+    style Query stroke:#64748b,stroke-width:1px,fill:none
+    style Split stroke:#2563eb,stroke-width:1px,fill:none
+    style Dense stroke:#7c3aed,stroke-width:1px,fill:none
+    style Sparse stroke:#d97706,stroke-width:1px,fill:none
+    style RankD stroke:#7c3aed,stroke-width:1px,fill:none
+    style RankS stroke:#d97706,stroke-width:1px,fill:none
+    style RRF stroke:#2563eb,stroke-width:2px,fill:none
+    style TopM stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Pattern 4: HippoRAG — Biomimetic Associative Memory Graphs
@@ -339,22 +399,32 @@ Traditional RAG retrieves isolated chunks. But human memory does not work like a
 
 ```mermaid
 flowchart LR
-    subgraph HIPPORAG["HIPPORAG ASSOCIATIVE MEMORY ACTIVATION"]
-        Q["Query: 'Who solved the caching bug in Project Titan?'"] --> Seed["Seed Entity Recognition:\n['Project Titan', 'Caching Bug']"]
-        Seed --> Graph["Knowledge Graph Personalized PageRank (PPR)"]
+    subgraph HIPPORAG["🧠 HIPPORAG ASSOCIATIVE MEMORY ACTIVATION"]
+        Q["👤 Query: 'Who solved the caching bug in Project Titan?'"] --> Seed["🌱 Seed Entity Recognition<br/>['Project Titan', 'Caching Bug']"]
+        Seed --> Graph["🕸️ Knowledge Graph Personalized PageRank (PPR)"]
         
-        Graph --> N1["Node: Project Titan"]
-        N1 -->|repo_of| N2["Node: Service-Auth"]
-        N2 -->|encountered| N3["Node: Redis Cache Race Condition"]
-        N3 -->|fixed_by| N4["Node: Engineer Sarah"]
+        Graph --> N1["📦 Node: Project Titan"]
+        N1 -->|repo_of| N2["⚙️ Node: Service-Auth"]
+        N2 -->|encountered| N3["🐛 Node: Redis Cache Race Condition"]
+        N3 -->|fixed_by| N4["👩‍💻 Node: Engineer Sarah"]
         
-        N4 --> Result["Recall Memory: 'Sarah merged PR #402 fixing Redis TTL locks'"]
+        N4 --> Result["✅ Recall Memory<br/>Sarah merged PR #402 fixing Redis TTL locks"]
     end
+
+    style HIPPORAG fill:none,stroke:#7c3aed,stroke-width:2px
+    style Q stroke:#64748b,stroke-width:1px,fill:none
+    style Seed stroke:#2563eb,stroke-width:1px,fill:none
+    style Graph stroke:#7c3aed,stroke-width:2px,fill:none
+    style N1 stroke:#2563eb,stroke-width:1px,fill:none
+    style N2 stroke:#2563eb,stroke-width:1px,fill:none
+    style N3 stroke:#dc2626,stroke-width:1px,fill:none
+    style N4 stroke:#16a34a,stroke-width:1px,fill:none
+    style Result stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Pattern 5: Reflexion — Self-Correction Loops & Episodic Learning
 
-When an agent fails to accomplish a task (e.g., an automated coding agent writes a unit test that fails, or a SQL agent generates an invalid query syntax), standard agents simply report the error or blindly retry the same mistake.
+When an agent fails a task (such as an invalid SQL query or failing unit test), standard agents often repeat the same mistake. They lack the memory structures to learn from runtime failures.
 
 **Reflexion** introduces an **Episodic Reflection Loop**:
 1. **Actor**: Executes tool actions and observes outcomes.
@@ -366,10 +436,10 @@ When an agent fails to accomplish a task (e.g., an automated coding agent writes
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Dev as Developer / User
-    participant Agent as ReAct Coding Agent
-    participant Env as Bash / Docker Sandbox
-    participant Memory as Episodic Reflection Memory
+    actor Dev as 👤 Developer / User
+    participant Agent as 🤖 ReAct Coding Agent
+    participant Env as 🛡️ Bash / Docker Sandbox
+    participant Memory as 🧠 Episodic Reflection Memory
 
     Dev->>Agent: "Migrate database schema for table 'orders'"
     Agent->>Env: Execute SQL: ALTER TABLE orders ADD COLUMN status VARCHAR;
@@ -387,9 +457,17 @@ sequenceDiagram
     Agent-->>Dev: "Migration completed successfully using Postgres-safe types."
 ```
 
+**Walkthrough:**
+1. **Task Dispatch**: Developer requests a database migration for the orders table.
+2. **Sandbox Execution**: Agent executes schema modification syntax in the sandbox environment.
+3. **Failure Interception**: The sandbox returns a Postgres syntax error.
+4. **Self-Reflection**: Agent analyzes the error and formulates a concrete corrective reflection.
+5. **Episodic Persistence**: The critique is stored in episodic memory linked to schema migrations.
+6. **Retried Execution**: Agent retrieves the saved reflection, corrects the SQL types, and completes the migration.
+
 ---
 
-## 5. Framework Memory Implementations & Architectural Tradeoffs [MUST-HAVE] 🔴
+## 5. Framework Memory Implementations & Architectural Tradeoffs 🔴
 
 How do the major 2026 agent orchestration frameworks actually implement state and memory under the hood? Let's dissect their internal primitives.
 
@@ -406,33 +484,65 @@ LangGraph makes a clean, brilliant architectural distinction between **State Per
 
 ```mermaid
 flowchart TD
-    subgraph LangGraph["LANGGRAPH DUAL-LAYER STORAGE ENGINE"]
+    subgraph LangGraph["🔄 LANGGRAPH DUAL-LAYER STORAGE ENGINE"]
         direction TB
         
-        subgraph STM["Checkpointer (Short-Term Thread State)"]
-            CP["SqliteSaver / PostgresSaver"]
-            CP --> Thread["thread_id: 'session-abc-123'\n• Complete graph state history\n• Required for time-travel & HITL interrupts\n• Ephemeral per conversation"]
+        subgraph STM["📓 Checkpointer (Short-Term Thread State)"]
+            CP["💾 SqliteSaver / PostgresSaver"]
+            CP --> Thread["🧵 thread_id: 'session-abc-123'<br/>• Complete graph state history<br/>• Required for time-travel & HITL interrupts<br/>• Ephemeral per conversation"]
         end
         
-        subgraph LTM["BaseStore (Long-Term Shared Memory)"]
-            Store["InMemoryStore / AsyncPostgresStore"]
-            Store --> NS["Hierarchical Namespaces:\n('users', user_id, 'profile')\n('tenants', tenant_id, 'rules')\n• Shared across threads\n• Semantic search support"]
+        subgraph LTM["📚 BaseStore (Long-Term Shared Memory)"]
+            Store["🗄️ InMemoryStore / AsyncPostgresStore"]
+            Store --> NS["🗂️ Hierarchical Namespaces<br/>('users', user_id, 'profile')<br/>('tenants', tenant_id, 'rules')<br/>• Shared across threads<br/>• Semantic search support"]
         end
     end
+
+    style LangGraph fill:none,stroke:#2563eb,stroke-width:2px
+    style STM fill:none,stroke:#d97706,stroke-width:2px
+    style LTM fill:none,stroke:#16a34a,stroke-width:2px
+    style CP stroke:#d97706,stroke-width:1px,fill:none
+    style Thread stroke:#d97706,stroke-width:1px,fill:none
+    style Store stroke:#16a34a,stroke-width:1px,fill:none
+    style NS stroke:#16a34a,stroke-width:1px,fill:none
 ```
+
+**Walkthrough:**
+1. **Thread Checkpointer**: Records serialized graph snapshots per super-step within a single thread.
+2. **Time-Travel & Recovery**: Thread states allow rewinding or resuming interrupted workflows.
+3. **Namespaced BaseStore**: Organizes cross-thread memories into hierarchical namespace tuples.
+4. **Cross-Thread Recall**: Any execution thread can access shared knowledge and user preferences.
 
 - **The Checkpointer (`checkpointer=PostgresSaver(conn)`)**: Saves state snapshots at every "super-step" of the graph. It is tied to a specific `thread_id`. If execution halts for a human approval gate, the thread state is reloaded from the checkpointer.
 - **The Store (`store=AsyncPostgresStore(conn)`)**: Introduced in LangGraph v0.2+, the `BaseStore` interface lets agents write and read memories across *any* thread using tuple keys:
   ```python
-  # Writing long-term user preference from any thread
-  await store.aput(
-      namespace=("users", user_id, "preferences"),
-      key="coding_style",
-      value={"language": "Python", "strict_types": True}
-  )
+  import asyncio
 
-  # Reading it in a completely different thread 3 weeks later
-  user_pref = await store.aget(namespace=("users", user_id, "preferences"), key="coding_style")
+  async def demo_langgraph_store():
+      # Demonstrating the BaseStore asynchronous interface
+      class MockStore:
+          def __init__(self):
+              self.data = {}
+          async def aput(self, namespace, key, value):
+              self.data[(namespace, key)] = value
+          async def aget(self, namespace, key):
+              return self.data.get((namespace, key))
+
+      store = MockStore()
+      user_id = "user_123"
+
+      # Writing long-term user preference from any thread
+      await store.aput(
+          namespace=("users", user_id, "preferences"),
+          key="coding_style",
+          value={"language": "Python", "strict_types": True}
+      )
+
+      # Reading it in a completely different thread 3 weeks later
+      user_pref = await store.aget(namespace=("users", user_id, "preferences"), key="coding_style")
+      assert user_pref["language"] == "Python"
+
+  asyncio.run(demo_langgraph_store())
   ```
 
 ### OpenAI Agents SDK & Assistants Thread Storage
@@ -451,8 +561,31 @@ PydanticAI approaches memory through the lens of **software engineering type saf
 
 ```python
 from dataclasses import dataclass
-from pydantic_ai import Agent, RunContext
-import asyncpg
+
+try:
+    from pydantic_ai import Agent, RunContext
+    import asyncpg
+except ImportError:
+    class RunContext:
+        def __init__(self, deps):
+            self.deps = deps
+    class Agent:
+        def __init__(self, *args, **kwargs):
+            pass
+        def tool(self, func):
+            return func
+    class MockPool:
+        def acquire(self):
+            class MockConnContext:
+                async def __aenter__(self):
+                    class MockConn:
+                        async def fetchrow(self, query, *args):
+                            return {"value": "Dark mode"}
+                    return MockConn()
+                async def __aexit__(self, *exc):
+                    pass
+            return MockConnContext()
+    asyncpg = type("asyncpg", (), {"Pool": MockPool})
 
 @dataclass
 class AgentDependencies:
@@ -486,7 +619,7 @@ async def recall_user_preference(ctx: RunContext[AgentDependencies], preference_
 
 ---
 
-## 6. Memory Governance, Privacy & GDPR Compliance [MUST-HAVE] 🔴
+## 6. Memory Governance, Privacy & GDPR Compliance 🔴
 
 If you store user facts in a database, your system is legally subject to international privacy frameworks, including the **European Union General Data Protection Regulation (GDPR)** and the **California Consumer Privacy Act (CCPA)**.
 
@@ -510,36 +643,37 @@ The cryptographic solution to the Vector GDPR Dilemma is **Crypto-Shredding** (K
 
 ```mermaid
 flowchart TD
-    subgraph INGESTION["1. INGESTION & STORAGE"]
-        RawMemory["Raw Memory Payload:\n'User has asthma and uses an Albuterol inhaler'"]
-        KMS["Cloud KMS / Vault\nUser Encryption Key: K_user99"]
-        
-        RawMemory --> Encrypt["AES-256-GCM Encryption"]
-        KMS --> Encrypt
-        
-        Encrypt --> Ciphertext["Encrypted Ciphertext:\n'8f9c1b7a...3e01'"]
-        Ciphertext --> DB[("Durable Memory Store\nPostgres / NoSQL")]
-        
-        RawMemory --> BlindEmbed["Non-Reversible Hash / Ephemeral Embedding"]
-        BlindEmbed --> VecDB[("Vector DB\nNamespace: tenant_id")]
-    end
-
-    subgraph DELETION["2. GDPR RIGHT-TO-BE-FORGOTTEN (CRYPTO-SHREDDING)"]
-        GDPR["User 99 Clicks\n'Delete All My Data'"] --> DeleteKey["DESTROY KEY IN KMS:\nDELETE K_user99"]
-        DeleteKey --> Result["IMMEDIATE CRYPTOGRAPHIC ERASURE"]
-        
-        Result --> DB2["Ciphertext '8f9c1b7a...' is now permanent mathematical garbage.\nZero decryption possible even with full DB access."]
-        Result --> Vec2["Vector embeddings are rendered orphaned & undecipherable.\nZero index rebuild required!"]
-    end
+    Raw["📄 Raw Memory Payload"] --> Enc["🔒 AES-256-GCM Encrypt"]
+    KMS["🔑 Cloud KMS Key K_user"] --> Enc
+    Enc --> Cipher[("🗄️ Encrypted Store (Postgres)")]
+    Raw --> Vec[("📐 Vector DB (Embeddings Only)")]
     
-    style DELETION fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px
+    GDPR["⚖️ GDPR Deletion Request"] --> Destroy["💥 Destroy Key K_user in KMS"]
+    Destroy --> Shred["⚡ Instant Crypto-Shredding<br/>Ciphertext Becomes Noise"]
+    Destroy -.-> Vec
+
+    style Raw stroke:#64748b,stroke-width:1px,fill:none
+    style Enc stroke:#2563eb,stroke-width:2px,fill:none
+    style KMS stroke:#d97706,stroke-width:2px,fill:none
+    style Cipher stroke:#16a34a,stroke-width:2px,fill:none
+    style Vec stroke:#7c3aed,stroke-width:2px,fill:none
+    style GDPR stroke:#dc2626,stroke-width:2px,fill:none
+    style Destroy stroke:#dc2626,stroke-width:2px,fill:none
+    style Shred stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
+**Walkthrough:**
+1. **Raw Ingestion**: The agent runtime receives personal memory payloads.
+2. **KMS Encryption**: Data is encrypted using a tenant- or user-specific KMS key (`K_user`).
+3. **Decoupled Persistence**: Encrypted text is stored in Postgres, while non-reversible embeddings reside in the vector store.
+4. **GDPR Erasure Trigger**: An Article 17 deletion request initiates the destruction of `K_user` in the KMS.
+5. **Cryptographic Erasure**: Without the key, stored ciphertext instantly becomes mathematical noise with zero vector re-indexing overhead.
+
 #### How Crypto-Shredding Works in 4 Steps:
-1. **Per-Subject Key Generation**: Every user (or organization) has an individual symmetric encryption key (e.g., AES-256-GCM) managed by a Key Management Service (AWS KMS, Azure Key Vault, Google Cloud KMS, or HashiCorp Vault).
+1. **Per-Subject Key Generation**: Every user has an individual symmetric key (such as AES-256-GCM). A Key Management Service (KMS) manages and rotates this key.
 2. **Payload Encryption**: Before any memory text is written to persistent storage, it is encrypted using the user's specific key.
 3. **Vector Decoupling**: The vector index only stores the mathematical vector representation alongside a reference pointer (`memory_id`). The raw text is *never* stored unencrypted in the vector database metadata.
-4. **Instant Shredding**: When an Article 17 erasure request arrives, you simply delete the user's key from the KMS. Instantly, all historical memory payloads across all vector shards, backups, cold-storage archives, and database replicas become **permanently, mathematically unrecoverable noise**. Compliance is achieved in **50 milliseconds**.
+4. **Instant Shredding**: When an Article 17 erasure request arrives, you simply delete the user's key from the KMS. Instantly, all historical memory payloads become permanently unrecoverable mathematical noise in under 50 milliseconds.
 
 ### Consent-Based Memory Capture & Granular Categorization
 
@@ -547,18 +681,32 @@ Never store user memories silently without explicit governance policies. Product
 
 ```mermaid
 flowchart TD
-    Raw["Raw User Statement in Dialogue"] --> Classifier{"Classifier Agent:\nWhat category is this?"}
+    Raw["🗣️ Raw User Statement in Dialogue"] --> Classifier{"🤖 Classifier Agent<br/>What category is this?"}
     
-    Classifier -->|Category: PII_FINANCIAL| C1["Check Consent: ALLOW_FINANCIAL_STORAGE?"]
-    Classifier -->|Category: SYSTEM_PREF| C2["Check Consent: ALLOW_PREFERENCES?"]
-    Classifier -->|Category: PII_HEALTH| C3["Check Consent: ALLOW_HEALTH_STORAGE?"]
+    Classifier -->|Category: PII_FINANCIAL| C1["💳 Check Consent<br/>ALLOW_FINANCIAL_STORAGE?"]
+    Classifier -->|Category: SYSTEM_PREF| C2["⚙️ Check Consent<br/>ALLOW_PREFERENCES?"]
+    Classifier -->|Category: PII_HEALTH| C3["🏥 Check Consent<br/>ALLOW_HEALTH_STORAGE?"]
     
-    C1 -->|Denied| Drop["DROP FACT & LOG AUDIT EVENT"]
-    C1 -->|Allowed| Encrypt["Encrypt with K_user & Store with TTL"]
+    C1 -->|Denied| Drop["🗑️ DROP FACT & LOG AUDIT EVENT"]
+    C1 -->|Allowed| Encrypt["🔒 Encrypt with K_user & Store with TTL"]
     
     C2 -->|Allowed| Encrypt
     C3 -->|Denied| Drop
+
+    style Raw stroke:#64748b,stroke-width:1px,fill:none
+    style Classifier stroke:#2563eb,stroke-width:2px,fill:none
+    style C1 stroke:#d97706,stroke-width:1px,fill:none
+    style C2 stroke:#d97706,stroke-width:1px,fill:none
+    style C3 stroke:#d97706,stroke-width:1px,fill:none
+    style Drop stroke:#dc2626,stroke-width:2px,fill:none
+    style Encrypt stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+**Walkthrough:**
+1. **Fact Extraction**: User dialogue turn arrives at the memory ingestion layer.
+2. **Category Classification**: A classifier model categorizes statements into PII, financial, or system preferences.
+3. **Consent Evaluation**: System looks up tenant and user consent flags for the classified category.
+4. **Enforcement Decision**: Disallowed memories are dropped and audited; allowed memories are encrypted with `K_user` and saved.
 
 ### Tamper-Evident Audit Logging
 
@@ -581,7 +729,7 @@ For regulated compliance (SOC2, HIPAA, ISO 27001), every memory lifecycle event 
 
 ---
 
-## 7. Cross-Session Memory & Dynamic Knowledge Graphs [GOOD-TO-HAVE] 🟡
+## 7. Cross-Session Memory & Dynamic Knowledge Graphs 🟡
 
 One of the hardest problems in agent systems is maintaining coherent intelligence across 100 sessions spanning 6 months.
 
@@ -596,16 +744,27 @@ If your agent stores raw chat chunks, it has no structured grasp of the organiza
 
 ```mermaid
 graph TD
-    User["User (Deepak)"] -->|WORKS_ON| Proj["Project Apollo"]
-    User -->|REPORTED_TO {until: '2026-05'}| Sarah["Sarah"]
-    Sarah -->|ROLE| VP["VP of Engineering"]
-    User -->|REPORTS_TO {since: '2026-05', status: 'ACTIVE'}| Dave["Dave"]
-    Dave -->|ROLE| Lead["Interim Tech Lead"]
-    Proj -->|ASSET_REQUEST| GPU["H100 GPU Cluster"]
+    User["👤 User (Deepak)"] -->|WORKS_ON| Proj["🚀 Project Apollo"]
+    User -->|REPORTED_TO until: '2026-05'| Sarah["👩‍💼 Sarah"]
+    Sarah -->|ROLE| VP["👔 VP of Engineering"]
+    User -->|REPORTS_TO since: '2026-05', status: 'ACTIVE'| Dave["👨‍💼 Dave"]
+    Dave -->|ROLE| Lead["🛠️ Interim Tech Lead"]
+    Proj -->|ASSET_REQUEST| GPU["⚡ H100 GPU Cluster"]
 
-    style User fill:#e1f5fe,stroke:#0288d1
-    style Dave fill:#e8f5e9,stroke:#388e3c
+    style User stroke:#0288d1,stroke-width:2px,fill:none
+    style Dave stroke:#388e3c,stroke-width:2px,fill:none
+    style Sarah stroke:#64748b,stroke-width:1px,fill:none
+    style VP stroke:#64748b,stroke-width:1px,fill:none
+    style Lead stroke:#64748b,stroke-width:1px,fill:none
+    style Proj stroke:#7c3aed,stroke-width:1px,fill:none
+    style GPU stroke:#d97706,stroke-width:1px,fill:none
 ```
+
+**Walkthrough:**
+1. **Core Identity**: The user node represents the continuous agent-user relationship.
+2. **Project Linkage**: User relationships map work items like Project Apollo and GPU hardware requests.
+3. **Historical Predicate**: Former managerial relationship with Sarah is marked with an expiration date.
+4. **Active Predicate**: Active reporting edge to Dave represents the valid current organizational state.
 
 ### The "Zombie Fact" Problem: Predicate Invalidation
 
@@ -631,7 +790,7 @@ When a new fact contradicts an existing predicate:
 
 ---
 
-## 8. Production Anti-Patterns & Architectural Traps [MUST-HAVE] 🔴
+## 8. Production Anti-Patterns & Architectural Traps 🔴
 
 Before writing production code, let's examine the three most common architectural blunders junior and intermediate engineers make when building agent memory.
 
@@ -643,6 +802,14 @@ Before writing production code, let's examine the three most common architectura
 # Token usage grows quadratically: Turn 1 (500 tokens), Turn 50 (80,000 tokens)
 # Latency skyrockets from 400ms to 9,000ms.
 # Total cost per session: $4.50!
+
+class MockLLM:
+    def invoke(self, messages):
+        class Resp:
+            content = "OK"
+        return Resp()
+
+llm = MockLLM()
 
 def run_chat_turn_bad(user_input: str, conversation_history: list):
     conversation_history.append({"role": "user", "content": user_input})
@@ -664,8 +831,8 @@ async def run_chat_turn_production(
     user_input: str, 
     thread_id: str, 
     user_id: str,
-    checkpointer: Checkpointer,
-    memory_store: EnterpriseMemoryEngine
+    checkpointer,
+    memory_store
 ):
     # 1. Fetch strictly last K turns from local checkpointer (bounded working memory)
     recent_turns = await checkpointer.get_recent_messages(thread_id, limit=6)
@@ -699,6 +866,15 @@ async def run_chat_turn_production(
 ```python
 # ❌ ANTI-PATTERN: Pure vector cosine similarity
 # Retrieves obsolete facts from 2 years ago simply because words match closely.
+
+class MockVectorDB:
+    def query(self, query_embeddings, n_results=5):
+        return [{"id": "mem_1", "text": "Old fact from 2022"}]
+
+vector_db = MockVectorDB()
+embed = lambda q: [0.1, 0.2, 0.3]
+query = "What is our deployment procedure?"
+
 results = vector_db.query(
     query_embeddings=embed(query),
     n_results=5
@@ -709,6 +885,8 @@ results = vector_db.query(
 ```python
 # ✅ PRODUCTION PATTERN: Multi-signal ranking with temporal decay
 # Combines semantic relevance, mathematical forgetting curve, and importance tier.
+import time
+import math
 
 def calculate_composite_score(
     cosine_sim: float, 
@@ -734,6 +912,12 @@ def calculate_composite_score(
 ```python
 # ❌ ANTI-PATTERN: Querying a shared index without strict tenant partitioning
 # A bug or missing parameter causes cross-customer data leakage!
+
+class MockVectorStore:
+    def similarity_search(self, query: str):
+        return ["Leaked record from another tenant"]
+
+vector_store = MockVectorStore()
 docs = vector_store.similarity_search("What is my secret API key?")
 ```
 
@@ -764,7 +948,7 @@ class PartitionedMemoryStore:
 
 ---
 
-## 9. Production Reference Implementations [MUST-HAVE] 🔴
+## 9. Production Reference Implementations 🔴
 
 Here are battle-tested, fully functional reference implementations in both **Python** and **C# (.NET 8)** demonstrating composite memory scoring, temporal decay, and crypto-shredding.
 
@@ -1296,7 +1480,7 @@ namespace Enterprise.Agentic.Memory
 
 ---
 
-## 10. Hands-On Lab Challenge: Build an Enterprise Memory Agent [MUST-HAVE] 🔴
+## 10. Hands-On Lab Challenge: Build an Enterprise Memory Agent 🔴
 
 ### The Challenge: Project Mnemosyne
 
@@ -1304,19 +1488,28 @@ You are tasked with building a stateful, GDPR-compliant Technical Support & Arch
 
 ```mermaid
 flowchart TD
-    subgraph MNEMOSYNE["PROJECT MNEMOSYNE ARCHITECTURE"]
-        User["Client User / API"] --> Router["Agent Gateway (Auth & Tenant Validation)"]
+    subgraph MNEMOSYNE["🏛️ PROJECT MNEMOSYNE ARCHITECTURE"]
+        User["👤 Client User / API"] --> Router["🛡️ Agent Gateway (Auth & Tenant Validation)"]
         
-        Router --> MemRecall["Memory Recall Stage\n1. Temporal Decay (7-day half-life)\n2. Importance Weighting\n3. Hard Tenant Filter"]
+        Router --> MemRecall["🧠 Memory Recall Stage<br/>1. Temporal Decay (7-day half-life)<br/>2. Importance Weighting<br/>3. Hard Tenant Filter"]
         
-        MemRecall --> Reasoner["LLM Reasoning Node (Gemini 1.5/2.0 or Claude 3.5)\n• Answers technical support queries\n• Employs recalled user preferences"]
+        MemRecall --> Reasoner["🤖 LLM Reasoning Node (Gemini / Claude)<br/>• Answers technical support queries<br/>• Employs recalled user preferences"]
         
-        Reasoner --> Consolidator{"Memory Extraction Gate:\nDid turn reveal new facts or retractions?"}
+        Reasoner --> Consolidator{"⚖️ Memory Extraction Gate<br/>Did turn reveal new facts or retractions?"}
         
-        Consolidator -->|Yes| CryptoWriter["Crypto-Writer Engine\n• Encrypts payload with K_user\n• Invalidates contradictory old facts\n• Checkpoints to durable store"]
-        Consolidator -->|No| Output["Return Assistant Response"]
+        Consolidator -->|Yes| CryptoWriter["🔒 Crypto-Writer Engine<br/>• Encrypts payload with K_user<br/>• Invalidates contradictory old facts<br/>• Checkpoints to durable store"]
+        Consolidator -->|No| Output["📤 Return Assistant Response"]
         CryptoWriter --> Output
     end
+
+    style MNEMOSYNE fill:none,stroke:#2563eb,stroke-width:2px
+    style User stroke:#64748b,stroke-width:1px,fill:none
+    style Router stroke:#2563eb,stroke-width:2px,fill:none
+    style MemRecall stroke:#7c3aed,stroke-width:2px,fill:none
+    style Reasoner stroke:#7c3aed,stroke-width:2px,fill:none
+    style Consolidator stroke:#2563eb,stroke-width:2px,fill:none
+    style CryptoWriter stroke:#16a34a,stroke-width:2px,fill:none
+    style Output stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Lab Requirements & Acceptance Criteria

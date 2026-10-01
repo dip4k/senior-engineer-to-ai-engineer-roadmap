@@ -209,19 +209,19 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph ScatterGather ["Strategy A: Document / Tenant Sharding (Scatter-Gather)"]
-        Q1["Query Vector"] --> S1["Shard 1 (Random 20M)"]
-        Q1 --> S2["Shard 2 (Random 20M)"]
-        Q1 --> S50["Shard 50 (Random 20M)"]
-        S1 --> Agg["Coordinator Aggregator & Merge Sort"]
+    subgraph ScatterGather ["Strategy A: Scatter-Gather"]
+        Q1["🔍 Query Vector"] --> S1["💾 Shard 1 (Random 20M)"]
+        Q1 --> S2["💾 Shard 2 (Random 20M)"]
+        Q1 --> S50["💾 Shard 50 (Random 20M)"]
+        S1 --> Agg["⚖️ Coordinator Aggregator and Sort"]
         S2 --> Agg
         S50 --> Agg
     end
 
-    subgraph CentroidRouting ["Strategy B: Semantic Clustering (Centroid Routing)"]
-        Q2["Query Vector"] --> Router["Centroid Classifier (K-Means)"]
-        Router -->|"Direct Route"| ShardA["Shard 3 (Nearest Centroid)"]
-        Router -->|"Direct Route"| ShardB["Shard 4 (2nd Nearest)"]
+    subgraph CentroidRouting ["Strategy B: Centroid Routing"]
+        Q2["🔍 Query Vector"] --> Router["🔀 Centroid Classifier (K-Means)"]
+        Router -->|"Direct Route"| ShardA["💾 Shard 3 (Nearest Centroid)"]
+        Router -->|"Direct Route"| ShardB["💾 Shard 4 (2nd Nearest)"]
     end
 ```
 
@@ -568,18 +568,18 @@ Here is the exact framework to use when the hiring manager asks:
 
 ```mermaid
 flowchart TD
-    subgraph TraditionalAI ["What Most ML/Python Candidates Build"]
-        T1["Single-threaded Python while loops"]
-        T2["In-memory message lists (Lost on crash)"]
-        T3["Unconstrained API calls (Cascading 429s)"]
-        T4["Naive vector similarity without filter awareness"]
+    subgraph TraditionalAI ["Standard ML Prototype Baseline"]
+        T1["⚠️ Single-threaded Python while loops"]
+        T2["⚠️ In-memory message lists (Lost on crash)"]
+        T3["⚠️ Unconstrained API calls (Cascading 429s)"]
+        T4["⚠️ Naive vector similarity without filters"]
     end
 
-    subgraph SystemsEngineer ["What YOU Bring as an AI Platform Architect"]
-        S1["Durable Event-Sourcing & WAL (Crash-resilient agents)"]
-        S2["Asynchronous High-Throughput Gateways (Kestrel / YARP)"]
-        S3["Zero-Trust MCP Sandboxes with Idempotency Keys"]
-        S4["Deep Storage Engine Understanding (HNSW, DiskANN, ACORN)"]
+    subgraph SystemsEngineer ["AI Platform Architect Architecture"]
+        S1["🛡️ Durable Event-Sourcing and WAL (Crash-resilient)"]
+        S2["⚡ High-Throughput Gateways (Kestrel / YARP)"]
+        S3["🔒 Zero-Trust MCP Sandboxes with Idempotency"]
+        S4["💾 Storage Engine Architecture (HNSW, DiskANN)"]
     end
 
     TraditionalAI -. "The Production Gap" .-> SystemsEngineer

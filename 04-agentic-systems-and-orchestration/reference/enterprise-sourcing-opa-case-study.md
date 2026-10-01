@@ -28,29 +28,24 @@ Production enterprise sourcing systems structure agent capabilities into three s
 
 ```mermaid
 flowchart TD
-    classDef ingress fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef triad fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef boundary fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef exec fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    subgraph Ingress["PROCUREMENT INGRESS"]
-        Req["Unstructured Purchase Requisition / RFP Brief / Email"]:::ingress
+    subgraph Ingress["📥 PROCUREMENT INGRESS"]
+        Req["📄 Unstructured Requisition / RFP Brief / Email"]
     end
 
-    subgraph CapabilityTriad["THE SOURCING CAPABILITY TRIAD"]
-        Intake["1. INTAKE ENGINE\n• Multi-variable entity extraction\n• Category taxonomies (UNSPSC)\n• Urgency & budget validation"]:::triad
-        Compare["2. COMPARE ENGINE\n• Multi-vendor quote normalization\n• Compliance matrix scoring\n• MCDA Pareto tradeoff ranking"]:::triad
-        SourceIQ["3. SOURCEIQ ENGINE\n• Historical ERP spend cross-check\n• Maverick spend detection\n• Contract anomaly & price creep"]:::triad
+    subgraph CapabilityTriad["⚙️ THE SOURCING CAPABILITY TRIAD"]
+        Intake["1. 📥 INTAKE ENGINE<br/>• Entity extraction<br/>• UNSPSC category taxonomy<br/>• Budget validation"]
+        Compare["2. ⚖️ COMPARE ENGINE<br/>• Multi-vendor quote normalization<br/>• Compliance scoring<br/>• Pareto tradeoff ranking"]
+        SourceIQ["3. 📊 SOURCEIQ ENGINE<br/>• ERP spend cross-check<br/>• Maverick spend detection<br/>• Contract price creep"]
     end
 
-    subgraph DeterministicBoundary["DETERMINISTIC RULE ENGINE (OPA / DMN)"]
-        DMN["DMN Decision Table / Rego Engine\n• DOA Authority Check ($ Thresholds)\n• Sanctions & Preferred Vendor Rules\n• Mandatory Approval Route Matrix"]:::boundary
+    subgraph DeterministicBoundary["🛡️ DETERMINISTIC RULE ENGINE (OPA / DMN)"]
+        DMN["📐 DMN Decision Table / Rego Engine<br/>• DOA Authority Check ($ Thresholds)<br/>• Sanctions & Preferred Vendor Rules<br/>• Approval Route Matrix"]
     end
 
-    subgraph ExecutionPlane["AGENT EXECUTION & HITL"]
-        Agent["Bounded Sourcing Specialist Agent\n(Drafts RFP, Negotiates, Synthesizes)"]:::exec
-        HITL["Human Buyer / VP Approval Gate"]:::exec
-        ERP["ERP System Commit (SAP / Coupa)"]:::exec
+    subgraph ExecutionPlane["🚀 AGENT EXECUTION & HITL"]
+        Agent["🤖 Bounded Sourcing Specialist Agent<br/>Drafts RFP, Negotiates, Synthesizes"]
+        HITL["👤 Human Buyer / VP Approval Gate"]
+        ERP[("🗄️ ERP System Commit (SAP / Coupa)")]
     end
 
     Ingress --> Intake
@@ -60,6 +55,19 @@ flowchart TD
     SourceIQ --> Agent
     Agent --> HITL
     HITL --> ERP
+
+    style Ingress fill:none,stroke:#64748b,stroke-width:2px
+    style CapabilityTriad fill:none,stroke:#2563eb,stroke-width:2px
+    style DeterministicBoundary fill:none,stroke:#dc2626,stroke-width:2px
+    style ExecutionPlane fill:none,stroke:#16a34a,stroke-width:2px
+    style Req stroke:#64748b,stroke-width:1px,fill:none
+    style Intake stroke:#2563eb,stroke-width:1px,fill:none
+    style Compare stroke:#2563eb,stroke-width:1px,fill:none
+    style SourceIQ stroke:#2563eb,stroke-width:1px,fill:none
+    style DMN stroke:#dc2626,stroke-width:2px,fill:none
+    style Agent stroke:#16a34a,stroke-width:1px,fill:none
+    style HITL stroke:#d97706,stroke-width:2px,fill:none
+    style ERP stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Prose Diagram Walkthrough: The Sourcing Capability Triad
@@ -78,21 +86,19 @@ flowchart TD
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Buyer as Requester / Buyer
-    participant Intake as Intake Agent (LLM)
-    participant Engine as Deterministic Rule Engine (OPA / DMN)
-    participant Table as Corporate DOA Decision Table
-    participant Agent as Sourcing Specialist Agent (LLM)
-    participant Gate as HITL Approval Workflow
+    actor Buyer as 👤 Requester / Buyer
+    participant Intake as 🤖 Intake Agent (LLM)
+    participant Engine as 🛡️ Deterministic Rule Engine (OPA & DOA Table)
+    participant Agent as 🤖 Sourcing Specialist Agent (LLM)
+    participant Gate as ⚖️ HITL Approval Workflow
 
     Buyer->>Intake: Submits SOW & Budget Request ($180,000)
     Intake->>Intake: Extracts Structured Requisition DTO
     Intake->>Engine: EvaluatePolicy(RequisitionDTO)
     
     activate Engine
-    Engine->>Table: Query Delegation of Authority Matrix
-    Note over Engine,Table: Evaluates exact rules:<br/>• Spend >= $100k -> VP Approval<br/>• Data=PII -> CISO Approval<br/>• Country Sanction Check
-    Engine-->>Intake: Return PolicyEnvelope (RequiredApprovers, MaxBudget, PolicyInvariants)
+    Note over Engine: Evaluates exact rules:<br/>• Spend >= $100k -> VP Approval<br/>• Data=PII -> CISO Approval<br/>• Country Sanction Check
+    Engine-->>Intake: Return PolicyEnvelope (RequiredApprovers, MaxBudget)
     deactivate Engine
 
     Intake->>Agent: Dispatch Task + Immutable PolicyEnvelope

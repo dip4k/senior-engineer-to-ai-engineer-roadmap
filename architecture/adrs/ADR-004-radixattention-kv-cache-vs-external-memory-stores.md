@@ -29,16 +29,16 @@ External retrieval suffers from retrieval blind spots (missing nuances from 5 tu
 
 ```mermaid
 flowchart TD
-    Turn["User Turn N"] --> Pre["Prefix Integrity Guard"]
-    Pre --> Cache{"Is Turn In-Session?<br>(< 20 Turns & < 30k Tokens)"}
+    Turn["👤 User Turn N"] --> Pre["🛡️ Prefix Integrity Guard"]
+    Pre --> Cache{"⚖️ Is Turn In-Session?<br>(< 20 Turns and < 30k Tokens)"}
     
-    Cache -->|"Yes: Fast In-Memory"| Radix["RadixAttention KV-Cache<br>(SGLang / vLLM Shared Prefix Tree)<br>• Latency: ~50ms TTFT<br>• Cost: 80% Prefill Discount"]
+    Cache -->|"Yes: Fast In-Memory"| Radix["⚡ RadixAttention KV-Cache<br>(SGLang / vLLM Shared Prefix Tree)<br>• Latency: ~50ms TTFT<br>• Cost: 80% Prefill Discount"]
     
-    Cache -->|"No: Cross-Session or Archived"| Ext["External Memory Store<br>(Postgres pgvector with Ebbinghaus Decay)<br>• Top-5 Salient Episodic Memories<br>• GDPR Crypto-Shredding Ready"]
+    Cache -->|"No: Cross-Session or Archived"| Ext["💾 External Memory Store<br>(Postgres pgvector with Ebbinghaus Decay)<br>• Top-5 Salient Episodic Memories<br>• GDPR Crypto-Shredding Ready"]
     
-    Radix --> Assemble["Context Assembler"]
+    Radix --> Assemble["🧩 Context Assembler"]
     Ext --> Assemble
-    Assemble --> Inference["Inference Forward Pass"]
+    Assemble --> Inference["🚀 Inference Forward Pass"]
 ```
 
 ---

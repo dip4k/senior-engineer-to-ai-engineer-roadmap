@@ -21,30 +21,30 @@ To maintain 99.95% application availability and predictable cost ceilings, enter
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer["1. Client Ingress & Quota Enforcement"]
-        App["Internal Enterprise Apps<br>(Web / Microservices / Batch)"] --> Gateway["Enterprise AI Gateway / Client SDK"]
-        Gateway --> Quota{"Tenant Token Bucket<br>(Redis Atomic Lua Script)"}
-        Quota -- "Limit Exceeded" --> Err429["HTTP 429 (Retry-After Header)"]
+    subgraph ClientLayer["1. Client Ingress and Quota"]
+        App["📱 Internal Enterprise Apps<br>(Web / Microservices / Batch)"] --> Gateway["🛡️ Enterprise AI Gateway / Client SDK"]
+        Gateway --> Quota{"⚖️ Tenant Token Bucket<br>(Redis Atomic Lua Script)"}
+        Quota -- "Limit Exceeded" --> Err429["🛑 HTTP 429 (Retry-After Header)"]
     end
 
-    subgraph ResilienceLayer["2. Resilience & Routing Mesh"]
-        Quota -- "Token Reserved" --> CircuitPrimary{"Circuit Breaker<br>(Primary: Claude 3.7 / GPT-4.5)"}
+    subgraph ResilienceLayer["2. Resilience and Routing Mesh"]
+        Quota -- "Token Reserved" --> CircuitPrimary{"⚡ Circuit Breaker<br>(Primary: Claude 3.7 / GPT-4.5)"}
         
-        CircuitPrimary -- "Closed (Healthy)" --> PoolPrimary["HTTP/2 Connection Pool<br>(Keep-Alive • TCP Multiplexing)"]
-        PoolPrimary --> PrimaryProvider["Primary Provider Endpoint"]
+        CircuitPrimary -- "Closed (Healthy)" --> PoolPrimary["🌐 HTTP/2 Connection Pool<br>(Keep-Alive • TCP Multiplexing)"]
+        PoolPrimary --> PrimaryProvider["☁️ Primary Provider Endpoint"]
         
-        CircuitPrimary -- "Open / 5xx / Timeout" --> CircuitSecondary{"Circuit Breaker<br>(Secondary: Gemini 2.5 Pro)"}
-        CircuitSecondary -- "Closed (Healthy)" --> PoolSecondary["HTTP/2 Connection Pool"]
-        PoolSecondary --> SecondaryProvider["Secondary Provider Endpoint"]
+        CircuitPrimary -- "Open / 5xx / Timeout" --> CircuitSecondary{"⚡ Circuit Breaker<br>(Secondary: Gemini 2.5 Pro)"}
+        CircuitSecondary -- "Closed (Healthy)" --> PoolSecondary["🌐 HTTP/2 Connection Pool"]
+        PoolSecondary --> SecondaryProvider["☁️ Secondary Provider Endpoint"]
         
-        CircuitSecondary -- "Tripped" --> LocalFallback["Local Fallback Cluster<br>(Self-Hosted vLLM on L40S)"]
+        CircuitSecondary -- "Tripped" --> LocalFallback["🖥️ Local Fallback Cluster<br>(Self-Hosted vLLM on L40S)"]
     end
 
-    subgraph TelemetryLayer["3. Settlement & Observability"]
-        PrimaryProvider --> Settle["Settle Actual Tokens Used<br>(Reconcile Reserved vs Actual in Redis)"]
+    subgraph TelemetryLayer["3. Settlement and Observability"]
+        PrimaryProvider --> Settle["💰 Settle Actual Tokens Used<br>(Reconcile Reserved vs Actual in Redis)"]
         SecondaryProvider --> Settle
         LocalFallback --> Settle
-        Settle --> OTel[("OpenTelemetry GenAI Spans<br>Latency • Tokens • Cost Ledger")]
+        Settle --> OTel[("📊 OpenTelemetry GenAI Spans<br>Latency • Tokens • Cost Ledger")]
     end
 ```
 

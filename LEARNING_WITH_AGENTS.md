@@ -71,13 +71,13 @@ The repository contains 7 hands-on labs plus an enterprise Capstone mapped direc
 
 ```mermaid
 flowchart TD
-    L1["Lab 01: Multi-Tenant Hybrid RAG<br>(Sparse BM25 + Dense + RRF)"] --> L2["Lab 02: Tool Execution with MCP<br>(JSON-RPC + Policy Engine)"]
-    L2 --> L3["Lab 03: Stateful Agent Orchestration<br>(EventStore WAL + Replay)"]
-    L3 --> L4["Lab 04: Agent Failure Defense<br>(Streaming Token Bucket)"]
-    L4 --> L5["Lab 05: AI Observability & Tracing<br>(OpenTelemetry GenAI Spans)"]
-    L5 --> L6["Lab 06: Dual-LLM Quarantine<br>(Zero-Trust Tool Isolation)"]
-    L6 --> L7["Lab 07: Hybrid ML Fairness<br>(Disparate Impact & Explainability)"]
-    L7 --> CAP["Phase 08 Capstone Lab: Enterprise AI-Native Repository<br>(AGENT.md + Headless CI/CD + TDD)"]
+    L1["📚 Lab 01: Multi-Tenant Hybrid RAG<br>(Sparse BM25 + Dense + RRF)"] --> L2["⚙️ Lab 02: Tool Execution with MCP<br>(JSON-RPC + Policy Engine)"]
+    L2 --> L3["💾 Lab 03: Stateful Agent Orchestration<br>(EventStore WAL + Replay)"]
+    L3 --> L4["🛡️ Lab 04: Agent Failure Defense<br>(Streaming Token Bucket)"]
+    L4 --> L5["📊 Lab 05: AI Observability and Tracing<br>(OpenTelemetry GenAI Spans)"]
+    L5 --> L6["🔒 Lab 06: Dual-LLM Quarantine<br>(Zero-Trust Tool Isolation)"]
+    L6 --> L7["⚖️ Lab 07: Hybrid ML Fairness<br>(Disparate Impact and Explainability)"]
+    L7 --> CAP["🏆 Phase 08 Capstone Lab: Enterprise AI-Native Repository<br>(AGENT.md + Headless CI/CD + TDD)"]
 ```
 
 | Lab | Architectural Focus | Corresponding Module | Automated Verification Command |

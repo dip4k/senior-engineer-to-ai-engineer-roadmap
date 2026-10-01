@@ -33,6 +33,8 @@ class ProfileReport(BaseModel):
     system_tokens: int
     user_tokens: int
     total_input_tokens: int
+    cached_tokens: int = 0
+    uncached_tokens: int = 0
     reasoning_budget_tokens: int
     max_expected_output_tokens: int
     total_billable_output_tokens: int
@@ -41,13 +43,14 @@ class ProfileReport(BaseModel):
 
 
 class ProductionTokenProfiler:
-    # Public provider baseline rates as of 2026-09 (illustrative reference pricing)
+    # Public provider baseline rates as of 2026 (illustrative reference pricing)
+    # cache_read_discount: 0.10 means 90% discount on cached tokens (e.g. Anthropic/DeepSeek)
     PROVIDER_RATES = {
-        "claude-3-7-sonnet": {"input_per_m": 3.00, "output_per_m": 15.00, "encoding": "cl100k_base", "is_reasoning": True},
-        "o3-mini": {"input_per_m": 1.10, "output_per_m": 4.40, "encoding": "o200k_base", "is_reasoning": True},
-        "gpt-4.5": {"input_per_m": 2.50, "output_per_m": 10.00, "encoding": "o200k_base", "is_reasoning": False},
-        "gemini-2.5-flash": {"input_per_m": 0.10, "output_per_m": 0.40, "encoding": "cl100k_base", "is_reasoning": False},
-        "deepseek-r1": {"input_per_m": 0.55, "output_per_m": 2.19, "encoding": "cl100k_base", "is_reasoning": True},
+        "claude-3-7-sonnet": {"input_per_m": 3.00, "cache_read_per_m": 0.30, "output_per_m": 15.00, "encoding": "cl100k_base", "is_reasoning": True},
+        "o3-mini": {"input_per_m": 1.10, "cache_read_per_m": 0.55, "output_per_m": 4.40, "encoding": "o200k_base", "is_reasoning": True},
+        "gpt-4.5": {"input_per_m": 2.50, "cache_read_per_m": 1.25, "output_per_m": 10.00, "encoding": "o200k_base", "is_reasoning": False},
+        "gemini-2.5-flash": {"input_per_m": 0.10, "cache_read_per_m": 0.025, "output_per_m": 0.40, "encoding": "cl100k_base", "is_reasoning": False},
+        "deepseek-r1": {"input_per_m": 0.55, "cache_read_per_m": 0.14, "output_per_m": 2.19, "encoding": "cl100k_base", "is_reasoning": True},
     }
 
     def __init__(self, model_key: str = "claude-3-7-sonnet") -> None:
@@ -71,21 +74,31 @@ class ProductionTokenProfiler:
         system_prompt: str,
         user_prompt: str,
         max_expected_output: int,
-        reasoning_budget_tokens: int = 0
+        reasoning_budget_tokens: int = 0,
+        cached_prefix_tokens: int = 0
     ) -> ProfileReport:
         system_tokens = self._count_tokens(system_prompt)
         user_tokens = self._count_tokens(user_prompt)
         total_input_tokens = system_tokens + user_tokens
 
-        # For reasoning models (e.g. o3-mini, Claude 3.7 extended thinking), thinking tokens are billed as output tokens
+        # Ensure cached tokens do not exceed total input
+        cached_tokens = min(cached_prefix_tokens, total_input_tokens)
+        uncached_tokens = total_input_tokens - cached_tokens
+
+        # For reasoning models, thinking tokens are billed as output tokens
         total_output_tokens = max_expected_output + (reasoning_budget_tokens if self.config["is_reasoning"] else 0)
 
-        # Financial modeling (dollars per 1M tokens)
-        input_cost = (total_input_tokens / 1_000_000.0) * self.config["input_per_m"]
+        # Financial modeling with Prompt Caching economics
+        cache_rate = self.config.get("cache_read_per_m", self.config["input_per_m"] * 0.10)
+        input_cost = ((uncached_tokens / 1_000_000.0) * self.config["input_per_m"]) + \
+                     ((cached_tokens / 1_000_000.0) * cache_rate)
         max_output_cost = (total_output_tokens / 1_000_000.0) * self.config["output_per_m"]
 
-        # Latency forecasting (empirical hardware baseline)
-        estimated_ttft_ms = 220 + (total_input_tokens * 0.06)
+        # Latency forecasting (cached prefix reduces TTFT by avoiding re-computation)
+        ttft_base = 220
+        uncached_ttft_contrib = uncached_tokens * 0.06
+        cached_ttft_contrib = cached_tokens * 0.005  # Cached reads are ~12x faster to prefill
+        estimated_ttft_ms = ttft_base + uncached_ttft_contrib + cached_ttft_contrib
         estimated_decode_ms = total_output_tokens * 14.0  # ~71 tokens/sec
 
         return ProfileReport(
@@ -96,6 +109,8 @@ class ProductionTokenProfiler:
             system_tokens=system_tokens,
             user_tokens=user_tokens,
             total_input_tokens=total_input_tokens,
+            cached_tokens=cached_tokens,
+            uncached_tokens=uncached_tokens,
             reasoning_budget_tokens=reasoning_budget_tokens,
             max_expected_output_tokens=max_expected_output,
             total_billable_output_tokens=total_output_tokens,

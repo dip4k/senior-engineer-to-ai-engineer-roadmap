@@ -23,33 +23,33 @@ To address these vulnerabilities, enterprise architects combine three decoupled 
 
 ```mermaid
 flowchart TD
-    subgraph Client["1. Agent Reasoning & Tool Invocation"]
-        User["User Request"] --> Agent["Autonomous Agent Orchestrator"]
-        Agent --> Decision["Model Emits Tool Call Intent<br>(Tool: 'payment_issue_refund', Args: {'amount': 350.0})"]
+    subgraph Client["1. Agent Reasoning and Tool Call"]
+        User["👤 User Request"] --> Agent["🤖 Autonomous Agent Orchestrator"]
+        Agent --> Decision["📝 Model Emits Tool Call Intent<br>(Tool: 'payment_issue_refund', Args: {'amount': 350.0})"]
     end
 
     subgraph PolicyGate["2. Zero-Trust ABAC Policy Gate"]
-        Decision --> PolicyEngine["PolicyEngine.evaluate()<br>• Tenant ID & User Role<br>• Action Risk Tier<br>• Dollar Threshold Rule"]
+        Decision --> PolicyEngine["🛡️ PolicyEngine.evaluate()<br>• Tenant ID and User Role<br>• Action Risk Tier<br>• Dollar Threshold Rule"]
         
-        PolicyEngine --> RiskCheck{"Policy Evaluation"}
-        RiskCheck -- "Administrative / Destructive" --> Deny["Status: DENIED<br>(Halt Execution Immediately)"]
-        RiskCheck -- "Low Risk (Amount <= $100)" --> AutoApprove["Status: PERMITTED<br>(Dispatch Immediately)"]
-        RiskCheck -- "High Value (Amount > $100)" --> Suspend["Status: REQUIRES_APPROVAL<br>(Suspend State & Emit HMAC Token)"]
+        PolicyEngine --> RiskCheck{"⚖️ Policy Evaluation"}
+        RiskCheck -- "Administrative / Destructive" --> Deny["🛑 Status: DENIED<br>(Halt Execution Immediately)"]
+        RiskCheck -- "Low Risk (Amount <= $100)" --> AutoApprove["✅ Status: PERMITTED<br>(Dispatch Immediately)"]
+        RiskCheck -- "High Value (Amount > $100)" --> Suspend["⏸️ Status: REQUIRES_APPROVAL<br>(Suspend State and Emit HMAC Token)"]
         
-        Suspend --> HITL["Human Controller Review<br>(Slack / Teams Step-Up Approval)"]
+        Suspend --> HITL["👥 Human Controller Review<br>(Slack / Teams Step-Up Approval)"]
         HITL -- "Rejected" --> Deny
         HITL -- "Approved" --> AutoApprove
     end
 
-    subgraph MCP_Boundary["3. Standardized MCP Wire Protocol (JSON-RPC 2.0)"]
-        AutoApprove --> MCP_Client["MCP Host Client<br>(tools/call over stdio or HTTP/SSE)"]
-        MCP_Client --> MCP_Server["Isolated MCP Server<br>(Stateless Microservice with Pydantic Schemas)"]
+    subgraph MCP_Boundary["3. MCP Wire Protocol Boundary"]
+        AutoApprove --> MCP_Client["🔌 MCP Host Client<br>(tools/call over stdio or HTTP/SSE)"]
+        MCP_Client --> MCP_Server["⚙️ Isolated MCP Server<br>(Stateless Microservice with Pydantic Schemas)"]
     end
 
-    subgraph SandboxEnv["4. Kernel-Isolated Execution Sandbox"]
-        MCP_Server --> gVisor["gVisor Container Sandbox (runsc)<br>• Intercepts Syscalls<br>• Read-Only Root Filesystem<br>• Network Isolated (--network none)"]
-        gVisor --> Ledger[("Transactional Enterprise System<br>(With Idempotency Key & Saga Rollback)")]
-        Ledger --> Result["Sanitized Tool Response DTO"]
+    subgraph SandboxEnv["4. Kernel-Isolated Sandbox"]
+        MCP_Server --> gVisor["🔒 gVisor Container Sandbox (runsc)<br>• Intercepts Syscalls<br>• Read-Only Root Filesystem<br>• Network Isolated (--network none)"]
+        gVisor --> Ledger[("💾 Transactional Enterprise System<br>(With Idempotency Key and Saga Rollback)")]
+        Ledger --> Result["📦 Sanitized Tool Response DTO"]
     end
 
     Result --> Agent

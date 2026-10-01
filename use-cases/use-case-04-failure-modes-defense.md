@@ -29,28 +29,27 @@ To mitigate these risks, enterprise architectures deploy the **Dual-LLM Privileg
 ```mermaid
 flowchart TD
     subgraph UntrustedZone["1. Untrusted Ingress Zone"]
-        Ingress["Untrusted External Document<br>(Customer Email / Scraped Web / Vendor Invoice)"]
-        CanaryInjector["Canary Injector<br>(Inserts Cryptographic Nonce: CANARY_9f1a2)"]
+        Ingress["📥 Untrusted External Document<br>(Customer Email / Scraped Web / Vendor Invoice)"] --> CanaryInjector["🏷️ Canary Injector<br>(Inserts Cryptographic Nonce: CANARY_9f1a2)"]
     end
 
-    subgraph QuarantineZone["2. Dual-LLM Privilege Quarantine (Reader LLM)"]
-        CanaryInjector --> ReaderLLM["Unprivileged Reader LLM<br>• ZERO Tools Registered<br>• ZERO API Keys / Credentials<br>• Constrained JSON Grammar (CFG)"]
-        ReaderLLM --> ExtractedDTO["Structured JSON Payload<br>{ sender, amount, items, canary_echo }"]
+    subgraph QuarantineZone["2. Reader LLM Quarantine"]
+        CanaryInjector --> ReaderLLM["🔒 Unprivileged Reader LLM<br>• ZERO Tools Registered<br>• ZERO API Keys / Credentials<br>• Constrained JSON Grammar (CFG)"]
+        ReaderLLM --> ExtractedDTO["📄 Structured JSON Payload<br>{ sender, amount, items, canary_echo }"]
     end
 
-    subgraph SecurityGate["3. Canary & Schema Assertion Gate"]
-        ExtractedDTO --> CanaryGate{"Canary Token Intact &<br>Zero Injection Signatures?"}
-        CanaryGate -- "Canary Missing or Escaped" --> Quarantined["Status: MALICIOUS_INJECTION<br>(Drop Payload • Alert SIEM / SOC)"]
-        CanaryGate -- "Clean & Grounded" --> LoopGovernor["State-Hash Loop Governor<br>(Tracks Action Hashes: MD5(tool+args))"]
+    subgraph SecurityGate["3. Canary and Schema Gate"]
+        ExtractedDTO --> CanaryGate{"⚖️ Canary Token Intact and<br>Zero Injection Signatures?"}
+        CanaryGate -- "Canary Missing or Escaped" --> Quarantined["🛑 Status: MALICIOUS_INJECTION<br>(Drop Payload • Alert SIEM / SOC)"]
+        CanaryGate -- "Clean and Grounded" --> LoopGovernor["⏱️ State-Hash Loop Governor<br>(Tracks Action Hashes: MD5(tool+args))"]
     end
 
-    subgraph PrivilegedZone["4. Privileged Controller Zone (Controller LLM)"]
-        LoopGovernor --> LoopCheck{"Identical State Repeated<br>or Turns > 5?"}
-        LoopCheck -- "Loop Detected" --> Terminate["Halt Execution & Escalate to Human"]
-        LoopCheck -- "Valid" --> ControllerLLM["Privileged Controller LLM<br>• Authorized Context<br>• Enterprise System Prompts"]
-        ControllerLLM --> MCP_Tools["Authorized MCP Tools<br>(Database, ERP, Payment Gateway)"]
-        MCP_Tools --> EgressFilter["Egress Filter: Strip Markdown Images"]
-        EgressFilter --> SafeResult["Grounded Safe Execution Output"]
+    subgraph PrivilegedZone["4. Controller LLM Zone"]
+        LoopGovernor --> LoopCheck{"🔄 Identical State Repeated<br>or Turns > 5?"}
+        LoopCheck -- "Loop Detected" --> Terminate["🚨 Halt Execution and Escalate to Human"]
+        LoopCheck -- "Valid" --> ControllerLLM["🧠 Privileged Controller LLM<br>• Authorized Context<br>• Enterprise System Prompts"]
+        ControllerLLM --> MCP_Tools["⚙️ Authorized MCP Tools<br>(Database, ERP, Payment Gateway)"]
+        MCP_Tools --> EgressFilter["🛡️ Egress Filter: Strip Markdown Images"]
+        EgressFilter --> SafeResult["✅ Grounded Safe Execution Output"]
     end
 ```
 

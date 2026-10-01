@@ -54,20 +54,20 @@
 
 ```mermaid
 flowchart TD
-    subgraph Track1["Stage 1: Core Primitives (The Model & The Context)"]
-        C1["**1. AI & LLM Fundamentals**<br>(Tokens, Next-Word Math, Sampling)"] --> C2["**2. Prompt & Context Engineering**<br>(Context AST, Schemas, Prefix Caching)"]
+    subgraph Track1["Stage 1: Core Primitives"]
+        C1["🧠 **1. AI and LLM Fundamentals**<br>(Tokens, Next-Word Math, Sampling)"] --> C2["📝 **2. Prompt and Context**<br>(Context AST, Schemas, Caching)"]
     end
 
-    subgraph Track2["Stage 2: Knowledge Retrieval (The Library Helpers)"]
-        C3["**3. Embeddings & Vector Search**<br>(Idea Galaxy & Coordinate Math)"] --> C4["**4. Retrieval-Augmented Generation**<br>(Contextual Chunking, BM25, RRF)"]
+    subgraph Track2["Stage 2: Knowledge Retrieval"]
+        C3["🧭 **3. Embeddings and Vectors**<br>(Idea Galaxy and Coordinate Math)"] --> C4["📚 **4. Retrieval-Augmented Gen**<br>(Contextual Chunking, BM25, RRF)"]
     end
 
-    subgraph Track3["Stage 3: Autonomous Action & Defense (The Agent)"]
-        C5["**5. AI Agents & Stateful Loops**<br>(MCP Tools, Memory, Durable WAL)"] --> C6["**6. Reliability, Safety & Guardrails**<br>(Dual-LLM Quarantine, Fallbacks)"]
+    subgraph Track3["Stage 3: Autonomous Agents"]
+        C5["🤖 **5. AI Agents and Loops**<br>(MCP Tools, Memory, Durable WAL)"] --> C6["🛡️ **6. Safety and Guardrails**<br>(Dual-LLM Quarantine, Fallbacks)"]
     end
 
-    subgraph Track4["Stage 4: Production Operations (Scale & Evaluation)"]
-        C7["**7. Evaluation & Observability**<br>(LLM Judges, OTel Spans, Tracing)"] --> C8["**8. Production Serving & LLMOps**<br>(vLLM, Continuous Batching, KV Cache)"]
+    subgraph Track4["Stage 4: Production Operations"]
+        C7["📊 **7. Evals and Observability**<br>(LLM Judges, OTel Spans, Tracing)"] --> C8["⚡ **8. Serving and LLMOps**<br>(vLLM, Continuous Batching, KV Cache)"]
     end
 
     C2 --> C3
@@ -357,10 +357,30 @@ flowchart TD
 - **8.4.3 CI/CD Evaluation Gates** -> Automatically running your test suite of evals before deploying any new prompt, model version, or tool to production.
  
 ---
- 
+
+## 🧪 Hands-On Labs & Interactive Companion Notebooks
+
+While this roadmap introduces core mental models in plain language, each major engineering milestone is paired with a verified CLI evaluation lab and an interactive **Google Colab companion notebook** (launchable with 1 click, zero local setup):
+
+| Roadmap Milestone | Canonical Lab Guide | Google Colab Companion Notebook | 1-Click Launch |
+| :--- | :--- | :--- | :---: |
+| **Category 1: Token Mechanics** | [Phase 00 Lab](./00-foundations-and-token-mechanics/labs/capstone-token-economics-analyzer.md) | [`00_token_mechanics_and_kv_cache.ipynb`](./notebooks/00_token_mechanics_and_kv_cache.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/00_token_mechanics_and_kv_cache.ipynb) |
+| **Category 2: Context Engineering** | [Phase 01 Lab](./01-prompt-and-context-engineering/labs/capstone-context-engineering-pipeline.md) | [`01_prompt_caching_and_budgeting.ipynb`](./notebooks/01_prompt_caching_and_budgeting.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/01_prompt_caching_and_budgeting.ipynb) |
+| **Category 3: Hybrid Retrieval & RAG** | [Lab 01: Multi-Tenant RAG](./labs/lab-01-multi-tenant-hybrid-rag.md) | [`02_hybrid_rag_and_rrf_visualizer.ipynb`](./notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) |
+| **Category 4: Tools & Protocols (MCP)** | [Lab 02: Tool Execution MCP](./labs/lab-02-tool-execution-with-mcp.md) | [`03_mcp_client_and_tool_inspector.ipynb`](./notebooks/03_mcp_client_and_tool_inspector.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
+| **Category 5: Stateful Agent Loops** | [Lab 03: Stateful Orchestration](./labs/lab-03-stateful-agent-orchestration.md) | [`04_stateful_agent_and_wal_replay.ipynb`](./notebooks/04_stateful_agent_and_wal_replay.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/04_stateful_agent_and_wal_replay.ipynb) |
+| **Category 6: Gateway & Failure Defenses** | [Lab 04: Agent Failure Defense](./labs/lab-04-agent-failure-defense.md) | [`05_token_bucket_and_failure_defense.ipynb`](./notebooks/05_token_bucket_and_failure_defense.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb) |
+| **Category 7: Observability & Evals** | [Lab 05: Tracing & Observability](./labs/lab-05-ai-observability-tracing.md) | [`06_eval_flywheel_and_trace_trees.ipynb`](./notebooks/06_eval_flywheel_and_trace_trees.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb) |
+| **Category 8: Algorithmic Fairness & XAI** | [Lab 07: ML Fairness & XAI](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | [`07_ml_fairness_and_shap_explainability.ipynb`](./notebooks/07_ml_fairness_and_shap_explainability.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb) |
+
+*For complete setup instructions (running locally vs. Google Colab) and deep algorithmic walkthroughs, see the [Companion Notebook Directory](./notebooks/README.md).*
+
+---
+
 ## 🧭 Navigation
  
 - **Master Curriculum Syllabus**: [← Back to Master Curriculum & Architecture (README.md)](./README.md)
+- **Companion Notebooks**: [📓 Interactive Google Colab Notebook Suite](./notebooks/README.md)
 - **Practice Glossary**: [📖 Production AI & Agentic Glossary by Practice](./ai-engineering-glossary-by-practice.md)
 - **Interactive Agents**: [🤖 Interactive Learning & Practice with Agents](./LEARNING_WITH_AGENTS.md)
 - **Phase Hubs**:

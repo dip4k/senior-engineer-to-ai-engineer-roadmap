@@ -7,20 +7,18 @@
 
 ```mermaid
 flowchart LR
-    subgraph NonAI["Traditional Software (1.0 & 2.0: Deterministic & Statistical)"]
-        direction TB
-        B1["Imperative Code & Relational Schemas"]
-        B2["Static Business Rules & Cron Jobs"]
-        B3["Fixed Statistical ML Models"]
-        B4["Fragile with Unstructured Ambiguity"]
+    subgraph NonAI["Legacy Software: 1.0 and 2.0"]
+        B1["⚙️ Imperative Code and SQL Schemas"]
+        B2["⏰ Static Business Rules and Cron Jobs"]
+        B3["📊 Fixed Statistical ML Models"]
+        B4["⚠️ Fragile on Unstructured Text"]
     end
     
-    subgraph AISolution["AI-Native Systems (3.0: Reasoning & Harness)"]
-        direction TB
-        A1["Probabilistic Reasoning Microservices"]
-        A2["Deterministic Guardrail Harness"]
-        A3["Model Context Protocol (MCP)"]
-        A4["Continuous CI/CD Evaluation Gates"]
+    subgraph AISolution["AI-Native Software: Systems 3.0"]
+        A1["🧠 Probabilistic Reasoning Services"]
+        A2["🛡️ Deterministic Guardrail Harness"]
+        A3["🔌 Model Context Protocol (MCP)"]
+        A4["✅ Continuous CI/CD Evaluation Gates"]
     end
 
     B2 --> A2
@@ -48,20 +46,20 @@ To understand where foundation models fit in production, let's trace how we got 
 
 ```mermaid
 flowchart TD
-    subgraph S1["Software 1.0 (Non-AI: Purely Deterministic)"]
-        A1["Code: Handcrafted Logic"] --> B1["Data: Structured Records"]
-        B1 --> C1["Output: Deterministic Output"]
+    subgraph S1["Software 1.0: Deterministic"]
+        A1["💻 Code: Handcrafted Logic"] --> B1["💾 Data: Structured Records"]
+        B1 --> C1["📤 Output: Deterministic Result"]
     end
 
-    subgraph S2["Software 2.0 (Statistical ML)"]
-        A2["Data: Curated Training Sets"] --> B2["Training: Weight Optimization"]
-        B2 --> C2["Output: Numeric Predictions"]
+    subgraph S2["Software 2.0: Statistical ML"]
+        A2["📚 Data: Curated Training Sets"] --> B2["⚙️ Training: Weight Optimization"]
+        B2 --> C2["📈 Output: Numeric Predictions"]
     end
 
-    subgraph S3["Software 3.0 (AI-Native / Agentic)"]
-        A3["Context: Prompts & Schemas"] --> B3["Model: Reasoning Microservice"]
-        B3 --> C3["Harness: State Machines & MCP"]
-        C3 --> D3["Output: Goal Completion"]
+    subgraph S3["Software 3.0: AI-Native Systems"]
+        A3["📝 Context: Prompts and Schemas"] --> B3["🧠 Model: Reasoning Microservice"]
+        B3 --> C3["🕹️ Harness: State Machines and MCP"]
+        C3 --> D3["🎯 Output: Goal Completion"]
     end
 
     C1 ~~~ A2
@@ -155,21 +153,21 @@ To calibrate depth, prerequisites, and pacing, all topics in this curriculum are
 
 ```mermaid
 flowchart TD
-    Start["Senior Engineer Transition"] --> P0["1. Foundations & Token Mechanics (./00-foundations-and-token-mechanics)"]
-    P0 --> P1["2. Prompt & Context Engineering (./01-prompt-and-context-engineering)"]
+    Start["🚀 Senior Engineer Transition"] --> P0["🧱 1. Foundations and Tokens"]
+    P0 --> P1["🎯 2. Prompt and Context"]
     P1 --> Branch{"Choose Application Track"}
     
-    Branch -- "Knowledge & Search" --> P2["3. Enterprise RAG Systems (./02-rag-and-knowledge-systems)"]
-    Branch -- "Autonomous Workflows" --> P3["3. Tools & MCP Standards (./03-tools-and-model-context-protocol)"]
+    Branch -- "Knowledge and Search" --> P2["📚 3. Enterprise RAG Systems"]
+    Branch -- "Autonomous Workflows" --> P3["🔌 3. Tools and MCP Standards"]
     
-    P2 --> P4["4. Agentic Systems & Orchestration (./04-agentic-systems-and-orchestration)"]
+    P2 --> P4["🤖 4. Agentic Systems"]
     P3 --> P4
     
-    P4 --> P5["5. AI Security & Guardrails (./05-ai-security-and-guardrails)"]
-    P5 --> P6["6. Evals & Observability (./06-evals-and-observability)"]
-    P6 --> P7["7. Production LLMOps & Gateways (./07-production-deployment-and-llmops)"]
-    P7 --> P8["8. AI-Augmented SDLC & Leadership (./08-ai-augmented-sdlc-and-leadership)"]
-    P8 --> Prep["9. Interview & System Design Prep (./interview/80-20-ai-interview-prep-sheet.md)"]
+    P4 --> P5["🛡️ 5. AI Security and Guardrails"]
+    P5 --> P6["📊 6. Evals and Observability"]
+    P6 --> P7["⚡ 7. Production LLMOps"]
+    P7 --> P8["👥 8. AI-Augmented SDLC"]
+    P8 --> Prep["🎓 9. Interview and Prep"]
 ```
 
 ---
@@ -210,22 +208,22 @@ Each enterprise use case has been extracted into a standalone architectural blue
 
 ```mermaid
 flowchart LR
-    subgraph Month1["Month 1: Precision Core (Days 1–30)"]
-        M1A["Inference Economics & Token Budgets"] --> M1B["Prompt Caching & Schema Decoding"]
-        M1B --> M1C["Hybrid RAG & Cross-Encoder Reranking"]
-        M1C --> M1D["Model Context Protocol (MCP) Tools"]
+    subgraph Month1["Month 1: Precision Core"]
+        M1A["💰 Token Budgets and Economics"] --> M1B["⚡ Prompt Caching and Schemas"]
+        M1B --> M1C["🔍 Hybrid RAG and Reranking"]
+        M1C --> M1D["🔌 Model Context Protocol Tools"]
     end
 
-    subgraph Month2["Month 2: Industrial Systems (Days 31–60)"]
-        M2A["State Machines & Graph Reducers"] --> M2B["Enterprise SDK Resilience (Polly/Tenacity)"]
-        M2B --> M2C["Dual-LLM Security & Sandboxed Runtimes"]
-        M2C --> M2D["Human-in-the-Loop Step-Up Gates"]
+    subgraph Month2["Month 2: Industrial Systems"]
+        M2A["🔄 State Machines and Reducers"] --> M2B["🛡️ SDK Resilience (Polly/Tenacity)"]
+        M2B --> M2C["🔒 Dual-LLM Security and Sandboxes"]
+        M2C --> M2D["👤 Human-in-the-Loop Approval"]
     end
 
-    subgraph Month3["Month 3: Production LLMOps (Days 61–90)"]
-        M3A["OpenTelemetry GenAI Tracing"] --> M3B["Discrete Binary Evals in CI/CD"]
-        M3B --> M3C["Resilient Multi-Provider AI Gateway"]
-        M3C --> M3D["Multi-Agent Swarms & SDLC Leadership"]
+    subgraph Month3["Month 3: Production LLMOps"]
+        M3A["📈 OpenTelemetry GenAI Tracing"] --> M3B["🧪 Discrete Binary CI/CD Evals"]
+        M3B --> M3C["🌐 Resilient Multi-Provider Gateway"]
+        M3C --> M3D["🐝 Multi-Agent Swarms and SDLC"]
     end
 
     M1D --> M2A

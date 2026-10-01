@@ -6,22 +6,20 @@
 
 ```mermaid
 flowchart TD
-    subgraph PrototypePit["THE PROTOTYPE PIT (Where 85% of AI Projects Die)"]
-        direction TB
-        P1["Unbounded ReAct Agent Loops"]
-        P2["Uncached 30k USD Monthly Token Invoices"]
-        P3["Free-form SQL Prompt Injection"]
-        P4["'Vibe Check' Deployments to Production"]
+    subgraph PrototypePit["The Prototype Pit"]
+        P1["⚠️ Unbounded ReAct Agent Loops"]
+        P2["💸 Uncached \$30k Monthly Token Invoices"]
+        P3["🔓 Free-form SQL Prompt Injection"]
+        P4["🎲 'Vibe Check' Deployments to Production"]
     end
 
-    PrototypePit -- "ENGINEERING HARNESS & DISCIPLINE" --> ProdReady
+    PrototypePit -- "ENGINEERING HARNESS AND DISCIPLINE" --> ProdReady
 
     subgraph ProdReady["PRODUCTION-GRADE AI ARCHITECTURE"]
-        direction TB
-        R1["Deterministic DAGs & Workflow State Machines"]
-        R2["KV-Cache Breakpoints & Prefix Discipline (90% Savings)"]
-        R3["AST-Validated Parameterized Queries & Read Replicas"]
-        R4["Continuous CI/CD Eval Gates & Circuit Breakers"]
+        R1["⚙️ Deterministic DAGs and State Machines"]
+        R2["⚡ KV-Cache Breakpoints and Discipline"]
+        R3["🔒 AST Parameterized Queries and Replicas"]
+        R4["🛡️ Continuous Eval Gates and Breakers"]
     end
 ```
 
@@ -250,8 +248,7 @@ Imagine you have a giant 500-page book with a golden bookmark at page 450. But b
 ```mermaid
 flowchart LR
     subgraph TaintedCache["PREFIX TAINT (0% Cache Hit Rate)"]
-        direction LR
-        T1["[Dynamic Time/UUID]\n(Token 0-15) ❌ Changes every ms"] --> T2["[Static 20,000 Token Docs]\n(Token 16-20,000) 💥 Entire Cache Miss!"]
+        T1["⏱️ [Dynamic Time/UUID]\n(Token 0-15) ❌ Changes every ms"] --> T2["📄 [Static 20,000 Token Docs]\n(Token 16-20,000) 💥 Entire Cache Miss!"]
     end
 ```
 
@@ -272,9 +269,8 @@ Always structure prompts into two immutable zones:
 
 ```mermaid
 flowchart LR
-    subgraph CleanCache["OPTIMIZED PREFIX (90% Cache Hit Rate)"]
-        direction LR
-        C1["[Static 20,000 Token Docs]\n(Token 0-20,000) ✅ 100% Cache HIT"] --> C2["[Dynamic Date & User Query]\n(Tail Tokens) ⚡ Only prefill delta"]
+    subgraph CleanCache["Optimized Prefix (90% Cache Hit)"]
+        C1["📄 [Static 20,000 Token Docs]\n(Token 0-20,000) ✅ 100% Cache HIT"] --> C2["⚡ [Dynamic Date and User Query]\n(Tail Tokens) ⚡ Only prefill delta"]
     end
 ```
 
@@ -416,13 +412,13 @@ def execute_sql(query: str) -> str:
 
 ```mermaid
 flowchart TD
-    LLMQuery["LLM Generates SQL"] --> ASTCheck{"AST Parser & Validator\n(e.g., sqlglot)"}
-    ASTCheck -- "Contains DROP / ALTER / Non-SELECT" --> Reject["🚨 REJECT & Log Security Alert"]
-    ASTCheck -- "SELECT Only" --> RBAC{"Schema Whitelist & RLS"}
+    LLMQuery["🤖 LLM Generates SQL"] --> ASTCheck{"⚖️ AST Parser and Validator\n(e.g., sqlglot)"}
+    ASTCheck -- "Contains DROP / ALTER / Non-SELECT" --> Reject["🚨 REJECT and Log Alert"]
+    ASTCheck -- "SELECT Only" --> RBAC{"🔒 Schema Whitelist and RLS"}
     RBAC -- "Forbidden Tables (users, keys)" --> Reject
-    RBAC -- "Allowed Analytics Tables" --> ReadReplica[("Read-Only Replica DB\n(Strictly REVOKE WRITE)")]
-    ReadReplica --> Masking["PII Redaction Engine"]
-    Masking --> SafeOutput["Safe Sanitized Result to LLM"]
+    RBAC -- "Allowed Analytics Tables" --> ReadReplica[("💾 Read-Only Replica DB\n(Strictly REVOKE WRITE)")]
+    ReadReplica --> Masking["🛡️ PII Redaction Engine"]
+    Masking --> SafeOutput["✅ Safe Sanitized Result to LLM"]
 ```
 
 #### Production Defense Requirements:
@@ -489,10 +485,10 @@ Imagine you are building a bridge for cars. To test if the bridge is safe, the b
 ```mermaid
 flowchart TD
     subgraph EvalPyramid["The Production Evaluation Pyramid"]
-        direction TB
-        E1["Tier 1: Deterministic Assertions (Fast, 0 USD, 100% Deterministic)\nSchema validation, regex, latency < 800ms, token limits, banned words"]
-        E2["Tier 2: Model-Graded Evals (LLM-as-a-Judge)\nG-Eval rubrics, answer relevance, hallucination detection, citation faithfulness"]
-        E3["Tier 3: Production Telemetry & Human-in-the-Loop\nUser thumbs up/down, retry rates, latency P99, CSAT correlation"]
+        E1["⚡ Tier 1: Deterministic Assertions\nSchema validation, regex, latency < 800ms, token limits, banned words"]
+        E2["🧠 Tier 2: Model-Graded Evals\nG-Eval rubrics, answer relevance, hallucination detection, citation faithfulness"]
+        E3["📊 Tier 3: Production Telemetry and HITL\nUser thumbs up/down, retry rates, latency P99, CSAT correlation"]
+        E1 --> E2 --> E3
     end
 ```
 
@@ -971,12 +967,12 @@ Treat your context window as a **strictly allocated financial budget**:
 
 ```mermaid
 flowchart TD
-    subgraph ContextBudget["128k Token Context Window Allocation"]
-        direction TB
-        B1["1. System Prompt & Tool Schemas: 15% (19,200 tokens)"]
-        B2["2. Retrieved RAG Context: 45% (57,600 tokens)"]
-        B3["3. Sliding Conversation History: 25% (32,000 tokens)"]
-        B4["4. Generation Headroom (Output Reserve): 15% (19,200 tokens)"]
+    subgraph ContextBudget["128k Context Window Allocation"]
+        B1["⚙️ 1. System Prompt and Tool Schemas: 15% (19,200 tokens)"]
+        B2["📚 2. Retrieved RAG Context: 45% (57,600 tokens)"]
+        B3["💬 3. Sliding Conversation History: 25% (32,000 tokens)"]
+        B4["🎯 4. Generation Headroom Reserve: 15% (19,200 tokens)"]
+        B1 --> B2 --> B3 --> B4
     end
 ```
 

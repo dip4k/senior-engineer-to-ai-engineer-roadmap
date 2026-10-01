@@ -1,16 +1,14 @@
-# Multi-Agent Coordination, Swarms & The Tri-Protocol Stack
+# Lesson 05: Multi-Agent Coordination, Handoffs, and the Linux Foundation Agent2Agent (A2A) Protocol
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🔵 Tier 3: Advanced` | Estimated Reading Time: 45 min
+> **Tier**: `🔵 Advanced` | Estimated Reading Time: 40 min
 >
-> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md), [Lesson 03: Stateful Sessions, Durable WAL & Distributed Sagas](03-stateful-sessions-and-durable-wal-persistence.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
+> **Prerequisites**: [Lesson 00: Agentic Systems Fundamentals](00-agentic-systems-and-control-plane-fundamentals.md), [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md), [Lesson 03: Stateful Sessions, Durable WAL & Distributed Sagas](03-stateful-sessions-and-durable-wal-persistence.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
 >
-> **Core Concept**: In Lessons 01 through 04, we built single agents with governed loops, durable state, and tiered memory. But what happens when the work is too broad for one agent? A Large Language Model (LLM) is an auto-regressive statistical engine that predicts the next token based on its input prompt context. When an application registers dozens of tools with a single model, it must inject each tool's full JSON Schema into the prompt context, consuming thousands of tokens. This causes **attention diffusion**: the model's internal mechanism spreads its processing weights thinly across hundreds of competing parameter keys, flattening probability distributions and causing the model to generate non-existent arguments or select incorrect tools. To maintain high reliability, enterprise architectures divide work across specialized agents—each maintaining an isolated execution loop with a narrow system prompt and 3 to 5 domain-specific tools. Connecting these independent agents across systems, organizations, and human users relies on the **Tri-Protocol Stack**: the **Model Context Protocol (MCP)** for vertical tool execution, the Linux Foundation **Agent-to-Agent (A2A) Protocol** for horizontal agent-to-agent delegation, and the **Agent-User Interface (AG-UI)** for real-time frontend streaming and human-in-the-loop approvals.
-
-### Key AI Terms for This Lesson
-
-* **Auto-Regressive Generation**: The way language models produce output. Instead of generating an entire response at once, the model predicts one token at a time, then feeds that token back as input to predict the next one. Each token prediction depends on all previous tokens in the context window — like writing a sentence one word at a time, where each word choice depends on everything written before it.
-* **Self-Attention**: The internal mechanism that allows a transformer model to determine which parts of the input are most relevant to predicting the next token. When processing the word "refund" in a tool call, self-attention lets the model focus heavily on the nearby `invoice_id` parameter while paying less attention to unrelated text. It works by computing a relevance score between every pair of tokens in the input.
-* **Attention Diffusion**: When too many similar tool schemas are packed into a single prompt, the self-attention mechanism cannot concentrate its relevance scores sharply on the correct schema. Instead, the scores spread thinly across many competing candidates — like trying to read a specific paragraph on a page covered in 50 similarly-formatted paragraphs. This leads to incorrect tool selection and hallucinated parameter names.
+> **Core Concept**: When an application registers dozens of tools with a single model, prompt schemas consume thousands of tokens, triggering attention diffusion and parameter hallucination. Enterprise systems divide work across specialized agents, each managing an isolated loop with narrow prompts and 3 to 5 domain-specific tools. Connecting these agents across systems relies on the Tri-Protocol Stack: MCP (vertical tools), Linux Foundation A2A (horizontal inter-agent delegation), and AG-UI (user-facing event streaming).
+>
+> **Term Ledger**:
+> * **New AI terms introduced**: `Multi-Agent System`, `Agent-to-Agent (A2A) Protocol`, `Agent Card`, `Handoff Pattern`, `Supervisor-Worker Topology`, `Context Contamination`.
+> * **AI terms assumed from earlier lessons**: `AI Agent`, `Control Plane`, `Compute Plane`, `ReAct Pattern`, `Context Window`, `Token`, `Prompt`, `Function Calling`, `Tool Schema`.
 
 ---
 
@@ -22,24 +20,37 @@ In AI engineering, building a single "do-everything" agent fails for an even mor
 
 ```mermaid
 flowchart TD
-    classDef mono fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef multi fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef step fill:#ffffff,stroke:#333,stroke-width:1px;
-
-    subgraph Monolith["THE MONOLITHIC AGENT TRAP (Attention Diffusion)"]
+    subgraph Monolith["⚠️ Monolithic Agent Trap"]
         direction TB
-        M_Prompt["Single 10,000-Token System Prompt\n(50 Tool JSON Schemas + Contradictory Business Rules)"]:::mono
-        --> M_Attn["Self-Attention Mechanism spreads weights across 50 schemas\n(High entropy, flattened probability distribution)"]:::mono
-        --> M_Fail["Failure Modes:\n• Hallucinated parameter names\n• Selecting read_invoice instead of refund_invoice\n• Security: One prompt injection exposes all tools"]:::mono
+        M_Prompt["📜 10,000-Token Prompt<br/>50 schemas and conflicting rules"]
+        --> M_Attn["🧠 Diffused Self-Attention<br/>High entropy across 50 schemas"]
+        --> M_Fail["💥 Failure Modes<br/>Hallucinations and wrong tools"]
     end
 
-    subgraph MultiAgent["THE MULTI-AGENT ARCHITECTURE (Separation of Concerns)"]
+    subgraph MultiAgent["✅ Multi-Agent Architecture"]
         direction TB
-        MA_Triage["Triage Agent\n(Prompt: 400 Tokens | Tools: 2)"]:::multi
-        -->|"Hands off scoped 300-token packet"| MA_Specialist["Billing Specialist Agent\n(Prompt: 600 Tokens | Tools: 3)"]:::multi
-        --> MA_Success["High Reliability:\n• Sharp self-attention focus on 3 schemas\n• Near-zero parameter hallucination\n• Least-Privilege Security Isolation"]:::multi
+        MA_Triage["🤖 Triage Agent<br/>400 tokens with 2 tools"]
+        -->|"📦 Scoped 300-token packet"| MA_Specialist["💳 Billing Specialist<br/>600 tokens with 3 tools"]
+        --> MA_Success["🎯 Isolated Reliability<br/>Sharp attention and least privilege"]
     end
+
+    style Monolith fill:none,stroke:#dc2626,stroke-width:2px
+    style MultiAgent fill:none,stroke:#16a34a,stroke-width:2px
+    style M_Prompt stroke:#dc2626,stroke-width:1px,fill:none
+    style M_Attn stroke:#dc2626,stroke-width:1px,fill:none
+    style M_Fail stroke:#dc2626,stroke-width:1px,fill:none
+    style MA_Triage stroke:#16a34a,stroke-width:1px,fill:none
+    style MA_Specialist stroke:#16a34a,stroke-width:1px,fill:none
+    style MA_Success stroke:#16a34a,stroke-width:1px,fill:none
 ```
+
+### Walkthrough: Monolithic Trap vs. Multi-Agent Specialization
+1. **Monolithic Prompt Bloat**: Stacking 50 JSON schemas inflates the prompt to 10,000 tokens before user input arrives.
+2. **Self-Attention Diffusion**: Attention scores distribute thinly across overlapping schema parameters, flattening probability mass.
+3. **Operational Failure**: The model selects incorrect tools or hallucinates required parameters under high entropy.
+4. **Triage Routing**: In a multi-agent topology, a lightweight triage agent inspects intent with only 2 routing tools.
+5. **Scoped Delegation**: Work transfers via a compact 300-token packet to a dedicated billing specialist with only 3 domain tools.
+6. **Fidelity Preservation**: Focused attention budgets yield near-zero tool hallucinations and enforce least-privilege security.
 
 ### The AI Mechanics: What Happens Inside the Model?
 
@@ -48,17 +59,17 @@ To understand why a monolithic agent fails, we must examine the internal mechani
 1. **How Tools Actually Work (Tool Schemas as Prompt Prefixes)**:
    A foundation model does not have direct socket connections or operating system bindings. When an application gives an LLM tools, the host orchestrator converts each tool signature into a structured **JSON Schema** (specifying the function name, docstring description, argument names, and types). These schemas are serialized into text and prepended to the system prompt.
 2. **Context Window Token Bloat**:
-   If you configure 50 enterprise tools (e.g., Jira APIs, Stripe refunds, SQL database queries, AWS Kubernetes operations), the tool schemas alone consume between **6,000 and 10,000 tokens** before the user even types a single word.
+   Configuring 50 enterprise tools causes schemas to consume 6,000 to 10,000 tokens before the user enters a query. This token bloat inflates latency and costs.
 3. **Attention Diffusion and Entropy**:
    During transformer inference, the model computes self-attention scores between every token in the prompt. When 50 similar schemas are present—each containing overlapping argument names such as `user_id`, `account_id`, `customer_uuid`, `transaction_token`—the model's attention weights diffuse across multiple candidate tokens. Instead of concentrating high probability mass onto the single correct function name, the probability distribution over candidate tokens becomes flat and noisy.
 4. **Prompt Instruction Collision**:
-   When a single system prompt attempts to combine contradictory behavioral requirements (e.g., *"Be extremely concise and friendly in customer support"* alongside *"Follow strict, verbose regulatory compliance verification before altering financial ledgers"*), the model's output reflects an average of both vectors, frequently neglecting critical compliance constraints.
+   Combining contradictory instructions in a single prompt forces the model to blend conflicting goals. As a result, the model frequently ignores critical compliance rules.
 5. **Security Perimeter Collapse**:
-   If an agent has access to both a public search tool and an internal database mutation tool, an **indirect prompt injection** (malicious instructions embedded in a public web page or customer ticket) can manipulate the agent into executing destructive mutations.
+   An agent with both search and database write tools creates security vulnerabilities. Indirect prompt injections can hijack the agent to execute unauthorized mutations.
 
 ### The Solution: Agent Specialization & Separation of Concerns
 
-Just as microservice architectures decompose monolithic web backends into dedicated services with distinct database schemas and API boundaries, enterprise AI systems decompose monolithic agents into **specialized agents**:
+Just as microservice architectures decompose monolithic backends into dedicated services, enterprise AI systems decompose monolithic agents into **specialized agents**:
 * Each specialized agent operates with a focused system prompt (300 to 800 tokens).
 * Each agent receives only **3 to 5 tools** strictly required for its specific domain.
 * Sensitive financial or administrative tools are isolated inside gated specialists requiring cryptographic authentication or Human-in-the-Loop (HITL) approval gates.
@@ -69,52 +80,65 @@ Just as microservice architectures decompose monolithic web backends into dedica
 
 When coordinating multiple specialized agents, distributed systems architects implement one of three standard structural patterns:
 
+> [!NOTE]
+> **Where this analogy breaks**: In human team hierarchies, specialist employees can improvise, resolve unstated ambiguities over watercooler conversations, and push back on flawed managerial assumptions. In multi-agent systems, agents cannot improvise beyond their tool schemas. If an orchestrator's task prompt is ambiguous, the specialist either halts with an unhandled exception or hallucinates valid-looking arguments.
+
+### Topology A: Supervisor-Worker (Centralized Orchestrator)
+
 ```mermaid
 flowchart TD
-    classDef sup fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef peer fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef bus fill:#ede7f6,stroke:#512da8,stroke-width:2px;
-    classDef box fill:#ffffff,stroke:#333,stroke-width:1px;
+    Sup["👑 Supervisor Orchestrator Agent<br/>Breaks goal into subtasks"]
+    Sup -->|"Subtask 1"| W1["🔍 Research Specialist<br/>2 Tools"]
+    Sup -->|"Subtask 2"| W2["💻 Code Specialist<br/>2 Tools"]
+    Sup -->|"Subtask 3"| W3["🛡️ Security Audit Specialist<br/>2 Tools"]
 
-    subgraph TopologyA["TOPOLOGY A: SUPERVISOR-WORKER (Centralized Orchestrator)"]
-        direction TB
-        Sup["Supervisor Orchestrator Agent\n(Breaks user goal into subtasks)"]:::sup
-        Sup -->|"Subtask 1"| W1["Research Specialist (2 Tools)"]:::box
-        Sup -->|"Subtask 2"| W2["Code Synthesis Specialist (2 Tools)"]:::box
-        Sup -->|"Subtask 3"| W3["Security Audit Specialist (2 Tools)"]:::box
-    end
-
-    subgraph TopologyB["TOPOLOGY B: DYNAMIC HANDOFFS (Peer-to-Peer Relay)"]
-        direction LR
-        Triage["Triage Agent"]:::peer
-        -->|"Handoff with Scoped Packet"| Billing["Billing Specialist"]:::peer
-        -->|"Handoff with Scoped Packet"| Fraud["Fraud Investigation Specialist"]:::peer
-    end
-
-    subgraph TopologyC["TOPOLOGY C: ASYNCHRONOUS EVENT BUS (Message Queue Driven)"]
-        direction TB
-        Broker["Distributed Message Broker (Kafka / RabbitMQ / Redis Streams)"]:::bus
-        A_Pub["Ingress Webhook Agent"]:::box -->|"Publish: OrderCreatedEvent"| Broker
-        Broker -->|"Consume Event"| B_Sub["Inventory Reservation Agent"]:::box
-        Broker -->|"Consume Event"| C_Sub["Tax Calculation Agent"]:::box
-    end
+    style Sup stroke:#2563eb,stroke-width:2px,fill:none
+    style W1 stroke:#64748b,stroke-width:1px,fill:none
+    style W2 stroke:#64748b,stroke-width:1px,fill:none
+    style W3 stroke:#64748b,stroke-width:1px,fill:none
 ```
 
-### 1. Topology A: Supervisor-Worker (Centralized Orchestrator)
-* **How It Works**: A central supervisor agent acts as the primary contact point. It inspects the incoming user request, breaks it down into a directed acyclic graph (DAG) or sequence of subtasks, delegates each subtask to an isolated specialist worker, and synthesizes the workers' individual outputs into a unified response.
-* **Communication Rules**: Specialist workers never communicate directly with one another; all context and results flow strictly through the supervisor.
-* **Best Use Cases**: Deep research report generation, multi-stage code reviews, and structured document analysis pipelines.
+### Walkthrough: Supervisor-Worker Topology
+1. **Goal Ingestion**: The supervisor agent receives the primary user objective.
+2. **Subtask Decomposition**: The supervisor decomposes the objective into isolated subtasks.
+3. **Delegated Execution**: Workers execute their narrow subtasks in parallel without knowing about peer workers.
+4. **Synthesis**: The supervisor collects verified findings and synthesizes the unified final response.
 
-### 2. Topology B: Dynamic Handoffs (Peer-to-Peer Relay)
-* **How It Works**: Agents operate as peer nodes in a state machine. When an agent determines that a user's intent belongs to a different domain, it invokes a designated handoff tool (such as `transfer_to_billing(reason, customer_id)`). The orchestrator updates the active agent pointer to the billing specialist, which takes over the conversation.
-* **Communication Rules**: The originating agent relinquishes control completely.
-* **Standardized By**: Originally popularized by OpenAI Swarm, now productionized in the **OpenAI Agents SDK (`openai-agents`)**.
-* **Best Use Cases**: Interactive customer support, multi-department enterprise portals, and real-time voice assistants.
+### Topologies B & C: Dynamic Handoffs and Event Bus
 
-### 3. Topology C: Asynchronous Event Bus (Message Queue Driven)
-* **How It Works**: Decouples agent execution across distributed message brokers (such as Apache Kafka, RabbitMQ, or AWS SQS). Agents subscribe to specific domain event topics, execute their autonomous ReAct loops in background container workers, and publish completion events to downstream topics.
-* **Communication Rules**: 100% asynchronous, non-blocking, and fault-tolerant.
-* **Best Use Cases**: Long-running background batch jobs, overnight code repository migrations, and asynchronous compliance scanning.
+```mermaid
+flowchart TD
+    subgraph Handoff["🔄 Dynamic Peer Handoff"]
+        Triage["🤖 Triage Agent"] -->|"📦 Handoff DTO"| Billing["💳 Billing Specialist"]
+        Billing -->|"📦 Handoff DTO"| Fraud["🛡️ Fraud Specialist"]
+    end
+
+    subgraph EventBus["📡 Event-Driven Async Bus"]
+        Pub["⚡ Webhook Agent"] -->|"📨 Publish Event"| Broker[("📬 Message Broker<br/>Kafka / Redis")]
+        Broker -->|"📥 Consume"| Sub1["📦 Inventory Agent"]
+        Broker -->|"📥 Consume"| Sub2["📑 Tax Agent"]
+    end
+
+    style Handoff fill:none,stroke:#d97706,stroke-width:2px
+    style EventBus fill:none,stroke:#7c3aed,stroke-width:2px
+    style Triage stroke:#d97706,stroke-width:2px,fill:none
+    style Billing stroke:#d97706,stroke-width:2px,fill:none
+    style Fraud stroke:#d97706,stroke-width:2px,fill:none
+    style Pub stroke:#7c3aed,stroke-width:2px,fill:none
+    style Broker stroke:#7c3aed,stroke-width:2px,fill:none
+    style Sub1 stroke:#64748b,stroke-width:1px,fill:none
+    style Sub2 stroke:#64748b,stroke-width:1px,fill:none
+```
+
+### Walkthrough: Dynamic Handoffs & Event Bus
+1. **Dynamic Handoff**: A triage agent evaluates customer intent and delegates execution to a specialized billing agent.
+2. **Context Passing**: State transfers via a lean Data Transfer Object without forwarding raw conversational bloat.
+3. **Event Bus Decoupling**: For asynchronous background workloads, agents publish and subscribe to durable message queues.
+
+### Topology Trade-offs Explained Simply
+* **Supervisor-Worker**: A central supervisor acts as the primary contact point. It inspects the incoming user request and queries available specialist profiles. It dispatches subtasks with tailored prompt packets.
+* **Dynamic Handoffs**: Agents operate as peer nodes in a state machine. When an agent detects a different domain intent, it invokes a handoff tool (`transfer_to_billing`). Standardized by the OpenAI Agents SDK (`openai-agents`).
+* **Asynchronous Event Bus**: Decouples agent execution across message brokers (Kafka, RabbitMQ, SQS) for background batch processing.
 
 ---
 
@@ -124,36 +148,47 @@ When execution transitions from Agent A to Agent B, how should state and convers
 
 ```mermaid
 flowchart TD
-    classDef bad fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef good fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef opt fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef step fill:#ffffff,stroke:#333,stroke-width:1px;
-
-    subgraph AntiPattern["ANTI-PATTERN: PASS ENTIRE UNFILTERED CONVERSATION HISTORY"]
-        direction LR
-        AP_User["User Request"] --> AP_A["Agent A Work Session\n(Internal Scratchpads, Raw DB JSON: 18,000 Tokens)"]
-        --> AP_Dump["Full Unfiltered History Dump"]:::bad
-        --> AP_B["Agent B Prompt Context\n(Ingests all 18,000 Tokens!\nHigh Latency, High Cost, Context Window Saturation)"]:::bad
+    subgraph AntiPattern["⚠️ Anti-Pattern: Full History Dump"]
+        AP_A["🤖 Agent A Session<br/>Raw DB: 18,000 Tokens"]
+        --> AP_Dump["💥 Unfiltered Dump<br/>Full scratchpad dump"]
+        --> AP_B["⚠️ Agent B Context<br/>18,000 Tokens saturated"]
     end
 
-    subgraph BestPractice["PRODUCTION PATTERN: SCOPED HANDOFF DATA PACKET"]
-        direction LR
-        BP_User["User Request"] --> BP_A["Agent A Work Session"]
-        --> BP_DTO["Structured Handoff DTO (Pydantic Schema: ~350 Tokens)\n• verified_facts\n• completed_actions\n• remaining_goal"]:::good
-        --> BP_B["Agent B Prompt Context\n(Receives ONLY its lean system prompt + 350-token packet.\n85% Token Reduction, Zero Distraction)"]:::good
+    subgraph BestPractice["✅ Best Practice: Scoped DTO Packet"]
+        BP_A["🤖 Agent A Session<br/>Filters facts and tool data"]
+        --> BP_DTO["📦 Scoped Handoff DTO<br/>Pydantic Schema: 350 Tokens"]
+        --> BP_B["🎯 Agent B Context<br/>Lean prompt: 85% token cut"]
     end
+
+    style AntiPattern fill:none,stroke:#dc2626,stroke-width:2px
+    style BestPractice fill:none,stroke:#16a34a,stroke-width:2px
+    style AP_A stroke:#dc2626,stroke-width:1px,fill:none
+    style AP_Dump stroke:#dc2626,stroke-width:1px,fill:none
+    style AP_B stroke:#dc2626,stroke-width:1px,fill:none
+    style BP_A stroke:#16a34a,stroke-width:1px,fill:none
+    style BP_DTO stroke:#16a34a,stroke-width:1px,fill:none
+    style BP_B stroke:#16a34a,stroke-width:1px,fill:none
 ```
+
+### Walkthrough: History Dumps vs. Scoped Handoff DTOs
+1. **Unfiltered Dump (Anti-Pattern)**: Agent A dumps raw tool outputs, intermediate JSON blobs, and reasoning scratchpads (18,000 tokens) into Agent B's prompt.
+2. **Context Saturation**: Agent B suffers from inflated inference latency, exponential token costs, and attention distraction from irrelevant SQL headers.
+3. **Targeted Extraction (Best Practice)**: Agent A extracts only validated conclusions and remaining goals into a strongly typed Pydantic Data Transfer Object (~350 tokens).
+4. **Isolated Reception**: Agent B initializes with its lean system prompt and the 350-token handoff packet, cutting token load by 85% with zero distraction.
 
 ### The Architectural Flaw of Dumping Full Conversation History
 In naive multi-agent implementations, developers simply append the entire message history of Agent A (including internal reasoning thoughts, intermediate tool outputs, and error retries) into the prompt of Agent B. This causes three severe failures:
 1. **Context Window Saturation**: If Agent A consumed 18,000 tokens querying a database, Agent B immediately inherits that 18,000-token footprint, driving up inference latency and API costs.
-2. **Error and Scratchpad Contamination**: If Agent A experienced a tool failure and retried, Agent B's self-attention mechanism attends to Agent A's failed reasoning attempts, increasing the probability that Agent B repeats the same mistake.
+2. **Error and Scratchpad Contamination**: Transferring entire scratchpads causes error and context contamination. The target agent inherits messy intermediate errors and loses domain focus.
 3. **Irrelevant Information Distraction**: Agent B does not need to see the raw SQL query strings or HTTP headers that Agent A used; Agent B only needs the verified conclusion.
 
 ### The Production Solution: Scoped Handoff Packets (Data Transfer Objects)
 Before handing off control, the active agent serializes its findings into a strongly typed **Scoped Handoff Packet** (Data Transfer Object) defined by a Pydantic schema:
 
 ```python
+from pydantic import BaseModel
+
+
 class ScopedHandoffPacket(BaseModel):
     customer_id: str
     verified_facts: list[str]       # Grounded conclusions verified by tools
@@ -176,36 +211,47 @@ As multi-agent ecosystems scale across different engineering teams, programming 
 
 ```mermaid
 flowchart TD
-    classDef proto fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef agent fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef ext fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef human fill:#ede7f6,stroke:#512da8,stroke-width:2px;
-
-    Human["Human Operator / End User"]:::human
+    Human(["👤 Human Operator"])
     
-    subgraph Layer3["LAYER 3: USER INTERACTION PROTOCOL (Vertical Upward)"]
-        AGUI["AG-UI PROTOCOL (Agent-to-User Interface)\n• Real-time SSE / WebSocket event streaming\n• Step-by-step reasoning transparency\n• Interactive human approval dialogs"]:::proto
+    subgraph Layer3["🖥️ Layer 3: User Interaction"]
+        AGUI["🖥️ AG-UI Protocol<br/>SSE and WebSocket streaming<br/>Approvals and status updates"]
     end
 
-    subgraph Layer2["LAYER 2: AGENT COORDINATION PROTOCOL (Horizontal Inter-Agent)"]
-        direction LR
-        AgentA["Triage Agent\n(Python / LangGraph)"]:::agent
-        A2A["LINUX FOUNDATION A2A PROTOCOL\n• Machine-readable Agent Cards (agent-card.json)\n• Standardized JSON-RPC 2.0 Task Lifecycle FSM\n• OAuth2 / mTLS Cross-Service Authentication"]:::proto
-        AgentB["Billing Specialist\n(C# / Microsoft Agent Framework)"]:::agent
-        AgentA <--> A2A <--> AgentB
+    subgraph Layer2["🌐 Layer 2: Agent Coordination"]
+        AgentA["🤖 Triage Agent<br/>Python / LangGraph"]
+        A2A["🌐 Linux Foundation A2A<br/>Agent Cards and JSON-RPC 2.0"]
+        AgentB["💳 Billing Specialist<br/>C# / Agent Framework"]
+        AgentA <--> A2A
+        A2A <--> AgentB
     end
 
-    subgraph Layer1["LAYER 1: TOOL EXECUTION PROTOCOL (Vertical Downward)"]
-        direction LR
-        MCP["MODEL CONTEXT PROTOCOL (MCP)\n• Open standard created by Anthropic\n• Standardized tool discovery and invocation\n• Transports: stdio (local) / SSE (remote HTTP)"]:::proto
-        DB[("PostgreSQL / Snowflake")]:::ext
-        Cloud["Cloud APIs (AWS / GCP / Azure)"]:::ext
-        Git["Git Version Control"]:::ext
+    subgraph Layer1["⚡ Layer 1: Tool Execution"]
+        MCP["⚡ Model Context Protocol<br/>Standard tool discovery and calls"]
+        Tools[("🗄️ Enterprise Tools<br/>DBs, Cloud APIs, Git")]
+        MCP --> Tools
     end
 
-    Human <--> AGUI <--> AgentA
-    AgentA & AgentB <--> MCP <--> DB & Cloud & Git
+    Human <--> AGUI
+    AGUI <--> AgentA
+    AgentA --> MCP
+    AgentB --> MCP
+
+    style Layer3 fill:none,stroke:#2563eb,stroke-width:2px
+    style Layer2 fill:none,stroke:#7c3aed,stroke-width:2px
+    style Layer1 fill:none,stroke:#16a34a,stroke-width:2px
+    style Human stroke:#64748b,stroke-width:1px,fill:none
+    style AGUI stroke:#2563eb,stroke-width:2px,fill:none
+    style AgentA stroke:#7c3aed,stroke-width:1px,fill:none
+    style A2A stroke:#7c3aed,stroke-width:2px,fill:none
+    style AgentB stroke:#7c3aed,stroke-width:1px,fill:none
+    style MCP stroke:#16a34a,stroke-width:2px,fill:none
+    style Tools stroke:#16a34a,stroke-width:1px,fill:none
 ```
+
+### Walkthrough: The Tri-Protocol Stack
+1. **Vertical Upward (AG-UI)**: Streams thought milestones, status updates, and interactive approval gates to the end user.
+2. **Horizontal Inter-Agent (A2A)**: Bridges heterogeneous agents across different frameworks using standardized Agent Cards and JSON-RPC 2.0.
+3. **Vertical Downward (MCP)**: Standardizes host-to-tool invocation across databases, cloud platforms, and internal microservices.
 
 ### The Three Layers Defined
 
@@ -267,6 +313,15 @@ When Agent A delegates an action to Agent B under A2A, both runtimes track the t
 
 ```mermaid
 stateDiagram-v2
+    state "📥 SUBMITTED" as SUBMITTED
+    state "✅ ACK" as ACK
+    state "🚫 REJECTED" as REJECTED
+    state "⚙️ PROCESSING" as PROCESSING
+    state "⏸️ AWAITING_INPUT" as AWAITING_INPUT
+    state "🏁 COMPLETED" as COMPLETED
+    state "💥 FAILED" as FAILED
+    state "⏹️ CANCELLED" as CANCELLED
+
     [*] --> SUBMITTED: Initiator dispatches task payload
     
     SUBMITTED --> ACK: Recipient validates auth token & schema
@@ -523,9 +578,32 @@ if __name__ == "__main__":
 
 ---
 
+## 9. Quick Check
+
+1. Why does a monolithic agent degrade when you register 30 tools, even if the context window can technically hold all the tool schemas?
+<details>
+<summary>Answer</summary>
+Attention diffusion: registering dozens of JSON schemas consumes thousands of prompt tokens and flattens the model's self-attention probability distribution across too many candidate fields. The model loses focus on the core instruction and hallucinates missing or invalid arguments. Dividing tools across specialized agents keeps each schema pool narrow (3–5 tools) and preserves prompt attention fidelity.
+</details>
+
+2. How do North-South protocols like MCP differ from East-West protocols like A2A in an agent architecture?
+<details>
+<summary>Answer</summary>
+North-South protocols (such as Model Context Protocol / MCP) connect an agent downward to tools, databases, and APIs within an execution sandbox via client-server JSON-RPC. East-West protocols (such as Agent2Agent / A2A) connect autonomous agents horizontally across network and trust boundaries. A2A uses standardized Agent Cards (JSON-LD at `/.well-known/agent.json`), dynamic capability discovery, and cryptographically verified task negotiation.
+</details>
+
+3. In a multi-agent handoff pattern, why should you transfer a Scoped Handoff Packet instead of copying the full raw conversation context?
+<details>
+<summary>Answer</summary>
+Passing the full raw conversational transcript inflates token consumption exponentially with every hop, exposes downstream agents to irrelevant chatter and prompt injection vectors, and burdens the receiving specialist with re-parsing intent. A Scoped Handoff Packet is a typed DTO containing only confirmed facts, completed action IDs, and remaining objectives, slashing token overhead by 80–90% while isolating scope.
+</details>
+
+---
+
 ## 🧭 Navigation
 
 | [← Lesson 04: Agent Memory Systems](04-agent-memory-systems-and-cognitive-architectures.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 06: Code-as-Action & Sandboxed Execution Runtimes →](06-codeact-and-sandboxed-execution-runtimes.md) |
 |:---:|:---:|:---:|
 | **Previous Lesson** | **Phase Hub** | **Next Lesson** |
 | [Lab 2: Multi-Agent Swarm](labs/lab2-multi-agent-swarm.md) | [Lab 4: Distributed Saga Pattern](labs/lab4-saga-pattern.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+

@@ -1,8 +1,10 @@
 # Lab 6: Dual-LLM Privilege Quarantine & Guardrail Defenses
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb)
+
 > **Zero-Trust AI Perimeter Defense**: Untrusted Ingestion DMZ + Privilege Separation + Data/Instruction Demarcation + Policy Denial Gates  
 > 
-> [🔙 Back to Module 05: AI Security](../05-ai-security-and-guardrails/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Policy Engine](../agent-forge/agent_forge/mcp/)
+> [🔙 Back to Module 05: AI Security](../05-ai-security-and-guardrails/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Policy Engine](../agent-forge/agent_forge/mcp/) • [🛡️ Interactive Policy & Guardrail Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
 
 ---
 
@@ -17,17 +19,17 @@ This lab delivers an enterprise-grade **Dual-LLM Privilege Quarantine Architectu
 
 ```mermaid
 flowchart TD
-    UntrustedPayload["Untrusted External Document<br>(Contains Indirect Prompt Injection Attack)"] --> DMZ["1. Quarantine DMZ: Unprivileged LLM<br>• ZERO Tool Access<br>• ZERO Network / DB Access<br>• Task: Extract structured JSON fields ONLY"]
+    UntrustedPayload["📥 Untrusted External Document<br>(Contains Indirect Prompt Injection Attack)"] --> DMZ["🔒 1. Quarantine DMZ: Unprivileged LLM<br>• ZERO Tool Access<br>• ZERO Network / DB Access<br>• Task: Extract structured JSON fields ONLY"]
     
-    DMZ --> SchemaValidation["2. Strict Pydantic Schema Validation<br>(Sanitize & Validate Field Types)"]
+    DMZ --> SchemaValidation["📋 2. Strict Pydantic Schema Validation<br>(Sanitize and Validate Field Types)"]
     
-    SchemaValidation --> PrivilegedAgent["3. Privileged Orchestrator Agent<br>(Receives typed data, NOT raw untrusted text)"]
+    SchemaValidation --> PrivilegedAgent["🤖 3. Privileged Orchestrator Agent<br>(Receives typed data, NOT raw untrusted text)"]
     
-    PrivilegedAgent --> PolicyGate["4. Zero-Trust PolicyEngine.evaluate()<br>Check Tenant, Role & Tool Target"]
+    PrivilegedAgent --> PolicyGate["🛡️ 4. Zero-Trust PolicyEngine.evaluate()<br>Check Tenant, Role and Tool Target"]
     
-    PolicyGate --> Decision{"Tool Permitted?<br>(e.g. admin_drop_database)"}
-    Decision -- "Denied (Admin / Unprivileged)" --> Halt["5. DENIED<br>(Block Execution & Log Alert)"]
-    Decision -- "Permitted" --> SafeExec["6. Execute Authorized Tool"]
+    PolicyGate --> Decision{"⚖️ Tool Permitted?<br>(e.g. admin_drop_database)"}
+    Decision -- "Denied (Admin / Unprivileged)" --> Halt["🛑 5. DENIED<br>(Block Execution and Log Alert)"]
+    Decision -- "Permitted" --> SafeExec["✅ 6. Execute Authorized Tool"]
 ```
 
 #### Diagram Walkthrough:

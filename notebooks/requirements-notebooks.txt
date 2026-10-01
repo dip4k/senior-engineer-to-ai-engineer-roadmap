@@ -1,0 +1,15 @@
+# Visual & Interactive Notebook Dependencies for AI-Native Engineer Companion Labs
+matplotlib>=3.8.0
+seaborn>=0.13.0
+pandas>=2.2.0
+numpy>=1.26.0
+scikit-learn>=1.4.0
+fairlearn>=0.10.0
+shap>=0.45.0
+pydantic>=2.7.0
+ipywidgets>=8.1.0
+sentence-transformers>=2.7.0
+chromadb>=0.4.24
+rank-bm25>=0.2.2
+groq>=0.9.0
+google-genai>=0.1.1

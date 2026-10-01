@@ -23,28 +23,28 @@ To safely harness autonomous developer agents, enterprise architects must establ
 
 ```mermaid
 flowchart TD
-    subgraph Ingress["1. Task Ingress & Contract Ingestion"]
-        Issue["GitHub Issue / Jira Ticket<br>(Feature / Bug Description)"] --> Context["Context Engine<br>• Gathers AST Call Graph<br>• Loads AGENT.md Contracts<br>• Gathers Golden Unit Tests"]
+    subgraph Ingress["1. Task Ingress and Context"]
+        Issue["📋 GitHub Issue / Jira Ticket<br>(Feature / Bug Description)"] --> Context["🧠 Context Engine<br>• Gathers AST Call Graph<br>• Loads AGENT.md Contracts<br>• Gathers Golden Unit Tests"]
     end
 
-    subgraph AgentLoop["2. Autonomous TDD Loop (Claude Code / o3-mini)"]
-        Context --> Plan["1. Architectural Task Planner<br>(Emits Formal File Mutation Plan)"]
-        Plan --> TDD_Gen["2. TDD Synthesizer<br>(Generates Failing Unit Tests First)"]
-        TDD_Gen --> Code_Gen["3. Implementation Synthesizer<br>(Applies Minimal Code Diff)"]
+    subgraph AgentLoop["2. Autonomous TDD Loop"]
+        Context --> Plan["📐 1. Architectural Task Planner<br>(Emits Formal File Mutation Plan)"]
+        Plan --> TDD_Gen["🧪 2. TDD Synthesizer<br>(Generates Failing Unit Tests First)"]
+        TDD_Gen --> Code_Gen["💻 3. Implementation Synthesizer<br>(Applies Minimal Code Diff)"]
     end
 
-    subgraph Sandbox["3. Isolated Micro-VM Sandbox (gVisor / Docker)"]
-        Code_Gen --> Runner["Ephemeral Sandbox Execution<br>• AST Static Linter Pre-Pass<br>• Dependency Whitelist Check<br>• Isolated Pytest / dotnet test"]
-        Runner --> Gate{"All Tests Pass &<br>Zero Layer Violations?"}
-        Gate -- "Fail (Turn < 5)" --> SelfCorrect["Autonomous Self-Correction<br>(Passes Compiler/Test Trace)"]
+    subgraph Sandbox["3. Isolated Execution Sandbox"]
+        Code_Gen --> Runner["📦 Ephemeral Sandbox Execution<br>• AST Static Linter Pre-Pass<br>• Dependency Whitelist Check<br>• Isolated Pytest / dotnet test"]
+        Runner --> Gate{"⚖️ All Tests Pass and<br>Zero Layer Violations?"}
+        Gate -- "Fail (Turn < 5)" --> SelfCorrect["🔄 Autonomous Self-Correction<br>(Passes Compiler/Test Trace)"]
         SelfCorrect --> Code_Gen
-        Gate -- "Fail (Turn >= 5)" --> Escalate["Halt Loop & Escalate to Human"]
+        Gate -- "Fail (Turn >= 5)" --> Escalate["🚨 Halt Loop and Escalate to Human"]
     end
 
-    subgraph Governance["4. CI/CD Governance & Pull Request"]
-        Gate -- "Pass" --> DiffAST["AST Diff Auditor<br>(Verifies No Prohibited Imports)"]
-        DiffAST --> PR["Emit GitHub Pull Request<br>• Explanatory Commit Summary<br>• Inline AST Impact Analysis"]
-        PR --> HumanReview["Tech Lead Code Review & Merge"]
+    subgraph Governance["4. CI/CD Governance and PR"]
+        Gate -- "Pass" --> DiffAST["🔍 AST Diff Auditor<br>(Verifies No Prohibited Imports)"]
+        DiffAST --> PR["🚀 Emit GitHub Pull Request<br>• Explanatory Commit Summary<br>• Inline AST Impact Analysis"]
+        PR --> HumanReview["👤 Tech Lead Code Review and Merge"]
     end
 ```
 

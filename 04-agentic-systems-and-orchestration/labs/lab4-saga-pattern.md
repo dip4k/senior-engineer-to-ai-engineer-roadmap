@@ -1,4 +1,4 @@
-### Lab 4: Transaction Rollback for Tool Execution Failures (Distributed Saga Pattern) [MUST-HAVE] 🔴
+### Lab 4: Transaction Rollback for Tool Execution Failures (Distributed Saga Pattern) 🔴
 
 #### Scenario & Enterprise Problem
 In autonomous e-commerce fulfillment, an agent must execute three mutating actions:

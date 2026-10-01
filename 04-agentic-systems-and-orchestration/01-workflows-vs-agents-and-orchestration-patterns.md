@@ -1,18 +1,14 @@
 # Lesson 01: Workflows vs. Autonomous Agents & Orchestration Patterns
 
-> **Tier**: `HIGH ROI / CORE` | Estimated Reading Time: 40 min
+> **Tier**: `🟡 Engineering Depth` | Estimated Reading Time: 35 min
 >
-> **Prerequisites**: [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md), [Phase 02: Enterprise Retrieval & Knowledge Systems](../02-rag-and-knowledge-systems/README.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
-
+> **Prerequisites**: [Lesson 00: Agentic Systems Fundamentals](00-agentic-systems-and-control-plane-fundamentals.md), [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md), [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)
+>
 > **Core Concept**: Autonomous AI systems exist on a spectrum. On one side are deterministic workflows—step-by-step pipelines directed by regular software code. On the other side are autonomous agents—where the language model itself chooses which tools to run and when to stop. For enterprise systems, reliability means keeping the control flow in code, using the language model as a reasoning engine, and guarding against compounding errors.
-
-### Key Terms
-
-* **Language Model**: A model trained on massive text datasets. Given a prompt, it predicts the next words. It has no built-in memory or ability to execute code.
-* **Token**: The basic unit a language model reads and generates (roughly 3/4 of a word). Models charge per token.
-* **Context Window**: The maximum amount of text (in tokens) a model can process in one request. Everything beyond this is invisible to the model.
-* **Hallucination**: When a model generates text that appears confident but is factually wrong (like inventing database IDs).
-* **AI Agent**: A system that uses a language model in a loop to autonomously decide actions, observe results, and iterate towards a goal.
+>
+> **Term Ledger**:
+> * **New AI terms introduced**: `Prompt Chaining`, `Routing Pattern`, `Parallel Voting`, `Orchestrator-Workers`, `Evaluator-Optimizer`.
+> * **AI terms assumed from earlier lessons**: `AI Agent`, `Control Plane`, `Compute Plane`, `Prompt`, `Token`, `Context Window`, `Hallucination`, `Compounding Error Drift`.
 
 ---
 
@@ -30,32 +26,37 @@ To build reliable systems, we must separate the **Control Plane** (your code) fr
 
 ```mermaid
 flowchart TD
-    classDef plane fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef control fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef compute fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-
-    subgraph ControlPlane["THE CONTROL PLANE (Your Code)"]
+    subgraph ControlPlane["🛡️ THE CONTROL PLANE (Your Code)"]
         direction TB
-        CP1["Step-by-Step State Machine"]:::control
-        CP2["Safety Rules & Policy Checks"]:::control
-        CP3["Turn Budgets & Timeouts"]:::control
-        CP4["Duplicate Action Detection"]:::control
+        CP1["⚙️ Step-by-Step State Machine"]
+        CP2["🛡️ Safety Rules & Policy Checks"]
+        CP3["⏱️ Turn Budgets & Timeouts"]
+        CP4["🔍 Duplicate Action Detection"]
     end
 
-    subgraph ComputePlane["THE COMPUTE PLANE (The Language Model)"]
+    subgraph ComputePlane["🧠 THE COMPUTE PLANE (The Language Model)"]
         direction TB
-        CMP1["Foundation Language Model"]:::compute
-        CMP2["Text Understanding & Reasoning"]:::compute
-        CMP3["Tool Parameter Extraction"]:::compute
-        CMP4["Response Drafting & Summarization"]:::compute
+        CMP1["🧠 Foundation Language Model"]
+        CMP2["💡 Text Understanding & Reasoning"]
+        CMP3["🎯 Tool Parameter Extraction"]
+        CMP4["📝 Response Drafting & Summarization"]
     end
 
-    CP1 -->|"Sends filtered context & tool schemas"| CMP1
-    CMP1 -->|"Returns structured action proposal"| CP1
-    CP2 -.->|"Validates parameters before execution"| CMP3
-    CP3 -.->|"Enforces limits and prevents runaway loops"| CP1
+    CP1 -->|"Sends filtered context"| CMP1
+    CMP1 -->|"Returns action proposal"| CP1
+    CP2 -.->|"Validates parameters"| CMP3
+    CP3 -.->|"Enforces limits"| CP1
 
-    class ControlPlane,ComputePlane plane;
+    style ControlPlane fill:none,stroke:#2563eb,stroke-width:2px
+    style ComputePlane fill:none,stroke:#7c3aed,stroke-width:2px
+    style CP1 stroke:#2563eb,stroke-width:2px
+    style CP2 stroke:#2563eb,stroke-width:2px
+    style CP3 stroke:#2563eb,stroke-width:2px
+    style CP4 stroke:#2563eb,stroke-width:2px
+    style CMP1 stroke:#7c3aed,stroke-width:2px
+    style CMP2 stroke:#7c3aed,stroke-width:2px
+    style CMP3 stroke:#7c3aed,stroke-width:2px
+    style CMP4 stroke:#7c3aed,stroke-width:2px
 ```
 
 ### How the Planes Work Together: Step-by-Step
@@ -76,24 +77,30 @@ In their research guide, *"Building Effective Agents"*, Anthropic established a 
 
 ```mermaid
 flowchart LR
-    classDef wf fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef ag fill:#ffebee,stroke:#c62828,stroke-width:2px;
-
-    subgraph Workflows["DETERMINISTIC WORKFLOWS (Code Controls the Flow)"]
+    subgraph Workflows["⚙️ DETERMINISTIC WORKFLOWS (Code Controls Flow)"]
         direction LR
-        P1["Prompt Chaining"]:::wf
-        P2["Routing"]:::wf
-        P3["Parallel Voting"]:::wf
-        P4["Orchestrator-Workers"]:::wf
+        P1["🔗 Prompt Chaining"]
+        P2["🔀 Intent Routing"]
+        P3["⚖️ Parallel Voting"]
+        P4["👥 Orchestrator-Workers"]
     end
 
-    subgraph Agents["AUTONOMOUS AGENTS (Model Decides the Flow)"]
+    subgraph Agents["🤖 AUTONOMOUS AGENTS (Model Decides Flow)"]
         direction LR
-        P5["Autonomous Loops"]:::ag
-        P6["Plan-and-Execute"]:::ag
+        P5["🔄 Autonomous Loops"]
+        P6["📋 Plan-and-Execute"]
     end
 
     P1 --> P2 --> P3 --> P4 --> P5 --> P6
+
+    style Workflows fill:none,stroke:#16a34a,stroke-width:2px
+    style Agents fill:none,stroke:#dc2626,stroke-width:2px
+    style P1 stroke:#16a34a,stroke-width:2px
+    style P2 stroke:#16a34a,stroke-width:2px
+    style P3 stroke:#16a34a,stroke-width:2px
+    style P4 stroke:#16a34a,stroke-width:2px
+    style P5 stroke:#dc2626,stroke-width:2px
+    style P6 stroke:#dc2626,stroke-width:2px
 ```
 
 ### Understanding the Spectrum
@@ -101,6 +108,9 @@ flowchart LR
 1. **Deterministic Workflows (Left Side)**: Systems where the execution path is fixed in code. The developer writes the flowchart: step A runs, then step B, with clear branching rules (`if/else`). The language model is called only within discrete steps to handle text transformation, classification, or extraction.
 2. **Autonomous Agents (Right Side)**: Systems where the model is given an overarching goal, a set of tools, and an execution loop. The model dynamically decides which tool to call next, evaluates intermediate observations, and determines when the task is complete.
 3. **The Practical Rule**: As you move from left to right, systems become more flexible in open-ended domains, but they also become harder to test, more expensive, and prone to non-deterministic edge cases.
+
+> [!NOTE]
+> **Where this analogy breaks**: A spectrum implies a smooth slider. In production engineering, the shift from a deterministic workflow to an autonomous agent represents a step-function jump in non-determinism, failure risk, and operational cost.
 
 ### The Architectural Golden Rule
 
@@ -144,17 +154,19 @@ Even with 95% step accuracy, **over 40% of multi-step runs will derail or produc
 
 ```mermaid
 flowchart TD
-    classDef ok fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef warn fill:#fff9c4,stroke:#fbc02d,stroke-width:2px;
-    classDef bad fill:#ffebee,stroke:#c62828,stroke-width:2px;
-
-    S1["Step 1: Extract Order ID\n'ORD-9021'"]:::ok
-    S2["Step 2: Fetch Database Record\nAmount: $450 USD, Status: PENDING"]:::ok
-    S3["Step 3: Subtle Error\nModel assumes currency is EUR based on customer surname"]:::warn
-    S4["Step 4: Tool Call with Wrong Assumption\nCalls currency conversion for EUR to GBP"]:::bad
-    S5["Step 5: Severe Financial Error\nRefunds 380 GBP instead of 450 USD"]:::bad
+    S1["✅ Step 1: Extract Order ID<br>('ORD-9021')"]
+    S2["🗄️ Step 2: Fetch Record<br>($450 USD, PENDING)"]
+    S3["⚠️ Step 3: Subtle Error<br>(Assumes EUR from surname)"]
+    S4["❌ Step 4: Wrong Tool Call<br>(Converts EUR to GBP)"]
+    S5["💥 Step 5: Critical Failure<br>(Refunds 380 GBP instead of 450 USD)"]
 
     S1 --> S2 --> S3 --> S4 --> S5
+
+    style S1 stroke:#16a34a,stroke-width:2px
+    style S2 stroke:#2563eb,stroke-width:2px
+    style S3 stroke:#d97706,stroke-width:2px
+    style S4 stroke:#dc2626,stroke-width:2px
+    style S5 stroke:#dc2626,stroke-width:2px
 ```
 
 ### Step-by-Step Error Cascade
@@ -178,23 +190,36 @@ Prompt chaining breaks a large task into a linear series of focused steps. Each 
 
 ```mermaid
 flowchart LR
-    classDef node fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef gate fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-
-    Input["Customer Query"]:::node --> S1["Step 1: Extract Entities"]:::node
-    S1 --> Gate1{"Gate 1: Valid Schema?"}:::gate
-    Gate1 -- "Pass" --> S2["Step 2: Check Business Rules"]:::node
-    Gate1 -- "Fail" --> Retry1["Targeted Retry (Max 2)"]:::node
+    Input(["👤 Customer Query"]) --> S1["🔍 Step 1: Extract Entities"]
+    S1 --> Gate1{"🛡️ Gate 1: Valid?"}
+    Gate1 -- "Pass" --> S2["⚙️ Step 2: Business Rules"]
+    Gate1 -- "Fail" --> Retry1["🔄 Targeted Retry"]
     Retry1 --> S1
-    S2 --> Gate2{"Gate 2: Query Valid?"}:::gate
-    Gate2 -- "Pass" --> S3["Step 3: Format Response"]:::node
-    Gate2 -- "Fail" --> Fallback["Route to Support Team"]:::node
-    S3 --> Out["Customer Reply"]:::node
+    S2 --> Gate2{"🛡️ Gate 2: Safe?"}
+    Gate2 -- "Pass" --> S3["📝 Step 3: Format Output"]
+    Gate2 -- "Fail" --> Fallback["🚨 Support Escalate"]
+    S3 --> Out["✅ Customer Reply"]
+
+    style Input stroke:#64748b,stroke-width:2px
+    style S1 stroke:#2563eb,stroke-width:2px
+    style Gate1 stroke:#d97706,stroke-width:2px
+    style Retry1 stroke:#d97706,stroke-width:2px
+    style S2 stroke:#2563eb,stroke-width:2px
+    style Gate2 stroke:#d97706,stroke-width:2px
+    style S3 stroke:#16a34a,stroke-width:2px
+    style Fallback stroke:#dc2626,stroke-width:2px
+    style Out stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough
+1. **Entity Extraction**: The first model call isolates parameters (names, account numbers) into typed fields.
+2. **Schema Gate**: Application code validates the JSON payload. If invalid, it retries Step 1 directly without re-running the entire sequence.
+3. **Business Rule Verification**: Step 2 evaluates business permissions and database constraints.
+4. **Final Formatting**: Validated parameters pass to Step 3, which synthesizes a clean customer-facing response.
 
 #### How Prompt Chaining Works
 
-* **Narrow Cognitive Focus**: Models perform significantly better when given a single, specific task (such as extracting names and dates) rather than asking one prompt to extract data, check policies, run queries, and draft an email all at once.
+* **Narrow Cognitive Focus**: Models perform significantly better when given a single, specific task. Asking one prompt to extract data, check policies, run queries, and draft an email all at once leads to frequent errors.
 * **Validation Gates**: Between steps, programmatic code verifies the output. If Step 1 returns invalid JSON, your code immediately retries Step 1 with targeted feedback without re-running the rest of the pipeline.
 * **Context Efficiency**: Each step only receives the tokens it needs, avoiding prompt bloat and keeping token costs minimal.
 
@@ -204,59 +229,92 @@ Routing uses a fast, low-cost classifier to inspect the incoming request and dir
 
 ```mermaid
 flowchart LR
-    classDef router fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef worker fill:#f9f9f9,stroke:#333,stroke-width:1px;
-
-    In["Incoming Customer Message"] --> Router["Classifier Router\n(Fast, Low-Cost Model)"]:::router
+    In(["👤 Customer Message"]) --> Router{"🔀 Intent Router<br>(Fast Classifier)"}
     
-    Router -->|"Simple FAQ / Greetings"| Fast["Fast Model\n(e.g., Gemini Flash / Claude Haiku)"]:::worker
-    Router -->|"Technical Code / SQL"| CodeMod["Code Specialist\n(e.g., Llama 70B / Claude Sonnet)"]:::worker
-    Router -->|"Complex Multi-Step Logic"| DeepMod["Deep Reasoning Model\n(e.g., Grok-3 Thinking / o1 / R1)"]:::worker
+    Router -->|"Simple FAQ"| Fast["⚡ Fast Model<br>(Gemini Flash / Claude Haiku)"]
+    Router -->|"Technical / Code"| CodeMod["💻 Code Specialist<br>(Claude Sonnet / Llama 70B)"]
+    Router -->|"Multi-Step Logic"| DeepMod["🧠 Reasoning Model<br>(DeepSeek-R1 / o1)"]
 
-    Fast --> Out["Final Response"]
+    Fast --> Out["✅ Response"]
     CodeMod --> Out
     DeepMod --> Out
+
+    style In stroke:#64748b,stroke-width:2px
+    style Router stroke:#d97706,stroke-width:2px
+    style Fast stroke:#2563eb,stroke-width:2px
+    style CodeMod stroke:#7c3aed,stroke-width:2px
+    style DeepMod stroke:#7c3aed,stroke-width:2px
+    style Out stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough
+1. **Ingestion & Classification**: The incoming prompt is evaluated by a lightweight router model within 100 milliseconds.
+2. **Dynamic Dispatch**: Based on intent and complexity, the query routes to an appropriate model tier.
+3. **Execution & Return**: The specialized model answers using a domain-specific system prompt, avoiding bloated universal instructions.
 
 #### How Routing Works
 
-* **Cost and Latency Optimization**: Around 80% of customer questions (such as checking business hours or resetting passwords) do not need expensive, high-latency reasoning models. Routing simple queries to sub-second models cuts costs by 70–80% and delivers faster response times.
-* **Clean System Prompts**: Instead of maintaining an enormous 6,000-token prompt that attempts to cover billing, tech support, refunds, and security policies, routing directs the user to a lean, 400-token prompt specifically crafted for that topic.
+* **Cost and Latency Optimization**: Most customer questions do not need expensive reasoning models. Routing simple queries to sub-second models cuts costs by up to 80% and delivers rapid response times.
+* **Clean System Prompts**: Routing directs the user to a lean, 400-token prompt specifically crafted for that topic. This eliminates massive 6,000-token system prompts attempting to cover billing, tech support, and refunds simultaneously.
 
 ### 4.3 Parallelization: Sectioning and Consensus Voting
 
 Parallelization runs multiple calls concurrently using two distinct methods:
 
+#### Method 1: Sectioning (Task Splitting)
+
 ```mermaid
 flowchart TD
-    classDef worker fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef sync fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
+    DocA["📄 Pull Request Diff"] --> FanOutA{"⚡ Parallel Execution"}
+    FanOutA --> W1["🛡️ Worker 1: Security Audit"]
+    FanOutA --> W2["⚡ Worker 2: Performance Audit"]
+    FanOutA --> W3["📝 Worker 3: Style & Comments"]
+    W1 & W2 & W3 --> ReducerA["📑 Consolidator: Merge Reviews"]
+    ReducerA --> RepA["✅ Unified PR Feedback"]
 
-    subgraph Sectioning["METHOD 1: SECTIONING (Splitting the Task)"]
-        direction TB
-        DocA["Code Pull Request Diff"] --> FanOutA{"Parallel Execution"}
-        FanOutA --> W1["Worker 1: Security Scan"]:::worker
-        FanOutA --> W2["Worker 2: Performance Audit"]:::worker
-        FanOutA --> W3["Worker 3: Style & Comments"]:::worker
-        W1 & W2 & W3 --> ReducerA["Consolidator: Merge Reviews"]:::sync
-        ReducerA --> RepA["Unified Pull Request Feedback"]
-    end
-
-    subgraph Voting["METHOD 2: VOTING (Consensus & Verification)"]
-        direction TB
-        DocB["High-Stakes Document"] --> FanOutB{"Parallel Execution"}
-        FanOutB --> V1["Model A (Claude Sonnet)"]:::worker
-        FanOutB --> V2["Model B (GPT-4o)"]:::worker
-        FanOutB --> V3["Model C (Grok-3)"]:::worker
-        V1 & V2 & V3 --> Arbiter{"Consensus Check\n(Majority Vote)"}:::sync
-        Arbiter --> RepB["Verified Classification"]
-    end
+    style DocA stroke:#64748b,stroke-width:2px
+    style FanOutA stroke:#2563eb,stroke-width:2px
+    style W1 stroke:#dc2626,stroke-width:2px
+    style W2 stroke:#d97706,stroke-width:2px
+    style W3 stroke:#2563eb,stroke-width:2px
+    style ReducerA stroke:#16a34a,stroke-width:2px
+    style RepA stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough
+1. **Fan-Out**: A single code change diff is simultaneously dispatched to three independent specialized prompts.
+2. **Concurrent Evaluation**: Security, performance, and formatting run in parallel via `asyncio.gather`.
+3. **Consolidation**: The reducer merges independent findings into one coherent review, with latency bounded by the single slowest worker.
+
+#### Method 2: Consensus Voting
+
+```mermaid
+flowchart TD
+    DocB["📄 High-Stakes Transaction"] --> FanOutB{"⚡ Parallel Execution"}
+    FanOutB --> V1["🧠 Model A (Claude Sonnet)"]
+    FanOutB --> V2["🧠 Model B (GPT-4o)"]
+    FanOutB --> V3["🧠 Model C (DeepSeek-R1)"]
+    V1 & V2 & V3 --> Arbiter{"⚖️ Majority Vote Consensus"}
+    Arbiter --> RepB["✅ Verified Verdict"]
+
+    style DocB stroke:#64748b,stroke-width:2px
+    style FanOutB stroke:#2563eb,stroke-width:2px
+    style V1 stroke:#7c3aed,stroke-width:2px
+    style V2 stroke:#7c3aed,stroke-width:2px
+    style V3 stroke:#7c3aed,stroke-width:2px
+    style Arbiter stroke:#d97706,stroke-width:2px
+    style RepB stroke:#16a34a,stroke-width:2px
+```
+
+### Walkthrough
+1. **Redundant Dispatch**: High-stakes inputs (e.g. wire transfer authorizations) are sent to three distinct model providers.
+2. **Independent Scoring**: Each model reaches a verdict in isolation without seeing peer outputs.
+3. **Majority Arbitration**: Deterministic code checks for consensus. If models disagree, the request escalates to human review.
 
 #### How Parallelization Works
 
-* **Sectioning (Task Splitting)**: When analyzing a large code review or legal contract, splitting the review into independent dimensions (security, performance, naming) lets you run them all at the same time using asynchronous execution (`asyncio.gather`). Total turnaround time is limited only by the single slowest check, rather than waiting for them sequentially.
-* **Consensus Voting**: For high-stakes decisions where an error has severe business impact (such as automated compliance or fraud detection), multiple models can evaluate the same item. The system selects the majority decision, catching edge cases where a single model might hallucinate.
+* **Sectioning (Task Splitting)**: Splitting reviews into independent dimensions allows asynchronous execution. Total turnaround time is limited only by the single slowest check, rather than waiting for them sequentially.
+* **Consensus Voting**: For high-stakes decisions where an error has severe business impact, multiple models evaluate the same item. The system selects the majority decision, catching edge cases where a single model might hallucinate.
 
 ### 4.4 Orchestrator-Workers: Dynamic Subtask Decomposition
 
@@ -264,21 +322,31 @@ In the Orchestrator-Workers pattern, a central planner model looks at the user's
 
 ```mermaid
 flowchart TD
-    classDef plan fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef worker fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef final fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    Goal["High-Level Goal:\n'Prepare Competitor Analysis on Company X'"] --> Orch["Orchestrator Model\n(Generates Task List)"]:::plan
+    Goal(["🎯 Objective: Market Analysis"]) --> Orch["🧠 Orchestrator Model<br>(Generates Tasks)"]
     
-    Orch --> PlanState["Dynamic Subtask List\n[Task 1, Task 2, Task 3]"]
+    Orch --> PlanState["📋 Dynamic Task List<br>[Filings, Patents, Pricing]"]
     
-    PlanState --> W1["Worker 1: Financial Filings Analyst"]:::worker
-    PlanState --> W2["Worker 2: Patent Portfolio Specialist"]:::worker
-    PlanState --> W3["Worker 3: Product Pricing Specialist"]:::worker
+    PlanState --> W1["📊 Worker 1: Financial Filings"]
+    PlanState --> W2["📜 Worker 2: Patent Portfolio"]
+    PlanState --> W3["🏷️ Worker 3: Product Pricing"]
 
-    W1 & W2 & W3 --> Synth["Synthesis Worker\n(Combines Findings & Resolves Conflicts)"]:::final
-    Synth --> Out["Executive Strategic Report"]
+    W1 & W2 & W3 --> Synth["📑 Synthesis Worker<br>(Reconciles Conflicts)"]
+    Synth --> Out["✅ Executive Strategic Report"]
+
+    style Goal stroke:#64748b,stroke-width:2px
+    style Orch stroke:#7c3aed,stroke-width:2px
+    style PlanState stroke:#2563eb,stroke-width:2px
+    style W1 stroke:#2563eb,stroke-width:2px
+    style W2 stroke:#2563eb,stroke-width:2px
+    style W3 stroke:#2563eb,stroke-width:2px
+    style Synth stroke:#16a34a,stroke-width:2px
+    style Out stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough
+1. **Dynamic Task Decomposition**: An orchestrator LLM analyzes a complex objective and emits a dynamic task queue.
+2. **Worker Dispatch**: Distinct worker models receive scoped prompts targeting their assigned subtasks in parallel.
+3. **Synthesis**: A final aggregator LLM gathers all worker outputs, reconciles contradictions, and formats the executive deliverable.
 
 #### How Orchestrator-Workers Differs from Fixed Parallelization
 
@@ -291,24 +359,34 @@ The Evaluator-Optimizer pattern pairs two models: a **Generator** that creates a
 
 ```mermaid
 flowchart TD
-    classDef gen fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef eval fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef term fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef alert fill:#ffebee,stroke:#c62828,stroke-width:2px;
+    Task(["📋 Task Requirements"]) --> Gen["🧠 Generator Model<br>(Drafts Candidate SQL)"]
+    Gen --> Cand["📄 Candidate SQL Query"]
+    
+    Cand --> Eval["🔍 Evaluator / Test Runner<br>(AST & Syntax Verification)"]
+    
+    Eval --> Check{"🛡️ Passed All Checks?"}
+    
+    Check -- "Yes" --> Accepted["✅ Accepted Output"]
+    Check -- "No (Attempts < Limit)" --> Feedback["🔄 Error Feedback<br>(Missing filter)"]
+    
+    Feedback -->|"Feedback into Generator"| Gen
+    Check -- "No (Limit Reached)" --> Alert["🚨 Alert Engineering<br>(Circuit Breaker)"]
 
-    Task["Task Requirements"] --> Gen["Generator Model\n(Drafts Candidate Output)"]:::gen
-    Gen --> Cand["Candidate Output\n(e.g., Generated SQL Query)"]
-    
-    Cand --> Eval["Evaluator / Test Runner\n• Runs SQL syntax check\n• Verifies against criteria"]:::eval
-    
-    Eval --> Check{"Passed All Checks?"}
-    
-    Check -- "Yes" --> Accepted["Accepted Output"]:::term
-    Check -- "No (Attempts < Limit)" --> Feedback["Specific Error Feedback\n(e.g., 'Missing customer_id filter')"]:::eval
-    
-    Feedback -->|"Feeds back into Generator"| Gen
-    Check -- "No (Limit Reached)" --> Alert["Alert Support Team\n(Prevent Infinite Loop)"]:::alert
+    style Task stroke:#64748b,stroke-width:2px
+    style Gen stroke:#7c3aed,stroke-width:2px
+    style Cand stroke:#2563eb,stroke-width:2px
+    style Eval stroke:#d97706,stroke-width:2px
+    style Check stroke:#d97706,stroke-width:2px
+    style Accepted stroke:#16a34a,stroke-width:2px
+    style Feedback stroke:#d97706,stroke-width:2px
+    style Alert stroke:#dc2626,stroke-width:2px
 ```
+
+### Walkthrough
+1. **Candidate Generation**: The generator creates an initial solution based on task requirements.
+2. **Automated Verification**: An evaluator (such as an AST parser, unit test runner, or critic LLM) verifies the solution.
+3. **Iterative Refinement**: If checks fail and turn limits remain, targeted feedback is piped back to the generator.
+4. **Circuit Breaker**: If attempts hit the maximum retry threshold, execution terminates and alerts engineering.
 
 #### How Evaluator-Optimizer Works
 
@@ -332,7 +410,7 @@ Tech Stack: Python 3.12+, Pydantic v2, Typed Schemas, Circuit Breakers
 from __future__ import annotations
 
 import asyncio
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
@@ -384,7 +462,7 @@ class WorkflowState:
     routing: Optional[RoutingDecision] = None
     extracted_claim: Optional[ExtractedBillingClaim] = None
     draft_response: Optional[str] = None
-    evaluation_history: List[EvaluationResult] = Field(default_factory=list)
+    evaluation_history: List[EvaluationResult] = field(default_factory=list)
     attempts: int = 0
     max_attempts: int = 3
     is_complete: bool = False
@@ -576,7 +654,23 @@ When deploying workflows to production, enforce these defensive software practic
 
 ---
 
-## 8. Key Takeaways & Summary
+## 8. Quick Check
+
+A payment processing platform needs to extract line items and tax totals from vendor invoice PDFs. A junior developer proposes an autonomous ReAct agent with unrestricted shell access to iteratively OCR and parse the documents.
+
+Which orchestration pattern should the senior architect mandate instead, and why?
+
+<details>
+<summary>View Answer</summary>
+
+**Recommended Pattern**: **Prompt Chaining** with typed Pydantic validation gates (or an **Orchestrator-Workers** workflow if multiple invoice pages are processed in parallel).
+
+**Engineering Rationale**: Invoice parsing is a structured, bounded business process with a predictable flowchart. An autonomous agent introduces compounding error drift, variable latency (10s+ vs <1s), and severe security risks from unrestricted shell execution. A deterministic Prompt Chain enforces typed extraction schemas, isolated retries on failure, and predictable sub-second latency.
+</details>
+
+---
+
+## 9. Key Takeaways & Summary
 
 * **Keep the Control Plane in Code**: Let your application code manage flow, state, retries, and permissions. Use the language model as a reasoning worker, not the system manager.
 * **Compounding Errors Compound Fast**: A 95% single-step accuracy results in only ~60% success across 10 steps (0.95^10 ≈ 59.9%). Unchecked open loops quickly drift off course.
@@ -587,7 +681,7 @@ When deploying workflows to production, enforce these defensive software practic
 
 ## 🧭 Navigation
 
-| [← Phase 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 02: Agent Architecture: Harnesses & Loops →](02-react-loops-and-execution-governors.md) |
-|:---:|:---:|:---:|
-| **Previous Phase** | **Phase Hub** | **Next Lesson** |
-| [Lab 1: Stateful Agent & Human Approvals](labs/lab1-stateful-agent-hitl.md) | [Lab 3: Infinite Loop Governors](labs/lab3-infinite-loops.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+* **Previous Lesson**: [← Lesson 00: Agentic Systems Fundamentals & Control Plane Architecture](00-agentic-systems-and-control-plane-fundamentals.md)
+* **Phase 04 Hub**: [Phase 04 Overview](README.md)
+* **Next Lesson**: [Lesson 02: Autonomous ReAct Loops & Execution Governors →](02-react-loops-and-execution-governors.md)
+* **Capstone Lab**: [Capstone Challenge: Code Review Agent Engine](labs/capstone-code-review-engine.md)

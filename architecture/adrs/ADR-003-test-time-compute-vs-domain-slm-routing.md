@@ -26,13 +26,13 @@ Defaulting every request to a frontier reasoning model creates unacceptable late
 
 ```mermaid
 flowchart TD
-    UserQuery["Incoming User Request"] --> Classifier{"Semantic Router & Classifier<br>(Local Phi-4 / Embeddings)"}
+    UserQuery["👤 Incoming User Request"] --> Classifier{"⚖️ Semantic Router and Classifier<br>(Local Phi-4 / Embeddings)"}
     
-    Classifier -->|"Extraction / Classification / FAQ<br>(Complexity Score < 0.4)"| LocalSLM["Tier 1: Local On-Premise SLM<br>(Phi-4 14B / Qwen 2.5 7B via vLLM)"]
-    Classifier -->|"Standard Multi-Turn Conversational<br>(Complexity Score 0.4 - 0.75)"| FastLLM["Tier 2: Fast Cloud Foundation Model<br>(Claude 3.5 Sonnet / GPT-4o-mini)"]
-    Classifier -->|"Deep Logic / Architecture / Math / Bug Fix<br>(Complexity Score > 0.75)"| Reasoning["Tier 3: Frontier Reasoning Model<br>(OpenAI o3 / DeepSeek-R1)"]
+    Classifier -->|"Extraction / Classification / FAQ<br>(Complexity Score < 0.4)"| LocalSLM["⚡ Tier 1: Local On-Premise SLM<br>(Phi-4 14B / Qwen 2.5 7B via vLLM)"]
+    Classifier -->|"Standard Multi-Turn Conversational<br>(Complexity Score 0.4 - 0.75)"| FastLLM["☁️ Tier 2: Fast Cloud Foundation Model<br>(Claude 3.5 Sonnet / GPT-4o-mini)"]
+    Classifier -->|"Deep Logic / Architecture / Math / Bug Fix<br>(Complexity Score > 0.75)"| Reasoning["🧠 Tier 3: Frontier Reasoning Model<br>(OpenAI o3 / DeepSeek-R1)"]
     
-    LocalSLM -->|"Latency: 45ms | Cost: $0.00"| Response["User Response"]
+    LocalSLM -->|"Latency: 45ms | Cost: $0.00"| Response["✅ User Response"]
     FastLLM -->|"Latency: 450ms | Cost: $0.001"| Response
     Reasoning -->|"Latency: 4.2s | Cost: $0.02"| Response
 ```

@@ -95,10 +95,10 @@ Budgets count prose only (not code, diagrams or tables) and are hard limits: ove
 
 ```mermaid
 flowchart LR
-    Prob["🧩 Problem &<br>Analogy"] --> Naive["⚠️ Why naive<br>fails"]
+    Prob["🧩 Problem and<br>Analogy"] --> Naive["⚠️ Why naive<br>fails"]
     Naive --> Mech["⚙️ One term at a time<br>(Analogy, Eng, Breakage)"]
     Mech --> Code["💻 Typed code<br>you can run"]
-    Code --> Trade["⚖️ Trade-offs &<br>failure modes"]
+    Code --> Trade["⚖️ Trade-offs and<br>failure modes"]
     Trade --> Check["✅ Quick Check"]
 
     style Prob stroke:#2563eb,stroke-width:2px
@@ -142,7 +142,7 @@ These are the only copy of the guardrails. The agent and always-on rules refer h
 4. **Zero meta-directive leaks**: no `(Zero-LaTeX)`, `(Refactored)`, `[MUST-HAVE]`, `[GOOD-TO-KNOW]` or any authoring-checklist tags in learner-facing text.
 5. **Plain-language titles**: plain descriptor first, acronym in parentheses, plus a Core Concept callout. Expand every abbreviation on first use. No more than two new acronyms per paragraph.
 6. **Navigation**: every lesson ends with `## 🧭 Navigation` (Previous, Phase Hub, Next, Capstone Lab). Every phase README has a Master Lesson Navigation Table and a Direct Chapter & Lesson Directory. See [phase-template.md](references/phase-template.md).
-7. **Diagrams & Anti-Bloat**: 4–8 nodes each (hard ceiling 10), split when larger; transparent subgraphs (`fill:none`), no node `fill` overrides, 2px semantic borders. Numbered walkthrough under every diagram. Use native Mermaid structural shapes paired with universal Unicode icons (`[("🗄️ Database")]`, `{"🛡️ Guard"}`, `["⚡ MCP"]`, `["🔌 API"]`, `["🧠 LLM"]`, `(["👤 User"])`); ban FontAwesome (`fa:fa-...`). **Anti-bloat standard**: ban cross-subgraph criss-crossing lines (spaghetti), single-node subgraph wrappers, bidirectional double-headed arrows (`<-->`, `<==>`), and backwards loops across subgraphs (model feedback in sequence diagrams or forward pipelines). Multi-subgraphs require symmetric column pinning (`~~~`) or explicit node-to-node edges. Details: [diagram-guidelines.md](references/diagram-guidelines.md).
+7. **Diagrams & Anti-Bloat**: 4–8 nodes each (hard ceiling 10), split when larger; transparent subgraphs (`fill:none`), no node `fill` overrides, 2px semantic borders. Numbered walkthrough under every diagram. Use native Mermaid structural shapes paired with universal Unicode icons (`[("🗄️ Database")]`, `{"🛡️ Guard"}`, `["⚡ MCP"]`, `["🔌 API"]`, `["🧠 LLM"]`, `(["👤 User"])`); ban FontAwesome (`fa:fa-...`). **Renderer invariants (prevent broken images & text overflow)**: subgraph titles <= 35 characters (prevents truncation/spillage); ban nested `direction LR/TB` inside subgraphs (crashes Dagre/webviews); ban literal `&` in node labels (use `and`, prevents SVG XML parse failures). **Anti-bloat standard**: ban cross-subgraph criss-crossing lines (spaghetti), single-node subgraph wrappers, bidirectional double-headed arrows (`<-->`, `<==>`), and backwards loops across subgraphs. Details: [diagram-guidelines.md](references/diagram-guidelines.md).
 8. **Code**: Python 3.12+, typed Pydantic v2, real error handling, no pseudo-code, runs offline by default. Introduce a technology only when it explains a concept or trade-off (concept → why it matters → how it works → example → technology).
 9. **Working tree policy**: never run `git commit` or `git push`. Leave changes in the working tree for the user to review.
 

@@ -109,11 +109,11 @@ Imagine an enterprise with 4 AI interfaces (Claude Desktop, Cursor, an internal 
 
 ```mermaid
 flowchart TD
-    subgraph Siloed["1. M × N Point-to-Point Chaos (20 Fragile Integrations)"]
+    subgraph Siloed["⚠️ 1. M × N Point-to-Point Chaos (20 Fragile Integrations)"]
         H1["💻 4 Host Apps<br>(Claude, Cursor, Slack, Web)"] -->|"Custom Glue Code (4 × 5 = 20)"| D1[("🗄️ 5 Data Sources<br>(Postgres, GitHub, Salesforce, Jira, Slack)")]
     end
 
-    subgraph Unified["2. M + N MCP Protocol Bus (9 Standardized Adapters)"]
+    subgraph Unified["✅ 2. M + N MCP Protocol Bus (9 Standardized Adapters)"]
         H2["💻 4 Host Apps"] -->|"Standard JSON-RPC 2.0"| Bus["⚡ MCP Client / Server Bus"]
         Bus -->|"Standard MCP Drivers (4 + 5 = 9)"| D2[("🗄️ 5 Data Sources")]
     end

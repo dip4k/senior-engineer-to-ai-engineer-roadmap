@@ -10,27 +10,26 @@
 
 ```mermaid
 flowchart TD
-    subgraph Regulatory["REGULATORY MANDATES & STANDARDS"]
-        EU["EU AI Act\n(Binding Law • Up to €35M / 7% Fine)"]
-        GDPR["GDPR / CCPA\n(Art. 17 Right to Erasure)"]
-        NIST["NIST AI RMF 1.0 / 600-1\n(Govern • Map • Measure • Manage)"]
-        ISO["ISO/IEC 42001:2023\n(AI Management Systems)"]
+    subgraph Regulatory["Regulatory Mandates and Standards"]
+        EU["⚖️ EU AI Act\n(Binding Law • Up to €35M / 7% Fine)"]
+        GDPR["📜 GDPR / CCPA\n(Art. 17 Right to Erasure)"]
+        NIST["📐 NIST AI RMF 1.0 / 600-1\n(Govern • Map • Measure • Manage)"]
+        ISO["📋 ISO/IEC 42001:2023\n(AI Management Systems)"]
     end
 
-    subgraph Gateway["COMPLIANCE & GOVERNANCE GATEWAY (ENGINEERING LAYER)"]
-        direction TB
-        Classify["1. Risk Classifier Engine\n(Unacceptable / High / Limited / Minimal)"]
-        PII["2. PII Sanitizer & Tokenizer\n(Pre-Inference Anonymization)"]
-        HITL["3. Human-in-the-Loop Interceptor\n(Step-Up Auth & Approval Queues)"]
-        Crypto["4. Crypto-Shredded Memory Vault\n(Per-User AES-GCM Key Shredding)"]
-        Audit["5. Cryptographic Audit Logger\n(HMAC-SHA256 Tamper-Evident Trail)"]
-        Watermark["6. Output Watermarker & Discloser\n(C2PA Metadata • Bot Disclosures)"]
+    subgraph Gateway["Compliance Gateway Architecture"]
+        Classify["🔍 1. Risk Classifier Engine\n(Unacceptable / High / Limited / Minimal)"]
+        PII["🔒 2. PII Sanitizer and Tokenizer\n(Pre-Inference Anonymization)"]
+        HITL["⏸️ 3. Human-in-the-Loop Interceptor\n(Step-Up Auth and Approval Queues)"]
+        Crypto["🔑 4. Crypto-Shredded Memory Vault\n(Per-User AES-GCM Key Shredding)"]
+        Audit["📝 5. Cryptographic Audit Logger\n(HMAC-SHA256 Tamper-Evident Trail)"]
+        Watermark["🏷️ 6. Output Watermarker and Discloser\n(C2PA Metadata • Bot Disclosures)"]
     end
 
-    subgraph Runtime["HOSTED RUNTIME & INFRASTRUCTURE"]
-        LLM["Foundation Models & GPAI\n(OpenAI, Anthropic, Gemini, Llama)"]
-        VectorDB["Vector DBs & Episodic Memory\n(Pinecone, Qdrant, pgvector)"]
-        Tools["Agent Tools & Execution Sandboxes\n(APIs, DB Updates, Shells)"]
+    subgraph Runtime["Hosted Runtime and Infrastructure"]
+        LLM["🤖 Foundation Models and GPAI\n(OpenAI, Anthropic, Gemini, Llama)"]
+        VectorDB["💾 Vector DBs and Episodic Memory\n(Pinecone, Qdrant, pgvector)"]
+        Tools["⚙️ Agent Tools and Sandboxes\n(APIs, DB Updates, Shells)"]
     end
 
     Regulatory --> Gateway
@@ -115,12 +114,12 @@ flowchart TD
 The EU AI Act entered into force on **August 1, 2024**. Rather than dropping all requirements at once, the European Parliament instituted a phased rollout. As an engineer, you must know exactly which milestone impacts your current sprint backlog.
 
 ```mermaid
-flowchart LR
-    M0["Aug 1, 2024\nEntered into Force\n(Clock Starts)"]
-    M1["Feb 2, 2025\n🔴 Prohibited AI Banned\n(Articles 5 & 111)"]
-    M2["Aug 2, 2025\n🟡 GPAI Obligations\n(Article 51-56 & AI Office)"]
-    M3["Aug 2, 2026\n🔴 Full High-Risk Annex III\n& Transparency Rules"]
-    M4["Aug 2, 2027\n🔵 Annex I Regulated Products\n(Medical, Avionics, Cars)"]
+flowchart TD
+    M0["📅 Aug 1, 2024\nEntered into Force\n(Clock Starts)"]
+    M1["🚫 Feb 2, 2025\n🔴 Prohibited AI Banned\n(Articles 5 and 111)"]
+    M2["⚠️ Aug 2, 2025\n🟡 GPAI Obligations\n(Article 51-56 and AI Office)"]
+    M3["📜 Aug 2, 2026\n🔴 Full High-Risk Annex III\nand Transparency Rules"]
+    M4["🚗 Aug 2, 2027\n🔵 Annex I Regulated Products\n(Medical, Avionics, Cars)"]
 
     M0 --> M1
     M1 --> M2
@@ -154,19 +153,19 @@ The EU AI Act rejects a one-size-fits-all approach. It categorizes every AI syst
 
 ```mermaid
 flowchart TD
-    Start["New AI Feature / System Conception"] --> Q1{"Is it a Prohibited Practice?\n• Social Scoring\n• Workplace Emotion AI\n• Biometric Scraping\n• Subliminal Exploitation"}
+    Start["🚀 New AI Feature / System Conception"] --> Q1{"⚖️ Is it a Prohibited Practice?\n• Social Scoring\n• Workplace Emotion AI\n• Biometric Scraping\n• Subliminal Exploitation"}
     
-    Q1 -- YES --> T1["🔴 UNACCEPTABLE RISK\nStatus: BANNED / ILLEGAL\nAction: Cease development immediately.\nPenalty: €35M or 7% global turnover."]
+    Q1 -- YES --> T1["🛑 UNACCEPTABLE RISK\nStatus: BANNED / ILLEGAL\nAction: Cease development immediately.\nPenalty: €35M or 7% global turnover."]
     
-    Q1 -- NO --> Q2{"Is it a High-Risk System?\n• HR & Resume Filtering\n• Credit Underwriting\n• Critical Infrastructure\n• Education / Grading\n• Law Enforcement"}
+    Q1 -- NO --> Q2{"⚖️ Is it a High-Risk System?\n• HR and Resume Filtering\n• Credit Underwriting\n• Critical Infrastructure\n• Education / Grading\n• Law Enforcement"}
     
-    Q2 -- YES --> T2["🔴 HIGH RISK (Annex III / I)\nStatus: STRICTLY REGULATED\nMandates: Conformity assessment, CE Mark,\nContinuous audit logging, HITL, Robustness tests."]
+    Q2 -- YES --> T2["⚠️ HIGH RISK (Annex III / I)\nStatus: STRICTLY REGULATED\nMandates: Conformity assessment, CE Mark,\nContinuous audit logging, HITL, Robustness tests."]
     
-    Q2 -- NO --> Q3{"Does it Interact with Humans or\nGenerate Synthetic Content?\n• Customer Service Chatbot\n• Synthetic Voice / Video\n• AI Text Generator"}
+    Q2 -- NO --> Q3{"💬 Does it Interact with Humans or\nGenerate Synthetic Content?\n• Customer Service Chatbot\n• Synthetic Voice / Video\n• AI Text Generator"}
     
-    Q3 -- YES --> T3["🟡 LIMITED RISK\nStatus: TRANSPARENCY MANDATES\nMandates: Disclose user is talking to an AI,\nMachine-readable watermarking (C2PA)."]
+    Q3 -- YES --> T3["🏷️ LIMITED RISK\nStatus: TRANSPARENCY MANDATES\nMandates: Disclose user is talking to an AI,\nMachine-readable watermarking (C2PA)."]
     
-    Q3 -- NO --> T4["🔵 MINIMAL / NO RISK\nStatus: UNRESTRICTED\nExamples: Spam filters, game AI, code auto-complete,\ninternal data deduplication.\nMandates: Voluntary industry codes of conduct."]
+    Q3 -- NO --> T4["✅ MINIMAL / NO RISK\nStatus: UNRESTRICTED\nExamples: Spam filters, game AI, code auto-complete,\ninternal data deduplication.\nMandates: Voluntary industry codes of conduct."]
 ```
 
 ### Deep Dive into the 4 Tiers
@@ -237,11 +236,11 @@ One of the greatest sources of confusion among software engineers is: *"If I am 
 
 ```mermaid
 flowchart TD
-    Lab["GPAI PROVIDER\n(OpenAI, Anthropic, Google, Meta, Mistral)\n• Trains foundation model\n• Invests > 10^25 FLOPs compute\n• Responsible for base safety & copyright"]
+    Lab["🏢 GPAI PROVIDER\n(OpenAI, Anthropic, Google, Meta, Mistral)\n• Trains foundation model\n• Invests > 10^25 FLOPs compute\n• Responsible for base safety and copyright"]
     
-    API["API Gateway / Weights Download\n(Model Card • Technical Docs • Terms of Use)"]
+    API["🚪 API Gateway / Weights Download\n(Model Card • Technical Docs • Terms of Use)"]
     
-    Downstream["DOWNSTREAM DEPLOYER / APP ENGINEER\n(You & Your Company)\n• Fine-tunes or wraps base model\n• Connects RAG, Vector DB, and Agent Tools\n• Responsible for end-user risk tier compliance!"]
+    Downstream["💻 DOWNSTREAM DEPLOYER / APP ENGINEER\n(You and Your Company)\n• Fine-tunes or wraps base model\n• Connects RAG, Vector DB, and Agent Tools\n• Responsible for end-user risk tier compliance!"]
 
     Lab --> API --> Downstream
 ```
@@ -277,13 +276,14 @@ Here is the 7-pillar technical compliance checklist every AI engineer must build
 ```mermaid
 flowchart TD
     subgraph Pipeline["7-PILLAR COMPLIANCE ENGINE"]
-        P1["1. Model & System Cards\n(Versioned markdown docs in git)"]
-        P2["2. HITL Approval Gateway\n(Step-up auth for irreversible actions)"]
-        P3["3. Watermarking & C2PA\n(Cryptographic output provenance)"]
-        P4["4. Data Governance & Lineage\n(Dataset versioning & copyright filter)"]
-        P5["5. PII Tokenization Vault\n(Pre-inference scrub & pseudonymize)"]
-        P6["6. Immutable Audit Trail\n(Tamper-evident HMAC chained logging)"]
-        P7["7. Automated Bias & Evals CI\n(Disparate impact & toxicity gates)"]
+        P1["📄 1. Model and System Cards\n(Versioned markdown docs in git)"]
+        P2["⏸️ 2. HITL Approval Gateway\n(Step-up auth for irreversible actions)"]
+        P3["🏷️ 3. Watermarking and C2PA\n(Cryptographic output provenance)"]
+        P4["💾 4. Data Governance and Lineage\n(Dataset versioning and copyright filter)"]
+        P5["🔒 5. PII Tokenization Vault\n(Pre-inference scrub and pseudonymize)"]
+        P6["📝 6. Immutable Audit Trail\n(Tamper-evident HMAC chained logging)"]
+        P7["⚖️ 7. Automated Bias and Evals CI\n(Disparate impact and toxicity gates)"]
+        P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
     end
 ```
 
@@ -724,11 +724,15 @@ When engineering leadership decides to implement a responsible AI program, they 
 
 ```mermaid
 flowchart TD
-    subgraph BigFour["THE ENTERPRISE RESPONSIBLE AI QUADRANT"]
-        NIST["NIST AI RMF 1.0 & 600-1\n(Operational Engineering Risk Lifecycle)"]
-        SAIF["Google SAIF\n(Cybersecurity & Red Teaming Integration)"]
-        RAI["Microsoft Responsible AI Standard\n(Product Governance & Ethical Principles)"]
-        OWASP["OWASP Top 10 for GenAI\n(Vulnerability Mitigation & Threat Modeling)"]
+    subgraph BigFour["Responsible AI Frameworks"]
+        NIST["📐 NIST AI RMF 1.0 and 600-1\n(Operational Risk Lifecycle)"]
+        SAIF["🔒 Google SAIF\n(Cybersecurity and Red Teaming)"]
+        RAI["⚖️ Microsoft Responsible AI\n(Governance and Ethical Principles)"]
+        OWASP["🛡️ OWASP Top 10 for GenAI\n(Mitigation and Threat Modeling)"]
+        NIST --- SAIF
+        RAI --- OWASP
+        NIST --- RAI
+        SAIF --- OWASP
     end
 ```
 

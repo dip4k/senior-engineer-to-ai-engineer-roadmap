@@ -1,8 +1,10 @@
 # Lab 7: Hybrid ML Fairness, Bias Auditing & Grounded Explainability (XAI)
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb)
+
 > **Regulated Decisioning Pipeline**: Tabular Risk Scoring + Fairlearn Bias Audit + SHAP Attributions + Grounded LLM Adverse Action Generator  
 > 
-> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🛡️ Module 05: Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [🏗️ Enterprise AI System Designs](../architecture/enterprise-ai-system-designs.md)
+> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🛡️ Module 05: Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [🏗️ Enterprise AI System Designs](../architecture/enterprise-ai-system-designs.md) • [📓 Interactive Colab Fairness & SHAP](../notebooks/07_ml_fairness_and_shap_explainability.ipynb)
 
 ---
 
@@ -17,24 +19,25 @@ This lab delivers an end-to-end, enterprise-grade **Hybrid ML + GenAI** pipeline
 
 ```mermaid
 flowchart TD
-    Data["Applicant / Vendor Data<br>(Financials + Protected Attributes)"] --> Model["Deterministic Tabular Model<br>(Logistic Regression / XGBoost)"]
+    Data["📊 Applicant / Vendor Data<br>(Financials + Protected Attributes)"] --> Model["🤖 Deterministic Tabular Model<br>(Logistic Regression / XGBoost)"]
     
-    Model --> Predictions["Prediction Probabilities<br>& Decisions (Threshold = 0.5)"]
+    Model --> Predictions["📈 Prediction Probabilities<br>and Decisions (Threshold = 0.5)"]
     
-    Predictions --> FairlearnAudit["1. Fairlearn Bias Audit<br>• Disparate Impact (80% Rule)<br>• Demographic Parity Difference"]
+    Predictions --> FairlearnAudit["⚖️ 1. Fairlearn Bias Audit<br>• Disparate Impact (80% Rule)<br>• Demographic Parity Difference"]
     
-    FairlearnAudit --> FairCheck{"Fairness Passed?<br>(DI ≥ 0.80 & DPD ≤ 0.10)"}
-    FairCheck -- "Fail" --> Mitigate["Halt Deployment / Apply Re-Weighing"]
-    FairCheck -- "Pass" --> SHAP_Engine["2. SHAP Attribution Engine<br>• Local Additive Feature Attributions (φ_i)<br>• Base Value & Waterfall Sort"]
+    FairCheck{"🔍 Fairness Passed?<br>(DI >= 0.80 and DPD <= 0.10)"}
+    FairlearnAudit --> FairCheck
+    FairCheck -- "Fail" --> Mitigate["🛑 Halt Deployment / Apply Re-Weighing"]
+    FairCheck -- "Pass" --> SHAP_Engine["🔬 2. SHAP Attribution Engine<br>• Local Additive Feature Attributions (φ_i)<br>• Base Value and Waterfall Sort"]
     
-    SHAP_Engine --> TopFactors["Top Negative Attribution Drivers<br>(e.g., debt_to_income, late_payments)"]
+    SHAP_Engine --> TopFactors["📋 Top Negative Attribution Drivers<br>(e.g., debt_to_income, late_payments)"]
     
-    TopFactors --> LLM_Gen["3. LLM Explainability Generator<br>(Structured Adverse Action Notice)"]
+    TopFactors --> LLM_Gen["✍️ 3. LLM Explainability Generator<br>(Structured Adverse Action Notice)"]
     
-    LLM_Gen --> Guardrail{"4. Groundedness Guardrail<br>• Strict Feature Grounding<br>• Hallucination Assertion Gate"}
+    LLM_Gen --> Guardrail{"🛡️ 4. Groundedness Guardrail<br>• Strict Feature Grounding<br>• Hallucination Assertion Gate"}
     
-    Guardrail -- "Verified Grounded" --> CompliantNotice["Issue Regulated Adverse Action Notice"]
-    Guardrail -- "Hallucinated Reason" --> Quarantined["Reject Output & Fallback to Rule Template"]
+    Guardrail -- "Verified Grounded" --> CompliantNotice["✅ Issue Regulated Adverse Action Notice"]
+    Guardrail -- "Hallucinated Reason" --> Quarantined["🛑 Reject Output and Fallback to Rule Template"]
 ```
 
 #### Diagram Walkthrough:

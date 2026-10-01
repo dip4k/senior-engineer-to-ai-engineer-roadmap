@@ -1,10 +1,14 @@
-# Stateful Sessions, Durable Write-Ahead Logs & Distributed Sagas
+# Lesson 03: Stateful Sessions, Durable Write-Ahead Logs & Distributed Sagas
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟡 Tier 2: Depth` | Estimated Reading Time: 45 min
+> **Tier**: `🟡 Engineering Depth` | Estimated Reading Time: 35 min
 >
-> **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Agent Architecture: Harnesses & Loops](02-react-loops-and-execution-governors.md)
-
-> **Core Concept**: In Lessons 01 and 02, we built deterministic workflow patterns and governed agent loops with action fingerprinting and budget decay. But what happens when the server running that loop crashes mid-execution? Production agents are long-running, stateful systems. When a server restarts, a human takes hours to approve an action, or a network connection drops, the agent must be able to resume immediately without re-running expensive model calls or duplicating database writes. To achieve this, we use graph state machines with clean state reducers, an append-only Write-Ahead Log (WAL), session branching, and the Distributed Saga pattern with compensating rollback tools.
+> **Prerequisites**: [Lesson 00: Agentic Systems Fundamentals](00-agentic-systems-and-control-plane-fundamentals.md), [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md)
+>
+> **Core Concept**: Production agents are long-running, stateful systems. When a server restarts, a human takes hours to approve an action, or a network drops, the agent must resume immediately without re-spending tokens or duplicating database writes. We achieve this using graph state machines with clean reducers, append-only Write-Ahead Logs (WAL), session branching, and Distributed Sagas with compensating rollback tools.
+>
+> **Term Ledger**:
+> * **New AI terms introduced**: `Write-Ahead Log (WAL)`, `State Checkpointer`, `Session Forking`, `Distributed Saga`, `Compensating Transaction`, `Idempotency Key`.
+> * **AI terms assumed from earlier lessons**: `AI Agent`, `Control Plane`, `Compute Plane`, `ReAct Pattern`, `Context Window`, `Token`, `Function Calling`.
 
 ---
 
@@ -15,27 +19,32 @@ In simple tutorials, an agent's conversation history and tool outputs are usuall
 While this works for interactive desktop demos, keeping state only in application memory causes major production failures:
 1. **Server Restarts and Scaling Events**: Suppose your agent is on turn 7 of an 8-turn code refactoring workflow. Your cloud platform moves the application container to another node due to high CPU load. The memory list disappears instantly. You lose 40,000 tokens of accumulated reasoning, and the customer is left with an unfinished transaction.
 2. **Long Human Approval Pauses**: An agent reaches a step requiring a manager's sign-off to approve a $5,000 credit. The manager might not click "Approve" for four hours. Keeping a stateful container running with an open socket for hours wastes server resources and leaks memory.
-3. **Accidental Duplicate Actions**: If your application crashes and restarts the agent from step 1, the model might repeat actions it already completed—such as charging a credit card a second time or creating duplicate cloud servers.
+3. **Accidental Duplicate Actions**: If the agent restarts from step 1 after a crash, the model repeats completed actions. This causes duplicate credit card charges or orphaned cloud infrastructure.
 
 ```mermaid
 flowchart TD
-    classDef fail fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef store fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef worker fill:#f9f9f9,stroke:#333,stroke-width:1px;
-
-    subgraph Volatile["THE IN-MEMORY TRAP (Fragile)"]
+    subgraph Volatile["⚠️ THE IN-MEMORY TRAP (Fragile)"]
         direction TB
-        V1["Worker Pod 1: Turns 1 through 6 Finished"]:::worker
-        V1 -->|"Step 7: Waiting for manager approval"| V2["State stored only in RAM list"]:::fail
-        V2 -->|"Container crashes or restarts"| V3["LOST: 40k Tokens Gone\nOrphaned database records\nUser session disconnected"]:::fail
+        V1["💻 Worker Pod 1: Turns 1-6 Done"]
+        V1 -->|"Step 7: Waiting for approval"| V2["🧠 State stored only in RAM"]
+        V2 -->|"Container crashes or restarts"| V3["💥 LOST: 40k Tokens Gone<br>Orphaned database records"]
     end
 
-    subgraph Durable["THE DURABLE WRITE-AHEAD LOG (Production)"]
+    subgraph Durable["💾 DURABLE WRITE-AHEAD LOG (Production)"]
         direction TB
-        D1["Worker Pod 1: Finishes Turn 6"]:::worker
-        D1 -->|"Saves event to database"| WAL["Durable Database (PostgreSQL / SQLite)\n• Event journal: TurnEvent 1..6\n• Snapshot checkpoint chk_06\n• Status: SUSPENDED"]:::store
-        WAL -->|"4 Hours Later: Webhook arrives\nWorker Pod 2 loads state"| D2["Worker Pod 2: Resumes at Turn 7\nZero re-spent tokens\nZero duplicated tool calls"]:::worker
+        D1["💻 Worker Pod 1: Finishes Turn 6"]
+        D1 -->|"Saves event to WAL"| WAL[("🗄️ Durable DB (Postgres/SQLite)<br>TurnEvents 1..6 + Checkpoint")]
+        WAL -->|"4h Later: Webhook arrives"| D2["💻 Worker Pod 2: Resumes Turn 7<br>Zero duplicated tokens"]
     end
+
+    style Volatile fill:none,stroke:#dc2626,stroke-width:2px
+    style Durable fill:none,stroke:#16a34a,stroke-width:2px
+    style V1 stroke:#64748b,stroke-width:2px
+    style V2 stroke:#d97706,stroke-width:2px
+    style V3 stroke:#dc2626,stroke-width:2px
+    style D1 stroke:#64748b,stroke-width:2px
+    style WAL stroke:#16a34a,stroke-width:2px
+    style D2 stroke:#16a34a,stroke-width:2px
 ```
 
 ### How the Durable Architecture Works
@@ -51,14 +60,19 @@ flowchart TD
 
 To make agent state predictable and reproducible, modern frameworks (such as LangGraph) structure the agent as a **State Machine** governed by **State Reducers**:
 
+> [!NOTE]
+> **Where this analogy breaks**: In classical event-sourced banking systems, state transitions are 100% deterministic (debit A, credit B). In agentic state graphs, an event may contain non-deterministic text generated by an LLM. Replaying the event stream reproduces the exact historical state, but re-executing a node from an earlier state produces different tokens.
+
 ```mermaid
 flowchart LR
-    classDef node fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef state fill:#f9f9f9,stroke:#333,stroke-width:1px;
+    StateT["📋 Current State<br>{messages, spend, claim}"] --> Node["⚙️ Worker Node N<br>(Runs prompt or tool)"]
+    Node -->|"Emits update event"| Reducer["🔄 State Reducer<br>(Merges into state)"]
+    Reducer --> StateNext["💾 New State<br>(Saved Checkpoint)"]
 
-    StateT["Current State\n{messages, spend, claim}"]:::state --> Node["Worker Node N\n(Runs prompt or tool)"]:::node
-    Node -->|"Emits update event\n{new_message, cost}"| Reducer["State Reducer\nMerges event into state"]:::node
-    Reducer --> StateNext["New State\n(Saved Checkpoint)"]:::state
+    style StateT stroke:#64748b,stroke-width:2px
+    style Node stroke:#2563eb,stroke-width:2px
+    style Reducer stroke:#7c3aed,stroke-width:2px
+    style StateNext stroke:#16a34a,stroke-width:2px
 ```
 
 ### Core Primitives Explained Simply
@@ -84,24 +98,24 @@ We apply this exact pattern to autonomous agents:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant Runtime as Agent Runtime
-    participant LLM as Language Model
-    participant WAL as Write-Ahead Log (Database)
-    participant Tool as Payment Gateway
-    participant Worker2 as Worker Pod 2 (After Crash)
+    participant Runtime as ⚙️ Agent Runtime
+    participant LLM as 🧠 Language Model
+    participant WAL as 🗄️ Write-Ahead Log (DB)
+    participant Tool as 💳 Payment Gateway
+    participant Worker2 as 💻 Worker Pod 2 (After Crash)
 
     Runtime->>LLM: 1. Send prompt with current state
     LLM-->>Runtime: 2. Model outputs: refund_customer(id='cust_99')
-    Runtime->>WAL: 3. Save ToolDispatchedEvent to database [COMMITTED]
+    Runtime->>WAL: 3. Save ToolDispatchedEvent [COMMITTED]
     Runtime->>Tool: 4. Execute external payment refund
-    Tool-->>Runtime: 5. Return success: {status: 'ok', tx_id: 'tx_401'}
-    Runtime->>WAL: 6. Save ObservationCapturedEvent to database [COMMITTED]
+    Tool-->>Runtime: 5. Return success receipt tx_401
+    Runtime->>WAL: 6. Save ObservationCapturedEvent [COMMITTED]
     
     Note over Runtime: 💥 SERVER CONTAINER CRASHES OR RESTARTS
     
     Worker2->>WAL: 7. Query events for session 'sess-882'
-    Worker2-->>Worker2: 8. Replay events through state reducer (takes 5ms)
-    Worker2->>LLM: 9. Resume next turn without re-running payment refund
+    Worker2-->>Worker2: 8. Replay events through state reducer (5ms)
+    Worker2->>LLM: 9. Resume next turn without repeating refund
 ```
 
 ### Step-by-Step Crash Recovery Walkthrough
@@ -126,29 +140,35 @@ To maintain consistency, enterprise architectures implement the **Distributed Sa
 
 ```mermaid
 flowchart TD
-    classDef fwd fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-    classDef roll fill:#ffebee,stroke:#c62828,stroke-width:2px;
-    classDef saga fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-
-    subgraph ForwardPath["FORWARD ACTIONS"]
+    subgraph ForwardPath["⚡ FORWARD ACTIONS"]
         direction LR
-        S1["Step 1: Reserve Flight\n(Action: reserve_flight)"]:::fwd
-        --> S2["Step 2: Reserve Hotel\n(Action: reserve_hotel)"]:::fwd
-        --> S3["Step 3: Charge Corporate Card\n(Action: charge_card)"]:::fwd
-        --> S4["Step 4: Provision Cloud Sandbox\n(Action: provision_cluster)"]:::fwd
+        S1["✈️ Step 1: Reserve Flight"] --> S2["🏨 Step 2: Reserve Hotel"]
+        S2 --> S3["💳 Step 3: Charge Card"]
+        S3 --> S4["☁️ Step 4: Provision Cluster"]
     end
 
-    S4 -->|"Step 4 FAILS!\n(Quota Exceeded Error)"| Saga["SAGA COORDINATOR\nExecutes Rollback Chain in Reverse"]:::saga
+    S4 -->|"Step 4 FAILS (Quota Exceeded)"| Saga{"⚖️ SAGA COORDINATOR<br>(Reverse Rollback)"}
 
-    subgraph RollbackPath["COMPENSATING ROLLBACKS (Reverse Order)"]
+    subgraph RollbackPath["🔄 COMPENSATING ROLLBACKS"]
         direction LR
-        C3["Rollback 3: Refund Card\n(Compensate: refund_transaction)"]:::roll
-        --> C2["Rollback 2: Cancel Hotel\n(Compensate: cancel_hotel)"]:::roll
-        --> C1["Rollback 1: Cancel Flight\n(Compensate: cancel_flight)"]:::roll
+        C3["⏪ Undo 3: Refund Card"] --> C2["⏪ Undo 2: Cancel Hotel"]
+        C2 --> C1["⏪ Undo 1: Cancel Flight"]
     end
 
     Saga --> C3
-    C1 --> Done["All systems restored to clean state"]
+    C1 --> Done["✅ Clean State Restored"]
+
+    style ForwardPath fill:none,stroke:#2563eb,stroke-width:2px
+    style RollbackPath fill:none,stroke:#dc2626,stroke-width:2px
+    style S1 stroke:#2563eb,stroke-width:2px
+    style S2 stroke:#2563eb,stroke-width:2px
+    style S3 stroke:#2563eb,stroke-width:2px
+    style S4 stroke:#dc2626,stroke-width:2px
+    style Saga stroke:#d97706,stroke-width:2px
+    style C3 stroke:#dc2626,stroke-width:2px
+    style C2 stroke:#dc2626,stroke-width:2px
+    style C1 stroke:#dc2626,stroke-width:2px
+    style Done stroke:#16a34a,stroke-width:2px
 ```
 
 ### How the Saga Rollback Works
@@ -181,18 +201,32 @@ Because checkpoints are stored as immutable snapshots, your application can **br
 
 ```mermaid
 flowchart TD
-    classDef node fill:#f9f9f9,stroke:#333,stroke-width:1px;
-    classDef fork fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
+    T1["📝 Turn 1"] --> T2["📝 Turn 2"] --> T3["💾 Turn 3 (Checkpoint 3)"]
+    T3 --> Fork{"🔀 Branch at Checkpoint 3"}
+    
+    Fork -->|"Branch A"| A4["🔬 Branch A: Turn 4"] --> A5["🔬 Branch A: Turn 5"]
+    Fork -->|"Branch B"| B4["🧪 Branch B: Turn 4"] --> B5["🧪 Branch B: Turn 5"]
+    
+    A5 & B5 --> Judge{"⚖️ Evaluate Outcomes"}
+    Judge -->|"Strategy A Won"| Commit["✅ Commit Branch A to State"]
 
-    T1["Turn 1"]:::node --> T2["Turn 2"]:::node --> T3["Turn 3 (Checkpoint 3)"]:::node
-    T3 --> Fork{"Branch at Checkpoint 3"}:::fork
-    
-    Fork -->|"Branch A: Strategy A"| A4["Branch A: Turn 4"]:::node --> A5["Branch A: Turn 5"]:::node
-    Fork -->|"Branch B: Strategy B"| B4["Branch B: Turn 4"]:::node --> B5["Branch B: Turn 5"]:::node
-    
-    A5 & B5 --> Judge{"Evaluate Outcomes"}:::fork
-    Judge -->|"Strategy A succeeded"| Commit["Commit Strategy A to Master State"]:::node
+    style T1 stroke:#64748b,stroke-width:2px
+    style T2 stroke:#64748b,stroke-width:2px
+    style T3 stroke:#16a34a,stroke-width:2px
+    style Fork stroke:#d97706,stroke-width:2px
+    style A4 stroke:#2563eb,stroke-width:2px
+    style A5 stroke:#2563eb,stroke-width:2px
+    style B4 stroke:#7c3aed,stroke-width:2px
+    style B5 stroke:#7c3aed,stroke-width:2px
+    style Judge stroke:#d97706,stroke-width:2px
+    style Commit stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough: Session Branching & Time Travel
+1. **Checkpointing**: The agent records an immutable state checkpoint at Turn 3.
+2. **Session Fork**: The runtime forks the checkpoint into isolated branches (Branch A and Branch B).
+3. **Speculative Execution**: Both branches explore alternative actions in parallel without cross-contaminating state.
+4. **Merge & Commit**: An evaluator scores the branches and commits the winning trajectory to the master log.
 
 ### Why Session Branching Matters in Production
 
@@ -209,20 +243,25 @@ A production runtime uses a **Three-Tier Context Cleaning Pipeline**:
 
 ```mermaid
 flowchart TD
-    classDef raw fill:#ffebee,stroke:#c62828,stroke-width:1px;
-    classDef clean fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef out fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    Raw["📄 Raw Tool Output<br>(15,000 tokens of raw JSON & logs)"]
+    
+    --> T1["🔍 Tier 1: Structured Filter<br>(Remove nulls & prune non-essential fields)"]
+    --> T2["🧠 Tier 2: Targeted Summary<br>(Fast LLM condenses payload to ~200 tokens)"]
+    --> T3["💾 Tier 3: Pointer Caching<br>(Older turns replaced with record pointer)"]
+    --> Clean["✅ Optimized Context Window<br>(Focused attention & low token cost)"]
 
-    Raw["Raw Tool Output (15,000 tokens of raw JSON & logs)"]:::raw
-    
-    --> T1["TIER 1: STRUCTURED FILTERING\n• Remove empty and null fields\n• Keep only fields needed by schema\n• Limit array results to top 5 items\n(Reduces payload by 75-80%)"]:::clean
-    
-    --> T2["TIER 2: TARGETED SUMMARIZATION\n• If payload is still over 1,500 tokens, call a fast model\n• Extract only the key numbers and facts needed for the goal\n(Condenses payload to ~200 tokens)"]:::clean
-    
-    --> T3["TIER 3: POINTER CACHING\n• For tool outputs older than 2 turns, replace full text with pointer:\n'[Output for Order 9021 saved in record #chk_02]'\n• Full text fetched only if agent calls a lookup tool"]:::clean
-    
-    --> Clean["Optimized, High-Attention Context Window"]:::out
+    style Raw stroke:#dc2626,stroke-width:2px
+    style T1 stroke:#2563eb,stroke-width:2px
+    style T2 stroke:#7c3aed,stroke-width:2px
+    style T3 stroke:#16a34a,stroke-width:2px
+    style Clean stroke:#16a34a,stroke-width:2px
 ```
+
+### Walkthrough: Context Cleaning Pipeline
+1. **Raw Payload Ingestion**: Intercepts uncleaned external responses up to 15,000 tokens.
+2. **Tier 1 Structured Filtering**: Strips null keys, extraneous headers, and truncates large arrays.
+3. **Tier 2 Targeted Summarization**: Condenses oversized payloads to ~200 essential tokens using a fast model.
+4. **Tier 3 Pointer Caching**: Replaces aged tool outputs with durable database lookup pointers.
 
 ---
 
@@ -484,9 +523,28 @@ if __name__ == "__main__":
 
 ---
 
-## 8. Key Takeaways & Summary
+## 8. Quick Check
 
-* **Do Not Rely on In-Memory State**: Server restarts and scaling events will wipe out conversation histories. Always save state events to a database.
+An agent reserves a flight, charges a customer's corporate credit card, and attempts to reserve a rental car. The rental car API returns an HTTP 503 error. During retry, the agent worker pod crashes and restarts.
+
+How does the combination of a Write-Ahead Log (WAL) and the Distributed Saga pattern restore the system to a clean state?
+
+<details>
+<summary>View Answer</summary>
+
+**Operational Recovery**:
+1. **Crash Recovery**: When a new worker pod boots, it queries the Write-Ahead Log by `session_id`. It loads the last committed checkpoint (`Turn 2: charge_card [COMMITTED]`), restoring exact in-flight state without re-running flight reservation or charging the card again.
+2. **Saga Compensation**: Recognizing that the third step (`reserve_car`) failed irrevocably, the Saga coordinator executes compensating transactions in reverse order:
+   - It invokes `refund_credit_card` with the recorded transaction ID.
+   - It invokes `cancel_flight_reservation` with the recorded booking reference.
+   - The session marks its status as `ROLLED_BACK`, preventing orphaned charges or phantom reservations.
+</details>
+
+---
+
+## 9. Key Takeaways & Summary
+
+* **Do Not Rely on In-Memory State**: Server restarts and scaling events wipe out RAM histories. Always commit state events to a database.
 * **Use Graph State Machines with Reducers**: Make state updates clean, deterministic, and traceable so any session can be restored instantly.
 * **Write-Ahead Logs Prevent Loss**: Committing events to disk before actions execute allows replacement workers to recover state in milliseconds.
 * **Pair Every Mutating Tool with a Rollback**: Use the Distributed Saga pattern so that if an agent fails at step 4, steps 1, 2, and 3 are cleanly rolled back in reverse order.
@@ -496,7 +554,7 @@ if __name__ == "__main__":
 
 ## 🧭 Navigation
 
-| [← Lesson 02: Agent Architecture: Harnesses & Loops](02-react-loops-and-execution-governors.md) | [Phase 04 Navigation Hub](README.md) | [Lesson 04: Agent Memory Systems & Cognitive Architectures →](04-agent-memory-systems-and-cognitive-architectures.md) |
-|:---:|:---:|:---:|
-| **Previous Lesson** | **Phase Hub** | **Next Lesson** |
-| [Lab 1: Stateful Agent & Human Approvals](labs/lab1-stateful-agent-hitl.md) | [Lab 4: Distributed Saga Pattern](labs/lab4-saga-pattern.md) | [Capstone: Code Review Engine](labs/capstone-code-review-engine.md) |
+* **Previous Lesson**: [← Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md)
+* **Phase 04 Hub**: [Phase 04 Overview](README.md)
+* **Next Lesson**: [Lesson 04: Agent Memory Systems & Cognitive Architectures →](04-agent-memory-systems-and-cognitive-architectures.md)
+* **Capstone Lab**: [Capstone Challenge: Code Review Agent Engine](labs/capstone-code-review-engine.md)

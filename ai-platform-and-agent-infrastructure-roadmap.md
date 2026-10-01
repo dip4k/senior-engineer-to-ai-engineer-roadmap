@@ -41,24 +41,23 @@ In production, these are not two separate disciplines. They are **two halves of 
 
 ```mermaid
 flowchart TD
-    subgraph ClientPlane ["1. Ingress & Traffic Control"]
-        User(["Client / SDK / UI"]) --> Gateway["Resilient AI Gateway<br>(Rate Limits • Semantic Cache • Prefix Cache)"]
+    subgraph ClientPlane ["1. Ingress and Traffic Control"]
+        User(["👤 Client / SDK / UI"]) --> Gateway["🚪 Resilient AI Gateway<br>(Rate Limits • Semantic Cache • Prefix Cache)"]
     end
 
     subgraph PlatformPlane ["2. Unified Platform Core"]
-        direction TB
-        Gateway --> Orchestrator["Durable Agent Runtime<br>(Event Sourcing • Tool Repair • Checkpointing)"]
+        Gateway --> Orchestrator["🔄 Durable Agent Runtime<br>(Event Sourcing • Tool Repair • Checkpointing)"]
         
-        Orchestrator <--> ContextMgr["Context & Memory Manager<br>(Scratchpad • Working • Long-Term Vector)"]
-        Orchestrator <--> ToolEngine["MCP Tool Engine<br>(Policy Guard • Sandboxed MicroVM)"]
-        Orchestrator <--> HybridRAG["Hybrid Retrieval Engine<br>(BM25 + HNSW/ACORN + RRF)"]
+        Orchestrator <--> ContextMgr["🧠 Context and Memory Manager<br>(Scratchpad • Working • Long-Term Vector)"]
+        Orchestrator <--> ToolEngine["🔌 MCP Tool Engine<br>(Policy Guard • Sandboxed MicroVM)"]
+        Orchestrator <--> HybridRAG["🔍 Hybrid Retrieval Engine<br>(BM25 + HNSW/ACORN + RRF)"]
     end
 
     subgraph ObservabilityPlane ["3. Cross-Cutting Infrastructure"]
-        Orchestrator -.-> OTel["OpenTelemetry GenAI Spans"]
+        Orchestrator -.-> OTel["📊 OpenTelemetry GenAI Spans"]
         ToolEngine -.-> OTel
         HybridRAG -.-> OTel
-        OTel -.-> EvalGate["CI/CD Evaluation Gates<br>(Trajectory Diff • Groundedness)"]
+        OTel -.-> EvalGate["✅ CI/CD Evaluation Gates<br>(Trajectory Diff • Groundedness)"]
     end
 ```
 
@@ -82,11 +81,11 @@ The senior engineering path reverses this pyramid:
 
 ```mermaid
 flowchart TD
-    L1["1. First Principles & Hardware Constraints<br>(Tokenizers, KV-Cache, Latency, Non-Determinism)"] --> L2
-    L2["2. Build Core Primitives from Scratch<br>(Mini Agent Loop, Mini Vector Index, Token-Bucket Throttler)"] --> L3
-    L3["3. Architectural Patterns & Protocols<br>(Stateless MCP 2026, Durable Task WAL, Single-Stage Filtering)"] --> L4
-    L4["4. Leverage Frameworks with Discerning Judgment<br>('I understand what LangGraph / Semantic Kernel does under the hood')"] --> L5
-    L5["5. Production Hardening, Benchmarking & Evals<br>(P99 Latency, OTel GenAI Spans, Chaos Injection)"]
+    L1["🧱 1. First Principles and Hardware Constraints<br>(Tokenizers, KV-Cache, Latency, Non-Determinism)"] --> L2
+    L2["🛠️ 2. Build Core Primitives from Scratch<br>(Mini Agent Loop, Mini Vector Index, Token-Bucket Throttler)"] --> L3
+    L3["📐 3. Architectural Patterns and Protocols<br>(Stateless MCP 2026, Durable Task WAL, Single-Stage Filtering)"] --> L4
+    L4["⚖️ 4. Leverage Frameworks with Discerning Judgment<br>('Understand runtime internals and mechanics under the hood')"] --> L5
+    L5["🛡️ 5. Production Hardening, Benchmarking and Evals<br>(P99 Latency, OTel GenAI Spans, Chaos Injection)"]
 ```
 
 When you understand how to build the primitives yourself, you can confidently explain in an architectural review:
@@ -109,14 +108,14 @@ When you understand how to build the primitives yourself, you can confidently ex
 
 ```mermaid
 flowchart LR
-    P1["P1: Gateway & Tokens"] --> P2["P2: Durable Runtime"]
-    P2 --> P3["P3: MCP & Sandboxes"]
-    P3 --> P4["P4: Context & Memory"]
-    P4 --> P5["P5: Vector Search Internals"]
-    P5 --> P6["P6: Hybrid RAG & RRF"]
-    P6 --> P7["P7: Enterprise Capstone"]
-    P7 --> P8["P8: Evaluation Platform"]
-    P8 --> P9["P9: OTel Observability"]
+    P1["🚪 P1: Gateway and Tokens"] --> P2["🔄 P2: Durable Runtime"]
+    P2 --> P3["🔌 P3: MCP and Sandboxes"]
+    P3 --> P4["🧠 P4: Context and Memory"]
+    P4 --> P5["📐 P5: Vector Search Internals"]
+    P5 --> P6["🔍 P6: Hybrid RAG and RRF"]
+    P6 --> P7["🏛️ P7: Enterprise Capstone"]
+    P7 --> P8["🧪 P8: Evaluation Platform"]
+    P8 --> P9["📊 P9: OTel Observability"]
 ```
 
 ---
@@ -219,12 +218,12 @@ Never allow an agent to execute shell commands, Python scripts, or database upda
 
 ```mermaid
 flowchart LR
-    Agent["Agent Runtime"] --> Policy{"OPA / Policy Check"}
-    Policy -->|"Denied"| Reject["Return Permission Error"]
-    Policy -->|"Approved"| MCPProxy["MCP Security Gateway"]
-    MCPProxy --> MicroVM["Isolated Sandbox<br>(Docker / gVisor / Firecracker)"]
-    MicroVM --> ToolRun["Execute Action"]
-    ToolRun --> Sanitize["Filter Egress & Strip PII"]
+    Agent["🤖 Agent Runtime"] --> Policy{"⚖️ OPA / Policy Check"}
+    Policy -->|"Denied"| Reject["🚫 Return Permission Error"]
+    Policy -->|"Approved"| MCPProxy["🛡️ MCP Security Gateway"]
+    MCPProxy --> MicroVM["📦 Isolated Sandbox<br>(Docker / gVisor / Firecracker)"]
+    MicroVM --> ToolRun["⚙️ Execute Action"]
+    ToolRun --> Sanitize["🧹 Filter Egress and Strip PII"]
     Sanitize --> Agent
 ```
 
@@ -248,19 +247,19 @@ A production agent platform structures memory into four distinct, explicitly gov
 ```mermaid
 flowchart TD
     subgraph T1 ["Tier 1: Ephemeral Scratchpad"]
-        S1["Current Step Scratchpad<br>• Reasoning thoughts • Intermediate tool payloads • Cleared each turn"]
+        S1["📝 Current Step Scratchpad<br>• Reasoning thoughts • Intermediate tool payloads • Cleared each turn"]
     end
     
     subgraph T2 ["Tier 2: Working Session Memory"]
-        S2["Active Conversation AST<br>• Recent turns • Active entity state • Bounded by strict token budget"]
+        S2["💬 Active Conversation AST<br>• Recent turns • Active entity state • Bounded by strict token budget"]
     end
     
-    subgraph T3 ["Tier 3: Compaction & Episodic Summary"]
-        S3["Compacted Checkpoints<br>• Recursive summarization • Structured state cards • Tool result compression"]
+    subgraph T3 ["Tier 3: Compaction and Summary"]
+        S3["📦 Compacted Checkpoints<br>• Recursive summarization • Structured state cards • Tool result compression"]
     end
     
-    subgraph T4 ["Tier 4: Long-Term Vector / Knowledge Memory"]
-        S4["External Store<br>• User preferences • Historical tickets • Cross-session knowledge in Vector DB"]
+    subgraph T4 ["Tier 4: Long-Term Knowledge Memory"]
+        S4["🗄️ External Store<br>• User preferences • Historical tickets • Cross-session knowledge in Vector DB"]
     end
 
     T1 --> T2 --> T3 --> T4
@@ -309,10 +308,9 @@ To achieve sub-50ms latency across millions of vectors, we trade a tiny fraction
 ```mermaid
 flowchart TD
     subgraph HNSW_Graph ["HNSW Multi-Layer Skip-Graph"]
-        direction TB
-        L2["Layer 2 (Express Highway): (Entry Node) ====> (Far Node)"]
-        L1["Layer 1 (Suburban Road): (Node A) --> (Node B) --> (Node C)"]
-        L0["Layer 0 (Local Streets): Dense neighborhood containing all vectors"]
+        L2["🚀 Layer 2 (Express Highway): (Entry Node) ====> (Far Node)"]
+        L1["🚗 Layer 1 (Suburban Road): (Node A) --> (Node B) --> (Node C)"]
+        L0["🏘️ Layer 0 (Local Streets): Dense neighborhood containing all vectors"]
         
         L2 -. "Zoom In" .-> L1
         L1 -. "Zoom In" .-> L0
@@ -350,15 +348,15 @@ Dense vector embeddings are great at semantic meaning, but they fail on exact ke
 
 ```mermaid
 flowchart LR
-    Query["User Query"] --> Transform["Query Decomposer & Rewriter"]
-    Transform --> Dense["Dense HNSW Search<br>(Semantic Match)"]
-    Transform --> Sparse["Sparse BM25 Search<br>(Exact Match)"]
+    Query["👤 User Query"] --> Transform["🔀 Query Decomposer and Rewriter"]
+    Transform --> Dense["🧠 Dense HNSW Search<br>(Semantic Match)"]
+    Transform --> Sparse["📑 Sparse BM25 Search<br>(Exact Match)"]
     
-    Dense --> RRF["Reciprocal Rank Fusion<br>(Score Balancing)"]
+    Dense --> RRF["⚡ Reciprocal Rank Fusion<br>(Score Balancing)"]
     Sparse --> RRF
     
-    RRF --> CrossEncoder["Cross-Encoder Reranker<br>(Deep Precision Ranking)"]
-    CrossEncoder --> TopK["Top-K Grounded Context"]
+    RRF --> CrossEncoder["🎯 Cross-Encoder Reranker<br>(Deep Precision Ranking)"]
+    CrossEncoder --> TopK["📄 Top-K Grounded Context"]
 ```
 
 #### Reciprocal Rank Fusion (RRF)
@@ -444,18 +442,18 @@ You cannot optimize what you do not measure. In non-deterministic AI systems, co
 
 ```mermaid
 flowchart LR
-    PR["Pull Request / Model Update"] --> RunEvals["Automated Evaluation Runner"]
+    PR["📦 Pull Request / Model Update"] --> RunEvals["🧪 Automated Evaluation Runner"]
     
     subgraph Suite ["Evaluation Test Suite"]
-        E1["Trajectory Checker<br>(FSM Path Validation)"]
-        E2["Faithfulness Judge<br>(Grounded Context Assertion)"]
-        E3["Latency & Cost Assertion<br>(P99 < 3s, Cost < $0.05)"]
+        E1["🔄 Trajectory Checker<br>(FSM Path Validation)"]
+        E2["📜 Faithfulness Judge<br>(Grounded Context Assertion)"]
+        E3["⏱️ Latency and Cost Assertion<br>(P99 < 3s, Cost < $0.05)"]
     end
     
     RunEvals --> Suite
-    Suite --> Score{"Score > 95%?"}
-    Score -->|"Pass"| Deploy["Promote to Production"]
-    Score -->|"Fail"| Block["Block Deployment & Alert"]
+    Suite --> Score{"⚖️ Score > 95%?"}
+    Score -->|"Pass"| Deploy["🚀 Promote to Production"]
+    Score -->|"Fail"| Block["🚫 Block Deployment and Alert"]
 ```
 
 ---
@@ -472,18 +470,18 @@ Implement production tracing using the dedicated OpenTelemetry GenAI conventions
 
 ```mermaid
 flowchart TD
-    RootSpan["trace: support_request_9182 (Total: 2.45s | Cost: $0.012)"]
-    RootSpan --> SpanGW["span: gen_ai.gateway.route (15ms)"]
-    RootSpan --> SpanRAG["span: gen_ai.retrieval.hybrid (45ms)"]
-    SpanRAG --> SpanDense["span: vector.hnsw_search (12ms)"]
-    SpanRAG --> SpanSparse["span: bm25_search (8ms)"]
-    SpanRAG --> SpanRRF["span: reciprocal_rank_fusion (2ms)"]
+    RootSpan["🌲 trace: support_request_9182 (Total: 2.45s | Cost: $0.012)"]
+    RootSpan --> SpanGW["🚪 span: gen_ai.gateway.route (15ms)"]
+    RootSpan --> SpanRAG["🔍 span: gen_ai.retrieval.hybrid (45ms)"]
+    SpanRAG --> SpanDense["🧠 span: vector.hnsw_search (12ms)"]
+    SpanRAG --> SpanSparse["📑 span: bm25_search (8ms)"]
+    SpanRAG --> SpanRRF["⚡ span: reciprocal_rank_fusion (2ms)"]
     
-    RootSpan --> SpanOrch["span: gen_ai.agent.orchestrator (2.35s)"]
-    SpanOrch --> SpanLLM1["span: gen_ai.client (Claude 3.5 Sonnet - 1.1s | 1,420 tokens)"]
-    SpanOrch --> SpanTool1["span: gen_ai.tool.mcp.get_order (85ms)"]
-    SpanOrch --> SpanTool2["span: gen_ai.tool.mcp.issue_refund (180ms)"]
-    SpanOrch --> SpanLLM2["span: gen_ai.client (Claude 3.5 Sonnet - 0.9s | 850 tokens)"]
+    RootSpan --> SpanOrch["🔄 span: gen_ai.agent.orchestrator (2.35s)"]
+    SpanOrch --> SpanLLM1["🤖 span: gen_ai.client (Claude 3.5 Sonnet - 1.1s | 1,420 tokens)"]
+    SpanOrch --> SpanTool1["🔌 span: gen_ai.tool.mcp.get_order (85ms)"]
+    SpanOrch --> SpanTool2["💳 span: gen_ai.tool.mcp.issue_refund (180ms)"]
+    SpanOrch --> SpanLLM2["🤖 span: gen_ai.client (Claude 3.5 Sonnet - 0.9s | 850 tokens)"]
 ```
 
 **Attributes to Record on Spans:**

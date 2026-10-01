@@ -14,7 +14,7 @@ This validation gate evaluates and reconciles the findings from the **Phase 04 A
 Applying the conflict resolution priority hierarchy:
 1. **User Request & Zero-Loss Mandate**: Decompose Phase 04 into modular lessons for senior software engineers, preserving all technical depth and existing assets ("make sure to not delete anything" of engineering value).
 2. **Research Findings (2025–2026)**: Update framework landscapes to reflect the **Microsoft Agent Framework (MAF 1.0 GA, April 2026)** unification, the **Linux Foundation A2A Protocol**, the **OpenAI Agents SDK (`openai-agents`)**, the **Tri-Protocol Stack (MCP + A2A + AG-UI)**, and memory service architectures (Letta / Mem0).
-3. **Audit Findings**: Deconstruct the 2,236-line monolith, purge all author-facing meta-directive tags (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`), enforce Zero-LaTeX compliance, add step-by-step prose walkthroughs for all 10 Mermaid diagrams, and separate framework reference material from core systems concepts.
+3. **Audit Findings**: Deconstruct the 2,236-line monolith, purge all author-facing internal planning tags, enforce Zero-LaTeX compliance, add step-by-step prose walkthroughs for all 10 Mermaid diagrams, and separate framework reference material from core systems concepts.
 4. **Existing Curriculum Continuity**: Retain all 7 hands-on practice labs in `labs/` and all 3 reference code implementations in `examples/`.
 
 ---
@@ -43,7 +43,7 @@ To guarantee that **nothing of educational or architectural value is deleted**, 
 | **Enterprise Reference Implementations** | 1652–1850 | **PRESERVE** | `examples/` (Python & C# implementations) | Fully preserved and cross-referenced. |
 | **Verified Curated Resources** | 1852–1950 | **UPDATE / RETAIN** | `README.md` (Curated Bibliography) | Updated with latest official papers and SDK repositories. |
 | **Capstone Challenge (Code Review Engine)** | 1952–2236 | **PRESERVE** | `labs/capstone-code-review-engine.md` | Fully preserved capstone specification. |
-| **Author Meta-Tags (`[MUST-HAVE]`, `[GOOD-TO-KNOW]`)** | Throughout | **PURGE** | Removed from all files | Internal planning directives stripped from learner text. |
+| **Author Meta-Tags (Internal Planning Directives)** | Throughout | **PURGE** | Removed from all files | Internal planning directives stripped from learner text. |
 | **Raw LaTeX Formulas** | Lines 125, 127 | **CONVERT** | Lessons 01, 02 | Converted to pure Unicode and clean text code blocks. |
 
 ---

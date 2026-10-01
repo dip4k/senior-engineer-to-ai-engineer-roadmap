@@ -1,10 +1,13 @@
 # Modern Agent Development Platforms & Agent Development Kits (ADKs)
 
-> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🟡 Tier 2: Engineering Depth` | Estimated Reading Time: 50 min
+> **Phase 04: Agentic Systems & Orchestration** | Depth Tier: `🔵 Advanced` | Estimated Reading Time: 40 min
 >
 > **Prerequisites**: [Lesson 01: Workflows vs. Autonomous Agents](01-workflows-vs-agents-and-orchestration-patterns.md), [Lesson 02: Autonomous ReAct Loops & Execution Governors](02-react-loops-and-execution-governors.md), [Lesson 03: Stateful Sessions, Durable WAL & Distributed Sagas](03-stateful-sessions-and-durable-wal-persistence.md), [Lesson 05: Multi-Agent Coordination & The Tri-Protocol Stack](05-multi-agent-coordination-and-a2a-protocols.md)
 >
 > **Core Concept**: In enterprise software engineering, developers do not write raw HTTP sockets to build web APIs; they build on standardized web frameworks and software development kits (SDKs). Similarly, modern AI engineering has moved beyond raw prompt strings and home-grown while-loops to **Agent Development Kits (ADKs)**, **Agent Runtimes**, and **Hosted Agent Platforms**. An ADK is a code-first developer toolchain (such as Google ADK or OpenAI Agents SDK) that provides scaffolding, tool binding, and lifecycle management. An Agent Runtime (such as LangGraph or Meta Llama Stack) executes cyclical state graphs, manages reducers, and enforces loop governors. A Hosted Agent Platform (such as Microsoft Azure AI Agent Service or Google Vertex AI) provisions managed infrastructure, identity, sandboxing, and enterprise telemetry. Selecting the right layer decouples business logic from model providers and prevents costly platform rewrites.
+>
+> **New AI terms introduced**: `Agent Development Kit (ADK)`, `Agent Runtime`, `Hosted Agent Platform`, `Actor Mesh`.
+> **AI terms assumed from earlier lessons**: `ReAct loop`, `CodeAct`, `Write-Ahead Log (WAL)`, `A2A protocol`, `MCP`.
 
 ---
 
@@ -14,11 +17,19 @@ In the early phases of generative AI adoption, engineering teams built prototype
 
 ```python
 # The Fragile Prototype Anti-Pattern: Raw API Calls & Fragile Strings
+class MockCompletions:
+    def create(self, **kwargs):
+        return {"choices": [{"message": {"content": "Invoice #101: Total $500"}}]}
+
+class MockClient:
+    chat = type("Chat", (), {"completions": MockCompletions()})()
+
+client = MockClient()
+raw_text = "Invoice #101 for $500"
 response = client.chat.completions.create(
     model="gpt-4o",
     messages=[{"role": "user", "content": f"Extract invoice from {raw_text}"}],
 )
-# Manual string slicing, unvalidated JSON parsing, zero retry state, zero telemetry
 ```
 
 As systems grew into production, teams encountered what distributed systems architects call the **Abstraction Tax**:
@@ -36,36 +47,76 @@ To evaluate the ecosystem objectively, software architects distinguish between t
 
 ```mermaid
 flowchart TD
-    classDef l3 fill:#ede7f6,stroke:#512da8,stroke-width:2px;
-    classDef l2 fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef l1 fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
-
-    subgraph Layer3["TIER 3: HOSTED ENTERPRISE AGENT PLATFORMS (Infrastructure & Governance)"]
+    subgraph Layer1["🛠️ TIER 1: AGENT DEVELOPMENT KITS (ADKs)"]
         direction TB
-        P1["Microsoft Azure AI Agent Service / Azure AI Foundry"]:::l3
-        P2["Google Vertex AI Agent Builder & Agent Engine"]:::l3
-        P3["AWS Bedrock Agents & Multi-Agent Collaboration"]:::l3
-        P_Desc["Managed Infrastructure • Multi-Tenant Sandboxing • Enterprise IAM • Zero-Trust Perimeters • OpenTelemetry APMs"]:::l3
+        D1["📦 Google Agent Development Kit ADK"]
+        D2["📦 OpenAI Agents SDK"]
+        D3["📦 Microsoft Agent Framework SDK"]
     end
 
-    subgraph Layer2["TIER 2: AGENT ORCHESTRATION RUNTIMES (Execution & State Machines)"]
+    subgraph Layer2["⚙️ TIER 2: AGENT ORCHESTRATION RUNTIMES"]
         direction TB
-        R1["LangGraph (StateGraph & Reducers)"]:::l2
-        R2["Meta Llama Stack (Standardized Tool & Memory Engine)"]:::l2
-        R3["PydanticAI (Type-Safe Dependency Injection Engine)"]:::l2
-        R_Desc["Cyclical State Machines • Checkpointing (Postgres/Redis) • Loop Governors • Action Fingerprinting"]:::l2
+        R1["🔄 LangGraph (StateGraph & Reducers)"]
+        R2["🦙 Meta Llama Stack (Standardized Tool Engine)"]
+        R3["🛡️ PydanticAI (Type-Safe DI Engine)"]
     end
 
-    subgraph Layer1["TIER 1: AGENT DEVELOPMENT KITS (ADKs) & TOOLCHAINS (Developer Ergonomics)"]
-        direction TB
-        D1["Google Agent Development Kit (ADK) & agents-cli"]:::l1
-        D2["OpenAI Agents SDK (openai-agents)"]:::l1
-        D3["Microsoft Agent Framework (MAF 1.0 GA SDK)"]:::l1
-        D_Desc["Code-First Scaffolding • Typed Tool Schemas • Local Unit Testing & Mocking • Dynamic Handoff Primitives"]:::l1
-    end
+    Layer1 -->|"Compiles & Packages Into"| Layer2
 
-    Layer1 --> Layer2 --> Layer3
+    style Layer1 fill:none,stroke:#16a34a,stroke-width:2px
+    style Layer2 fill:none,stroke:#2563eb,stroke-width:2px
+    style D1 stroke:#16a34a,stroke-width:1px,fill:none
+    style D2 stroke:#16a34a,stroke-width:1px,fill:none
+    style D3 stroke:#16a34a,stroke-width:1px,fill:none
+    style R1 stroke:#2563eb,stroke-width:1px,fill:none
+    style R2 stroke:#2563eb,stroke-width:1px,fill:none
+    style R3 stroke:#2563eb,stroke-width:1px,fill:none
 ```
+
+### Diagram Walkthrough: Development Toolchains to Orchestration Runtimes
+
+1. **Tier 1 (ADKs)**: The developer's authoring toolchain (Google ADK, OpenAI Agents SDK, MAF SDK) provides CLI scaffolding, strongly typed tool decorators, and offline mock runners.
+2. **Scaffold to Runtime**: ADK definitions compile down into executable state machines and dependency injection containers.
+3. **Tier 2 (Runtimes)**: Orchestration engines (LangGraph, Llama Stack, PydanticAI) execute graphs, maintain write-ahead logs, and enforce step-count loop governors.
+
+```mermaid
+flowchart TD
+    subgraph Runtimes["⚙️ AGENT RUNTIMES"]
+        direction TB
+        R["🔄 Active Graph State Engine"]
+    end
+
+    subgraph Layer3["☁️ TIER 3: HOSTED ENTERPRISE PLATFORMS"]
+        direction TB
+        P1["🔷 Azure AI Agent Service / Foundry"]
+        P2["🌐 Google Vertex AI Agent Engine"]
+        P3["🟧 AWS Bedrock Agents Collaboration"]
+    end
+
+    R -->|"Deploys On Managed Fleet"| Layer3
+
+    style Runtimes fill:none,stroke:#2563eb,stroke-width:2px
+    style Layer3 fill:none,stroke:#7c3aed,stroke-width:2px
+    style R stroke:#2563eb,stroke-width:2px,fill:none
+    style P1 stroke:#7c3aed,stroke-width:1px,fill:none
+    style P2 stroke:#7c3aed,stroke-width:1px,fill:none
+    style P3 stroke:#7c3aed,stroke-width:1px,fill:none
+```
+
+### Diagram Walkthrough: Hosted Enterprise Platform Fleet
+
+1. **Runtime Execution**: The core graph or loop engine runs either on self-hosted containers or serverless runtimes.
+2. **Fleet Deployment**: Packaging pipelines push containerized runtimes into managed enterprise cloud platforms.
+3. **Hosted Platform Layer**: Azure AI Agent Service, Vertex AI Agent Engine, and AWS Bedrock Agents provide multi-tenant isolation, KMS secrets, and OpenTelemetry instrumentation.
+
+### The Web Service Stack Analogy
+
+Think of an ADK, an Agent Runtime, and a Hosted Platform like developing a web microservice:
+* **The ADK** is your local development kit and code generator (like the FastAPI CLI).
+* **The Runtime** is the web server itself (like Uvicorn and Starlette).
+* **The Platform** is the managed cloud hosting environment (like AWS ECS or Google Cloud Run).
+
+> **Where this analogy breaks**: A web framework routes stateless, deterministic HTTP requests. An AI agent runtime executes non-deterministic probabilistic reasoning loops where the number of turns, tool calls, and output lengths vary across executions. Checkpointing and loop governance must track stochastic conversation trajectories rather than simple request-response lifecycles.
 
 ### The Three Layers Defined
 
@@ -90,19 +141,27 @@ Let us examine the architecture, trade-offs, and design patterns of the leading 
 
 ### 3.1 Microsoft Agent Framework (MAF 1.0 GA, April 2026)
 
-The **Microsoft Agent Framework (MAF)** represents the official unification of Microsoft's two previously independent initiatives: **Semantic Kernel** (known for its enterprise C# typing and dependency injection) and **AutoGen** (known for its asynchronous, multi-agent conversational patterns).
+The **Microsoft Agent Framework (MAF)** unifies Microsoft's two previous initiatives: Semantic Kernel and AutoGen. It combines Semantic Kernel's enterprise typing and dependency injection with AutoGen's asynchronous multi-agent conversational patterns.
 
 ```mermaid
 flowchart LR
-    classDef sk fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef ag fill:#fff3e0,stroke:#f57c00,stroke-width:2px;
-    classDef maf fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    SK["🔷 Semantic Kernel<br/>• Strong C#/.NET & Python typing<br/>• Kernel Plugins & Filters<br/>• Enterprise DI"]
+    AG["🤖 AutoGen<br/>• Asynchronous Actor Mesh<br/>• Conversational Swarms<br/>• Event-Driven Mailboxes"]
+    MAF["🚀 Microsoft Agent Framework (MAF 1.0 GA)<br/>• Unified Actor-Plugin Architecture<br/>• Azure AI Foundry Integration<br/>• C# & Python Enterprise Parity"]
 
-    SK["Semantic Kernel\n• Strong C#/.NET & Python typing\n• Kernel Plugins & Filters\n• Enterprise Dependency Injection"]:::sk
-    +
-    AG["AutoGen\n• Asynchronous Actor Mesh\n• Conversational Multi-Agent Swarms\n• Event-Driven Mailboxes"]:::ag
-    --> MAF["Microsoft Agent Framework (MAF 1.0 GA)\n• Unified Actor-Plugin Architecture\n• First-class Azure AI Foundry Integration\n• Native C# & Python Enterprise Parity"]:::maf
+    SK --> MAF
+    AG --> MAF
+
+    style SK stroke:#2563eb,stroke-width:2px,fill:none
+    style AG stroke:#d97706,stroke-width:2px,fill:none
+    style MAF stroke:#16a34a,stroke-width:2px,fill:none
 ```
+
+### Diagram Walkthrough: MAF Framework Unification
+
+1. **Semantic Kernel Foundation**: Supplies strict C#/.NET and Python type contracts, kernel filter pipelines, and enterprise dependency injection containers.
+2. **AutoGen Coordination Engine**: Supplies asynchronous event-driven mailboxes and autonomous multi-agent swarm topologies.
+3. **Unified MAF 1.0 Runtime**: Merges plugins and actors into a single enterprise runtime integrated with Azure AI Foundry.
 
 * **Core Architectural Pattern**: **Asynchronous Actor Mesh**. Every agent is an independent actor possessing its own inbound mailbox. Messages are processed sequentially, guaranteeing that internal state is immune to multi-threaded race conditions.
 * **Plugin Architecture**: Tools are defined as strongly typed plugins using native C# attributes (`[KernelFunction]`) or Python decorators. It supports native dependency injection out-of-the-box, allowing database pools and HTTP clients to be injected cleanly.
@@ -187,19 +246,25 @@ Use this decision logic when evaluating frameworks for enterprise initiatives:
 
 ```mermaid
 flowchart TD
-    classDef q fill:#e1f5fe,stroke:#0288d1,stroke-width:2px;
-    classDef pick fill:#e8f5e9,stroke:#2e7d32,stroke-width:2px;
+    Start{"🏢 Primary Infrastructure & Language?"}
+    
+    Start -->|".NET 8/9 Microservices / Azure Cloud"| MAF["Choose: 🔷 Microsoft Agent Framework (MAF 1.0 GA)"]
+    Start -->|"Google Cloud / Vertex AI / Gemini Models"| ADK["Choose: 🌐 Google Agent Development Kit (ADK)"]
+    Start -->|"Air-Gapped / On-Premise GPU / Open-Weight Models"| Llama["Choose: 🦙 Meta Llama Stack"]
+    Start -->|"Python Microservices / Multi-Cloud / Agnostic"| Q2{"⚖️ Workflow State Complexity?"}
+    
+    Q2 -->|"Cyclical Graph / Multi-Hour Checkpoints / Time Travel"| LG["Choose: 🔄 LangGraph"]
+    Q2 -->|"Type-Safe Web API / FastAPI / Clean DI"| PAI["Choose: 🛡️ PydanticAI"]
+    Q2 -->|"Peer-to-Peer Handoffs / OpenAI Ecosystem"| OAI["Choose: 🤖 OpenAI Agents SDK"]
 
-    Start["What is your organization's primary infrastructure & language?"]:::q
-    
-    Start -->|".NET 8/9 Microservices / Azure Cloud"| MAF["Choose: Microsoft Agent Framework (MAF 1.0 GA)"]:::pick
-    Start -->|"Google Cloud / Vertex AI / Gemini Models"| ADK["Choose: Google Agent Development Kit (ADK)"]:::pick
-    Start -->|"Air-Gapped / On-Premise GPU / Open-Weight Models"| Llama["Choose: Meta Llama Stack"]:::pick
-    Start -->|"Python Microservices / Multi-Cloud / Model Agnostic"| Q2{"What is the workflow's state & topology complexity?"}:::q
-    
-    Q2 -->|"Strict Cyclical Graph / Multi-Hour Checkpoints / Time Travel"| LG["Choose: LangGraph"]:::pick
-    Q2 -->|"Type-Safe Web API / FastAPI / Clean Dependency Injection"| PAI["Choose: PydanticAI"]:::pick
-    Q2 -->|"Peer-to-Peer Handoffs / OpenAI Ecosystem"| OAI["Choose: OpenAI Agents SDK"]:::pick
+    style Start stroke:#2563eb,stroke-width:2px,fill:none
+    style Q2 stroke:#2563eb,stroke-width:2px,fill:none
+    style MAF stroke:#16a34a,stroke-width:2px,fill:none
+    style ADK stroke:#16a34a,stroke-width:2px,fill:none
+    style Llama stroke:#16a34a,stroke-width:2px,fill:none
+    style LG stroke:#16a34a,stroke-width:2px,fill:none
+    style PAI stroke:#16a34a,stroke-width:2px,fill:none
+    style OAI stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
 ### Prose Diagram Walkthrough: Selection Logic
@@ -437,6 +502,28 @@ When selecting and operating agent platforms, safeguard against these three syst
   * Choose **LangGraph** for complex cyclical graphs with long-running checkpoints.
   * Choose **PydanticAI** for type-safe FastAPI microservices and financial transaction processing.
 * **Architecture Over Framework**: Never hardcode domain business logic into transient framework wrappers. Treat frameworks as replaceable orchestration adapters around clean, strongly typed domain functions.
+
+---
+
+## 9. Quick Check
+
+1. What is the distinction between an Agent Development Kit (ADK) and an Agent Orchestration Runtime?
+<details>
+<summary>Answer</summary>
+An ADK (such as Google ADK or OpenAI Agents SDK) is the developer-facing authoring toolchain: it provides CLI scaffolding, strongly typed tool decorators, local mocking harnesses, and evaluation suites. An Agent Orchestration Runtime (such as LangGraph or Meta Llama Stack) is the execution engine: it executes cyclical graph transitions, manages state reducers, persists write-ahead logs, and enforces execution governors.
+</details>
+
+2. Why does tight coupling between business logic and an open-source agent framework create an architectural risk?
+<details>
+<summary>Answer</summary>
+AI frameworks experience rapid churn, frequent API breaks, and unexpected prompt template modifications across versions. If your domain entities, database queries, and tools subclass proprietary framework objects, deprecations force massive codebase rewrites. Adopting Ports and Adapters (Hexagonal Architecture) keeps domain functions pure and treats agent frameworks as interchangeable edge adapters.
+</details>
+
+3. How does dependency injection (such as PydanticAI's `RunContext[Deps]`) enable deterministic unit testing of agents?
+<details>
+<summary>Answer</summary>
+Dependency injection separates runtime infrastructure (database connection pools, secrets, third-party HTTP clients) from tool definitions and LLM reasoning. In test suites, engineers inject in-memory mock databases and offline dummy LLM clients, allowing tools and agent orchestration logic to run in milliseconds without real network calls or paid API credits.
+</details>
 
 ---
 

@@ -1,29 +1,48 @@
-## 10. Capstone Engineering Challenge [MUST-HAVE] 🔴
+## 10. Capstone Engineering Challenge 🔴
 
-### The Multi-Turn Code Review & Refactoring Engine [MUST-HAVE] 🔴
+### The Multi-Turn Code Review & Refactoring Engine 🔴
 
 ```mermaid
 flowchart TD
-    Orch["REVIEW & REFACTORING ORCHESTRATOR<br>State Machine • SQLite Checkpoint Manager"]
+    Orch["👑 REVIEW & REFACTORING ORCHESTRATOR<br>State Machine • SQLite Checkpoint Manager"]
     
-    Orch --> Sec["SECURITY WORKER<br>• OWASP Top 10 Audit<br>• Privilege Isolation"]
-    Orch --> Perf["PERFORMANCE WORKER<br>• Complexity Analysis<br>• Allocation Hotspots"]
-    Orch --> Style["STYLE & DOCS WORKER<br>• Linting Compliance<br>• Docstring Validation"]
+    Orch --> Sec["🛡️ SECURITY WORKER<br>• OWASP Top 10 Audit<br>• Privilege Isolation"]
+    Orch --> Perf["⚡ PERFORMANCE WORKER<br>• Complexity Analysis<br>• Allocation Hotspots"]
+    Orch --> Style["🎨 STYLE & DOCS WORKER<br>• Linting Compliance<br>• Docstring Validation"]
     
-    Sec --> Refactor["REFACTORING GENERATOR AGENT<br>Proposes Code Patch & Writes Unit Test Suite"]
+    Sec --> Refactor["💻 REFACTORING GENERATOR AGENT<br>Proposes Code Patch & Writes Unit Test Suite"]
     Perf --> Refactor
     Style --> Refactor
     
-    Refactor --> Loop["EVALUATOR-OPTIMIZER TEST LOOP<br>Executes Tests in Isolated Sandbox Environment"]
+    Refactor --> Loop["🧪 EVALUATOR-OPTIMIZER TEST LOOP<br>Executes Tests in Isolated Sandbox Environment"]
     
-    Loop --> PassCheck{"All Unit Tests Pass?"}
-    PassCheck -- "No" --> Reflect["Self-Reflection & Critique<br>Feed error trace back to<br>Refactoring Generator Agent"]
+    Loop --> PassCheck{"⚖️ All Unit Tests Pass?"}
+    PassCheck -- "No" --> Reflect["🔍 Self-Reflection & Critique<br>Feed error trace back to<br>Refactoring Generator Agent"]
     Reflect --> Refactor
-    PassCheck -- "Yes" --> Final["Checkpoint Final<br>Code to Git Diff"]
+    PassCheck -- "Yes" --> Final["✅ Checkpoint Final<br>Code to Git Diff"]
+
+    style Orch stroke:#2563eb,stroke-width:2px,fill:none
+    style Sec stroke:#dc2626,stroke-width:1px,fill:none
+    style Perf stroke:#d97706,stroke-width:1px,fill:none
+    style Style stroke:#64748b,stroke-width:1px,fill:none
+    style Refactor stroke:#16a34a,stroke-width:2px,fill:none
+    style Loop stroke:#7c3aed,stroke-width:2px,fill:none
+    style PassCheck stroke:#2563eb,stroke-width:2px,fill:none
+    style Reflect stroke:#dc2626,stroke-width:1px,fill:none
+    style Final stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
+### Diagram Walkthrough: Code Review & Refactoring Engine Pipeline
+
+1. **Review Orchestrator**: Manages state machine transitions and coordinates specialist workers.
+2. **Parallel Specialist Workers**: Evaluates the input codebase across Security, Performance, and Style concerns concurrently.
+3. **Refactoring Generator**: Synthesizes a unified patch and corresponding test suite from worker critiques.
+4. **Evaluator-Optimizer Loop**: Executes unit tests inside an isolated sandbox environment.
+5. **Self-Reflection & Critique**: If tests fail, feeds execution error traces back to the generator for automated repair.
+6. **Checkpoint Commit**: Commits verified patches to SQLite checkpoints and generates final git diffs.
+
 #### Objective
-Architect and implement an end-to-end, production-grade **Autonomous Code Review and Self-Healing Refactoring System** that reviews a target codebase, identifies vulnerabilities and architectural anti-patterns, generates a proposed code fix, generates automated unit tests, and verifies that the patch passes in an isolated runtime sandbox before finalizing changes.
+Architect and implement an autonomous **Code Review and Self-Healing Refactoring Engine**. The system reviews a target codebase, identifies security and performance anti-patterns, and generates proposed patches. It executes automated unit tests inside an isolated sandbox to verify fixes before finalizing changes.
 
 #### Architectural Specification
 1. **Orchestrator-Worker Architecture**:

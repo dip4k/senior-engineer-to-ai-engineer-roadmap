@@ -1,8 +1,10 @@
 # Lab 5: AI Observability, Distributed Tracing & OpenTelemetry GenAI Semantic Conventions
 
+[![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb)
+
 > **Production AI Observability**: OpenTelemetry GenAI Conventions + Span Lifecycle Tracking + Prompt/Completion Token Accounting + Duration Telemetry  
 > 
-> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Observability Core](../agent-forge/agent_forge/observability/)
+> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Observability Core](../agent-forge/agent_forge/observability/) • [📓 Interactive Colab Traces & Evals](../notebooks/06_eval_flywheel_and_trace_trees.ipynb)
 
 ---
 
@@ -19,14 +21,14 @@ This lab delivers a lightweight, production-grade **OpenTelemetry GenAI Tracer**
 
 ```mermaid
 flowchart TD
-    Req["Agent Turn Execution Initiated"] --> StartSpan["1. GenAITracer.start_span('agent_turn_execution')<br>Records Start Timestamp (t0)"]
+    Req["🚀 Agent Turn Execution Initiated"] --> StartSpan["⏱️ 1. GenAITracer.start_span('agent_turn_execution')<br>Records Start Timestamp (t0)"]
     
-    StartSpan --> SetAttrs["2. Set OpenTelemetry GenAI Attributes<br>• gen_ai.request.model = 'claude-3-7-sonnet'<br>• gen_ai.usage.prompt_tokens = 142<br>• gen_ai.usage.completion_tokens = 56"]
+    StartSpan --> SetAttrs["🏷️ 2. Set OpenTelemetry GenAI Attributes<br>• gen_ai.request.model = 'claude-3-7-sonnet'<br>• gen_ai.usage.prompt_tokens = 142<br>• gen_ai.usage.completion_tokens = 56"]
     
-    SetAttrs --> ChildSpan["3. Execute Sub-Operations<br>(Child span: vector_retrieval / mcp_tool_call)"]
+    SetAttrs --> ChildSpan["⚙️ 3. Execute Sub-Operations<br>(Child span: vector_retrieval / mcp_tool_call)"]
     
-    ChildSpan --> EndSpan["4. GenAITracer.end_span(span)<br>Records End Timestamp (t1) & Duration (ms)"]
-    EndSpan --> TraceBuffer["5. Root Spans Committed to Buffer<br>(Ready for OTel Collector Export)"]
+    ChildSpan --> EndSpan["📊 4. GenAITracer.end_span(span)<br>Records End Timestamp (t1) and Duration (ms)"]
+    EndSpan --> TraceBuffer["📦 5. Root Spans Committed to Buffer<br>(Ready for OTel Collector Export)"]
 ```
 
 #### Diagram Walkthrough:

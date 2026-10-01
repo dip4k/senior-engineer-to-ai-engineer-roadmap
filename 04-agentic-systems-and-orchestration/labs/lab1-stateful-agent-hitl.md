@@ -1,4 +1,4 @@
-### Lab 1: Stateful Agent with Human-in-the-Loop Approval (LangGraph Pattern) [MUST-HAVE] 🔴
+### Lab 1: Stateful Agent with Human-in-the-Loop Approval (LangGraph Pattern) 🔴
 
 #### Scenario & Enterprise Problem
 In corporate financial workflows, an AI agent is authorized to retrieve balances, inspect transaction histories, and calculate fee adjustments autonomously. However, any operation that mutates balances by more than \$1,000, alters tax IDs, or initiates bank wires must be halted for explicit human approval before external execution.

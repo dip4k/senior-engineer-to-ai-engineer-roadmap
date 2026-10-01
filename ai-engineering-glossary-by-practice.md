@@ -448,47 +448,44 @@
 
 ```mermaid
 flowchart TD
-    User["End User / Browser (Angular)"] --> API["BFF API Gateway (.NET 9 Web API)"]
-    API --> Auth["Authentication & RBAC (Microsoft Entra ID)"]
-    Auth --> Orchestrator["AI Orchestrator (LangGraph / StateGraph)"]
+    User["👤 End User / Browser (Angular)"] --> API["🌐 BFF API Gateway (.NET 9 Web API)"]
+    API --> Auth["🔑 Authentication and RBAC (Entra ID)"]
+    Auth --> Orchestrator["🔄 AI Orchestrator (LangGraph)"]
     
     subgraph Guardrails["Security Perimeter"]
-        direction TB
-        InputGuard["Input Guardrail (PII + Prompt Injection Scanner)"]
-        OutputGuard["Output Guardrail (Schema + Policy Validation)"]
+        InputGuard["🛡️ Input Guardrail (PII + Injections)"]
+        OutputGuard["🛡️ Output Guardrail (Schema Validation)"]
     end
     
     Orchestrator --> InputGuard
-    InputGuard --> Router["Router Node"]
+    InputGuard --> Router["🔀 Router Node"]
     
     subgraph AgentMesh["Specialized Agent Mesh"]
-        direction TB
-        RAGAgent["RAG Knowledge Agent"]
-        OrderAgent["Order Processing Agent"]
-        EscalationAgent["Escalation & Support Agent"]
+        RAGAgent["📚 RAG Knowledge Agent"]
+        OrderAgent["📦 Order Processing Agent"]
+        EscalationAgent["📞 Escalation and Support Agent"]
     end
     
     Router --> RAGAgent
     Router --> OrderAgent
     Router --> EscalationAgent
     
-    subgraph EnterpriseBackbone["Enterprise Data & Systems"]
-        direction TB
-        AzureSearch["Azure AI Search (Hybrid + Reranking)"]
-        MCPServer["MCP Tool Server (Enterprise .NET REST APIs)"]
-        ServiceBus["Azure Service Bus (Async Event Queue)"]
+    subgraph EnterpriseBackbone["Enterprise Data and Systems"]
+        AzureSearch["🔍 Azure AI Search (Hybrid + Rerank)"]
+        MCPServer["🔌 MCP Tool Server (Enterprise APIs)"]
+        ServiceBus["📨 Azure Service Bus (Async Queue)"]
     end
     
     RAGAgent --> AzureSearch
     OrderAgent --> MCPServer
     EscalationAgent --> ServiceBus
     
-    RAGAgent --> SynthesisNode["Synthesis & Decision Node"]
+    RAGAgent --> SynthesisNode["🧠 Synthesis and Decision Node"]
     OrderAgent --> SynthesisNode
     EscalationAgent --> SynthesisNode
     
-    SynthesisNode --> HITL{"Requires Human Approval?<br/>(e.g., Refund > 500 USD)"}
-    HITL -- Yes --> ApprovalQueue["Approval Inbox (Human-in-the-Loop)"]
+    SynthesisNode --> HITL{"⚖️ Requires Human Approval?<br/>(e.g., Refund > 500 USD)"}
+    HITL -- Yes --> ApprovalQueue["📥 Approval Inbox (Human-in-the-Loop)"]
     ApprovalQueue --> OutputGuard
     HITL -- No --> OutputGuard
     

@@ -19,16 +19,15 @@ In **AI-Native Systems (Software 3.0)**, traditional testing is insufficient. Be
 ```mermaid
 flowchart TD
     subgraph PRRGate["THE 6 PRODUCTION READINESS GATES"]
-        direction TB
-        G1["Gate 1: Availability, Resilience & Latency SLAs"]
-        G2["Gate 2: Cost Governance & Token Runaway Limits"]
-        G3["Gate 3: Security, Sandboxing & Privilege Quarantine"]
-        G4["Gate 4: State Durability, Idempotency & Saga Rollbacks"]
-        G5["Gate 5: Telemetry, Tracing & OpenTelemetry Spans"]
-        G6["Gate 6: Evals, Regression Gates & EU AI Act Compliance"]
+        G1["⚡ Gate 1: Availability, Resilience and Latency SLAs"]
+        G2["💰 Gate 2: Cost Governance and Token Limits"]
+        G3["🔒 Gate 3: Security and Privilege Quarantine"]
+        G4["💾 Gate 4: State Durability and Saga Rollbacks"]
+        G5["📊 Gate 5: Telemetry and OpenTelemetry Spans"]
+        G6["⚖️ Gate 6: Evals and EU AI Act Compliance"]
     end
     
-    G1 --> Pass{"All 50 Points<br>Verified?"}
+    G1 --> Pass{"🔍 All 50 Points<br>Verified?"}
     G2 --> Pass
     G3 --> Pass
     G4 --> Pass

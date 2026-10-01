@@ -320,16 +320,88 @@ flowchart TD
 
 ---
 
+## 7. Renderer Invariants: Preventing Broken Images & Viewport Truncation
+
+Modern documentation previewers (VS Code Markdown Preview, GitHub web and mobile, Antigravity webviews) render Mermaid diagrams by converting them dynamically into SVGs. To prevent fatal parse crashes, broken image icons, and text spilling outside diagram borders, diagrams must obey these **five hard renderer invariants**:
+
+### 1. Subgraph Title Length Ceiling (Max 35 Characters)
+- **The Failure Mechanism**: Mermaid renders subgraph headings as an SVG `<text>` tag inside a `<g class="cluster">` element. SVG `<text>` elements **do not support automated word wrapping**.
+- **The Defect**: If a subgraph title exceeds 35–40 characters (e.g. `subgraph Level1["🐧 TIER 1: LINUX NAMESPACES & CGROUPS (Standard Docker)"]`), the title will either be clipped with an ellipsis (`tier 1 : Linux ...`) in fixed-width viewports, or will spill completely past the right boundary of the diagram card.
+- **The Rule**: Keep all subgraph titles short, punchy, and under **35 characters**:
+  ```text
+  %% ❌ BAD (60 chars - Truncates or spills):
+  subgraph L1["🐧 TIER 1: LINUX NAMESPACES & CGROUPS (Standard Docker)"]
+
+  %% ✅ GOOD (28 chars - Renders cleanly):
+  subgraph L1["🐧 Tier 1: Container Namespaces"]
+  ```
+- **Where details go**: Detailed explanations belong *inside* the internal nodes or in the prose walkthrough below the diagram, never in the subgraph header.
+
+---
+
+### 2. Ban Nested `direction` Statements Inside Subgraphs
+- **The Failure Mechanism**: Declaring `direction LR` or `direction TB` inside a `subgraph` when the parent diagram is already declared as `flowchart TD` or `flowchart LR` requires experimental multidirectional layout partitioning.
+- **The Defect**: In many production markdown engines (Mermaid 9.x / 10.0, VS Code Markdown Preview, obsidian, embedded IDE webviews), nested `direction` statements trigger a fatal syntax exception (`Parse error on line X: Expecting 'SPACE', 'GRAPH'`). The parser crashes, failing to generate an SVG, and displays a **broken image icon**.
+- **The Rule**: **Never write `direction LR` or `direction TB` inside a `subgraph`**.
+  - Let subgraphs naturally inherit the root graph's orientation.
+  - To align nodes side-by-side in a `flowchart TD`, connect them to a common upstream node (`Parent --> NodeA & NodeB`). The layout engine will automatically rank them horizontally without needing `direction LR`.
+
+---
+
+### 3. XML / SVG Entity Safety: Ban Literal Ampersands (`&`) in Labels
+- **The Failure Mechanism**: Mermaid diagrams compile directly into Scalable Vector Graphics (SVG), which are parsed strictly as XML.
+- **The Defect**: A raw literal ampersand `&` inside a node or edge label (e.g. `["Preferences & persona"]` or `["SQL & DB"]`) violates XML entity syntax rules. The browser's XML parser (DOMParser) throws `XML Parsing Error: not well-formed`, immediately breaking SVG rendering and showing a broken image.
+- **The Rule**: Always write out the English word `and` in node labels instead of `&`:
+  ```text
+  %% ❌ BAD (Triggers XML entity parse error in browser):
+  Core["📋 Core Profile<br/>Preferences & persona"]
+
+  %% ✅ GOOD (Valid XML across all browser engines):
+  Core["📋 Core Profile<br/>Preferences and Persona"]
+  ```
+  *(Note: Mermaid's multi-node syntax `A & B --> C` on structural edge lines is acceptable; literal `&` is only forbidden inside label text strings).*
+
+---
+
+### 4. Prevent Horizontal Viewport Sprawl (Viewport Budget: 750px)
+- **The Failure Mechanism**: Standard technical reading panes across desktop IDEs, tablets, and GitHub mobile provide a content width of roughly 700px to 850px.
+- **The Defect**: In `flowchart LR`, or when chaining 3–4 descriptive cards horizontally inside a subgraph, the cumulative SVG width exceeds 950–1200px. The diagram overflows the viewport, causing severe horizontal clipping or frustrating side-scrolling.
+- **The Rule**:
+  - Prefer vertical top-down orientation (`flowchart TD`) for multi-step pipelines and architectures.
+  - In `flowchart LR`, never chain more than 3 compact nodes horizontally. If nodes contain multi-line descriptions or bullet points, use `flowchart TD`.
+  - Keep edge label strings short (<= 30 characters).
+
+---
+
+### 5. Parentheses Inside Cylinder Shapes
+- **The Failure Mechanism**: Cylinder nodes are declared with syntax `ID[("Label")]`.
+- **The Defect**: Putting additional parentheses inside the label (e.g. `Vec[("🗄️ Archival Store<br>(Vector embeddings)")]`) causes naive regex parsers and tokenizer states to prematurely close the shape on the inner `)`.
+- **The Rule**: Do not use parentheses inside cylinder labels:
+  ```mermaid
+  %% ❌ RISKY:
+  Vec[("🗄️ Archival Store<br>(Vector embeddings)")]
+
+  %% ✅ SAFE:
+  Vec[("🗄️ Archival Store<br>Vector Embeddings")]
+  ```
+
+---
+
 ### Layout & Styling Verification Checklist
-Before approving any Mermaid diagram containing two or more subgraphs:
+Before approving any Mermaid diagram:
+- [ ] **No Subgraph Header Truncation**: Are all subgraph titles <= 35 characters?
+- [ ] **No Nested Direction**: Are all `subgraph` blocks free of internal `direction LR` or `direction TB` statements?
+- [ ] **XML Entity Safety**: Are all node and edge labels free of raw unescaped `&` characters (using `and` instead)?
+- [ ] **No Broken Images**: Does the diagram compile to a valid SVG without console errors or broken glyphs?
 - [ ] **No Spaghetti Lines**: Are cross-subgraph links minimal, clean, and non-overlapping?
 - [ ] **No Single-Node Wrappers**: Does every subgraph contain 2 or more related nodes?
 - [ ] **No Backwards Cross-Cluster Loops**: Are feedback loops modeled as sequence diagrams or unrolled forward pipelines?
 - [ ] **No Subgraph ID Edges**: Are all edges drawn between concrete internal nodes, never cluster IDs?
 - [ ] **Symmetric Column Pinning**: In multi-column subgraphs, are all parallel columns symmetrically pinned (`Col1 ~~~ Col1`, `Col2 ~~~ Col2`)?
 - [ ] **Theme-Adaptive Contrast (Light & Dark Mode)**: Are subgraphs transparent (`fill:none`)? Are node backgrounds un-overridden with semantic border strokes (`stroke:#2563eb`, `stroke:#16a34a`, `stroke:#d97706`, `stroke:#dc2626`, `stroke:#7c3aed`) so text remains 100% readable in both Light and Dark modes?
-- [ ] **Clean Typography & Icons**: Are labels enclosed in quotes with bold titles, subtitles separated by `<br>`, and native structural shapes with Unicode icons?
+- [ ] **Clean Typography & Icons**: Are labels enclosed in quotes with bold titles, subtitles separated by `<br/>`, and native structural shapes with Unicode icons?
 - [ ] **Walkthrough Mandatory**: Does the diagram include a complete step-by-step prose walkthrough directly beneath it?
 - [ ] **Budget Compliance**: Is the diagram within 4–8 nodes (ceiling 10), and sequence participants <= 5?
+
 
 

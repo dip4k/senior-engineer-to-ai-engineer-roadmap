@@ -21,29 +21,29 @@ Enterprise LLMOps replaces vibe checks with **OpenTelemetry GenAI semantic conve
 
 ```mermaid
 flowchart TD
-    subgraph CICD["1. CI/CD Pre-Deployment Evaluation Gate"]
-        PR["Prompt / RAG / Model PR"] --> L1["Level 1: Fast Deterministic Gates (<1s)<br>• JSON Schema Validity<br>• Regex Format Asserters<br>• Token Budget Ceilings"]
+    subgraph CICD["1. CI/CD Pre-Deploy Eval Gate"]
+        PR["📝 Prompt / RAG / Model PR"] --> L1["⚡ Level 1: Fast Deterministic Gates (<1s)<br>• JSON Schema Validity<br>• Regex Format Asserters<br>• Token Budget Ceilings"]
         
-        L1 --> L1_Check{"L1 Passed?"}
-        L1_Check -- "Fail" --> BlockPR["Block PR (Deterministic Bug)"]
+        L1 --> L1_Check{"⚖️ L1 Passed?"}
+        L1_Check -- "Fail" --> BlockPR["🛑 Block PR (Deterministic Bug)"]
         
-        L1_Check -- "Pass" --> L2["Level 2: Binary LLM-as-a-Judge<br>• Curated Golden Set (200 cases)<br>• Independent Judge Family (Claude 3.7 / o3)<br>• Binary Chain-of-Thought Rubric"]
+        L1_Check -- "Pass" --> L2["🧠 Level 2: Binary LLM-as-a-Judge<br>• Curated Golden Set (200 cases)<br>• Independent Judge Family (Claude 3.7 / o3)<br>• Binary Chain-of-Thought Rubric"]
         
-        L2 --> ScoreCheck{"Pass Rate >= 98% &<br>Zero Safety Regressions?"}
+        L2 --> ScoreCheck{"⚖️ Pass Rate >= 98% and<br>Zero Safety Regressions?"}
         ScoreCheck -- "No" --> BlockPR
-        ScoreCheck -- "Yes" --> Deploy["Deploy to Production"]
+        ScoreCheck -- "Yes" --> Deploy["🚀 Deploy to Production"]
     end
 
-    subgraph Runtime["2. Production Distributed Observability (OTel GenAI)"]
-        Deploy --> UserTraffic["Live Production Traffic"]
-        UserTraffic --> Tracer["OTel GenAI Span Tracer<br>• gen_ai.system<br>• gen_ai.request.model<br>• gen_ai.usage.prompt_tokens<br>• gen_ai.usage.completion_tokens"]
-        Tracer --> OTelCollector[("OpenTelemetry Collector / APM<br>(Datadog / Dynatrace / Langfuse)")]
+    subgraph Runtime["2. Production Observability (OTel)"]
+        Deploy --> UserTraffic["👥 Live Production Traffic"]
+        UserTraffic --> Tracer["📡 OTel GenAI Span Tracer<br>• gen_ai.system<br>• gen_ai.request.model<br>• gen_ai.usage.prompt_tokens<br>• gen_ai.usage.completion_tokens"]
+        Tracer --> OTelCollector[("📊 OpenTelemetry Collector / APM<br>(Datadog / Dynatrace / Langfuse)")]
     end
 
-    subgraph Flywheel["3. Level 3 Online Evaluation Flywheel"]
-        OTelCollector --> AnomalyDetector["Drift & Low-Confidence Detector<br>(Flags P99 Latency & User Thumbs-Down)"]
-        AnomalyDetector --> HardCases["Curate Real-World Production Failures"]
-        HardCases --> GoldenSet["Update Versioned Golden Dataset"]
+    subgraph Flywheel["3. Level 3 Evaluation Flywheel"]
+        OTelCollector --> AnomalyDetector["🔍 Drift and Low-Confidence Detector<br>(Flags P99 Latency and User Thumbs-Down)"]
+        AnomalyDetector --> HardCases["⚠️ Curate Real-World Failures"]
+        HardCases --> GoldenSet["💾 Update Versioned Golden Dataset"]
         GoldenSet -.-> L2
     end
 ```

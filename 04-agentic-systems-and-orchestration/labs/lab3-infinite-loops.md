@@ -1,4 +1,4 @@
-### Lab 3: Detecting & Recovering from Infinite Loops (Cycle & Token Governor) [MUST-HAVE] 🔴
+### Lab 3: Detecting & Recovering from Infinite Loops (Cycle & Token Governor) 🔴
 
 #### Scenario & Enterprise Problem
 In production, autonomous agents frequently encounter ambiguous API error traces, missing records, or edge-case inputs. The LLM hallucinates slightly modified hypotheses and calls the same tool repeatedly with identical or near-identical parameters. Without deterministic circuit breakers, an agent can spin for hundreds of iterations, burning thousands of dollars in API tokens.
