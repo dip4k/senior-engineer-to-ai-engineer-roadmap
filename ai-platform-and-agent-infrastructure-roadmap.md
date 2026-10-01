@@ -399,7 +399,7 @@ sequenceDiagram
 
     Customer->>GW: "Order 9182 was charged twice. Can I get a refund?"
     GW->>Agent: Route request with tenant context
-    Agent->>Store: Initialize session & checkpoint state
+    Agent->>Store: Initialize session and checkpoint state
     
     Note over Agent,RAG: Step 1: Retrieve Customer Policy
     Agent->>RAG: Hybrid Search ("duplicate charge refund policy", tenant=US)

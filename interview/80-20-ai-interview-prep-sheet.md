@@ -268,7 +268,7 @@ stateDiagram-v2
 | `PROCESSING` | Active agent is running local ReAct reasoning and invoking tools. | Wall-clock timer active (max 90s). On expiry, sends cancellation signal and flags `FAILED`. |
 | `AWAITING_INPUT` | Execution suspended awaiting child agent completion or human supervisor sign-off. | Entire graph state serialized to durable PostgreSQL/Redis. Worker thread freed. |
 | `COMPLETED` | Objective fulfilled and validated against Pydantic response schema. | Checkpoints final state, emits event to caller, flushes OpenTelemetry trace. |
-| `FAILED` | Terminal exception, cycle detection trip, or budget exhausted. | Initiates Distributed Saga Rollback: invokes compensating tools in reverse order. |
+| `FAILED` | Terminal exception, cycle detection trip, or budget exhausted. | Starts Distributed Saga Rollback: invokes compensating tools in reverse order. |
 | `CANCELLED` | Explicit abort issued by client disconnect or security guardrail. | Halts all child task workers and revokes ephemeral tool credentials immediately. |
 
 #### Distributed Saga Pattern Failure Recovery Walkthrough

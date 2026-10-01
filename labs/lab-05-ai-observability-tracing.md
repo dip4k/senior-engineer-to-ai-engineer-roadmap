@@ -13,7 +13,7 @@
 In classical microservices architectures, distributed tracing records HTTP status codes, DB query latencies, and service hops via standard APM agents.
 
 In production generative AI systems, standard HTTP tracing leaves engineers completely blind:
-1. **The Opaque Latency Black Box**: An agent request takes 8.4 seconds. Did the delay occur in dense vector retrieval (HNSW), an external MCP database tool call, network serialization, or LLM autoregressive token generation?
+1. **The Opaque Latency Black Box**: An agent request takes 8.4 seconds. Did the delay occur in dense vector retrieval (HNSW), an external MCP database tool call, network serialization, or LLM step-by-step token generation?
 2. **Missing Token & Cost Attribution**: Without tracing model metadata (`gen_ai.request.model`) and token metrics (`gen_ai.usage.prompt_tokens`, `gen_ai.usage.completion_tokens`) directly on distributed trace spans, finance and platform teams cannot attribute token spend to individual tenants, features, or autonomous agent loops.
 3. **Vendor Telemetry Silos**: Ad-hoc proprietary logging libraries (e.g. LangSmith, Phoenix) lock enterprises into proprietary walled gardens instead of open, vendor-neutral telemetry backbones.
 
@@ -21,7 +21,7 @@ This lab delivers a lightweight, production-grade **OpenTelemetry GenAI Tracer**
 
 ```mermaid
 flowchart TD
-    Req["🚀 Agent Turn Execution Initiated"] --> StartSpan["⏱️ 1. GenAITracer.start_span('agent_turn_execution')<br>Records Start Timestamp (t0)"]
+    Req["🚀 Agent Turn Execution Started"] --> StartSpan["⏱️ 1. GenAITracer.start_span('agent_turn_execution')<br>Records Start Timestamp (t0)"]
     
     StartSpan --> SetAttrs["🏷️ 2. Set OpenTelemetry GenAI Attributes<br>• gen_ai.request.model = 'claude-3-7-sonnet'<br>• gen_ai.usage.prompt_tokens = 142<br>• gen_ai.usage.completion_tokens = 56"]
     

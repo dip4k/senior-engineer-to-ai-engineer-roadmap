@@ -163,12 +163,12 @@ sequenceDiagram
     autonumber
     participant Dev as Human Engineer
     participant Agent as Coding Agent (Claude Code)
-    participant Linter as AST & Contract Auditor
+    participant Linter as AST and Contract Auditor
     participant Sandbox as Micro-VM Runner (gVisor)
     participant GitHub as GitHub Enterprise PR
 
     Dev->>Agent: Submit Issue: "Add tenant rate limiting to Payment Gateway"
-    Agent->>Agent: Ingest AGENT.md rules & call graph
+    Agent->>Agent: Ingest AGENT.md rules and call graph
     Agent->>Agent: Synthesize Unit Tests (test_rate_limiter.py)
     Agent->>Agent: Synthesize Implementation (rate_limiter.py)
     

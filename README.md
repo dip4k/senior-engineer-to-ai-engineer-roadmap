@@ -25,10 +25,10 @@ Think of it this way:
 > [!NOTE]
 > **Calibrated Depth: The 4-Tier Model**
 > This repository is a comprehensive masterclass spanning the entire modern AI engineering landscape. Every lesson is calibrated using our **[4-Tier Lesson Depth Model](#architectural-mastery-tiers)**:
-> - **Tier 1: 🟢 HIGH ROI / CORE**: Essential concepts providing the highest practical ROI for enterprise applications (e.g., LLM APIs, prompt design, tokens/context, RAG, tool calling, MCP). Master these first. Everything else becomes significantly easier afterward.
-> - **Tier 2: 🟡 IMPORTANT / NEXT**: Next-level production concerns like stateful agents, context/session management, security guardrails, evaluation, and observability.
-> - **Tier 3: 🔵 ADVANCED / SPECIALIZED**: Complex architectures, multi-agent sagas, vector search optimization, scale limits, and platform-specific enterprise implementations.
-> - **Tier 4: ⚫ REFERENCE / AWARENESS**: Foundational hardware physics, memory hierarchy, mathematical proofs, and internal wire protocol details—good to know, but not strictly required for daily engineering.
+> - **Tier 1: 🟢 Core**: Essential concepts providing the highest practical return for enterprise applications (e.g., LLM APIs, prompt design, tokens and context, RAG, tool calling, MCP). Master these first. Everything else builds on this foundation.
+> - **Tier 2: 🟡 Engineering Depth**: Next-level production concerns like stateful agents, context and session management, security guardrails, evaluation, and observability.
+> - **Tier 3: 🔵 Advanced**: Complex architectures, multi-agent sagas, vector search optimization, scale limits, and platform-specific enterprise implementations.
+> - **Tier 4: ⚫ Deep Dive**: Internal mechanics, hardware physics, memory hierarchy, mathematical proofs, and wire protocol details.
 >
 > Check the **[Recommended Learning Paths](#recommended-learning-paths)** to follow the curriculum tailored directly to your role (e.g., RAG Architect, Autonomous Agent Engineer, Platform Engineer, or Enterprise AI Lead).
 
@@ -364,10 +364,10 @@ flowchart TD
 
 Every topic and lesson across the curriculum is classified using the **4-Tier Lesson Depth Model** so you can calibrate depth, prerequisites, and pacing:
 
-* **Tier 1: 🟢 HIGH ROI / CORE**: Essential concepts providing the highest practical ROI for enterprise applications. This includes LLM APIs, prompt/instruction design, tokens/context, structured output, embeddings, basic RAG, tool calling, and MCP. Master these first. Everything else becomes significantly easier afterward.
-* **Tier 2: 🟡 IMPORTANT / NEXT**: Next-level production concerns. Includes stateful agents, context and session management, security guardrails, evaluation pipelines, and observability. Critical for reliable production deployments.
-* **Tier 3: 🔵 ADVANCED / SPECIALIZED**: Complex architectures and scale optimizations. Covers multi-agent sagas, advanced vector search algorithms (e.g., GraphRAG, DiskANN), latency tuning, and platform-specific enterprise implementations.
-* **Tier 4: ⚫ REFERENCE / AWARENESS**: Foundational mechanics and internals. Includes hardware physics, memory layouts (PagedAttention, KV-cache sizing), mathematical proofs, and wire protocol specifications. Good for deep understanding but not strictly required for daily engineering.
+* **Tier 1: 🟢 Core**: Essential foundational concepts providing the highest practical return for enterprise applications. Includes LLM APIs, prompt instruction design, tokens and context, structured output, embeddings, basic RAG, tool calling, and MCP. Master these first. Everything else builds on this foundation.
+* **Tier 2: 🟡 Engineering Depth**: Next-level production concerns. Includes stateful agents, context and session management, security guardrails, evaluation pipelines, and observability. Critical for reliable production deployments.
+* **Tier 3: 🔵 Advanced**: Complex architectures and scale optimizations. Covers multi-agent sagas, advanced vector search algorithms (e.g., GraphRAG, DiskANN), latency tuning, and platform-specific enterprise implementations.
+* **Tier 4: ⚫ Deep Dive**: Foundational mechanics and internal hardware realities. Includes hardware physics, memory layouts (PagedAttention, KV-cache sizing), mathematical derivations, and wire protocol specifications. Good for deep systems understanding.
 
 ---
 

@@ -39,7 +39,7 @@ In offline training, the model had learned to "look into the future." In live pr
 4. **Why was offline backtesting unable to catch this discrepancy?**  
    Because the offline training set and test set were BOTH generated using the same corrupted point-in-time extraction query, yielding a false 0.94 ROC-AUC across both sets.
 5. **Why was there no automated drift alert?**  
-   Because standard covariate drift monitors (Kolmogorov-Smirnov and PSI) compare the distribution of individual features. The marginal distribution of integers $(0, 1, 2)$ looked identical; only the *joint temporal correlation with the target label* was corrupted.
+   Because standard covariate drift monitors (Kolmogorov-Smirnov and PSI) compare the distribution of individual features. The marginal distribution of integers (0, 1, 2) looked identical; only the *joint temporal correlation with the target label* was corrupted.
 
 ---
 

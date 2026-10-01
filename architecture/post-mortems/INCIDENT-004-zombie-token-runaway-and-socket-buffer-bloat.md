@@ -17,7 +17,7 @@ End users submitting long reasoning queries experienced Time To First Token (TTF
 
 While the downstream client HTTP Server-Sent Events (SSE) connections were severed at the ingress load balancer, the **API Gateway failed to propagate client cancellation signals upstream to our self-hosted GPU inference cluster (vLLM on 32× NVIDIA H100 GPUs)**. 
 
-The inference cluster continued autoregressively generating all 16,384 tokens to completion for thousands of abandoned requests ("zombie tokens"). Over the next **42 minutes**, over **4,200 zombie generation jobs** clogged GPU worker queues, writing gigabytes of unread token chunks into overflowing OS socket buffers.
+The inference cluster kept generating all 16,384 tokens token-by-token to completion for thousands of abandoned requests ("zombie tokens"). Over the next **42 minutes**, over **4,200 zombie generation jobs** clogged GPU worker queues, writing gigabytes of unread token chunks into overflowing OS socket buffers.
 
 ```text
 Active Live Users: 120
@@ -125,7 +125,7 @@ Configured NGINX and Envoy ingress proxies to disable HTTP response buffering fo
 
 ### Inoculation 4: Automated Chaos Test in CI/CD
 Added an automated integration test in CI/CD:
-* Test client initiates an inference request with `max_tokens: 8192`.
+* Test client starts an inference request with `max_tokens: 8192`.
 * Test client terminates TCP socket after 3 tokens.
 * Assertion verifies that GPU inference engine receives `abort_request` within < 250ms and that zero further tokens are generated.
 
@@ -133,5 +133,5 @@ Added an automated integration test in CI/CD:
 
 ## 6. SRE Lessons Learned
 
-* **Streaming changes failure semantics:** In request-response APIs, once a request reaches the backend, completing it is usually safe and cheap. In autoregressive token generation, completing an unread request costs real dollars and GPU capacity on every single token step.
+* **Streaming changes failure semantics:** In standard request-response APIs, completing a request is usually cheap. With step-by-step token generation, computing an unread response burns real budget and GPU memory on every single token.
 * **Never trust TCP writes without liveness probes:** High-throughput streaming services must treat network disconnections as high-priority control events that halt compute immediately.

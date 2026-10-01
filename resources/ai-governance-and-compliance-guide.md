@@ -377,7 +377,7 @@ sequenceDiagram
     actor User as End User
     participant Agent as AI Agent / Memory Store
     participant KMS as Key Management Service (AWS KMS / HashiCorp Vault)
-    participant VectorDB as Vector DB & Document Store
+    participant VectorDB as Vector DB and Document Store
 
     Note over User,VectorDB: WRITING MEMORY
     User->>Agent: "My doctor prescribed me Metformin for Type 2 Diabetes."
@@ -777,7 +777,7 @@ sequenceDiagram
 
 **The Fallout:** Under Article 5(1)(f) of the EU AI Act, **using AI systems to infer emotions of individuals in workplaces or educational institutions is strictly prohibited**. 
 
-The company had to initiate an emergency code rollback, purge 4.2 million database records, commission a certified forensics audit, and file an emergency self-disclosure disclosure with their European data authority to avoid the maximum statutory fine.
+The company had to start an emergency code rollback, purge 4.2 million database records, commission a certified forensics audit, and file an emergency self-disclosure disclosure with their European data authority to avoid the maximum statutory fine.
 
 ---
 

@@ -199,14 +199,14 @@ sequenceDiagram
 
     Dev->>CI: git push (Update system prompt for RAG)
     CI->>L1: Run pytest tests/evals/test_deterministic.py
-    L1->>L1: Assert JSON Schema & Latency < 1ms
+    L1->>L1: Assert JSON Schema and Latency < 1ms
     alt L1 Fails
         L1-->>CI: FAILED: Invalid JSON Schema
         CI-->>Dev: Block PR (Fast Fail in 800ms)
     else L1 Passes
         CI->>Golden: Load Curated Test Cases (200)
         CI->>Judge: Run Binary Evaluation Suite
-        Judge->>Judge: Score Faithfulness & Groundedness (0 or 1)
+        Judge->>Judge: Score Faithfulness and Groundedness (0 or 1)
         alt Pass Rate < 98% or Safety Regression
             Judge-->>CI: FAILED: Pass rate 94.5% (Regression on 7 cases)
             CI-->>Dev: Block PR: Display Failing Trajectories

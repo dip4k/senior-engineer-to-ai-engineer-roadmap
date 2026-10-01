@@ -197,7 +197,7 @@ flowchart TD
    * Instead of physically removing the vector, mark its internal ID as active in a compressed `roaring bitmap` of tombstones.
    * During graph traversal, the algorithm can still **hop through** node `X` as a routing bridge to reach other nodes, but `X` is filtered out of the final Top-K candidate list.
 2. **Background Graph Repair & Edge Rewiring**:
-   * A background worker visits all neighbors of `X` and initiates an M-nearest neighbor search among remaining active nodes to rebuild the missing edges.
+   * A background worker visits all neighbors of `X` and starts an M-nearest neighbor search among remaining active nodes to rebuild the missing edges.
 3. **Threshold-Based Compaction (Segment Merging)**:
    * When tombstone density in a segment exceeds 15–20%, freeze the segment, build a fresh, compacted segment in the background, atomically swap the pointer, and reclaim the memory (identical to Lucene/RocksDB LSM compaction).
 

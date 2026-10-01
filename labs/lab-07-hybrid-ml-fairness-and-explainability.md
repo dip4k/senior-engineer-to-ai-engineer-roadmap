@@ -531,7 +531,7 @@ if __name__ == "__main__":
 |:---|:---|:---:|:---:|
 | **Fairness: Disparate Impact** | Prevent algorithmic disparate impact | `DIR ≥ 0.80` | `assert audit_report.disparate_impact_ratio >= 0.80` |
 | **Fairness: Parity Difference** | Limit absolute selection delta | `DPD ≤ 0.10` | `assert audit_report.demographic_parity_difference <= 0.10` |
-| **SHAP Local Accuracy** | Ensure exact mathematical attribution | `|Σ phi_i - (f(x) - E[f(x)])| < 10^-3` | `assert diff < 1e-3` |
+| **SHAP Local Accuracy** | Ensure exact mathematical attribution | `abs(Σ phi_i - (f(x) - E[f(x)])) < 10^-3` | `assert diff < 1e-3` |
 | **Groundedness Guardrail** | Eliminate hallucinated denial reasons | `0%` ungrounded reasons | `assert notice.guardrail_passed is True` |
 | **Hallucination Interception** | Block unauthorized causal claims | `100%` interception | `assert hallucinated_notice.guardrail_passed is False` |
 

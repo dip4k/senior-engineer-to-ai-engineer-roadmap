@@ -13,3 +13,6 @@ chromadb>=0.4.24
 rank-bm25>=0.2.2
 groq>=0.9.0
 google-genai>=0.1.1
+# Pin opentelemetry to maintain compatibility with Google Colab pre-installed google-adk
+opentelemetry-api>=1.39.0,<=1.42.1
+opentelemetry-sdk>=1.39.0,<=1.42.1

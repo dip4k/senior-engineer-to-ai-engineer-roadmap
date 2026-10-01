@@ -35,7 +35,7 @@ flowchart TD
 
 #### Diagram Walkthrough:
 1. **Session Initialization**: An inbound task triggers the creation of an isolated session. The runtime logs a `session_started` event containing the user goal into the append-only `EventStore`.
-2. **Decision Persistence**: When the foundation model selects a tool, the decision is persisted to the WAL *before* the network call is initiated.
+2. **Decision Persistence**: When the foundation model selects a tool, the decision is persisted to the WAL *before* the network call starts.
 3. **Execution Completion**: When the tool returns, the output payload and status are committed as a `tool_completed` event.
 4. **Crash Recovery & Rehydration**: If the runtime crashes, a new instance queries `get_events(session_id)` and replays the event stream into the `AgentSession` domain model, restoring the exact execution state without re-invoking already completed external mutations.
 

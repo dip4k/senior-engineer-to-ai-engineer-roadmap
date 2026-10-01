@@ -1038,7 +1038,7 @@ sequenceDiagram
 
     User->>App: "Right to be Forgotten" Request (GDPR Art. 17)
     App->>KMS: Permanently Destroy User DEK (Key ID: user_dek_9981)
-    KMS-->>App: Key Purged & Zeroized
+    KMS-->>App: Key Purged and Zeroized
     Note over App,VectorDB: All historical memory payloads and embeddings encrypted with that DEK are now mathematically indecipherable garbage!
     App-->>User: "Data cryptographically shredded and permanently erased."
 ```
