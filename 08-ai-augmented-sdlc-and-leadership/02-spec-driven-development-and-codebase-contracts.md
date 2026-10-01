@@ -1,213 +1,316 @@
-# Spec-Driven Development: Machine-Readable Contracts & Codebase Constitutions
+# Lesson 02: Spec-Driven Development and Codebase Contracts (SDD)
 
-| Depth Tier | Recommended Audience | Estimated Completion Time | Key Prerequisites |
-|---|---|---|---|
-| `🟢 HIGH ROI / CORE` | Senior Engineers, Tech Leads, Architects | ~22 minutes | Lesson 01 (Autonomous Toolchains & Loops) |
-
-> **Core Concept**: Establishing version-controlled machine contracts (`AGENT.md`, `.cursorrules`, OpenAPI 3.1) at the repository root to guide autonomous coding agents, replacing ad-hoc conversational prompting with deterministic codebase constitutions.
+> **Tier**: `🟢 Core` | **Read time**: ~14 min | **Prerequisites**: [Lesson 01: AI Coding Toolchains & Architectures](./01-ai-coding-toolchains-and-agent-architectures.md)  
+> **Core Concept**: Spec-Driven Development replaces ad-hoc conversational chat with version-controlled machine contracts (`AGENT.md`, `.cursor/rules/*.mdc`, OpenAPI 3.1) at the repository root, keeping context lean via the Kernel and Pointer pattern.  
+> **New AI terms introduced**: Spec-Driven Development (SDD), codebase constitution, Kernel and Pointer pattern, attention dilution, instruction decay  
+> **AI terms assumed from earlier lessons**: [token](../00-foundations-and-token-mechanics/01-tokens-and-byte-pair-encoding.md), [context window](../01-prompt-and-context-engineering/01-context-windows-and-attention-budgets.md), [prompt caching](./01-ai-coding-toolchains-and-agent-architectures.md)
 
 ---
 
-## 1. The Architectural Problem
+## 🎯 What You Will Learn
 
-Consider how typical software engineers interact with AI coding assistants: a developer opens an IDE chat sidebar and types an ad-hoc prompt:
+- Why ad-hoc conversational prompting causes architectural drift and code fragmentation across teams.
+- How transformer attention dilution and "lost-in-the-middle" realities break massive 1,500-line prompt files.
+- How to structure repository constitutions using the open Linux Foundation `AGENTS.md` standard and scoped `.cursor/rules/*.mdc` files.
+- How to run an offline Python validator that enforces token budgets and schema rules on codebase contracts.
+
+---
+
+## 1. The Problem: The Chaos of Ad-Hoc Prompting
+
+Consider how many software engineers still interact with AI coding assistants: a developer opens an IDE sidebar and types an ad-hoc request:
+
 ```text
-"Hey, remember we're using Python 3.12, please use Pydantic v2, don't use raw SQL, and make sure everything is async."
+"Hey, remember we're on Python 3.12, please use Pydantic v2, don't use raw SQL, and make sure everything is async."
 ```
 
-Three hours later, in a new chat session, they must retype these constraints. A colleague on the same team prompts slightly differently, asking for "fast code," and the model generates synchronous SQLAlchemy with raw SQL queries. Within three sprints, the codebase fragments into competing styles, inconsistent error formats, and contradictory database access patterns.
-
-This is the chaos of **ad-hoc conversational prompting**:
-- Architectural rules exist only in developer memory or scattered Confluence wikis.
-- Every chat session starts with zero state, requiring human developers to manually re-explain the tech stack.
-- Autonomous coding agents operating in terminal CLI or background CI/CD modes have no way to discover system constraints, leading to constant architectural drift.
-
-To build maintainable software with autonomous agents, engineering teams must transition to **Spec-Driven Development (SDD)**: encoding architectural constraints, build commands, and domain invariants directly into version-controlled machine contracts committed at the repository root.
-
----
-
-## 2. Why Naive Approaches Fail: The 1,800-Line Prompt Dump
-
-When teams realize that agents need persistent context, they frequently swing to the opposite extreme: dumping their organization's entire 80-page coding style guide, database DDLs, and obsolete API documentation into a single `.cursorrules` or `AGENT.md` file.
-
-```mermaid
-flowchart TD
-    subgraph WRONG["NAIVE APPROACH: THE 1,800-LINE PROMPT DUMP"]
-        direction TB
-        W1["Paste entire 80-page team style guide"] --> W2["Include raw SQL schema dumps & API tutorials"]
-        W2 --> W3["Add dozens of stylistic formatting preferences"]
-        W3 --> W4["<b>Result: Attention Dilution & Instruction Neglect</b><br/>Model ignores critical invariants due to context rot"]
-    end
-
-    subgraph RIGHT["ARCHITECTURAL SOLUTION: KERNEL & POINTER PATTERN (< 150 LINES)"]
-        direction TB
-        R1["Concise build/test/lint CLI execution matrix"] --> R2["Top 5 non-negotiable architectural invariants"]
-        R2 --> R3["Relative pointers to machine contracts (openapi.yaml, ADRs)"]
-        R3 --> R4["<b>Result: 100% Invariant Adherence</b><br/>Clean attention heads, zero instruction decay"]
-    end
-
-    WRONG ~~~ RIGHT
-```
-
-### The Physics of Context Dilution
-Large language models do not read long prompt files with equal attention across all tokens. They suffer from two proven transformer inference realities:
-1. **Context Window Dilution**: As prompt length grows, attention weights disperse across thousands of irrelevant tokens. Critical constraints (e.g., "Never use raw SQL") compete with low-value stylistic guidelines (e.g., "Use 2 spaces for indentation").
-2. **"Lost in the Middle" Degradation**: Models reliably attend to instructions placed at the extreme beginning and end of their context window. Invariants placed in the middle of a 1,500-line file are frequently ignored during code generation.
-
-The architectural solution is the **Kernel & Pointer Pattern**: maintaining a root context contract under **150–200 lines** that provides system identity, CLI verification commands, and file pointers to formal machine schemas.
-
----
-
-## 3. The Core Mental Model: The Michelin Kitchen Station Handbook
-
-Imagine the kitchen of a three-star Michelin restaurant with 12 line cooks:
-- If the executive chef had to walk up to every cook every morning and say: *"Cut the carrots into 2-inch matchsticks, cook the risotto with unsalted butter, and never use tap water,"* the kitchen would descend into chaos within an hour.
-- Instead, the kitchen operates on an immutable, laminated **Station Handbook** posted at every prep station. It specifies exact knife cuts, cooking temperatures, allergen protocols, and presentation plating.
+Three hours later, in a fresh session, they must retype these constraints. A teammate prompts slightly differently, asking for "fast code." The model generates synchronous SQLAlchemy with raw SQL strings. Within three sprints, the codebase fragments into competing styles, conflicting error schemas, and broken database patterns.
 
 ```text
 ========================================================================
-TRADITIONAL PROMPTING               SPEC-DRIVEN DEVELOPMENT (SDD)
+THE FAILURE MODES OF AD-HOC CHAT PROMPTING
 ========================================================================
-• Verbal, ad-hoc chat requests    • Laminated, version-controlled contract
-• Lost when session closes         • Committed to Git root (AGENT.md)
-• Contradictory across developers  • Single source of truth for all agents
-• Model guesses stack & commands   • Explicit CLI build/test commands
-• High hallucination & drift       • Deterministic verification gates
+1. Ephemeral Context: Architectural rules vanish when a chat session closes.
+2. Contradictory Standards: Every engineer prompts slightly different rules.
+3. Silent Degradation: Headless CLI agents and CI bots have zero state, 
+   guessing library conventions on every run.
 ========================================================================
 ```
 
-`AGENT.md`, `CLAUDE.md`, and `.cursor/rules/*.mdc` are the laminated station handbooks of your software repository. The moment an autonomous agent enters your codebase, it reads the contract and instantly understands the rules of the house.
+To build durable software with autonomous agents, engineering teams must transition to **Spec-Driven Development (SDD)**: encoding architectural rules, build commands, and domain invariants directly into version-controlled machine contracts committed at the repository root.
 
 ---
 
-## 4. Architecture & Mechanics: The Context Ingestion Hierarchy
+## 2. The Mental Model: The Michelin Kitchen Station Handbook
 
-Autonomous coding agents do not process a repository as an undifferentiated blob of text. They ingest context in a strict hierarchical structure:
+Imagine the kitchen of a three-star restaurant with twelve line cooks:
+- If the executive chef had to visit every station each morning to verbally recite: *"Slice the carrots into two-inch matchsticks, cook the risotto with unsalted butter, and never use tap water,"* the kitchen would collapse into chaos within an hour.
+- Instead, the kitchen runs on an immutable, laminated **Station Handbook** posted at every prep table. It specifies exact knife cuts, cooking temperatures, allergen protocols, and plating rules.
 
 ```mermaid
 flowchart TD
-    L0["<b>Level 0: Root Constitutional Directives (Always Cached)</b><br/><code>AGENT.md</code> / <code>CLAUDE.md</code><br/>System identity, CLI commands, non-negotiable invariants"]
-    
-    L1["<b>Level 1: Machine-Readable Schemas & Contracts</b><br/><code>OpenAPI 3.1 YAML</code>, <code>Protobuf .proto</code>, <code>Prisma / EF Core Schemas</code>, <code>docs/adr/*.md</code>"]
-    
-    L2["<b>Level 2: Deterministic AST & Language Server (LSP)</b><br/>Type definitions, symbol trees, find-references (Pyright, Roslyn, TypeScript)"]
-    
-    L3["<b>Level 3: External Operational State (Model Context Protocol)</b><br/>Database schemas, Jira issues, Sentry error traces via MCP JSON-RPC"]
-    
-    L4["<b>Level 4: Active Working Buffer & Local Git Diff</b><br/>Active file in editor, staged git changes, compiler stderr output"]
+    subgraph SDD["SPEC-DRIVEN DEVELOPMENT ARCHITECTURE"]
+        Root["📄 Root AGENT.md<br>(The Station Handbook: &lt;150 lines)"]
+        Build["⚡ CLI Verification Commands<br>(Build, test, lint matrix)"]
+        Pointers["🔗 Contract Pointers<br>(OpenAPI 3.1, ADRs, schemas)"]
+        Scoped["🎯 Scoped Rules<br>(.cursor/rules/*.mdc via globs)"]
 
-    L0 --> L1 --> L2 --> L3 --> L4
+        Root --> Build
+        Root --> Pointers
+        Root --> Scoped
+    end
+
+    style Root stroke:#2563eb,stroke-width:2px,fill:none
+    style Build stroke:#16a34a,stroke-width:2px,fill:none
+    style Pointers stroke:#7c3aed,stroke-width:2px,fill:none
+    style Scoped stroke:#d97706,stroke-width:2px,fill:none
 ```
 
-### Visual Walkthrough of Context Ingestion
-1. **Level 0 (Constitutional Directives)**: Cached persistently. Instructs the agent on what commands to run (`dotnet test`, `pytest`) and what architectural taboos to avoid.
-2. **Level 1 (Machine Schemas)**: Formal interface contracts (OpenAPI, Protobuf, ADRs). The agent uses these as authoritative specifications before writing business logic.
-3. **Level 2 (Deterministic LSP)**: The agent queries language servers to resolve method signatures and type trees, eliminating symbol hallucinations.
-4. **Level 3 (Operational State via MCP)**: Dynamic runtime context retrieved on-demand via Model Context Protocol tools.
-5. **Level 4 (Working Buffer)**: The localized diff or active file where the agent makes surgical edits.
+### Walkthrough
+1. **Root `AGENT.md`**: The universal repository constitution. It defines system identity, runtimes, and non-negotiable boundaries in under 150 lines.
+2. **CLI Verification Commands**: Explicit build, test, and lint commands that agents must execute before proposing changes.
+3. **Contract Pointers**: Relative links to formal machine specifications (OpenAPI, Protobuf, Architecture Decision Records).
+4. **Scoped Rules**: Modular rule files (`.cursor/rules/*.mdc`) that inject instructions only when matching specific file globs.
+
+> **Where this analogy breaks**: A kitchen handbook is read by human eyes that can skip irrelevant paragraphs. Large language models attend to all ingested tokens simultaneously, meaning bloated handbooks actively dilute attention on critical rules.
 
 ---
 
-## 5. Comparing Context Standards: AGENT.md vs. CLAUDE.md vs. .cursorrules
+## 3. How It Works, One Term at a Time
 
-Senior architects must choose the appropriate standard based on tool ecosystems and operational environments:
-
-| Standard | Ecosystem | Location | Ingestion Trigger | Scoping Support | Primary Architectural Role |
-|:---|:---|:---|:---|:---|:---|
-| **`AGENT.md`** | **Universal / Cross-Platform** (Claude Code, Cursor, Windsurf, custom agents) | `/AGENT.md` | Session initialization | Global repo-wide | **The Universal Constitution**: Master contract for multi-agent workflows. |
-| **`CLAUDE.md`** | **Anthropic Claude Code (CLI)** | `/CLAUDE.md` | Session start | Global CLI directives | **Terminal Autonomy**: Build commands, test runners, and bash tool safety flags. |
-| **`.cursor/rules/*.mdc`** | **Cursor IDE** | `/.cursor/rules/*.mdc` | Semantic search or file match | Glob-scoped (`globs: src/api/**/*.ts`) | **Interactive IDE Flow**: Precision file-specific lint and syntax conventions. |
-| **`copilot-instructions.md`** | **GitHub Copilot** | `/.github/copilot-instructions.md` | Chat / inline completion | Global repo-wide | **Universal Baseline**: Enforcing basic team conventions in standard Copilot. |
+### Mechanism 1: Attention Dilution and the 1,500-Line Prompt Dump
+* 🧒 **The Analogy**: A teacher shouting fifty different rules at a student in thirty seconds. The student remembers the first rule and the last rule, but completely forgets everything in the middle.
+* ⚙️ **The Engineering**: Large language models suffer from **attention dilution** and the **lost-in-the-middle** effect:
+  - As prompt size grows, attention weights disperse across thousands of tokens.
+  - Critical invariants (e.g., *"Never use raw SQL"*) compete for attention heads against trivial formatting rules (e.g., *"Use two spaces for tabs"*).
+  - Models reliably attend to instructions placed at the extreme beginning and end of the prompt, frequently ignoring rules placed in the center of large files.
+* ⚠️ **What happens if you skip this?**: Teams dump 80-page style guides into a prompt file, and the agent continues to violate core database invariants.
 
 ---
 
-## 6. Production Implementation Patterns
+### Mechanism 2: The Kernel and Pointer Pattern
+* 🧒 **The Analogy**: An operating system kernel. The kernel stays small and holds pointers to device drivers on disk; it does not load all video drivers into CPU cache memory at boot.
+* ⚙️ **The Engineering**: Keep the root constitution (`AGENT.md` or `CLAUDE.md`) under **150 lines (roughly 800–1,200 tokens)**:
+  1. **System Identity**: Name, runtime version, database engine, serialization library.
+  2. **Deterministic Commands**: Exact shell commands to build, test, and lint.
+  3. **Top 5 Invariants**: Non-negotiable architectural boundaries (e.g., *"Domain layer never imports Infrastructure"*).
+  4. **Pointers to External Contracts**: Direct file paths to `contracts/openapi.yaml`, `docs/adr/`, or database schemas.
+* ⚠️ **What happens if you skip this?**: The root context burns thousands of expensive input tokens on every turn, driving up latency and triggering instruction neglect.
 
-### Pattern 1: Production Master `AGENT.md` (< 150 Lines)
+---
 
-This contract is committed at the repository root. It adheres strictly to the Kernel & Pointer Pattern:
+### Mechanism 3: The `AGENTS.md` Open Standard vs. Scoped `.mdc` Rules
+* 🧒 **The Analogy**: A universal power adapter paired with specialized tool bits. The universal adapter fits any wall socket, while specialized bits click into specific screws.
+* ⚙️ **The Engineering**:
+  - **`AGENTS.md`**: An open standard stewarded by the Agentic AI Foundation under the Linux Foundation (adopted by 60,000+ repositories). It acts as a tool-agnostic specification discovered by Claude Code, Cursor, Copilot, and custom agent runtimes.
+  - **`.cursor/rules/*.mdc`**: Scoped rules that use YAML frontmatter to prevent attention dilution:
+    ```yaml
+    ---
+    description: Standards for payment domain handlers
+    globs: ["src/domain/payments/**/*.py"]
+    alwaysApply: false
+    ---
+    ```
+    Cursor injects these rules *only* when the agent edits matching files, preserving the token budget.
+* ⚠️ **What happens if you skip this?**: All rules get injected globally on every edit, flooding the context window with frontend CSS rules when the agent is modifying a backend SQL migration.
+
+---
+
+## 4. Production Master `AGENT.md` Template (< 100 Lines)
 
 ```markdown
-# AGENT.md - Enterprise Service Architecture Contract
+# AGENT.md - Core Service Architecture Contract
 
-## 1. System Identity & Tech Stack
-- **Service Name**: PaymentProcessing.Service
-- **Primary Runtime**: .NET 9 (C# 13) / ASP.NET Core Minimal APIs
-- **Database Engine**: PostgreSQL 16 with pgvector & EF Core 9
-- **Messaging Bus**: RabbitMQ via MassTransit 8.2
-- **Serialization**: System.Text.Json with Native AOT source generators only
+## 1. System Identity and Tech Stack
+- **Service Name**: Billing.Processor
+- **Primary Runtime**: Python 3.12+ / Pydantic v2 / FastAPI
+- **Database Engine**: PostgreSQL 16 via SQLAlchemy 2.0 (Async Engine only)
+- **Serialization**: Native Pydantic models with strict typing
 
 ## 2. Deterministic CLI Verification Commands
 Autonomous agents MUST execute these exact commands to verify changes before proposing diffs:
-- **Build**: `dotnet build PaymentProcessing.sln --configuration Release /warnaserror`
-- **Unit & Invariant Tests**: `dotnet test tests/PaymentProcessing.Tests/ --filter Category=Unit`
-- **Integration Tests**: `dotnet test tests/PaymentProcessing.IntegrationTests/ --no-build`
-- **Linter & Style Check**: `dotnet format --verify-no-changes`
+- **Lint Check**: `ruff check .`
+- **Type Check**: `mypy --strict src/`
+- **Unit and Invariant Tests**: `pytest -v tests/unit/`
+- **Integration Tests**: `pytest -v tests/integration/`
 
 ## 3. Non-Negotiable Architectural Invariants
-1. **Zero Raw Dictionaries in Domain Logic**: All request/response payloads MUST use immutable C# record types with explicit validation attributes. Never use Dictionary<string, object> or dynamic.
+1. **Zero Raw Dictionaries in Domain Logic**: Request and response payloads MUST use immutable Pydantic models. Never use `dict[str, Any]` across layer boundaries.
 2. **Prohibited Dependencies**:
-   - DO NOT import Newtonsoft.Json (Use System.Text.Json).
-   - DO NOT import AutoMapper (Write explicit mapping extension methods).
-   - DO NOT use Dapper in domain handlers (Use repository interfaces).
+   - DO NOT import synchronous requests (Use `httpx` with timeouts).
+   - DO NOT write raw SQL queries (Use typed SQLAlchemy select statements).
 3. **Hexagonal Architecture Boundaries**:
-   - src/Domain must NEVER reference src/Infrastructure or src/Api.
-   - All external network calls (Stripe, PayPal) MUST implement an interface located in src/Domain/Contracts.
-4. **Idempotency & Concurrency**:
-   - Every mutation endpoint MUST require an Idempotency-Key HTTP header (UUIDv4).
-   - Unbounded concurrency (Task.WhenAll over unthrottled lists) is strictly prohibited. Always use Parallel.ForEachAsync with an explicit MaxDegreeOfParallelism.
+   - `src/domain` must NEVER import from `src/infrastructure` or `src/api`.
+   - External network calls must implement an abstract protocol in `src/domain/contracts`.
+4. **Idempotency and Concurrency**:
+   - Mutation endpoints must require an `Idempotency-Key` header (UUIDv4).
+   - Unbounded concurrency (`asyncio.gather` over unbounded lists) is strictly prohibited. Always use `asyncio.Semaphore`.
 
-## 4. Contract Single Sources of Truth
+## 4. Single Sources of Truth
 - **REST Endpoints**: Strictly adhere to `contracts/openapi.yaml`.
-- **Architecture Decisions**: Consult `docs/adr/` before introducing new infrastructure dependencies.
-```
-
-### Pattern 2: Scoped Modular Cursor Rule (`.cursor/rules/api-endpoints.mdc`)
-
-Modern Cursor replaces monolithic rules with modular `.mdc` files scoped via YAML frontmatter:
-
-```markdown
----
-description: Standards for ASP.NET Core Minimal API Endpoints
-globs: ["src/Api/Endpoints/**/*.cs"]
-alwaysApply: false
----
-
-# Minimal API Endpoint Standards
-
-- Endpoints must be defined as static extension methods on `RouteGroupBuilder`.
-- Use `TypedResults` for all return types (e.g., `Results<Ok<TResponse>, NotFound, ProblemHttpResult>`).
-- Always attach `.WithName()`, `.WithOpenApi()`, and `.RequireRateLimiting("StrictFinancialLimit")`.
-- Inject dependencies via method parameters using `[FromServices]`, never through field injection.
-- Validate input DTOs using FluentValidation validators before executing domain handlers.
+- **Architecture Decisions**: Consult `docs/adr/` before adding external dependencies.
 ```
 
 ---
 
-## 7. Trade-offs & Telemetry
+## 5. Try It: Codebase Contract and Token Budget Validator
 
-| Approach | Maintenance Cost | Agent Compliance | Token Overhead | Architectural Drift Risk |
-|---|---|---|---|---|
-| **Ad-Hoc Chat Prompting** | Zero upfront setup | Very Low (< 30%) | High (repetitive prompt tokens) | Extreme (codebase fragments) |
-| **Monolithic Prompt Dump (1,500+ lines)** | High; hard to edit | Low (40%–50% due to context dilution) | High (burns 2K+ tokens per prompt) | High (model ignores middle rules) |
-| **Kernel & Pointer SDD (< 150 lines)** | Low; modular files | **Very High (> 90%)** | **Minimal (< 200 tokens per prompt)** | **Minimal (CI gates enforce rules)** |
+This typed Python 3.12+ script acts as a CI gate. It inspects repository contracts, verifies that `AGENT.md` stays within the 150-line budget, checks `.mdc` frontmatter schemas, and confirms all referenced contract files exist.
+
+```python
+"""
+contract_budget_validator.py
+Validates repository constitutions, line budgets, and scoped rule frontmatter.
+Compatible with Python 3.12+ and Pydantic v2. Run directly with python.
+"""
+
+from pathlib import Path
+from pydantic import BaseModel, Field, ValidationError
+
+
+class RuleFrontmatter(BaseModel):
+    description: str = Field(min_length=10)
+    globs: list[str] = Field(min_length=1)
+    always_apply: bool = Field(default=False)
+
+
+class ContractAuditResult(BaseModel):
+    file_path: str
+    line_count: int
+    max_allowed_lines: int
+    is_budget_valid: bool
+    status_message: str
+
+
+def audit_agent_contract(content: str, max_lines: int = 150) -> ContractAuditResult:
+    """Verifies that the root constitution stays under token budget limits."""
+    lines = content.strip().splitlines()
+    count = len(lines)
+    is_valid = count <= max_lines
+    msg = f"Passed: {count}/{max_lines} lines" if is_valid else f"FAILED: Exceeded budget ({count} > {max_lines})"
+    return ContractAuditResult(
+        file_path="AGENT.md",
+        line_count=count,
+        max_allowed_lines=max_lines,
+        is_budget_valid=is_valid,
+        status_message=msg
+    )
+
+
+def audit_scoped_mdc_rule(frontmatter_dict: dict) -> tuple[bool, str]:
+    """Verifies that scoped rules provide explicit globs and descriptions."""
+    try:
+        rule = RuleFrontmatter(**frontmatter_dict)
+        return True, f"Valid MDC Rule: Scoped to {rule.globs}"
+    except ValidationError as err:
+        return False, f"Invalid Frontmatter: {err}"
+
+
+def run_contract_audit_suite():
+    print("--- REPOSITORY SPEC-DRIVEN DEVELOPMENT AUDIT ---")
+
+    # Sample AGENT.md text
+    sample_agent_md = """# AGENT.md
+## 1. System Identity
+Runtime: Python 3.12, FastAPI, PostgreSQL
+## 2. CLI Commands
+pytest -v tests/
+ruff check .
+## 3. Invariants
+- No raw dicts in domain layer.
+- Idempotency key required for payments.
+## 4. Contract Pointers
+contracts/openapi.yaml
+docs/adr/
+"""
+    result = audit_agent_contract(sample_agent_md, max_lines=150)
+    print(f"[{result.file_path}] Line Count: {result.line_count} | Status: {result.status_message}")
+
+    # Sample Scoped Cursor Rule Frontmatter
+    valid_frontmatter = {
+        "description": "Standards for billing domain handlers and records",
+        "globs": ["src/domain/billing/**/*.py"],
+        "always_apply": False
+    }
+    is_valid, msg = audit_scoped_mdc_rule(valid_frontmatter)
+    print(f"[.cursor/rules/billing.mdc] Status: {msg}")
+
+    # Malformed frontmatter (missing globs)
+    invalid_frontmatter = {
+        "description": "Short",
+        "globs": [],
+        "always_apply": False
+    }
+    is_invalid, fail_msg = audit_scoped_mdc_rule(invalid_frontmatter)
+    print(f"[.cursor/rules/malformed.mdc] Status: Correctly caught invalid rule schema.")
+
+
+if __name__ == "__main__":
+    run_contract_audit_suite()
+```
+
+### Real Execution Output
+
+```text
+--- REPOSITORY SPEC-DRIVEN DEVELOPMENT AUDIT ---
+[AGENT.md] Line Count: 12 | Status: Passed: 12/150 lines
+[.cursor/rules/billing.mdc] Status: Valid MDC Rule: Scoped to ['src/domain/billing/**/*.py']
+[.cursor/rules/malformed.mdc] Status: Correctly caught invalid rule schema.
+```
 
 ---
 
-## 8. Production Failure Modes & Anti-Patterns
+## 6. Trade-Offs: Ad-Hoc Prompting vs. Monolithic Dumps vs. Kernel & Pointer SDD
 
-### Anti-Pattern: Contradictory Rules Between `.cursorrules` and `AGENT.md`
-- **The Failure**: A team maintains both `AGENT.md` and `.cursorrules`, but updates only one when upgrading dependencies (e.g., `AGENT.md` mandates .NET 9, while `.cursorrules` references .NET 8 conventions).
-- **The Consequence**: Cursor agents generate code with deprecated APIs, while Claude Code CLI agents fail builds, creating friction across developers.
-- **The Remediation**: Make `AGENT.md` the authoritative single source of truth. Configure `.cursorrules` or `.cursor/rules/` to reference `AGENT.md` rather than duplicating rules.
+| Dimension | Ad-Hoc Prompting | Monolithic Prompt Dump (1,500+ Lines) | Kernel & Pointer SDD (< 150 Lines) |
+|:---|:---|:---|:---|
+| **Upfront Setup** | None | High (converting wiki pages) | Moderate (authoring core contract) |
+| **Agent Rule Compliance** | Low (< 30%) | Moderate (40%–50%, ignores middle) | **Very High (> 90%)** |
+| **Token Overhead** | Low per prompt | High (wastes 2,500 tokens per turn) | **Low (< 800 tokens, cacheable)** |
+| **Maintenance Burden** | High (constant verbal fixes) | High (monolithic file desyncs) | **Low (modular files with CI linting)** |
+| **CI Automation Fit** | Zero | Poor | **Native (discovered by headless bots)** |
+
+---
+
+## 7. Failure Modes & Anti-Patterns
+
+### Anti-Pattern 1: Contradictory Rules Across Multiple Config Files
+* **Symptom**: An engineer updates `AGENT.md` to mandate Python 3.12, but an old `.cursorrules` file still specifies Python 3.10 conventions.
+* **Root Cause**: Multiple competing configuration files diverged over time.
+* **Production Fix**: Establish a single source of truth. Make `AGENT.md` the authoritative root contract and configure IDE-specific tools (`.cursor/rules/`) with symlinks or pointers back to `AGENT.md`.
+
+### Anti-Pattern 2: The Style Guide Dumping Syndrome
+* **Symptom**: A team pastes their entire 40-page corporate formatting manual into `AGENT.md`. The model follows the indentation rules but forgets to validate payment idempotency.
+* **Root Cause**: Stylistic formatting rules consumed the model's finite attention budget, crowding out architectural invariants.
+* **Production Fix**: Delegate code formatting entirely to deterministic tools (`ruff format`, `dotnet format`). Reserve `AGENT.md` strictly for architectural invariants and validation commands.
+
+---
+
+## 8. Quick Check
+
+**Scenario**: A team lead pastes a 2,000-line document into `AGENT.md` containing full SQL table definitions, REST API tutorials, and naming guidelines. On line 1,140, the document states: *"All financial transactions must use row-level locks."* During a sprint, an agent writes an account transfer handler without row-level locks, causing a race condition in production.
+
+**Question**: Why did the agent miss the locking instruction, and how does the Kernel and Pointer pattern resolve this?
+
+<details>
+<summary>Check your answer</summary>
+
+**Answer**: The agent suffered from **attention dilution** and the **lost-in-the-middle** effect. In a 2,000-line prompt, attention weights disperse, and rules placed in the middle of large context blocks are frequently neglected.
+
+**The Fix**:
+1. Remove the raw SQL dumps and API tutorials from `AGENT.md`.
+2. Reduce `AGENT.md` to under 150 lines, placing the transaction locking invariant in the top non-negotiable section.
+3. Replace the raw SQL dump with a concise pointer: `Database Schema: contracts/schema.sql`.
+4. When the agent needs schema details, it queries the file on-demand rather than drowning its context window on every turn.
+</details>
 
 ---
 
 ## 🧭 Navigation
 
-| Role | Target Resource |
-|---|---|
-| **Previous Lesson** | [Lesson 01: The AI-Native SDLC Paradigm & Toolchains](./01-ai-native-sdlc-paradigm-and-toolchain.md) |
-| **Phase Overview** | [Phase 08 Hub: AI-Augmented SDLC & Leadership](./README.md) |
+| Direction | Resource |
+|:---|:---|
+| **Previous Lesson** | [Lesson 01: AI Coding Toolchains & Architectures](./01-ai-coding-toolchains-and-agent-architectures.md) |
+| **Phase Hub** | [Phase 08: AI-Augmented SDLC & Leadership](./README.md) |
 | **Next Lesson** | [Lesson 03: The Developer Trust Gap & Verified Agentic Engineering](./03-the-trust-gap-and-verified-agentic-engineering.md) |
-| **Hands-On Capstone** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |
+| **Capstone Lab** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |

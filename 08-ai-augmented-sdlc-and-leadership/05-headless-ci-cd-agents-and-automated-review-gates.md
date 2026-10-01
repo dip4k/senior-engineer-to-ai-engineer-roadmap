@@ -1,213 +1,302 @@
-# Headless CI/CD Review Bots: Builder-Validator Isolation & Automated PR Auditing
+# Lesson 05: Headless CI/CD Review Bots and Automated Gates
 
-| Depth Tier | Recommended Audience | Estimated Completion Time | Key Prerequisites |
-|---|---|---|---|
-| `🟡 IMPORTANT / NEXT` | Senior Engineers, Tech Leads, Architects | ~22 minutes | Lesson 01 (Autonomous Toolchains & Loops) |
-
-> **Core Concept**: Deploying autonomous coding agents non-interactively in CI/CD pipelines to enforce the Builder-Validator Chain, eliminating human reviewer fatigue and catching subtle security, schema drift, and layer violations before pull request merge.
-
----
-
-## 1. The Architectural Problem
-
-In traditional software development, code review is the primary defense against production defects. A senior engineer spends 30–60 minutes reviewing a pull request, looking for logic errors, missing edge cases, security vulnerabilities, and stylistic deviations.
-
-In the AI-augmented era, this manual review model breaks down:
-- **Diff Volume Explosion**: With coding agents generating code rapidly, teams produce 3–5x more pull requests daily.
-- **Reviewer Cognitive Overload**: Human reviewers face hundreds of lines of AI-generated diffs, leading to severe review fatigue.
-- **Rubber-Stamp Approvals**: Reviewers glance at code formatting, verify that CI tests passed, and approve PRs within minutes without inspecting boundary conditions.
-- **Review Latency Bottleneck**: PRs sit unmerged for days because senior engineers are overwhelmed by review queues, neutralizing the velocity gains of AI authoring.
-
-To break this bottleneck, enterprise engineering organizations deploy **Headless CI/CD Agents**—non-interactive AI review bots integrated directly into pipeline automation (e.g., GitHub Actions, GitLab CI).
+> **Tier**: `🟡 Engineering Depth` | **Read time**: ~20 min | **Prerequisites**: [Lesson 01: AI Coding Toolchains & Architectures](./01-ai-coding-toolchains-and-agent-architectures.md), [Lesson 04: Designing AI-Friendly Codebases](./04-architecting-ai-friendly-codebases.md)  
+> **Core Concept**: Deploying non-interactive AI agents in CI/CD pipelines to enforce the Builder-Validator Chain, eliminating human reviewer fatigue and catching subtle security, schema drift, and architectural regressions before merge.  
+> **New AI terms introduced**: headless agent execution, Builder-Validator Chain, author-reviewer bias, blocker severity gate  
+> **AI terms assumed from earlier lessons**: [ReAct loop](./00-foundations-of-the-ai-native-sdlc.md), [Spec-Driven Development](./02-spec-driven-development-and-codebase-contracts.md), [hexagonal boundary](./04-architecting-ai-friendly-codebases.md)
 
 ---
 
-## 2. Why Naive Approaches Fail: Author-Reviewer Bias
+## 🎯 What You Will Learn
 
-When developers or teams attempt to use AI for code review naively, they usually make one of two critical errors:
+- Why asking an AI agent to review its own code within the same session fails due to confirmation bias.
+- How to structure non-interactive, headless CLI runs using verified flags (`--bare`, `--allowedTools`, `--output-format json`).
+- How modern review bots (like CodeRabbit) combine deterministic static analysis with agentic AST investigation.
+- How to run an offline Python review simulation that evaluates pull request diffs and enforces blocker gates.
 
-```mermaid
-flowchart TD
-    subgraph MISTAKE1["NAIVE MISTAKE 1: THE SAME-SESSION PROMPT"]
-        direction TB
-        M1["Developer prompts agent: 'Write checkout endpoint'"] --> M2["Agent generates code with unindexed query"]
-        M2 --> M3["Developer prompts same session: 'Now review your code'"]
-        M3 --> M4["Agent confirms its own logic: 'Code looks excellent!'"]
-    end
+---
 
-    subgraph MISTAKE2["NAIVE MISTAKE 2: THE AD-HOC CHAT DUMP"]
-        direction TB
-        A1["Reviewer manually copies 600-line git diff into chat"] --> A2["Chat interface truncates context"]
-        A2 --> A3["Model provides vague, non-actionable suggestions"]
-        A3 --> A4["No automated gate or blocker mechanism in CI"]
-    end
+## 1. The Problem: The Pull Request Volume Explosion
 
-    MISTAKE1 ~~~ MISTAKE2
+When software engineering teams adopt AI coding assistants, pull request generation accelerates dramatically:
+- Engineering velocity increases, and teams open 3–5x more pull requests each sprint.
+- Human reviewers face massive diffs spanning hundreds of generated lines, triggering severe cognitive fatigue.
+- Exhausted reviewers skim formatting, check for green CI checks, and approve PRs in minutes without inspecting boundary conditions.
+
+```text
+========================================================================
+THE CODE REVIEW BOTTLENECK
+========================================================================
+PR Authoring Time (via AI):     10 minutes
+PR Queue Wait Time:             4 days (Senior reviewers overwhelmed)
+Human Review Quality:           Rubber-stamped in 90 seconds
+Production Defects Caught:      Near zero (subtle bugs slip through)
+========================================================================
 ```
 
-### 1. Same-Session Author-Reviewer Bias
-An LLM that generated a piece of code inside a specific conversation context has conditioned its attention weights on its own decisions. Asking the same agent in the same session to "review its own code" rarely uncovers defects. The agent repeats its earlier blind spots.
-
-### 2. Lack of Automated CI Enforcement
-Manual chat-based reviews are disconnected from the build pipeline. Even if a chat assistant flags a potential SQL injection vulnerability, there is no automated gate preventing the PR from being merged into main.
+Manual review queues neutralize the velocity gains of AI authoring. To restore balance, organizations deploy **Headless CI/CD Agents**—non-interactive AI review bots running inside pipeline runners (GitHub Actions, GitLab CI) that enforce strict validation before human eyes inspect the diff.
 
 ---
 
-## 3. The Core Mental Model: The Builder-Validator Chain
+## 2. The Mental Model: The Aircraft Pre-Flight Inspection
 
-Imagine pre-flight inspection for commercial aircraft:
-- The maintenance crew (The Builder) finishes repairing the hydraulic braking system.
+Consider the safety protocol for a commercial airliner:
+- A maintenance crew (The Builder) replaces a hydraulic brake valve.
 - The airline does not ask the repair technician: *"Did you do a good job?"*
-- Instead, an independent **Quality Assurance Inspector** (The Validator) approaches the aircraft with a separate checklist, independent diagnostic gauges, and zero personal attachment to the repair.
-- The aircraft cannot be cleared for takeoff until the independent inspector signs off.
+- Instead, a separate, certified safety inspector (The Validator) arrives with an independent checklist. The inspector did not perform the repair. They have no emotional attachment to the work. They pressure-test the hydraulic lines and inspect the torque seals.
 
 ```mermaid
 flowchart LR
-    subgraph BUILD["1. THE BUILDER TIER"]
-        Dev["Developer + Coding Agent"] -->|"Implements Feature Branch"| PR["Pull Request Opened"]
-    end
+    Builder["🛠️ The Builder Agent<br>(Drafts feature code & tests)"] -->|"Submits Pull Request"| PR["📄 Git PR Diff"]
+    PR --> Validator["🕵️ The Validator Bot<br>(Independent CI sandbox)"]
+    Validator -->|"Blocks or Approves"| Merge["🚪 Merge Gate"]
 
-    subgraph VALIDATE["2. THE VALIDATOR TIER (HEADLESS CI)"]
-        PR --> Runner["Headless Review Agent (claude -p)"]
-        Runner -->|"Parses Diff & AST Invariants"| Checks["OWASP, Layer Isolation & Schemas"]
-    end
-
-    subgraph GATE["3. DECISION GATE"]
-        Checks --> Gate{"Blockers Found?"}
-        Gate -->|"Yes"| Block["Fail CI Check & Post Inline Remediation"]
-        Gate -->|"No"| Pass["Pass Gate & Await Human Architect Sign-off"]
-    end
-
-    BUILD --> VALIDATE
-    VALIDATE --> GATE
+    style Builder stroke:#2563eb,stroke-width:2px,fill:none
+    style PR stroke:#d97706,stroke-width:2px,fill:none
+    style Validator stroke:#7c3aed,stroke-width:2px,fill:none
+    style Merge stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
-In AI-native engineering, this is the **Builder-Validator Chain**: the agent or engineer that authored the feature is physically and semantically separated from the automated validator agent running headlessly in CI.
+### Walkthrough
+1. **The Builder**: The developer's agent drafts the code and runs local tests.
+2. **The PR Diff**: The proposed changes are submitted to version control.
+3. **The Validator**: An independent headless bot evaluates the code in a pristine context window against repository constitutions.
+4. **Merge Gate**: Non-negotiable blockers stop merge until violations are resolved.
+
+> **Where this analogy breaks**: An aircraft inspector uses physical pressure gauges. A headless AI review bot evaluates probabilistic token patterns, meaning it must be backed by deterministic linters to guarantee zero false negatives on static syntax rules.
 
 ---
 
-## 4. Architecture & Mechanics: Headless Non-Interactive Execution
+## 3. How It Works, One Term at a Time
 
-Modern autonomous CLI agents (such as Claude Code) support non-interactive execution modes designed specifically for automated pipelines:
-
-```bash
-# Non-interactive, headless execution emitting machine-parseable JSON
-claude -p \
-  --output-format json \
-  --json-schema 'contracts/schemas/pr-review-verdict.json' \
-  "Review the staged git diff against rules in AGENT.md. Flag any layer violations or unindexed queries."
-```
-
-### The Key Headless CLI Flags
-- **`-p` / `--print`**: Runs the agent in non-interactive print mode. The agent reads the context, executes its reasoning, outputs the response to stdout, and exits cleanly with code 0 or 1 without waiting for keyboard input.
-- **`--output-format json`**: Emits structured JSON rather than conversational markdown, enabling CI runners to parse verdicts programmatically using tools like `jq`.
-- **`--json-schema <path>`**: Constrains the model's output to conform strictly to a predefined JSON Schema, guaranteeing that fields like `has_blockers`, `severity`, and `inline_comments` exist.
-- **`--bare`**: Skips loading local user hooks or interactive terminal animations for predictable, hermetic execution inside containerized CI runners.
+### Mechanism 1: Author-Reviewer Bias and Builder-Validator Isolation
+* 🧒 **The Analogy**: An author proofreading their own novel. Their brain automatically skips missing words because they know what they intended to write.
+* ⚙️ **The Engineering**: Large language models condition their attention weights on their conversation history. If the agent that authored a bug is asked: *"Review this code for flaws"*, it repeats its earlier blind spots. **Builder-Validator Isolation** guarantees:
+  - The reviewing agent executes in a clean, isolated context window with zero conversational memory of how the code was authored.
+  - The validator prompt acts as an adversarial auditor instructed to find contract violations and security vulnerabilities.
+* ⚠️ **What happens if you skip this?**: The agent confirms its own logic, reporting: *"Looks great!"*, while leaving unindexed database queries in the diff.
 
 ---
 
-## 5. Automated PR Review Pipeline Architecture
+### Mechanism 2: Non-Interactive Headless CLI Execution
+* 🧒 **The Analogy**: A script running on a cron timer in the middle of the night without a monitor, keyboard, or mouse attached.
+* ⚙️ **The Engineering**: In CI pipelines, agents cannot ask interactive questions. Tools like Anthropic Claude Code provide headless CLI execution via explicit flags:
+  ```bash
+  claude -p "Audit PR diff against AGENT.md invariants" \
+         --bare \
+         --allowedTools "Read,Bash" \
+         --output-format json
+  ```
+  - `-p` (`--print`): Runs single-shot without opening an interactive prompt loop.
+  - `--bare`: Disables non-essential hooks and plugins for deterministic CI startup.
+  - `--allowedTools`: Scopes permissions to prevent destructive terminal commands.
+  - `--output-format json`: Emits machine-readable review findings for automated PR commenting.
+* ⚠️ **What happens if you skip this?**: The CI job hangs indefinitely waiting for keyboard input from a non-existent terminal user.
+
+---
+
+### Mechanism 3: The 4-Stage Automated Review Pipeline
+* 🧒 **The Analogy**: Airport security. You pass through a metal detector first (fast, deterministic). Only if an alarm triggers does an agent conduct a manual physical search (slower, detailed).
+* ⚙️ **The Engineering**: Production review engines (e.g., CodeRabbit) operate in four staged layers:
 
 ```mermaid
 flowchart TD
-    subgraph GHA["AUTOMATED GITHUB ACTIONS PIPELINE"]
-        direction TB
-        PR["Pull Request Created / Synchronized"] --> Diff["1. Extract Git Diff (Target vs PR Branch)"]
-        Diff --> Sandbox["2. Spin up Isolated Sandboxed Runner (Least Privilege)"]
-        Sandbox --> Agent["3. Headless Review Agent (Claude Code / Custom LLM)"]
-        
-        subgraph Inspections["4. Parallel Architectural Invariant Checks"]
-            D1["Layer Isolation Check<br/>(Domain referencing Infra?)"]
-            D2["Security Vulnerability Scan<br/>(OWASP: SQLi, SSRF, IDOR)"]
-            D3["Database Performance<br/>(Unindexed foreign keys, N+1)"]
-            D4["Contract Drift<br/>(Breaking changes to OpenAPI)"]
-        end
-        
-        Agent --> Inspections
-        Inspections --> Verdict{"5. Any Blocker Severity Issues?"}
-        
-        Verdict -->|"Blocker Detected"| PostFail["Post Inline Diff Comments & Block Merge (Exit 1)"]
-        Verdict -->|"Clean / Warnings Only"| PostPass["Post Summary Comment & Approve CI Status (Exit 0)"]
-    end
+    Trigger["1. Webhook PR Trigger"] --> Linters["2. ⚡ Deterministic Linters & SAST<br>(Ruff, Semgrep, Actionlint)"]
+    Linters --> AST["3. 🔍 AST & Symbol Investigation<br>(ast-grep maps cross-file callers)"]
+    AST --> LLM["4. 🧠 Semantic LLM Synthesis<br>(Reviews logic against AGENT.md)"]
+    LLM --> Gate{"5. ⚖️ Blocker Gate"}
+    Gate -->|"Blocker Found"| Fail["❌ Reject PR"]
+    Gate -->|"All Clear"| Pass["✅ Approve for Human Review"]
+
+    style Trigger stroke:#2563eb,stroke-width:2px,fill:none
+    style Linters stroke:#16a34a,stroke-width:2px,fill:none
+    style AST stroke:#7c3aed,stroke-width:2px,fill:none
+    style LLM stroke:#d97706,stroke-width:2px,fill:none
+    style Gate stroke:#dc2626,stroke-width:2px,fill:none
+    style Fail stroke:#dc2626,stroke-width:2px,fill:none
+    style Pass stroke:#16a34a,stroke-width:2px,fill:none
 ```
 
-### Step-by-Step Walkthrough
-1. **Trigger & Diff Extraction**: On every `pull_request` event, the workflow extracts the unified git diff between the target branch (`main`) and the PR branch.
-2. **Sandboxed Runner Execution**: The job runs inside an ephemeral, isolated container with read-only permissions on repository code, preventing unvetted scripts from altering branches.
-3. **Automated Invariant Inspection**: The review agent evaluates the diff against four non-negotiable vectors:
-   - *Layer Isolation*: Ensures domain models do not import database contexts or HTTP frameworks.
-   - *Security*: Checks for unsanitized inputs, hardcoded secrets, or prompt injection vectors.
-   - *Performance*: Flags missing indexes on foreign key columns and unbounded queries.
-   - *Contract Drift*: Verifies that OpenAPI schemas remain backward-compatible.
-4. **Enforcement Gate**: If any blocker issue is detected, the bot posts inline remediation comments and fails the status check, preventing merge until fixed.
+### Walkthrough
+1. **Webhook Trigger**: Pull request event invokes the pipeline runner.
+2. **Deterministic Linters**: 50+ static analyzers catch syntax, secrets, and style in <5 seconds.
+3. **AST Investigation**: Parses structural dependencies across touched files.
+4. **Semantic LLM Synthesis**: Inspects business logic, invariants, and edge cases against `AGENT.md`.
+5. **Blocker Gate**: Emits pass/fail status checks directly to the pull request.
 
 ---
 
-## 6. Incident Response & Automated Root Cause Analysis (RCA)
+## 4. Try It: Offline Automated PR Review Bot Simulator
 
-The same headless agentic pattern transforms production incident response. When alerts trigger, automated triage bots correlate real-time telemetry with recent code commits:
+This typed Python 3.12+ script simulates a headless CI review bot. It parses git diff chunks, applies deterministic security checks, evaluates architectural invariants, categorizes findings into Blockers vs. Nits, and sets the CI status check.
 
-```mermaid
-flowchart TD
-    subgraph IncidentFlow["AI-AUGMENTED INCIDENT RESPONSE FLOW"]
-        direction TB
-        S1["<b>1. Telemetry Ingestion</b><br/>OpenTelemetry spans, Datadog/Sentry alerts"]
-        S2["<b>2. Trace Correlation</b><br/>AI correlates HTTP 500 spike with DB lock wait"]
-        S3["<b>3. Git Blame & Commit Diff</b><br/>Isolates commit 3a4f89 merged 20 mins ago"]
-        S4["<b>4. Hypothesis Generation</b><br/>Unindexed query in hot-path GET /orders"]
-        S5["<b>5. Automated Remediation</b><br/>Agent drafts migration script + rollback PR"]
-        S6["<b>6. Post-Mortem Synthesis</b><br/>Produces 5-Whys markdown report for retro"]
-        
-        S1 --> S2 --> S3 --> S4 --> S5 --> S6
-    end
+```python
+"""
+headless_pr_reviewer.py
+Simulates an automated CI/CD review gate enforcing architectural invariants and security checks.
+Compatible with Python 3.12+ and Pydantic v2. Run directly with python.
+"""
+
+from enum import Enum
+from pydantic import BaseModel, Field
+
+
+class FindingSeverity(str, Enum):
+    BLOCKER = "BLOCKER"
+    WARNING = "WARNING"
+    NIT = "NIT"
+
+
+class ReviewFinding(BaseModel):
+    file_path: str
+    line_number: int
+    severity: FindingSeverity
+    category: str
+    description: str
+    suggested_fix: str
+
+
+class PRReviewReport(BaseModel):
+    pr_id: int
+    findings: list[ReviewFinding] = Field(default_factory=list)
+    has_blockers: bool = False
+    verdict: str
+
+
+SAMPLE_DIFF = """
+diff --git a/src/api/routes.py b/src/api/routes.py
+@@ -14,6 +14,8 @@ def process_payment(request: dict):
++    # Hardcoded test secret left by developer
++    api_key = "sk_live_99410294102941024"
++    raw_query = f"SELECT * FROM users WHERE email = '{request['email']}'"
+"""
+
+
+def evaluate_diff_invariants(pr_id: int, diff_text: str) -> PRReviewReport:
+    """Audits diff text for security hazards and layer violations."""
+    findings: list[ReviewFinding] = []
+
+    for line_idx, line in enumerate(diff_text.splitlines(), start=1):
+        # Rule 1: Check for raw hardcoded secrets
+        if "sk_live_" in line:
+            findings.append(ReviewFinding(
+                file_path="src/api/routes.py",
+                line_number=line_idx,
+                severity=FindingSeverity.BLOCKER,
+                category="Security / Secret Leak",
+                description="Hardcoded live production secret detected in source diff.",
+                suggested_fix="Inject secret via environment variables or secret manager."
+            ))
+
+        # Rule 2: Check for raw SQL string interpolation
+        if "SELECT * FROM" in line and "f\"" in line:
+            findings.append(ReviewFinding(
+                file_path="src/api/routes.py",
+                line_number=line_idx,
+                severity=FindingSeverity.BLOCKER,
+                category="Security / SQL Injection",
+                description="Raw SQL formatted string detected. Violates SQL injection invariant.",
+                suggested_fix="Use parameterized queries or ORM select statements."
+            ))
+
+    has_blockers = any(f.severity == FindingSeverity.BLOCKER for f in findings)
+    verdict = "MERGE BLOCKED (Critical Invariants Violated)" if has_blockers else "APPROVED FOR HUMAN REVIEW"
+
+    return PRReviewReport(
+        pr_id=pr_id,
+        findings=findings,
+        has_blockers=has_blockers,
+        verdict=verdict
+    )
+
+
+def run_pr_review_simulation():
+    print("--- RUNNING HEADLESS CI/CD REVIEW BOT ---")
+    report = evaluate_diff_invariants(pr_id=104, diff_text=SAMPLE_DIFF)
+
+    print(f"PR #{report.pr_id} Review Verdict: {report.verdict}")
+    print(f"Total Findings Detected: {len(report.findings)}")
+    print("-------------------------------------------------------------")
+
+    for idx, f in enumerate(report.findings, start=1):
+        print(f"Finding {idx} [{f.severity.value}] at {f.file_path}:{f.line_number}")
+        print(f"  Category: {f.category}")
+        print(f"  Details:  {f.description}")
+        print(f"  Remedy:   {f.suggested_fix}\n")
+
+
+if __name__ == "__main__":
+    run_pr_review_simulation()
 ```
 
-### Production Example: Automated RCA Generated by Incident Bot
-```markdown
-# Incident RCA Report: INC-2026-09-8821
-**Severity:** SEV-1 (Production API Partial Outage)  
-**Duration:** 28 minutes (14:10 UTC – 14:38 UTC)  
-**Impact:** 14.2% of checkout attempts failed with HTTP 500.
+### Real Execution Output
 
-## Root Cause Analysis (Five-Whys)
-1. **Why did checkouts fail?** PostgreSQL queries timed out with error `55P03: lock_not_available`.
-2. **Why were locks unavailable?** The `ProcessOrder` transaction held an exclusive table lock on `CustomerLoyalty`.
-3. **Why did it hold an exclusive lock?** A newly added query executed an `UPDATE` without an index on `CustomerExternalId`.
-4. **Why was the index missing?** The agent that generated migration `0042_add_loyalty.sql` did not specify an index.
-5. **Why was it merged?** The PR review bot rule for SQL performance was disabled for files under `migrations/`.
+```text
+--- RUNNING HEADLESS CI/CD REVIEW BOT ---
+PR #104 Review Verdict: MERGE BLOCKED (Critical Invariants Violated)
+Total Findings Detected: 2
+-------------------------------------------------------------
+Finding 1 [BLOCKER] at src/api/routes.py:5
+  Category: Security / Secret Leak
+  Details:  Hardcoded live production secret detected in source diff.
+  Remedy:   Inject secret via environment variables or secret manager.
 
-## Remediation & Preventative Actions
-- [x] Applied hotfix migration adding `CONCURRENTLY` index on `CustomerLoyalty(CustomerExternalId)`.
-- [x] Restored PR review bot rule: Mandatory `EXPLAIN ANALYZE` evaluation for all schema additions.
+Finding 2 [BLOCKER] at src/api/routes.py:6
+  Category: Security / SQL Injection
+  Details:  Raw SQL formatted string detected. Violates SQL injection invariant.
+  Remedy:   Use parameterized queries or ORM select statements.
 ```
 
 ---
 
-## 7. Trade-offs & Telemetry
+## 5. Trade-Offs: Review Mechanisms in AI-Accelerated Teams
 
-| Dimension | Manual Peer Review Only | Automated Headless Review Bot |
-|---|---|---|
-| **Time to First Review (TTFR)** | 2.5–6.0 hours (human latency) | **Sub-60 seconds (immediate CI run)** |
-| **Review Fatigue Resistance** | Low (degrades after 3rd PR of the day) | **Infinite (consistent across 1,000 PRs)** |
-| **Architectural Depth** | Good at high-level business nuance | Exceptional at syntax, security, and layer rules |
-| **Operational Expenditure** | High developer salary time | $0.05–$0.20 in token costs per PR review |
+| Review Approach | Latency to Feedback | Human Cognitive Load | False Positive Rate | Catch Rate for SQLi/Secrets |
+|:---|:---|:---|:---|:---|
+| **Human Peer Only** | 2–4 days | Very High (review fatigue) | Very Low | Moderate (humans miss regex patterns) |
+| **Linters Only (Ruff/SAST)** | <5 seconds | None | Zero | High on syntax, Zero on business logic |
+| **Hybrid Headless Bot Pipeline** | **<60 seconds** | **Low (reviews only pre-audited PRs)** | **Low (<5% on blockers)** | **Very High (>99% on contracts & invariants)** |
 
 ---
 
-## 8. Production Failure Modes & Anti-Patterns
+## 6. Failure Modes & Anti-Patterns
 
-### Anti-Pattern: Unbounded Write Permissions in CI Review Bots
-- **The Failure**: Granting the automated review bot full repository write permissions to directly commit "fixes" onto the PR branch.
-- **The Blast Radius**: If the review bot hallucinates or misinterprets an architectural requirement, it can overwrite developer work or push insecure code directly into the candidate branch.
-- **The Remediation**: Enforce the **Principle of Least Privilege**. Review bots must have strictly read-only access to source code and comment-only permissions on PRs. All code changes must be accepted by a human engineer.
+### Anti-Pattern 1: The "Nitpick Flooding" Review Bot
+* **Symptom**: An AI review bot leaves 42 comments on a pull request complaining about variable names and docstring grammar, obscuring a critical SQL injection flaw.
+* **Root Cause**: The bot prompt lacked severity budgeting and blocker thresholds.
+* **Production Fix**: Restrict AI review bots to report only `BLOCKER` and `WARNING` items. Enforce a hard cap of no more than 3 high-signal comments per PR.
+
+### Anti-Pattern 2: Authorizing Automatic Merges
+* **Symptom**: A team configures their AI review bot to automatically click "Merge" when tests pass.
+* **Root Cause**: Blind trust in AI evaluation without human architectural arbitration.
+* **Production Fix**: AI bots must serve as filters, not final authorizers. Bots block bad PRs automatically, but final merge approval requires human sign-off.
+
+---
+
+## 7. Quick Check
+
+**Scenario**: A senior developer configures a CI review bot using a prompt that instructs the model to *"Check this PR and approve if it looks good."* The bot begins approving pull requests containing breaking database migration changes that drop production columns.
+
+**Question**: What prompt engineering failure caused the bot to approve destructive changes, and how should the review gate be restructured?
+
+<details>
+<summary>Check your answer</summary>
+
+**Answer**: The prompt suffered from **affirmative bias** and a lack of explicit, non-negotiable blocker criteria. Instructing an LLM to "approve if it looks good" causes the model to default to agreeable, non-confrontational summaries.
+
+**The Fix**:
+1. Invert the prompt to an **adversarial audit**: *"Assume this pull request contains breaking changes. Inspect the diff against `AGENT.md` non-negotiable invariants."*
+2. Provide explicit failure triggers: *"If any SQL migration drops a column or renames a table without a two-phase deprecation window, mark as BLOCKER and exit code 1."*
+3. Connect the validator output directly to the GitHub CI status check so merge buttons are physically disabled until blockers are resolved.
+</details>
 
 ---
 
 ## 🧭 Navigation
 
-| Role | Target Resource |
-|---|---|
+| Direction | Resource |
+|:---|:---|
 | **Previous Lesson** | [Lesson 04: Designing AI-Friendly Codebases](./04-architecting-ai-friendly-codebases.md) |
-| **Phase Overview** | [Phase 08 Hub: AI-Augmented SDLC & Leadership](./README.md) |
-| **Next Lesson** | [Lesson 06: AI Engineering Productivity & Rework Metrics](./06-ai-developer-productivity-and-rework-metrics.md) |
-| **Hands-On Capstone** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |
+| **Phase Hub** | [Phase 08: AI-Augmented SDLC & Leadership](./README.md) |
+| **Next Lesson** | [Lesson 06: AI Developer Productivity & Rework Metrics](./06-ai-developer-productivity-and-rework-metrics.md) |
+| **Capstone Lab** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |

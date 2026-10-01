@@ -97,11 +97,42 @@ Implement an automated CLI script or agent workflow (`scripts/generate-adr.py` o
 
 ---
 
+## 🧪 Automated Grading & Verification Test Runner
+
+Run the automated evaluation suite to verify all capstone milestones offline:
+
+```bash
+python 08-ai-augmented-sdlc-and-leadership/labs/verify_capstone.py
+```
+
+### Expected Evaluation Output:
+```text
+================================================================
+      PHASE 08 CAPSTONE CHALLENGE: AUTOMATED EVALUATION         
+================================================================
+
+[✅ PASS] M1: Repository AGENT.md Contract
+       AGENT.md verified (51 lines, under 150-line ceiling). All invariant sections present.
+
+[✅ PASS] M2: Headless PR Review Bot & Invariant Gate
+       Review bot successfully blocked SQLi & layer violations, and cleanly approved compliant diff.
+
+[✅ PASS] M3: Automated ADR Synthesis Engine
+       Generated ADR strictly adheres to Michael Nygard schema and outputs cleanly.
+
+----------------------------------------------------------------
+Final Score: 3/3 Milestones Passed (100.0%)
+VERDICT: CAPSTONE CHALLENGE ACCEPTED (100% PRODUCTION READY)
+```
+
+---
+
 ## 🧭 Navigation
 
 | Role | Target Resource |
 |---|---|
 | **Phase Overview** | [Phase 08 Hub: AI-Augmented SDLC & Leadership](../README.md) |
-| **Lesson 01** | [Lesson 01: The AI-Native SDLC Paradigm & Toolchains](../01-ai-native-sdlc-paradigm-and-toolchain.md) |
+| **Lesson 00** | [Lesson 00: Foundations of the AI-Native SDLC (Software 3.0)](../00-foundations-of-the-ai-native-sdlc.md) |
+| **Lesson 01** | [Lesson 01: AI Coding Toolchains & Agent Architectures](../01-ai-coding-toolchains-and-agent-architectures.md) |
 | **Lesson 02** | [Lesson 02: Spec-Driven Development & Codebase Contracts](../02-spec-driven-development-and-codebase-contracts.md) |
 | **Lesson 07** | [Lesson 07: Enterprise AI Delivery Governance & Accelerators](../07-enterprise-ai-delivery-governance-and-accelerators.md) |

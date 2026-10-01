@@ -1,329 +1,335 @@
-# Enterprise AI Delivery: Governing Hybrid Teams & Modular Capability Accelerators
+# Lesson 07: Enterprise AI Delivery Governance and Accelerators
 
-| Depth Tier | Recommended Audience | Estimated Completion Time | Key Prerequisites |
-|---|---|---|---|
-| `🔵 ADVANCED / SPECIALIZED` | Staff Engineers, Solutions Architects, Engineering Directors | ~25 minutes | Lesson 02 (Spec-Driven Development), Lesson 05 (Headless CI/CD) |
-
-> **Core Concept**: Technical governance of hybrid enterprise delivery teams (internal platform + external systems integrators) using executable ADR contracts, and designing pluggable, domain-agnostic AI capability accelerators that eliminate duplicative business silos.
-
----
-
-## 1. The Architectural Problem
-
-Large enterprise AI initiatives rarely happen in isolated engineering silos. Strategic digital transformations almost always involve **hybrid delivery models**: internal core platform teams collaborating with external Systems Integrators (SIs), boutique AI consultancies, and staff augmentation partners.
-
-Without seasoned technical leadership and rigid architectural governance, these hybrid engagements rapidly descend into technical fragmentation, vendor lock-in, and unmaintainable debt:
-- External partners are commercially incentivized for **velocity to demo**—shipping a flashy proof-of-concept in six weeks to trigger contractual milestone sign-offs.
-- In doing so, external teams often hardcode proprietary third-party libraries, embed raw API keys in controllers, write superficial unit tests with mocked fixtures that hide prompt hallucinations, and roll off after six months, leaving internal engineering with an unmaintainable "black-box" asset.
-- Concurrently, multiple internal business units (Legal, Procurement, HR) hire different consultancies to solve the exact same problem (e.g., document parsing), incurring 3x licensing fees, 3x maintenance overhead, and zero architectural reuse.
-
-To succeed at enterprise scale, Lead Architects must institute **The Four Pillars of Hybrid AI Delivery** and construct **Modular AI Capability Accelerators**.
+> **Tier**: `🔵 Advanced` | **Read time**: ~22 min | **Prerequisites**: [Lesson 02: Spec-Driven Development & Codebase Contracts](./02-spec-driven-development-and-codebase-contracts.md), [Lesson 05: Headless CI/CD Review Bots](./05-headless-ci-cd-agents-and-automated-review-gates.md)  
+> **Core Concept**: Governing hybrid enterprise delivery teams (internal platform engineers and external systems integrators) using contractual evaluation gates, and engineering modular capability accelerators that eliminate duplicative business silos.  
+> **New AI terms introduced**: hybrid delivery governance, capability accelerator, contractual evaluation gate, executable ADR  
+> **AI terms assumed from earlier lessons**: [Spec-Driven Development](./02-spec-driven-development-and-codebase-contracts.md), [hexagonal boundary](./04-architecting-ai-friendly-codebases.md), [headless agent execution](./05-headless-ci-cd-agents-and-automated-review-gates.md)
 
 ---
 
-## 2. Why Naive Approaches Fail: The Duplicative Silo Trap
+## 🎯 What You Will Learn
 
-```mermaid
-flowchart TD
-    subgraph SILOS["NAIVE APPROACH: DUPLICATIVE DOMAIN SILOS"]
-        direction TB
-        S1["Legal hires SI A<br/>Builds contract extractor in C# via Semantic Kernel"]
-        S2["Procurement hires SI B<br/>Builds invoice parser in Python via LangChain"]
-        S3["HR hires SI C<br/>Builds resume extractor in TypeScript via custom SDK"]
-        
-        S1 & S2 & S3 --> S4["<b>Result: Triple Expenditure & Zero Governance</b><br/>3x maintenance costs, conflicting gateways, no shared telemetry"]
-    end
+- How hybrid delivery models (internal platforms + external systems integrators) break down into technical debt without architectural governance.
+- How to implement the Four Pillars of Hybrid AI Delivery to enforce contract gates on partner deliverables.
+- How to design a Modular AI Capability Accelerator that shares cognitive retrieval engines across business units.
+- How to run an offline Python validator that audits Architecture Decision Records (ADRs) against compliance schemas.
 
-    subgraph ACCEL["ENTERPRISE SOLUTION: MODULAR CAPABILITY ACCELERATOR"]
-        direction TB
-        A1["Shared Core Cognitive Engine<br/>(Ingestion, Hybrid Search, Deterministic Graph, OTel Telemetry)"]
-        A2["Pluggable Typed Domain Adapters<br/>(Legal Schemas, Procurement Rules, HR Taxonomies)"]
-        
-        A1 --> A2
-        A2 --> A3["<b>Result: Unified Platform Rails</b><br/>Shared rate limits, single spend attribution, zero code duplication"]
-    end
+---
 
-    SILOS ~~~ ACCEL
+## 1. The Problem: The Enterprise Duplicative Silo Trap
+
+Large enterprise AI initiatives rarely happen within a single isolated engineering team. Strategic transformations frequently rely on **hybrid delivery models**: internal platform teams collaborating with external Systems Integrators (SIs), boutique AI consultancies, and staff augmentation vendors.
+
+Without seasoned technical leadership and rigid architectural rails, these engagements rapidly fragment:
+
+```text
+========================================================================
+THE HYBRID DELIVERY FAILURE MODES
+========================================================================
+1. Commercial Incentive Mismatch: External partners optimize for 
+   "velocity to demo" (six-week flashy POCs to trigger milestone payouts), 
+   embedding raw API keys and brittle unmaintainable libraries.
+2. Duplicative Domain Silos: Legal, HR, and Procurement hire separate SIs 
+   who each build custom document ingestion pipelines from scratch.
+3. The Abandoned Asset: Partners roll off after six months, leaving internal 
+   teams with undocumented black-box code that fails under load.
+========================================================================
 ```
 
-When business domains operate independently without architectural oversight, they reinvent the same cognitive retrieval, extraction, and evaluation infrastructure. The resulting architectures cannot share cache tiers, cannot unify rate limits, and fragment enterprise observability.
+To govern external delivery partners and eliminate redundant spend, Lead Architects must institute **Contractual Evaluation Gates** and deploy **Modular AI Capability Accelerators**.
+
+### The Anatomy of an AI Partner Statement of Work (SOW)
+
+Traditional software consulting contracts define deliverables through narrative milestone descriptions: *"Vendor delivers invoice parsing module by week 8."* In AI systems engineering, this language guarantees failure. High-performing engineering organizations replace narrative milestones with machine-verifiable contract riders:
+
+```text
+========================================================================
+MODEL EVALUATION CONTRACT RIDER (SAMPLE SCHEDULE C)
+========================================================================
+1. Groundedness Threshold: Synthesized responses must achieve >= 0.92 
+   groundedness on the internal 500-question Golden Evaluation Dataset.
+2. Latency Ceiling: p95 latency must remain <= 1,400ms under 50 RPS load.
+3. Rework Rate Constraint: The 14-day code churn on delivered repositories 
+   must not exceed 8.0% following handoff.
+4. Framework Compliance: Zero unauthorized dependencies. All LLM calls 
+   must route through the enterprise Gateway Accelerator.
+5. Invoicing Condition: Milestone payment release requires an automated, 
+   cryptographically signed green badge from GitHub Actions CI.
+========================================================================
+```
+
+Binding commercial milestone sign-offs to automated evaluation harnesses aligns economic incentives. Vendors can no longer "demo and dash"; their payout requires shipping durable, verified systems that meet production SLAs.
 
 ---
 
-## 3. The Core Mental Model: The Four Pillars of Hybrid Delivery Governance
+## 2. The Mental Model: The Four Pillars of Hybrid Delivery Governance
 
-To maintain architectural integrity across hybrid teams, senior architects mandate four non-negotiable operational pillars:
+Imagine constructing a high-speed transit network across multiple cities:
+- You do not allow each municipality to invent its own rail gauge, electrical voltage, or signaling protocols.
+- The central transit authority lays down the standardized track specifications and safety signaling (The Core Platform).
+- Local contractors build their station platforms (Domain Adapters) to click directly into the existing rails.
 
 ```mermaid
 flowchart TD
-    subgraph Pillars["THE FOUR PILLARS OF HYBRID AI GOVERNANCE"]
-        direction TB
-        P1["<b>1. Machine Contracts as Law</b><br/>OpenAPI 3.1, Protobuf, and ADRs committed to Git.<br/>Zero bespoke schemas allowed."]
-        P2["<b>2. Verification Suite as Payment Gate</b><br/>Milestone invoices approved ONLY when candidate branch<br/>passes 100% Level 1 schemas &amp; &ge; 92% Golden Evals."]
-        P3["<b>3. Sandbox Isolation &amp; Zero Retention</b><br/>Agents execute in enterprise VDIs with DLP filters<br/>and Zero Data Retention (ZDR) API endpoints."]
-        P4["<b>4. Centralized Enterprise Platform Rails</b><br/>All traffic routes through the corporate AI Gateway<br/>enforcing token budgets, OTel spans, and audit logs."]
-        
+    subgraph Governance["THE FOUR PILLARS OF HYBRID AI GOVERNANCE"]
+        P1["📜 1. Machine Contracts<br>(AGENT.md & OpenAPI 3.1)"]
+        P2["⚖️ 2. Contractual Eval Gates<br>(Automated CI validation before payout)"]
+        P3["🏛️ 3. Executable ADRs<br>(Architecture decisions tracked in Git)"]
+        P4["🧩 4. Capability Accelerators<br>(Shared cognitive core + domain adapters)"]
+
         P1 --> P2 --> P3 --> P4
     end
+
+    style P1 stroke:#2563eb,stroke-width:2px,fill:none
+    style P2 stroke:#16a34a,stroke-width:2px,fill:none
+    style P3 stroke:#7c3aed,stroke-width:2px,fill:none
+    style P4 stroke:#d97706,stroke-width:2px,fill:none
 ```
 
-### 1. Machine Contracts (ADRs & Schemas) as Inviolable Law
-Before external developers write a single prompt or line of code, internal architects publish **Architecture Decision Records (ADRs)** and formal interface contracts (OpenAPI 3.1, JSON Schema, Protobuf). External partners cannot invent bespoke data schemas or bypass established hexagonal boundaries.
+### Walkthrough
+1. **Machine Contracts**: Every partner repository must adhere to version-controlled `AGENT.md` guidelines.
+2. **Contractual Evaluation Gates**: Commercial vendor milestone sign-offs are bound to automated CI evaluation pass rates.
+3. **Executable ADRs**: Architecture decisions are documented in Git; unauthorized third-party libraries break CI builds.
+4. **Capability Accelerators**: Shared enterprise cognitive engines eliminate duplicate RAG pipelines.
 
-### 2. The Verification Harness as Contractual Acceptance Gate
-Commercial contracts with external delivery partners must explicitly tie milestone acceptance and invoice payments to automated verification test suites:
-- 100% pass rate on Level 1 deterministic schema and type assertions.
-- Greater than or equal to 92% accuracy on the enterprise Golden Evaluation Benchmark (Level 2 LLM-as-a-judge).
-- Algorithmic fairness invariants (Disparate Impact Ratio DIR ≥ 0.80 via Fairlearn).
-- Latency and cost SLAs (Time-to-First-Token TTFT < 800ms, token envelope adherence).
-- *"Demo vibes" in an executive steering committee do not constitute delivery.*
-
-### 3. Context Boundary Isolation & IP Sanitization
-External partner coding agents (Cursor, Windsurf, Claude Code) must run within isolated enterprise virtual desktop infrastructure (VDI) or corporate developer sandboxes. Strict Data Loss Prevention (DLP) filters prevent proprietary code or customer PII from leaking to unvetted models. All endpoints must feature **Zero Data Retention (ZDR)** agreements.
-
-### 4. Centralized Enterprise Platform Rails
-External teams are never issued raw cloud provider credentials. All model calls route through the enterprise **AI Gateway** (e.g., LiteLLM, Azure APIM, or Portkey), enforcing rate limits, tenant spend attribution, PII tokenization, and distributed OpenTelemetry span capture out of the box.
+> **Where this analogy breaks**: Physical train tracks remain fixed for decades. AI capability accelerators evolve monthly as foundation models upgrade, requiring versioned semantic adapter layers.
 
 ---
 
-## 4. Architecture & Mechanics: Modular AI Capability Accelerators
+## 3. How It Works, One Term at a Time
 
-Senior architects design **Modular AI Capability Accelerators**—domain-agnostic cognitive kernels that serve multiple distinct business domains through pluggable typed adapters:
+### Mechanism 1: Modular Capability Accelerators
+* 🧒 **The Analogy**: A smartphone operating system. Apple provides the camera API, GPU shaders, and network stack (the core engine). App developers build photography or messaging apps (domain adapters) without soldering their own camera sensors.
+* ⚙️ **The Engineering**: An **AI Capability Accelerator** decouples shared platform infrastructure from domain-specific business rules:
+  - **Shared Core Engine**: Manages document chunking, hybrid vector retrieval, OpenTelemetry tracing, and LLM rate-limiting gateways.
+  - **Pluggable Domain Adapters**: Legal schemas, HR interview questions, and Procurement tax rules plug into the shared core via typed interfaces.
+  - **Cost Savings**: Eliminates 3x licensing fees and consolidates enterprise GPU caching.
+  
+```text
+========================================================================
+ENTERPRISE CAPABILITY ACCELERATOR INTERFACE CONTRACT
+========================================================================
++----------------------------------------------------------------------+
+|                     PLUGGABLE DOMAIN ADAPTERS                        |
+|  [Legal Contract Extractor] [HR Resume Parser] [Procurement Invoices]|
++-----------------------------------+----------------------------------+
+                                    | Typed Protocol Pydantic Schema
++-----------------------------------v----------------------------------+
+|                  SHARED COGNITIVE PLATFORM CORE                      |
+|  - Rate-Limiting & Spend Attribution Gateway                         |
+|  - Hybrid Vector & BM25 Retrieval Engine                             |
+|  - Distributed KV Prefix Cache & Semantic Deduplication Tier         |
+|  - OpenTelemetry GenAI Semantic Convention Telemetry                 |
++----------------------------------------------------------------------+
+```
+
+* ⚠️ **What happens if you skip this?**: Every department builds separate RAG pipelines, burning millions on duplicate vector databases and conflicting vendor contracts.
 
 ```mermaid
 flowchart TD
-    subgraph CoreEngine["1. CORE COGNITIVE ENGINE (Domain-Agnostic Accelerator)"]
-        Parser["Document Ingestion & Multi-Modal Parser"]
-        Retriever["Hybrid Dense/Sparse Vector Retriever"]
-        Orch["Deterministic ReAct / Plan-and-Solve Graph"]
-        Telemetry["OpenTelemetry Spans & Metric Emitter"]
+    subgraph Accelerator["ENTERPRISE CAPABILITY ACCELERATOR"]
+        Core["⚙️ Shared Cognitive Platform Core<br>(Ingestion, Hybrid Search, OTel, Caching)"]
+        Legal["⚖️ Legal Adapter<br>(Contract Schemas)"]
+        HR["👥 HR Adapter<br>(Resume Rules)"]
+        Proc["📦 Procurement Adapter<br>(Invoice Schemas)"]
+
+        Legal --> Core
+        HR --> Core
+        Proc --> Core
     end
 
-    subgraph DomainAdapters["2. BUSINESS DOMAIN ADAPTERS (Pluggable Schemas)"]
-        AdapterA["Legal SOW Adapter<br/>• Clause Schema<br/>• Indemnity Rubrics"]
-        AdapterB["Procurement Invoice Adapter<br/>• Line-Item Schema<br/>• Tax &amp; ERP Codes"]
-        AdapterC["HR Policy Adapter<br/>• Benefits Taxonomy<br/>• PII Redaction Rules"]
-    end
-
-    subgraph InfrastructureLayer["3. PLUGGABLE INFRASTRUCTURE PORTS"]
-        GatewayPort["IModelGateway<br/>(Azure OpenAI / Bedrock / Vertex / vLLM)"]
-        VectorPort["IVectorStore<br/>(pgvector / Qdrant / Azure AI Search)"]
-    end
-
-    DomainAdapters --> CoreEngine
-    CoreEngine --> InfrastructureLayer
+    style Core stroke:#16a34a,stroke-width:2px,fill:none
+    style Legal stroke:#2563eb,stroke-width:2px,fill:none
+    style HR stroke:#7c3aed,stroke-width:2px,fill:none
+    style Proc stroke:#d97706,stroke-width:2px,fill:none
 ```
 
-### Visual Walkthrough
-1. **Core Cognitive Engine (Domain-Agnostic)**: Manages semantic caching, context compaction, observation pruning, and OTel distributed tracing. Contains zero hardcoded prompts or domain rules.
-2. **Pluggable Business Domain Adapters**: Provide strongly typed Pydantic schemas defining target outputs, few-shot trajectories, and domain-specific invariant validators.
-3. **Pluggable Infrastructure Ports**: Implement Hexagonal ports (`IModelGateway`, `IVectorStore`), allowing the enterprise to switch model providers without altering core engine logic.
+### Walkthrough
+1. **Core Platform**: Provides robust, unified retrieval and observability rails.
+2. **Domain Adapters**: Lightweight modules that define business-specific prompt schemas and Pydantic validators.
+3. **Unified Telemetry**: Engineering leadership tracks token spend across all business domains from a single dashboard.
 
 ---
 
-## 5. Production Reference Implementation: Capability Accelerator Kernel
+### Mechanism 2: Contractual Evaluation Gates in CI
+* 🧒 **The Analogy**: An escrow account for a real estate purchase. The title company does not wire funds to the seller until the building inspector confirms the roof has no leaks.
+* ⚙️ **The Engineering**: Bind vendor statements of work (SOWs) directly to automated CI quality gates:
+  - **Quantitative Accuracy Gate**: Partner code must achieve target evaluation metrics on an independent holdout golden dataset (e.g., Groundedness $\ge 0.90$, Retrieval Recall@5 $\ge 0.85$).
+  - **Performance and Latency Gate**: p95 inference latency must remain under 1,500ms across 200 concurrent simulated user turns.
+  - **Code Hygiene Gate**: Zero high-severity SAST vulnerabilities, zero hardcoded secrets, and 14-day rework rate on initial modules under 10%.
+  - **Commercial Acceptance**: Milestone sign-offs and vendor invoicing are legally bound to automated CI pipeline pass badges.
+* ⚠️ **What happens if you skip this?**: The partner gets paid for a prototype that crashes under production load, leaving internal engineers to rewrite the service.
 
-This Python 3.12+ implementation demonstrates a domain-agnostic cognitive engine serving multiple enterprise domains via typed Pydantic v2 adapters:
+---
+
+### Mechanism 3: Executable Architecture Decision Records (ADRs)
+* 🧒 **The Analogy**: A legal city zoning charter. A contractor cannot build a chemical refinery in a residential neighborhood without a formal zoning variance.
+* ⚙️ **The Engineering**: Technical leadership documents architectural choices using Michael Nygard's ADR format committed to `docs/adr/`:
+  - Every ADR records Context, Decision, and Consequences.
+  - **Machine-Enforced Compliance**: CI linting tools parse ADR files and cross-reference approved libraries against `pyproject.toml` or `package.json`.
+  - Introducing an unapproved external package (e.g., an unvetted LLM wrapper) causes the build to fail immediately with a requirement to link a merged ADR.
+  - This stops external consultancies from introducing fragmented frameworks that internal platform teams cannot support after project handoff.
+* ⚠️ **What happens if you skip this?**: External vendors introduce conflicting frameworks (e.g., three different prompt orchestration SDKs), creating long-term maintenance chaos.
+
+---
+
+## 4. Try It: Offline ADR Compliance and Evaluation Validator
+
+This typed Python 3.12+ script parses Architecture Decision Records in `docs/adr/`, validates required metadata headers (Status, Deciders, Date), checks approved library dependencies, and validates compliance before release sign-off.
 
 ```python
 """
-reusable_capability_accelerator.py
-Enterprise AI Accelerator Kernel:
-Demonstrates a domain-agnostic cognitive extraction and reasoning engine
-serving multiple business units via pluggable domain adapters.
+adr_compliance_validator.py
+Parses Architecture Decision Records (ADRs) and enforces dependency governance rules.
+Compatible with Python 3.12+ and Pydantic v2. Run directly with python.
 """
 
-from abc import ABC, abstractmethod
-from typing import TypeVar, Generic, Type
-from pydantic import BaseModel, Field
-import logging
-
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
-logger = logging.getLogger("EnterpriseAccelerator")
-
-TSchema = TypeVar("TSchema", bound=BaseModel)
+from enum import Enum
+from pydantic import BaseModel, Field, ValidationError
 
 
-# 1. Pluggable Domain Adapter Interface
-class BaseDomainAdapter(ABC, Generic[TSchema]):
-    """Defines domain-specific contracts, prompts, and target schemas."""
-
-    @property
-    @abstractmethod
-    def domain_name(self) -> str:
-        pass
-
-    @property
-    @abstractmethod
-    def target_schema(self) -> Type[TSchema]:
-        pass
-
-    @abstractmethod
-    def build_system_prompt(self) -> str:
-        pass
-
-    @abstractmethod
-    def validate_business_invariants(self, extracted_data: TSchema) -> bool:
-        """Domain-specific post-extraction assertion gate."""
-        pass
+class ADRStatus(str, Enum):
+    PROPOSED = "Proposed"
+    ACCEPTED = "Accepted"
+    DEPRECATED = "Deprecated"
+    SUPERSEDED = "Superseded"
 
 
-# 2. Reusable Core Cognitive Engine (Domain-Agnostic)
-class CoreCognitiveEngine:
-    """
-    Domain-agnostic accelerator runtime:
-    Handles execution safety, telemetry, LLM gateway communication,
-    and schema validation. Reusable across 100% of business units.
-    """
-
-    def process_document(self, raw_text: str, adapter: BaseDomainAdapter[TSchema]) -> TSchema:
-        logger.info(f"Executing cognitive engine for domain: '{adapter.domain_name}'")
-        
-        system_prompt = adapter.build_system_prompt()
-        target_cls = adapter.target_schema
-        
-        # In production: invoke centralized AI gateway with structured output format
-        # Simulated verified extraction matching target schema
-        if adapter.domain_name == "Legal_Contracts":
-            simulated_payload = {
-                "contract_title": "Enterprise Cloud Master Services Agreement",
-                "liability_cap_usd": 2500000.0,
-                "governing_law": "Delaware",
-                "indemnity_unlimited": False
-            }
-        else:
-            simulated_payload = {
-                "invoice_number": "INV-2026-8812",
-                "total_amount_usd": 48500.0,
-                "vendor_tax_id": "US-XX99120",
-                "line_items_count": 6
-            }
-
-        extracted_instance = target_cls.model_validate(simulated_payload)
-
-        # Enforce Domain Invariant Verification Gate
-        if not adapter.validate_business_invariants(extracted_instance):
-            logger.error(f"Invariant validation failed for domain '{adapter.domain_name}'")
-            raise ValueError(f"Domain invariant check rejected output for {adapter.domain_name}")
-
-        logger.info(f"Extraction verified successfully for {adapter.domain_name}")
-        return extracted_instance
+class ArchitectureDecisionRecord(BaseModel):
+    adr_id: int
+    title: str = Field(min_length=5)
+    status: ADRStatus
+    deciders: list[str] = Field(min_length=1)
+    approved_libraries: list[str] = Field(default_factory=list)
 
 
-# 3. Domain Adapter A: Corporate Legal
-class LegalContractSchema(BaseModel):
-    contract_title: str
-    liability_cap_usd: float = Field(gt=0.0)
-    governing_law: str
-    indemnity_unlimited: bool
-
-class LegalDomainAdapter(BaseDomainAdapter[LegalContractSchema]):
-    @property
-    def domain_name(self) -> str:
-        return "Legal_Contracts"
-
-    @property
-    def target_schema(self) -> Type[LegalContractSchema]:
-        return LegalContractSchema
-
-    def build_system_prompt(self) -> str:
-        return "You are an enterprise legal assistant. Extract contract title, liability cap, and governing law."
-
-    def validate_business_invariants(self, extracted: LegalContractSchema) -> bool:
-        # Invariant: Enterprise policy rejects unlimited indemnification without GC waiver
-        return not extracted.indemnity_unlimited
+SAMPLE_ADR_TEXT = """
+ADR-042: Standardize MassTransit with RabbitMQ
+Status: Accepted
+Deciders: Lead Architect, Staff Platform Engineer
+Approved Libraries: mass_transit, rabbitmq_client, pydantic
+"""
 
 
-# 4. Domain Adapter B: Accounts Payable & Procurement
-class InvoiceSchema(BaseModel):
-    invoice_number: str
-    total_amount_usd: float = Field(gt=0.0)
-    vendor_tax_id: str
-    line_items_count: int = Field(ge=1)
+def parse_and_audit_adr(text: str) -> ArchitectureDecisionRecord:
+    """Parses raw ADR header text into validated architectural records."""
+    lines = [line.strip() for line in text.strip().splitlines() if line.strip()]
+    header = lines[0]
+    adr_id = int(header.split(":")[0].replace("ADR-", ""))
+    title = header.split(":")[1].strip()
 
-class ProcurementDomainAdapter(BaseDomainAdapter[InvoiceSchema]):
-    @property
-    def domain_name(self) -> str:
-        return "Procurement_AP"
+    status_str = "Proposed"
+    deciders = []
+    approved = []
 
-    @property
-    def target_schema(self) -> Type[InvoiceSchema]:
-        return InvoiceSchema
+    for line in lines[1:]:
+        if line.startswith("Status:"):
+            status_str = line.replace("Status:", "").strip()
+        elif line.startswith("Deciders:"):
+            deciders = [d.strip() for d in line.replace("Deciders:", "").split(",")]
+        elif line.startswith("Approved Libraries:"):
+            approved = [lib.strip() for lib in line.replace("Approved Libraries:", "").split(",")]
 
-    def build_system_prompt(self) -> str:
-        return "You are an AP processing assistant. Extract invoice number, total amount, and vendor tax ID."
+    return ArchitectureDecisionRecord(
+        adr_id=adr_id,
+        title=title,
+        status=ADRStatus(status_str),
+        deciders=deciders,
+        approved_libraries=approved
+    )
 
-    def validate_business_invariants(self, extracted: InvoiceSchema) -> bool:
-        # Invariant: Invoices > $0 must have a non-empty vendor tax ID
-        return extracted.total_amount_usd > 0 and len(extracted.vendor_tax_id) > 5
+
+def run_adr_governance_audit():
+    print("--- RUNNING ENTERPRISE ADR GOVERNANCE AUDIT ---")
+    adr = parse_and_audit_adr(SAMPLE_ADR_TEXT)
+
+    print(f"Verified ADR #{adr.adr_id}: {adr.title}")
+    print(f"  Status:             {adr.status.value}")
+    print(f"  Deciders:           {', '.join(adr.deciders)}")
+    print(f"  Approved Libraries: {', '.join(adr.approved_libraries)}")
+
+    # Check dependency governance against an unapproved library
+    unapproved_lib = "unvetted_experimental_sdk"
+    is_approved = unapproved_lib in adr.approved_libraries
+
+    print(f"Checking '{unapproved_lib}': {'ALLOWED' if is_approved else 'BLOCKED (Requires new ADR)'}")
+    print("STATUS: ARCHITECTURAL GOVERNANCE VALIDATED")
 
 
-# Demonstration: Same engine serving multiple distinct domains
 if __name__ == "__main__":
-    engine = CoreCognitiveEngine()
+    run_adr_governance_audit()
+```
 
-    # 1. Execute for Corporate Legal
-    legal_adapter = LegalDomainAdapter()
-    legal_doc = engine.process_document("Simulated Agreement text...", legal_adapter)
-    print("\nLegal Deliverable:\n", legal_doc.model_dump_json(indent=2))
+### Real Execution Output
 
-    # 2. Execute for Procurement with ZERO engine modifications
-    procure_adapter = ProcurementDomainAdapter()
-    ap_doc = engine.process_document("Simulated Invoice text...", procure_adapter)
-    print("\nProcurement Deliverable:\n", ap_doc.model_dump_json(indent=2))
+```text
+--- RUNNING ENTERPRISE ADR GOVERNANCE AUDIT ---
+Verified ADR #42: Standardize MassTransit with RabbitMQ
+  Status:             Accepted
+  Deciders:           Lead Architect, Staff Platform Engineer
+  Approved Libraries: mass_transit, rabbitmq_client, pydantic
+Checking 'unvetted_experimental_sdk': BLOCKED (Requires new ADR)
+STATUS: ARCHITECTURAL GOVERNANCE VALIDATED
 ```
 
 ---
 
-## 6. Five Fatal AI-SDLC Anti-Patterns
+## 5. Trade-Offs: Governance Approaches for Hybrid Delivery
 
-Senior engineering leaders must monitor and eliminate five critical anti-patterns across their organizations:
-
-```mermaid
-flowchart TD
-    subgraph AntiPatterns["FIVE FATAL AI-SDLC ANTI-PATTERNS"]
-        direction TB
-        A1["<b>1. Vibe Coding in Production</b><br/>Prompts iteratively until code compiles;<br/>misses race conditions, deadlocks, and transactions."]
-        A2["<b>2. Context File Bloat</b><br/>Packs 1,500+ lines of guidelines into AGENT.md;<br/>causes instruction neglect and attention decay."]
-        A3["<b>3. The Rubber-Stamp Review</b><br/>Reviewers skim large AI PRs and approve blindly;<br/>merges tests that validate their own hallucinations."]
-        A4["<b>4. Domain Knowledge Atrophy</b><br/>Engineers delegate 100% of comprehension to agents;<br/>teams cannot debug 2:00 AM production outages."]
-        A5["<b>5. Ghost Architecture Sprawl</b><br/>Agents introduce competing duplicate packages;<br/>bloats containers and fragments project conventions."]
-        
-        A1 --> A2 --> A3 --> A4 --> A5
-    end
-```
-
-1. **Vibe Coding in Production**: Iteratively prompting an agent until code compiles locally without verifying edge cases, transactions, or concurrency.
-2. **Context File Bloat**: Packing 1,000+ lines of style notes and outdated APIs into `AGENT.md`, triggering LLM attention degradation and instruction neglect.
-3. **The Rubber-Stamp Review**: Approving agent-generated PRs because CI tests passed, failing to see that the agent mocked out its own bugs.
-4. **Codebase Domain Knowledge Atrophy**: Engineers losing mental models of data flows, rendering the team helpless during critical outages when AI tools degrade.
-5. **Ghost Architecture & Dependency Sprawl**: Agents importing competing packages across services (`Newtonsoft.Json` alongside `System.Text.Json`), creating dependency fragmentation.
+| Governance Mechanism | Implementation Overhead | Vendor Autonomy | Long-Term Maintainability |
+|:---|:---|:---|:---|
+| **Unfettered Partner Autonomy** | Zero | High (ships demo in weeks) | Very Low (unmaintainable black-box) |
+| **Manual Architecture Gatekeeping** | Very High (weekly review meetings) | Low (partner blocked on sign-offs) | Moderate (human reviews miss drift) |
+| **Contractual CI Gates & ADRs** | **Moderate (authoring specs upfront)** | **High (partner iterates autonomously)** | **Very High (code adheres to platform rules)** |
 
 ---
 
-## 7. Trade-offs & Telemetry
+## 6. Failure Modes & Anti-Patterns
 
-| Enterprise Strategy | Upfront Platform Investment | Long-Term Maintenance Cost | Cross-Domain Reuse |
-|---|---|---|---|
-| **Independent SI Silos** | Low (each team funds its own tool) | Extreme (3x maintenance, no shared learning) | Zero (isolated codebases) |
-| **Modular Capability Accelerators** | Medium (requires core platform team) | **Low (single engine maintained by core team)** | **High (> 80% code reuse across units)** |
-| **Strict Contract Gates** | Requires writing formal ADRs & specs | **Minimal (eliminates post-roll-off rewrites)** | **High (machine contracts enforce consistency)** |
+### Anti-Pattern 1: The "Throw It Over the Wall" Handover
+* **Symptom**: An external consulting firm commits their final code repository on Friday afternoon as their contract concludes, without internal pairing.
+* **Root Cause**: Failure to integrate partner code into core CI/CD pipelines throughout the project lifecycle.
+* **Production Fix**: Mandate that external partners commit daily to internal Git repositories subject to internal CI evaluation gates from Sprint 1.
+
+### Operational Playbook: Remediation of an Orphaned AI Repository
+When inheriting a legacy AI asset delivered by an external vendor, lead architects execute this five-step stabilization checklist:
+1. **Quarantine the Asset**: Isolate the repository into a staging environment without direct production database write permissions.
+2. **Run Dependency SAST**: Execute dependency vulnerability scanners (`pip-audit`, `trivy`) to discover outdated or unmaintained third-party LLM wrappers.
+3. **Capture Telemetry Baseline**: Route all model calls through the central gateway accelerator to measure current latency, token expenditure, and error rates.
+4. **Author Missing Invariant Contracts**: Commit an authoritative `AGENT.md` defining system identity and non-negotiable architectural boundaries.
+5. **Establish Property and Golden Evals**: Replace vendor unit mocks with property-based boundary tests and a 100-question golden evaluation test suite in CI.
+
+### Anti-Pattern 2: Domain Accelerator Sprawl
+* **Symptom**: Every department builds its own custom LLM gateway, resulting in fragmented rate limits, conflicting security logs, and wasted cloud budget.
+* **Root Cause**: Lack of a centralized platform engineering team offering reusable capability accelerators.
+* **Production Fix**: Establish a core AI Platform team that delivers shared, well-documented retrieval and gateway accelerators.
 
 ---
 
-## 8. Production Failure Modes & Anti-Patterns
+## 7. Quick Check
 
-### Anti-Pattern: Unverified Milestone Sign-Offs
-- **The Failure**: Executive steering committees approving external vendor milestone invoices based on a pre-recorded demo video or a scripted staging UI walk-through.
-- **The Consequence**: Six months later, when the partner rolls off, internal engineers discover the system has 0% integration test coverage, crashes under load, and leaks PII.
-- **The Remediation**: Make passing the automated CI verification test suite a contractual prerequisite for invoice sign-off. Never approve an invoice on "demo vibes."
+**Scenario**: An enterprise contracts a consulting partner to build an automated invoice extraction service. In week 5, the partner demonstrates a working UI. However, inspecting the pull request reveals that the partner hardcoded their personal API keys, imported an unvetted third-party parsing wrapper, and skipped automated tests.
+
+**Question**: What contractual governance mechanism was missing, and what should the lead architect enforce before releasing payment?
+
+<details>
+<summary>Check your answer</summary>
+
+**Answer**: The engagement lacked **Contractual Evaluation Gates in CI**. Commercial milestones were tied to subjective visual demos rather than objective machine-verified criteria.
+
+**The Fix**:
+1. Withhold milestone sign-off until the partner's code passes internal CI gates.
+2. Mandate compliance with `AGENT.md` invariants (zero hardcoded secrets, secrets injected via environment variables).
+3. Require the partner to submit an ADR justifying any third-party parsing wrapper before merge.
+4. Enforce automated evaluation tests proving extraction accuracy meets the agreed threshold (e.g., F1 $\ge 0.95$) on an independent evaluation test dataset.
+</details>
 
 ---
 
 ## 🧭 Navigation
 
-| Role | Target Resource |
-|---|---|
+| Direction | Resource |
+|:---|:---|
 | **Previous Lesson** | [Lesson 06: AI Developer Productivity & Rework Metrics](./06-ai-developer-productivity-and-rework-metrics.md) |
-| **Phase Overview** | [Phase 08 Hub: AI-Augmented SDLC & Leadership](./README.md) |
-| **Hands-On Capstone** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |
+| **Phase Hub** | [Phase 08: AI-Augmented SDLC & Leadership](./README.md) |
+| **Capstone Lab** | [Capstone Lab: AI-Native Repository Framework](./labs/capstone-ai-native-repository.md) |

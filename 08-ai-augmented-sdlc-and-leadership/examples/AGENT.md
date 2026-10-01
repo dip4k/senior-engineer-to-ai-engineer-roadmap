@@ -1,6 +1,8 @@
 # Repository Agent Guidelines: Order & Payment Microservice
 
-> This document defines operational instructions, architectural invariants, and verification gates for autonomous coding agents operating within this repository.
+> **Open Specification Standard**: Conforms to the Linux Foundation `AGENTS.md` standard. In multi-agent environments, symlink this file to both `AGENTS.md` and `CLAUDE.md` (`ln -s AGENT.md AGENTS.md && ln -s AGENT.md CLAUDE.md`).
+>
+> This document defines operational instructions, architectural invariants, and verification gates for autonomous coding agents operating within this repository. Keeps total lines under 100 to prevent attention dilution.
 
 ---
 
