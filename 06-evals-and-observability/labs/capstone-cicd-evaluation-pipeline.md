@@ -165,7 +165,7 @@ def run_pipeline() -> None:
         # Simulated Agent Execution (in real production: invoke agent runtime API)
         simulated_input_tokens = 950
         simulated_output_tokens = 140
-        simulated_steps = 2
+        simulated_steps = 1 if tc.get("category") == "adversarial" else 2
         simulated_latency = 450.0  # ms
         cost = calculate_token_cost(simulated_input_tokens, simulated_output_tokens)
         total_run_cost += cost

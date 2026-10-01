@@ -1,86 +1,99 @@
-# Evaluation Hierarchy & Deterministic Testing: Building the Level 1 Safety Gate
+# Lesson 01: Evaluation Hierarchy and Deterministic Testing: Building the Level 1 Safety Gate
 
-> **[Tier: 🟢 HIGH ROI / CORE]**  
-> **Core Concept**: Large Language Models are AI models whose unpredictable outputs must be constrained by fast, zero-cost deterministic code assertions before escalating to expensive model-based evaluations.
+> **Tier**: `🟡 Engineering Depth` | **Read time**: ~16 min | **Prerequisites**: [Lesson 00: Evals & Observability Foundations](./00-evals-and-observability-foundations.md)  
+> **Core Concept**: Language models are stochastic engines whose outputs must pass fast, zero-cost deterministic code assertions on CPU before escalating to expensive model-based evaluators.  
+> **New AI terms introduced**: Hamel Husain 3-level evaluation hierarchy, Level 1 evaluation, deterministic code gate, AST validation, latency SLA ceiling, token budget assertion  
+> **AI terms assumed from earlier lessons**: [evaluation (eval)](./00-evals-and-observability-foundations.md), [ground truth](./00-evals-and-observability-foundations.md), [golden dataset](./00-evals-and-observability-foundations.md), [LLM-as-a-Judge](./00-evals-and-observability-foundations.md), [large language model (LLM)](../00-foundations-and-token-mechanics/00-what-is-an-llm.md), [token](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [prompt](../01-prompt-and-context-engineering/00-prompt-engineering-fundamentals-roles-and-in-context-learning.md), [tool calling](../03-tools-and-model-context-protocol/00-tool-use-and-mcp-fundamentals.md)
 
 ---
 
 ## 🎯 What You Will Learn
-- How to structure a production Continuous Evaluation (Eval) harness using Hamel Husain's Three-Level Hierarchy.
-- Why manual testing ("vibe checks") guarantees silent schema breakages and budget blowouts in production.
-- How to implement Level 1 deterministic validation gates using Pydantic v2 schemas, regex bounds, latency ceilings, and Abstract Syntax Tree (AST) validation.
-- How to integrate developer-first evaluation gates into standard testing workflows using DeepEval and pytest.
+
+- How to structure an evaluation harness using Hamel Husain's Three-Level Hierarchy.
+- Why relying on manual "vibe checks" guarantees silent schema breakages in production.
+- How to implement Level 1 deterministic code gates using Pydantic v2 schemas and regex bounds.
+- How to validate generated code and SQL using Abstract Syntax Tree (AST) parsing.
+- How to integrate sub-millisecond CPU assertion suites into automated CI/CD pipelines.
 
 ---
 
 ## 1. The Problem
 
-Enterprise software teams never merge code without automated unit tests, integration suites, and Application Performance Monitoring (APM) budgets. Yet teams building with Large Language Models (LLMs)—deep neural networks trained to predict the next token based on statistical probabilities—frequently update prompts, swap model checkpoints, and deploy agents based entirely on manual **"vibe checks."** A developer tests three arbitrary prompts in an interactive playground, observes pleasing responses, and ships the change to production.
+Enterprise software teams never merge code without automated unit tests and integration suites. Yet teams building with Large Language Models often deploy changes based on manual **"vibe checks."** A developer tests three arbitrary prompts in a playground. The answers look good, so the team ships the prompt to production.
 
 This informal practice triggers three severe failure modes in production systems:
-1. **Silent Schema Breakages**: A prompt edit intended to soften conversational tone silently strips a required property from downstream JSON payloads, breaking downstream microservices for international users.
-2. **Tool Parameter Hallucinations**: Upgrading from a previous model checkpoint causes the LLM to emit string literals where an API schema mandates an ISO 8601 timestamp or an integer UUID.
-3. **Uncontrolled Cost & Latency Regressions**: A patch designed to harden system instructions doubles prompt context length, quietly increasing inference latency by 800ms and inflating cloud API expenditures.
+1. **Silent Schema Breakages**: A prompt edit intended to soften conversational tone silently strips a required key from JSON payloads, breaking downstream microservices.
+2. **Tool Parameter Hallucinations**: Upgrading a model checkpoint causes the LLM to emit string literals where an API schema mandates an integer or UUID.
+3. **Uncontrolled Cost & Latency Regressions**: A patch designed to harden instructions doubles prompt length, adding 800ms to inference latency and inflating API bills.
 
-Traditional software fails loudly at compile time or during automated unit tests. Generative AI systems fail silently, generating grammatically fluent, perfectly formatted text that is structurally or factually broken.
+Traditional software fails loudly at compile time or during test runs. Generative AI fails silently. It generates fluent text that is structurally or syntactically broken.
 
 ---
 
 ## 2. The Core Idea & Why Naive Fails
 
-The fundamental architectural principle of AI engineering is straightforward:
+The foundational rule of production AI engineering is direct:
 
 ```text
 AI Models REQUIRE Deterministic Software Testing.
 ```
 
-You cannot control the non-deterministic output of a large language model through prompt optimism. You control it through automated regression matrices, strict schema validation gates, and deterministic code assertions.
+You cannot control model output through prompt optimism. You control it through automated regression matrices, strict schema validation gates, and deterministic code assertions.
 
 ### Why Naive Approaches Fail
-The naive approach to testing an LLM application is to send every candidate generation to an expensive model-based evaluator (an "LLM-as-a-Judge") or a human review team. 
+The naive approach sends every candidate output directly to an expensive model evaluator (an LLM-as-a-Judge) or a human review team.
 
-This naive strategy collapses under production engineering realities:
-* **Prohibitive Latency**: Querying a frontier model (such as Claude 3.7 or GPT-4o) to evaluate a test case takes 1,000ms to 3,000ms per check. Running a 500-test regression suite takes over 20 minutes if executed synchronously.
-* **Prohibitive Financial Cost**: Evaluating 500 tests with multi-thousand-token prompts costs between \$5.00 and \$15.00 per pull request. Teams quickly disable the test suite to save costs.
-* **Wasted Diagnostic Resolution**: Spending \$0.02 and 2 seconds of GPU compute to discover that the model output malformed JSON or exceeded an execution latency ceiling is an architectural anti-pattern. If a candidate response violates basic schema syntax or exceeds latency budgets, it should fail in sub-millisecond time on CPU.
+This strategy collapses under engineering realities:
+* **Prohibitive Latency**: Querying a frontier model (such as Claude 3.7 Sonnet as of 2025-02 or GPT-4o as of 2024-08) takes 1,000ms to 3,000ms per test. Running 500 regression tests takes over 20 minutes if executed synchronously.
+* **High Financial Cost**: Evaluating 500 tests with long context prompts costs \$5.00 to \$15.00 per pull request. Teams quickly disable the test suite to save money.
+* **Wasted Diagnostic Compute**: Spending \$0.02 and 2 seconds of GPU compute to discover that a model output malformed JSON is an architectural flaw. If candidate text violates schema syntax or exceeds latency budgets, it should fail in sub-millisecond time on CPU.
 
 ---
 
-## 3. Mental Model
+## 3. Mental Model: The Inverted Filtering Funnel
 
-Think of evaluation as an **inverted filtering funnel** or a **high-throughput compiler pipeline**:
+Think of evaluation as an **inverted filtering funnel** or a **multi-stage compiler pipeline**:
 
 ```mermaid
 flowchart TD
-    Raw["Raw Model Generation Output"] --> L1["Level 1: Deterministic Code Gate<br/>• Schema Validation (Pydantic v2)<br/>• Substring & Regex Syntax Bounds<br/>• Latency SLA Ceilings & Token Budgets<br/>• Code/SQL Abstract Syntax Tree (AST)"]
+    Raw["Raw Model Generation Output"] --> L1["Level 1: Deterministic Code Gate<br/>• Pydantic v2 Schemas<br/>• Regex Bounds<br/>• Latency and Token Ceilings<br/>• Code/SQL AST Parse"]
     
-    L1 -->|"Passes Level 1 (Cost: $0.00, Latency: &lt;1ms)"| L2["Level 2: Model-Based Evals (LLM-as-a-Judge)<br/>• Binary Groundedness Rubrics<br/>• G-Eval Chain-of-Thought Reasoning<br/>• Pairwise Evaluation & Bias Mitigations"]
+    L1 -->|"Passes Level 1 (Cost: $0.00, Latency: &lt;1ms)"| L2["Level 2: Model-Based Evals (LLM Judge)<br/>• Binary Groundedness Rubrics<br/>• G-Eval CoT Reasoning<br/>• Pairwise Calibration"]
     
     L1 -.->|"Fails Schema / Bounds"| Reject1["Immediate CI/CD Reject (Exit Code 1)"]
     
-    L2 -->|"Passes Level 2"| L3["Level 3: Online Production Telemetry<br/>• Explicit User Signals (Thumbs Up/Down)<br/>• Implicit User Telemetry (Copy, Retry, Dwell)<br/>• Distributed OpenTelemetry Span Monitoring"]
+    L2 -->|"Passes Level 2"| L3["Level 3: Online Production Telemetry<br/>• User Thumbs Up/Down<br/>• Implicit User Signals<br/>• Distributed OpenTelemetry Spans"]
     
-    L2 -.->|"Fails Rubric"| Reject2["Quarantine & Add to Golden Set"]
+    L2 -.->|"Fails Rubric"| Reject2["Quarantine and Add to Golden Set"]
+
+    classDef default stroke:#4b5563,stroke-width:2px,fill:none;
+    classDef gate stroke:#2563eb,stroke-width:2px,fill:none;
+    classDef reject stroke:#dc2626,stroke-width:2px,fill:none;
+    class L1,L2,L3 gate;
+    class Reject1,Reject2 reject;
 ```
 
 ### Visual Walkthrough
-1. **Raw Model Generation Output**: The stochastic text stream emitted by the model arrives at the evaluation harness.
+1. **Raw Model Generation Output**: The text stream emitted by the model arrives at the evaluation harness.
 2. **Level 1: Deterministic Code Gate**: Runs instantaneously on local CPU with zero API cost (<1ms). It checks structural integrity: JSON schema conformity, regex syntax, token limits, and AST parseability.
 3. **Immediate Rejection**: If Level 1 fails, the build terminates immediately. The candidate output is never sent to expensive downstream evaluators.
 4. **Level 2: Model-Based Evals**: Only responses that satisfy all structural preconditions reach Level 2, where an LLM judge evaluates semantic accuracy, conversational nuance, and factual groundedness.
 5. **Level 3: Online Production Telemetry**: Deployed systems stream real-world user interactions and OpenTelemetry traces to detect production anomalies and enrich future test sets.
 
+> **Where this analogy breaks:**  
+> A compiler validates deterministic source code written by human engineers against fixed language grammars. A language model emits non-deterministic text streams where the same prompt can yield different token orders. Level 1 assertions must validate contract compliance without breaking on valid semantic variations.
+
 ---
 
-## 4. How It Works (Step-by-Step Mechanics)
+## 4. How It Works: Step-by-Step Level 1 Mechanics
 
-Level 1 evaluation operates as a series of deterministic verification checks executed in sequence:
+Level 1 evaluation operates as a sequence of deterministic checks:
 
 ```text
 Input Request → LLM Execution → Raw Output Stream
   │
   ├── 1. Structural Schema Validation (Pydantic v2 model_validate_json)
-  ├── 2. AST Parseability (ast.parse for Python, sqlglot for SQL)
+  ├── 2. AST Parseability (ast.parse for Python, SQL syntax parser)
   ├── 3. Regex Pattern Bounds (re.search for mandatory identifiers)
   └── 4. Operational Budget Assertions (Latency < SLA, Tokens < Quota)
   │
@@ -88,13 +101,13 @@ Input Request → LLM Execution → Raw Output Stream
 ```
 
 ### Step 1: Pydantic v2 Schema Enforcement
-When an LLM is expected to return structured data (such as tool call arguments, customer service tickets, or database payloads), the output must be validated against a typed Pydantic schema using strict validation mode. If the model omits a mandatory key, emits an invalid enum, or outputs malformed JSON, validation fails instantly.
+When an LLM returns structured data (such as tool call arguments, customer service tickets, or database payloads), the output must be validated against a typed Pydantic schema using strict validation mode. If the model omits a mandatory key, emits an invalid enum, or outputs malformed JSON, validation fails instantly.
 
 ### Step 2: Abstract Syntax Tree (AST) Validation
-If the application generates executable code (Python, JavaScript, SQL, or Cypher queries for Graph databases), string matching is insufficient. Level 1 must parse the generated code into an **Abstract Syntax Tree (AST)**—the tree representation of code syntax used by compilers. If the code contains syntax errors or invalid grammar, the AST parser raises a syntax exception without executing the untrusted code.
+If the application generates executable code (Python, JavaScript, or SQL queries), string matching is insufficient. Level 1 parses the generated code into an **Abstract Syntax Tree (AST)**—the tree representation of code syntax used by compilers. If the code contains syntax errors or invalid grammar, the AST parser raises a syntax exception without executing untrusted code.
 
 ### Step 3: Deterministic Regex & Substring Bounds
-Level 1 verifies the presence of mandatory compliance disclaimers (e.g., *"This is not financial advice"*), validates specific domain identifiers (e.g., matching `^TICK-[0-9]{4,6}$`), and asserts that banned substrings (such as leaked internal system prompt delimiters or placeholder strings like `TODO`) are strictly absent.
+Level 1 verifies mandatory compliance disclaimers (e.g., *"This is not financial advice"*). It validates domain identifiers (e.g., matching `^TICK-[0-9]{4,6}$`). It also confirms that banned substrings (such as leaked internal system prompt delimiters or placeholder strings like `TODO`) are strictly absent.
 
 ### Step 4: Operational Thresholds & Hardware Budgets
 Level 1 asserts strict operational boundaries:
@@ -105,11 +118,11 @@ Level 1 asserts strict operational boundaries:
 
 ## 5. Concrete Scenario & Code Implementation
 
-Consider an enterprise customer support agent generating structured ticket routing payloads. Below is a production-grade Level 1 deterministic test harness written in Python 3.12+ using Pydantic v2 and Python's native `ast` module.
+Consider an enterprise customer support agent generating structured ticket routing payloads. Below is a production-grade Level 1 deterministic test harness written in Python 3.12+ using Pydantic v2 and Python's native `ast` module:
 
 ```python
-"""
-level_1_deterministic_eval.py
+"""level_1_deterministic_eval.py
+
 Production Level 1 Deterministic Evaluation Gate.
 Validates Pydantic v2 schemas, AST parsing, regex bounds, and operational budgets.
 """
@@ -118,8 +131,7 @@ from __future__ import annotations
 
 import ast
 import re
-import time
-from typing import Literal
+from typing import Annotated, Literal
 from pydantic import BaseModel, Field, ValidationError
 
 
@@ -127,12 +139,12 @@ from pydantic import BaseModel, Field, ValidationError
 # 1. Strongly Typed Domain Schemas
 # ---------------------------------------------------------------------------
 class TicketRoutingPayload(BaseModel):
-    ticket_id: str = Field(..., description="Ticket identifier formatted as TICK-XXXXXX")
+    ticket_id: Annotated[str, Field(description="Ticket ID formatted as TICK-XXXXXX")]
     urgency: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
-    target_queue: str = Field(..., min_length=3, max_length=50)
+    target_queue: Annotated[str, Field(min_length=3, max_length=50)]
     customer_tier: Literal["STANDARD", "PREMIUM", "ENTERPRISE"]
     automated_remediation_script: str | None = Field(
-        None, description="Optional Python remediation snippet"
+        default=None, description="Optional Python remediation snippet"
     )
 
 
@@ -153,7 +165,7 @@ class DeterministicGate:
         max_latency_ms: float = 2000.0,
         max_tokens: int = 400,
         required_id_pattern: str = r"^TICK-[0-9]{4,6}$",
-    ):
+    ) -> None:
         self.max_latency_ms = max_latency_ms
         self.max_tokens = max_tokens
         self.id_regex = re.compile(required_id_pattern)
@@ -183,7 +195,7 @@ class DeterministicGate:
         try:
             parsed_payload = TicketRoutingPayload.model_validate_json(raw_output)
         except ValidationError as err:
-            failures.append(f"Pydantic schema validation failed: {err.errors()}")
+            failures.append(f"Pydantic schema validation failed: {err.errors()[0]['msg']}")
 
         # If schema parsed successfully, perform deeper structural checks
         if parsed_payload:
@@ -245,42 +257,84 @@ if __name__ == "__main__":
         print(f"  [{idx}] {reason}")
 ```
 
+### Execution Verification
+When executed with Python 3.12+, the script produces the following output:
+
+```text
+Test Case A (Valid): Passed=True, Failures=[]
+Test Case B (Invalid): Passed=False
+  [1] Latency SLA breached: 1800.0ms > 1500.0ms
+  [2] Token budget breached: 420 > 300 tokens
+  [3] Pydantic schema validation failed: Input should be 'LOW', 'MEDIUM', 'HIGH' or 'CRITICAL'
+```
+
 ---
 
 ## 6. Engineering Solutions & Production Patterns
 
-### Pattern 1: Integrating Level 1 into Pytest with DeepEval
-In modern AI engineering stacks, Level 1 assertions are executed in standard CI/CD runners using `pytest` and developer-first frameworks such as **DeepEval**:
+### Pattern 1: Integrating Level 1 into Automated Test Suites
+In production AI engineering stacks, Level 1 assertions run in automated test harnesses. Below is a self-contained, offline-compatible test runner pattern using Python's standard library:
 
 ```python
-import pytest
-from pydantic import ValidationError
-from level_1_deterministic_eval import DeterministicGate
+"""level_1_test_suite.py
 
-@pytest.mark.parametrize("test_input,expected_queue", [
-    ("Database connection timed out on prod-db-01", "DatabaseReliabilityEngineering"),
-    ("Billing invoice #9921 shows double charge", "BillingSupport"),
-])
-def test_agent_level_1_deterministic_gate(test_input: str, expected_queue: str):
-    # Simulated agent call
-    raw_response = '{"ticket_id": "TICK-1029", "urgency": "HIGH", "target_queue": "BillingSupport", "customer_tier": "ENTERPRISE"}'
-    
-    gate = DeterministicGate()
-    result = gate.evaluate(raw_response, latency_ms=320.0, completion_tokens=65)
-    
-    assert result.passed, f"Level 1 checks failed: {result.failure_reasons}"
+Self-contained automated regression suite for Level 1 evaluation gates.
+Runs locally in CI/CD without external third-party dependencies.
+"""
+
+from __future__ import annotations
+
+import unittest
+from typing import Annotated, Literal
+from pydantic import BaseModel, Field, ValidationError
+
+
+class TicketPayload(BaseModel):
+    ticket_id: Annotated[str, Field(pattern=r"^TICK-[0-9]{4,6}$")]
+    urgency: Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
+    target_queue: str
+
+
+def run_level_1_assertion(raw_json: str, max_latency_ms: float = 1500.0) -> tuple[bool, str]:
+    """Execute Level 1 schema assertion on CPU in sub-millisecond time."""
+    try:
+        TicketPayload.model_validate_json(raw_json)
+        return True, "PASS"
+    except ValidationError as err:
+        return False, f"Schema validation failed: {err.errors()[0]['msg']}"
+
+
+class TestLevel1DeterministicGate(unittest.TestCase):
+    def test_valid_billing_ticket_passes(self) -> None:
+        raw_response = (
+            '{"ticket_id": "TICK-10294", "urgency": "HIGH", "target_queue": "BillingSupport"}'
+        )
+        passed, msg = run_level_1_assertion(raw_response)
+        self.assertTrue(passed, f"Gate failed: {msg}")
+
+    def test_schema_violation_fails_instantly(self) -> None:
+        bad_response = '{"ticket_id": "TICK-10294", "target_queue": "MissingUrgency"}'
+        passed, msg = run_level_1_assertion(bad_response)
+        self.assertFalse(passed)
+        self.assertIn("validation failed", msg)
+
+
+if __name__ == "__main__":
+    unittest.main(verbosity=2)
 ```
 
+In production environments, teams often plug these same assertions into pytest plugins or evaluation frameworks such as DeepEval for test reporting.
+
 ### Pattern 2: Abstract Syntax Tree (AST) Validation for Code and SQL
-When language models generate SQL queries or Python scripts, do not test them by executing them against live test databases or local shells (which introduces security risks). Use static AST parsers:
+When language models generate SQL queries or scripts, do not test them by running them against live databases or shells. That creates security hazards and connection timeouts. Use static AST parsers:
 * For **Python**: Use Python's built-in `ast.parse()`.
-* For **SQL**: Use `sqlglot` to parse generated SQL queries into an AST, asserting that the dialect matches your target database (PostgreSQL, BigQuery, Snowflake) and confirming that forbidden commands (`DROP TABLE`, `TRUNCATE`) are absent.
+* For **SQL**: Use static syntax parsers to confirm that the dialect matches your database (PostgreSQL, BigQuery, Snowflake) and ensure dangerous commands (`DROP TABLE`, `TRUNCATE`) are strictly absent.
 
 ---
 
 ## 7. Architecture & Telemetry View
 
-In a production evaluation pipeline, Level 1 assertions emit standardized metrics to observability collectors before any decision is made to call Level 2:
+In a production evaluation pipeline, Level 1 assertions emit standardized metrics to observability collectors before dispatching to Level 2:
 
 ```mermaid
 sequenceDiagram
@@ -308,9 +362,9 @@ sequenceDiagram
 
 ### Visual Walkthrough
 1. **Test Execution**: The CI runner invokes the candidate agent with test inputs.
-2. **Raw Output Capture**: The agent returns its raw text response alongside hardware telemetry (latency and token counts).
+2. **Raw Output Capture**: The agent returns its raw text response alongside latency and token counts.
 3. **Level 1 Validation**: The deterministic gate executes schema checks, regex rules, AST verification, and SLA bounds in under 1ms.
-4. **Pass Branch**: If all checks succeed, an OpenTelemetry pass metric is logged, and the payload is dispatched to Level 2.
+4. **Pass Branch**: If all checks succeed, a pass metric is logged, and the payload is dispatched to Level 2.
 5. **Fail Branch**: If any check fails, an error metric is logged, and the CI build terminates immediately—saving the latency and dollar cost of Level 2 LLM judges.
 
 ---
@@ -318,9 +372,9 @@ sequenceDiagram
 ## 8. Common Failure Modes & Anti-Patterns
 
 ### Anti-Pattern 1: "Vibe Deployment" (Un-Gated Prompt Edits)
-* **The Pathology**: A developer edits a system prompt in a configuration repo to fix a customer-reported tone issue, merging without running an automated test suite.
+* **The Pathology**: A developer edits a system prompt in a configuration repo to fix a tone issue, merging without running an automated test suite.
 * **The Consequence**: The prompt change accidentally degrades downstream JSON formatting for non-English queries, causing unhandled runtime exceptions in client applications.
-* **The Remedy**: Require an automated GitHub Actions status check running Level 1 assertions on 100+ golden cases before any prompt PR can be merged.
+* **The Remedy**: Require an automated pull request status check running Level 1 assertions on 100+ golden cases before any prompt PR can be merged.
 
 ### Anti-Pattern 2: The LLM Judge for Syntax Errors Trap
 * **The Pathology**: Asking an LLM judge: *"Is this valid JSON matching the Customer schema?"*
@@ -362,12 +416,31 @@ When establishing Level 1 gates in your CI/CD pipelines, track the following ope
 * **Hamel Husain**: [Your AI Product Needs Evals](https://hamel.dev/blog/posts/evals/) — *The foundational essay on LLM evaluation hierarchies.*
 * **Hamel Husain**: [Creating a LLM as a Judge That You Can Trust](https://hamel.dev/blog/posts/evals-faq/) — *Practical evaluation methodology.*
 * **Pydantic Documentation**: [Pydantic v2 Performance & Validation](https://docs.pydantic.dev/latest/) — *High-throughput JSON schema validation in Python.*
-* **Confident AI / DeepEval**: [DeepEval Documentation](https://docs.confident-ai.com/) — *Open-source, pytest-native evaluation framework for LLMs.*
+
+---
+
+## 12. ✅ Quick Check
+
+You are building an autonomous data analytics assistant that generates SQL queries from plain-English questions. A junior engineer proposes adding an LLM-as-a-Judge step to every CI/CD test run to answer: *"Is the generated SQL query syntactically valid for PostgreSQL?"*
+
+Explain why this proposal is an architectural anti-pattern, and what Level 1 deterministic mechanism should be used instead.
+
+<details>
+<summary>Suggested Solution</summary>
+
+**Why an LLM Judge is an architectural anti-pattern here:**  
+Using an LLM judge to verify code syntax incurs 1,000ms–3,000ms of latency. It costs \$0.01–\$0.03 per test and remains non-deterministic. The judge can hallucinate that invalid SQL is valid, or reject valid dialect syntax. Running 500 tests in a pull request costs \$5.00–\$15.00 and takes over 15 minutes.
+
+**What to use instead:**  
+Use a Level 1 deterministic Abstract Syntax Tree (AST) parser (such as `sqlglot` or PostgreSQL's `pg_parse_query`). An AST parser parses the query on local CPU in under 0.5 milliseconds for \$0.00 with 100% mathematical precision. If the SQL query contains a syntax error (e.g., `SELEC` instead of `SELECT`), the AST parser raises an immediate syntax error and halts the test gate before any expensive model judge is invoked.
+
+</details>
 
 ---
 
 ## 🧭 Navigation
 
-- **[Phase 06 Hub: Evals & Observability](./README.md)**
-- **[Next Lesson: Model-Based Evaluations & Judge Architectures →](./02-model-based-evaluations-and-judge-architectures.md)**
-- **[Capstone Challenge: Automated CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)**
+- **Previous**: [Lesson 00: Evals & Observability Foundations](./00-evals-and-observability-foundations.md)
+- **Phase Hub**: [Phase 06 Overview & Architecture Hub](./README.md)
+- **Next**: [Lesson 02: Model-Based Evaluations & Judge Architectures](./02-model-based-evaluations-and-judge-architectures.md)
+- **Capstone Lab**: [Automated CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)

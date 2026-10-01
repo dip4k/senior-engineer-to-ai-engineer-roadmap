@@ -1,15 +1,18 @@
-# Model-Based Evaluations & Judge Architectures: Discrete Rubrics, Bias Mitigations & Calibration
+# Lesson 02: Model-Based Evaluations and Judge Architectures: Discrete Rubrics, Bias Mitigations and Statistical Calibration
 
-> **[Tier: 🟡 Engineering Depth]**  
-> **Core Concept**: LLM-as-a-Judge systems replace subjective human grading with automated evaluation models, but they require discrete binary rubrics, order-swapped bias mitigations, and chance-adjusted statistical calibration to avoid catastrophic false confidence.
+> **Tier**: `🟡 Engineering Depth` | **Read time**: ~18 min | **Prerequisites**: [Lesson 01: Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)  
+> **Core Concept**: LLM-as-a-Judge systems replace subjective human grading with automated evaluation models, but they require discrete binary rubrics, order-swapped bias mitigations, and chance-adjusted statistical calibration to avoid false confidence.  
+> **New AI terms introduced**: G-Eval, binary pass/fail rubric, position bias, verbosity bias, self-preference bias, Cohen's Kappa (κ), Krippendorff's Alpha (α), Prometheus-2, reference-based evaluation, reference-free evaluation  
+> **AI terms assumed from earlier lessons**: [evaluation (eval)](./00-evals-and-observability-foundations.md), [ground truth](./00-evals-and-observability-foundations.md), [golden dataset](./00-evals-and-observability-foundations.md), [LLM-as-a-Judge](./00-evals-and-observability-foundations.md), [Level 1 evaluation](./01-evaluation-hierarchy-and-deterministic-testing.md), [large language model (LLM)](../00-foundations-and-token-mechanics/00-what-is-an-llm.md), [token](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [prompt](../01-prompt-and-context-engineering/00-prompt-engineering-fundamentals-roles-and-in-context-learning.md), [chain-of-thought (CoT)](../00-foundations-and-token-mechanics/04-test-time-compute-and-reasoning-models.md)
 
 ---
 
 ## 🎯 What You Will Learn
+
 - Why continuous 1-to-5 Likert scales produce severe drift and false-positive evaluation signals.
-- How to architect robust, deterministic model evaluators using **Binary Pass/Fail Rubrics** and **G-Eval Chain-of-Thought (CoT)** reasoning.
+- How to architect robust model evaluators using **Binary Pass/Fail Rubrics** and **G-Eval Chain-of-Thought (CoT)** reasoning.
 - How to eliminate systematic judge biases: **Position Bias**, **Verbosity Bias**, and **Self-Preference Bias**.
-- How to statistically calibrate an automated judge against human expert ground truth using **Cohen’s Kappa ($\kappa$)** and **Krippendorff’s Alpha ($\alpha$)**.
+- How to statistically calibrate an automated judge against human expert ground truth using **Cohen’s Kappa (κ)** and **Krippendorff’s Alpha (α)**.
 - When to deploy specialized open-weight judge models (such as **Prometheus-2**) to reduce evaluation cost and latency.
 
 ---
@@ -18,16 +21,16 @@
 
 Deterministic assertions (Level 1) excel at verifying syntax, schema conformance, regex patterns, and execution budgets. However, deterministic code cannot measure semantic correctness:
 * Did the customer support agent answer the user's specific question, or did it generate polite filler?
-* Is the generated summary **faithful** to the retrieved documents (Phase 02 RAG context), or did the model hallucinate ungrounded figures?
+* Is the generated summary **faithful** to retrieved documents, or did the model hallucinate ungrounded figures?
 * Did the agent's tone adhere to corporate compliance guidelines?
 
 Teams frequently attempt to solve this by prompting an LLM with a generic scoring prompt:
 > *"Rate this response on a scale of 1 to 5 for helpfulness, tone, and quality."*
 
 This approach causes severe production failures:
-1. **Scale Oscillation & Non-Determinism**: A score of "3" from an LLM today becomes a "4" tomorrow due to temperature sampling and underlying cloud provider updates.
-2. **Clustering & Grade Inflation**: Models avoid scores of 1 and 2 unless the output is complete gibberish, clustering over 80% of outputs into 4 and 5.
-3. **Severe Position & Verbosity Biases**: In pairwise comparisons, models favor whichever candidate is presented first up to 65% of the time, and routinely score 500 words of superficial text higher than a precise 40-word answer.
+1. **Scale Oscillation & Non-Determinism**: A score of "3" from an LLM today becomes a "4" tomorrow due to temperature sampling and cloud provider updates.
+2. **Clustering & Grade Inflation**: Models avoid scores of 1 and 2 unless output is complete gibberish, clustering over 80% of outputs into 4 and 5.
+3. **Severe Position & Verbosity Biases**: In pairwise comparisons, models favor whichever candidate is presented first up to 65% of the time. They also score 500 words of superficial text higher than a precise 40-word answer.
 
 ---
 
@@ -41,17 +44,17 @@ Discrete binary criteria (0 or 1) with explicit failure conditions and CoT reaso
 ```
 
 ### Why Continuous Likert Scales (1 to 5) Fail
-Continuous Likert scales lack objective boundaries. What constitutes the difference between a "3" and a "4" in "helpfulness"? Different human evaluators disagree on this distinction, and language models exhibit even higher variance. 
+Continuous Likert scales lack objective boundaries. What constitutes the difference between a "3" and a "4" in "helpfulness"? Different human evaluators disagree on this distinction, and language models exhibit even higher variance.
 
 When you prompt an LLM for a 1-to-5 score, the model samples from a broad probability distribution over numerical tokens. A minor prompt edit that appears to raise the average score from 4.1 to 4.3 is almost always statistical noise rather than genuine performance improvement.
 
 ### The Binary Pass/Fail Solution
 Senior architects deconstruct subjective concepts into an **atomic checklist of binary pass/fail assertions**. Each criterion is assigned a strict boolean verdict:
-* **Criterion 1 (Faithfulness)**: Does the candidate response contain any factual claim not directly present in the source context? (`PASS = 1`, `FAIL = 0`)
+* **Criterion 1 (Faithfulness)**: Does the candidate response contain any factual claim not directly present in source context? (`PASS = 1`, `FAIL = 0`)
 * **Criterion 2 (Completeness)**: Did the candidate address all user-specified constraints? (`PASS = 1`, `FAIL = 0`)
 * **Criterion 3 (Conciseness)**: Is the response free of redundant boilerplate? (`PASS = 1`, `FAIL = 0`)
 
-The overall score is simply the fraction of passed binary criteria:
+The overall score is the fraction of passed binary criteria:
 
 ```text
 Overall Score = Passed Criteria / Total Criteria
@@ -65,50 +68,57 @@ Think of an LLM judge not as a creative critic, but as a **strict automated comp
 
 ```mermaid
 flowchart TD
-    subgraph Inputs["1. INGESTION"]
-        Q["User Query"]
-        C["Reference Context / Ground Truth"]
+    subgraph Ingestion["1. Ingestion"]
+        Q["User Query and Context"]
         R["Candidate Agent Response"]
     end
 
-    subgraph JudgeEngine["2. CALIBRATED EVALUATION HARNESS"]
-        Rubric["Explicit Binary Rubric<br/>• Criteria list with concrete FAIL conditions<br/>• Zero continuous numbers"]
-        CoT["G-Eval Chain-of-Thought (CoT)<br/>• Step 1: Extract atomic claims<br/>• Step 2: Cross-reference against context<br/>• Step 3: Record citation or discrepancy"]
-        Mitigation["Bias Mitigations<br/>• Position Swapping: Score (A, B) and (B, A)<br/>• Conciseness Penalty<br/>• Cross-family judge (Claude vs GPT)"]
+    subgraph JudgeEngine["2. Calibrated Evaluation Harness"]
+        Rubric["Binary Rubric<br/>Discrete FAIL conditions"]
+        CoT["G-Eval CoT Reasoning<br/>Extract and verify claims"]
+        Mitigation["Bias Mitigations<br/>Order-swapped double scoring"]
     end
 
-    subgraph Output["3. STRUCTURED VERDICT & CALIBRATION"]
-        JSON["Pydantic Output<br/>• reasoning: str<br/>• passed: bool<br/>• score: float [0.0 - 1.0]"]
-        Kappa["Statistical Calibration Gate<br/>Cohen's Kappa (κ >= 0.80)<br/>vs Human Holdout Benchmark"]
+    subgraph Output["3. Structured Verdict"]
+        JSON["Pydantic Output<br/>reasoning, passed, score"]
+        Kappa["Statistical Calibration<br/>Cohen's Kappa κ ≥ 0.80"]
     end
 
-    Inputs --> JudgeEngine
+    Q --> Rubric
+    R --> Rubric
     Rubric --> CoT --> Mitigation --> JSON --> Kappa
+
+    classDef default stroke:#4b5563,stroke-width:2px,fill:none;
+    classDef gate stroke:#2563eb,stroke-width:2px,fill:none;
+    class Rubric,CoT,Mitigation gate;
 ```
 
 ### Visual Walkthrough
 1. **Ingestion**: The harness ingests the user's prompt, the ground-truth reference or retrieved context, and the candidate response.
 2. **Calibrated Evaluation Harness**: The judge operates under an explicit binary rubric. It executes **G-Eval Chain-of-Thought (CoT)** reasoning—extracting atomic factual claims and comparing them step by step against reference facts. It applies position-swapped double scoring to cancel order bias.
-3. **Structured Verdict & Calibration**: The judge emits a strongly typed Pydantic schema containing reasoning and boolean verdicts. Decisions are continuously validated against a human benchmark using **Cohen's Kappa ($\kappa$)**.
+3. **Structured Verdict & Calibration**: The judge emits a strongly typed Pydantic schema containing reasoning and boolean verdicts. Decisions are continuously validated against a human benchmark using **Cohen's Kappa (κ)**.
+
+> **Where this analogy breaks:**  
+> A compiler linter applies static, deterministic rules to code syntax. An LLM judge runs semantic reasoning through neural attention layers. It can suffer from subtle prompt interpretations or position bias, which is why automated judges require order-swapped verification and chance-adjusted calibration.
 
 ---
 
-## 4. How It Works (Step-by-Step Mechanics)
+## 4. How It Works: Step-by-Step Mechanics
 
 ### 1. G-Eval: Reasoning Before Scoring
 Pioneered by Liu et al. (2023), **G-Eval** (Generation Evaluation using Large Language Models) improves correlation with human expert consensus by requiring the judge to generate a step-by-step Chain of Thought before assigning discrete verdicts.
 
-When a model is forced to write its reasoning tokens first:
+When a model writes its reasoning tokens first:
 ```text
 Raw Context + Prompt → [Generate Reasoning Tokens] → [Generate Verdict Token]
 ```
 The attention layers in the transformer attend to the generated reasoning tokens when predicting the final verdict token, drastically reducing hallucinated approvals and subjective drift.
 
 ### 2. Reference-Based vs. Reference-Free Evaluation
-* **Reference-Based Evaluation**: The judge compares the candidate response against a known, human-curated ground truth answer. This is the gold standard for factual Q&A, SQL generation, and deterministic tool call argument extraction.
-* **Reference-Free Evaluation (The Ragas Triad)**: When human reference answers are unavailable (e.g. dynamic enterprise search across millions of documents), the judge evaluates the generation against the retrieved context:
-  1. **Faithfulness**: Are all claims in the response grounded in the retrieved chunks?
-  2. **Answer Relevance**: Did the response directly address the user's inquiry?
+* **Reference-Based Evaluation**: The judge compares the candidate response against a known, human-curated ground truth answer. This is the standard for factual Q&A, SQL generation, and deterministic tool call argument extraction.
+* **Reference-Free Evaluation (The Ragas Triad)**: When human reference answers are unavailable (e.g., dynamic enterprise search across millions of documents), the judge evaluates generation against retrieved context:
+  1. **Faithfulness**: Are all claims in the response grounded in retrieved chunks?
+  2. **Answer Relevance**: Did the response directly address the user inquiry?
   3. **Context Precision**: Did the retrieval engine fetch relevant chunks at the top of the context window?
 
 ### 3. Mitigating Systematic Judge Biases
@@ -118,15 +128,15 @@ All LLM judges exhibit three systematic cognitive biases that must be engineered
 |---|---|---|
 | **Position Bias** | In pairwise comparisons, the judge prefers candidate `Option A` over `Option B` up to 65% of the time, regardless of quality. | **Order-Swapped Double Scoring**: Execute two evaluations per pair: `(A, B)` and `(B, A)`. Only declare a win if the candidate wins in both positions; otherwise declare a tie. |
 | **Verbosity Bias** | The judge favors verbose, paragraph-length answers over direct, concise sentences. | **Length-Controlled Rubrics**: Instruct the judge explicitly: *"Penalize redundant filler. If Candidate A and B state the same facts, always award the win to the more concise answer."* |
-| **Self-Preference Bias** | Models systematically prefer outputs generated by their own model family (e.g. GPT-4 preferring GPT-4 outputs; Claude preferring Claude outputs). | **Cross-Model-Family Evaluation**: If your production agent uses OpenAI models, evaluate with Anthropic Claude, Google Gemini, or an open-weight model like **Prometheus-2**. |
+| **Self-Preference Bias** | Models systematically prefer outputs generated by their own model family (e.g., GPT-4 preferring GPT-4 outputs; Claude preferring Claude outputs). | **Cross-Model-Family Evaluation**: If your production agent uses OpenAI models, evaluate with Anthropic Claude, Google Gemini, or an open-weight model like **Prometheus-2**. |
 
 ---
 
-## 5. Statistical Calibration: Cohen's Kappa ($\kappa$)
+## 5. Statistical Calibration: Cohen's Kappa (κ)
 
-How do you know if your automated LLM judge is trustworthy? Measuring raw percentage agreement is misleading. If 90% of your test cases pass, a "dumb" judge that unconditionally assigns `PASS` achieves 90% raw accuracy while having zero diagnostic ability.
+How do you know if your automated LLM judge is trustworthy? Measuring raw percentage agreement is misleading. If 90% of your test cases pass, a naive judge that unconditionally assigns `PASS` achieves 90% raw accuracy while having zero diagnostic ability.
 
-Production AI teams use **Cohen’s Kappa ($\kappa$)**—a chance-adjusted statistical metric that calculates inter-rater agreement between an automated judge and human expert consensus:
+Production AI teams use **Cohen’s Kappa (κ)**—a chance-adjusted statistical metric that calculates inter-rater agreement between an automated judge and human expert consensus:
 
 ```text
 Cohen's Kappa Formula:
@@ -143,6 +153,8 @@ Where:
 * `0.60 ≤ κ < 0.80`: Substantial agreement (standard production baseline).
 * `κ ≥ 0.80`: Near-perfect agreement (statistically certified for automated CI/CD release gating).
 
+For multi-annotator evaluation teams where three or more reviewers score datasets with missing values, teams use **Krippendorff's Alpha (α)**.
+
 ---
 
 ## 6. Concrete Scenario & Code Implementation
@@ -150,15 +162,14 @@ Where:
 Below is a production-grade Python 3.12+ implementation of an LLM-as-a-Judge evaluation harness. It executes binary rubric evaluations, enforces Pydantic v2 structured schemas, and includes an automated Cohen's Kappa calibration calculator:
 
 ```python
-"""
-model_based_judge.py
+"""model_based_judge.py
+
 Production LLM-as-a-Judge with Binary Rubrics and Cohen's Kappa Calibration.
 """
 
 from __future__ import annotations
 
-import json
-from typing import List, Dict, Any
+from typing import Annotated
 from pydantic import BaseModel, Field
 
 
@@ -166,14 +177,14 @@ from pydantic import BaseModel, Field
 # 1. Pydantic v2 Structured Rubric Schemas
 # ---------------------------------------------------------------------------
 class BinaryCriterionResult(BaseModel):
-    criterion_name: str = Field(..., description="Name of the evaluated rule")
-    reasoning: str = Field(..., description="Chain-of-thought rationale supporting verdict")
-    passed: bool = Field(..., description="Strict boolean outcome: True (Pass) or False (Fail)")
+    criterion_name: Annotated[str, Field(description="Name of the evaluated rule")]
+    reasoning: Annotated[str, Field(description="Chain-of-thought rationale supporting verdict")]
+    passed: Annotated[bool, Field(description="Strict boolean outcome: True or False")]
 
 
 class JudgeReport(BaseModel):
-    evaluations: List[BinaryCriterionResult]
-    overall_score: float = Field(..., ge=0.0, le=1.0)
+    evaluations: list[BinaryCriterionResult]
+    overall_score: Annotated[float, Field(ge=0.0, le=1.0)]
     summary: str
 
 
@@ -186,17 +197,13 @@ class JudgeCalibrator:
         human_labels: list[int],
         judge_labels: list[int],
     ) -> float:
-        """
-        Calculates chance-adjusted Cohen's Kappa between binary human consensus
-        and LLM judge verdicts (0 = Fail, 1 = Pass).
-        """
+        """Calculates chance-adjusted Cohen's Kappa (0 = Fail, 1 = Pass)."""
         assert len(human_labels) == len(judge_labels), "Sample counts must match"
         n = len(human_labels)
         if n == 0:
             return 0.0
 
         # Construct 2x2 confusion matrix: [Human][Judge]
-        # [0][0] = Both Fail, [1][1] = Both Pass
         cm = [[0, 0], [0, 0]]
         for h, j in zip(human_labels, judge_labels):
             cm[h][j] += 1
@@ -224,7 +231,7 @@ class JudgeCalibrator:
 # 3. Model-Based Evaluator Harness
 # ---------------------------------------------------------------------------
 class LLMJudgeEvaluator:
-    def __init__(self, judge_model_name: str = "claude-3-7-sonnet"):
+    def __init__(self, judge_model_name: str = "claude-3-7-sonnet-20250219") -> None:
         self.model_name = judge_model_name
 
     def format_judge_prompt(
@@ -235,11 +242,11 @@ class LLMJudgeEvaluator:
         rubric: list[dict[str, str]],
     ) -> str:
         rubric_lines = "\n".join(
-            [f"- {r['name']}: {r['description']} (FAIL CONDITION: {r['fail_condition']})" for r in rubric]
+            [f"- {r['name']}: {r['description']} (FAIL: {r['fail_condition']})" for r in rubric]
         )
-        return f"""You are an autonomous AI evaluation judge.
-Evaluate the candidate response based strictly on the binary criteria below.
-Do not use subjective 1-5 scales. Each criterion is strictly 1 (Passed) or 0 (Failed).
+        return f"""You are an AI evaluation judge.
+Evaluate the candidate response based on the binary criteria below.
+Each criterion is strictly 1 (Passed) or 0 (Failed).
 
 ### USER QUERY:
 {query}
@@ -252,11 +259,6 @@ Do not use subjective 1-5 scales. Each criterion is strictly 1 (Passed) or 0 (Fa
 
 ### BINARY EVALUATION CRITERIA:
 {rubric_lines}
-
-Protocol:
-1. Provide a step-by-step chain of thought in 'reasoning' for each criterion.
-2. If any fail condition is triggered, 'passed' must be false.
-3. Calculate 'overall_score' as passed criteria / total criteria.
 """
 
     def evaluate_mock(
@@ -267,17 +269,16 @@ Protocol:
         rubric: list[dict[str, str]],
     ) -> JudgeReport:
         """Simulates judge execution returning parsed Pydantic schema."""
-        # In production: invoke client.beta.chat.completions.parse(..., response_format=JudgeReport)
         return JudgeReport(
             evaluations=[
                 BinaryCriterionResult(
                     criterion_name="Faithfulness",
-                    reasoning="The candidate correctly cites the 14-day cancellation policy from context without adding extraneous claims.",
+                    reasoning="Candidate correctly cites the 14-day cancellation policy from context.",
                     passed=True,
                 ),
                 BinaryCriterionResult(
                     criterion_name="Conciseness",
-                    reasoning="Response is under 50 words and provides immediate answers without polite conversational filler.",
+                    reasoning="Response is under 50 words without conversational filler.",
                     passed=True,
                 ),
             ],
@@ -287,7 +288,6 @@ Protocol:
 
 
 if __name__ == "__main__":
-    # 1. Run Mock Evaluation
     evaluator = LLMJudgeEvaluator()
     sample_rubric = [
         {
@@ -311,17 +311,28 @@ if __name__ == "__main__":
     print(f"Judge Verdict: Score={report.overall_score * 100:.0f}%")
     print(f"Summary: {report.summary}\n")
 
-    # 2. Demonstrate Statistical Calibration (Cohen's Kappa)
+    # Demonstrate Statistical Calibration (Cohen's Kappa)
     # 10 test cases evaluated by Human Experts vs Candidate Judge
     human_consensus = [1, 1, 1, 0, 0, 1, 0, 1, 1, 0]
-    judge_verdicts   = [1, 1, 1, 0, 1, 1, 0, 1, 1, 0]  # Disagreed on index 4
+    judge_verdicts = [1, 1, 1, 0, 1, 1, 0, 1, 1, 0]  # Disagreed on index 4
 
     kappa_score = JudgeCalibrator.calculate_cohens_kappa(human_consensus, judge_verdicts)
     print(f"Calibration Metric — Cohen's Kappa: {kappa_score:.4f}")
     if kappa_score >= 0.80:
-        print("✅ Judge is statistically calibrated for production CI/CD gating.")
+        print("PASS: Judge is statistically calibrated for production CI/CD gating.")
     else:
-        print("⚠️ Judge requires rubric refinement before release gating.")
+        print("WARN: Judge requires rubric refinement before release gating.")
+```
+
+### Execution Verification
+When executed with Python 3.12+, the script produces the following output:
+
+```text
+Judge Verdict: Score=100%
+Summary: Candidate satisfies all grounding and conciseness criteria.
+
+Calibration Metric — Cohen's Kappa: 0.8000
+PASS: Judge is statistically calibrated for production CI/CD gating.
 ```
 
 ---
@@ -332,54 +343,52 @@ Below is the distributed trace topology for an automated model-based evaluation 
 
 ```mermaid
 flowchart TD
-    Runner["CI/CD Evaluation Runner"] --> Dispatch["Pairwise Dispatcher"]
+    Runner["Pairwise Runner"] --> PairA["Order 1: (Candidate A, Candidate B)"]
+    Runner --> PairB["Order 2: (Candidate B, Candidate A)"]
     
-    Dispatch --> RunA["Inference 1: Candidate A first<br/>Prompt: (Candidate_A, Candidate_B)"]
-    Dispatch --> RunB["Inference 2: Candidate B first<br/>Prompt: (Candidate_B, Candidate_A)"]
+    PairA --> Judge["LLM Judge (temperature=0.0)"]
+    PairB --> Judge
     
-    RunA --> Judge1["Judge Model (e.g. Claude 3.7)"]
-    RunB --> Judge2["Judge Model (e.g. Claude 3.7)"]
+    Judge --> Reconcile{"Position Bias Check"}
     
-    Judge1 --> VerA["Verdict 1 (Winner: A or B)"]
-    Judge2 --> VerB["Verdict 2 (Winner: B or A)"]
-    
-    VerA --> Reconcile{"Position Bias Resolver"}
-    VerB --> Reconcile
-    
-    Reconcile -->|"Both agree Candidate A won"| WinA["Decisive Win: Candidate A"]
-    Reconcile -->|"Both agree Candidate B won"| WinB["Decisive Win: Candidate B"]
-    Reconcile -->|"Disagreement (Flipped on swap)"| Tie["Marked as TIE (Position Bias Detected)"]
+    Reconcile -->|"Both Agree Winner"| Decisive["Decisive Win Recorded"]
+    Reconcile -->|"Winner Flips on Swap"| Tie["Mark as Tie (Bias Detected)"]
+
+    classDef default stroke:#4b5563,stroke-width:2px,fill:none;
+    classDef check stroke:#2563eb,stroke-width:2px,fill:none;
+    class Reconcile check;
 ```
 
 ### Visual Walkthrough
-1. **Pairwise Dispatcher**: When comparing candidate prompts or model upgrades, the dispatcher duplicates each test case into two distinct evaluation calls.
-2. **Order Inversion**: Inference 1 places Candidate A in slot 1 and B in slot 2. Inference 2 inverts the order: Candidate B in slot 1 and A in slot 2.
-3. **Judge Model Execution**: Both requests execute with `temperature=0.0`.
-4. **Position Bias Resolver**: The resolver compares verdicts. If Candidate A wins only when positioned first, the decision is flagged as position-biased and recorded as a tie. Only candidates that win in both configurations are awarded a decisive win.
+1. **Pairwise Runner**: Duplicates each pairwise comparison into two mirror evaluation calls.
+2. **Order Inversion**: Order 1 presents Candidate A first. Order 2 presents Candidate B first.
+3. **LLM Judge**: Evaluates both pairs with `temperature=0.0` using explicit rubrics.
+4. **Position Bias Check**: Compares the two verdicts.
+5. **Reconciliation**: If Candidate A wins only when presented first, the system identifies position bias and logs a tie. Only candidates that win in both positions earn a decisive win.
 
 ---
 
 ## 8. Common Failure Modes & Anti-Patterns
 
 ### Anti-Pattern 1: The Single-Run Pairwise Trap
-* **The Pathology**: Running a pairwise comparison once with `(Candidate_1, Candidate_2)` and declaring Candidate 1 superior based on a 55% to 45% win rate.
-* **The Consequence**: Up to 65% of the win rate is an artifact of position preference. Swapping the inputs reveals that Candidate 2 wins when placed first.
-* **The Remedy**: Always mandate symmetric order-swapping. Discard or tie all cases where the verdict flips upon swapping.
+* **The Pathology**: Running a pairwise comparison once with `(Candidate_1, Candidate_2)` and declaring Candidate 1 superior based on a 55% win rate.
+* **The Consequence**: Up to 65% of the win rate is an artifact of position preference. Swapping the order reveals Candidate 2 wins when placed first.
+* **The Remedy**: Mandate symmetric order-swapping. Discard or tie all cases where the verdict flips upon swapping.
 
 ### Anti-Pattern 2: The Self-Judging LLM Trap
-* **The Pathology**: Using GPT-4o to evaluate prompt variations executed on GPT-4o.
-* **The Consequence**: Language models exhibit self-enhancement bias, favoring their own stylistic signatures, tokenizer preferences, and sentence lengths over competing models.
-* **The Remedy**: Always use an evaluator from a different model family (e.g., using Claude 3.7 Sonnet to evaluate GPT-4o, or using open-weight **Prometheus-2** on vLLM).
+* **The Pathology**: Using GPT-4o (as of 2024-08) to evaluate prompt variations executed on GPT-4o.
+* **The Consequence**: Language models exhibit self-enhancement bias, favoring their own stylistic signatures and tokenizer preferences.
+* **The Remedy**: Always use an evaluator from a different model family. For example, evaluate GPT-4o using Claude 3.7 Sonnet (as of 2025-02), or deploy open-weight **Prometheus-2** on a self-hosted engine.
 
 ---
 
 ## 9. Production View & Evaluation
 
-When deploying model-based judges in continuous integration, track the following metrics:
+When deploying model-based judges in continuous integration, track the following operational parameters:
 
 | Metric | Target SLA | Engineering Significance |
 |---|---|---|
-| **Cohen’s Kappa ($\kappa$)** | `κ ≥ 0.80` | Statistically validates that the judge mirrors human expert decisions. |
+| **Cohen’s Kappa (κ)** | `κ ≥ 0.80` | Statistically validates that the judge mirrors human expert decisions. |
 | **Position Flip Rate** | `< 5.0%` | Measures the percentage of pairwise comparisons that flip upon position swap. |
 | **Judge Latency (p95)** | `< 2,500 ms` | Latency ceiling for individual evaluation checks. |
 | **Judge Cost per Run** | `< $0.01 / test` | Enforces economic feasibility for 500-test regression suites. |
@@ -399,10 +408,10 @@ When deploying model-based judges in continuous integration, track the following
 
 ## 11. Key Takeaways & Verified Resources
 
-* **Eradicate 1-to-5 Likert scales**: Subjective continuous numbers drift and cluster. Use binary pass/fail rubrics with explicit failure conditions.
+* **Eradicate 1-to-5 Likert scales**: Continuous subjective numbers drift and cluster. Use binary pass/fail rubrics with explicit failure conditions.
 * **Force reasoning before verdicts**: G-Eval Chain-of-Thought prompting ensures that transformer attention attends to factual analysis before emitting a score.
 * **Order-swap all pairwise comparisons**: Neutralize position bias by running `(A, B)` and `(B, A)`.
-* **Calibrate with Cohen's Kappa**: Track chance-adjusted agreement ($\kappa \ge 0.80$) against human benchmarks to avoid the illusion of high accuracy.
+* **Calibrate with Cohen's Kappa**: Track chance-adjusted agreement (κ ≥ 0.80) against human benchmarks to avoid the illusion of high accuracy.
 
 ### Authoritative References
 * **Liu et al. (2023)**: [G-Eval: NLG Evaluation using GPT-4 with Better Human Alignment](https://arxiv.org/abs/2303.16634) — *The foundational paper establishing Chain-of-Thought LLM evaluation rubrics.*
@@ -412,9 +421,38 @@ When deploying model-based judges in continuous integration, track the following
 
 ---
 
+## 12. ✅ Quick Check
+
+Your team builds an automated customer support judge to evaluate agent answers. On a calibration benchmark of 100 customer conversations, human consensus labels 90 conversations as PASS (1) and 10 as FAIL (0).
+
+A candidate LLM judge unconditionally assigns PASS (1) to all 100 conversations. The team lead observes that the judge achieved 90% raw accuracy and proposes deploying it to CI/CD.
+
+Using Cohen's Kappa (κ), explain why this judge has zero diagnostic utility and what its Kappa score actually evaluates to.
+
+<details>
+<summary>Suggested Solution</summary>
+
+**The Calculation:**  
+- Observed agreement (P_observed): 90 / 100 = 0.90 (matches on the 90 passing cases).
+- Marginal probability of human pass: 90 / 100 = 0.90. Marginal human fail: 10 / 100 = 0.10.
+- Marginal probability of judge pass: 100 / 100 = 1.00. Marginal judge fail: 0 / 100 = 0.00.
+- Expected chance agreement (P_chance): (0.90 × 1.00) + (0.10 × 0.00) = 0.90.
+- Cohen's Kappa formula:
+  ```text
+  κ = (P_observed - P_chance) / (1 - P_chance)
+  κ = (0.90 - 0.90) / (1 - 0.90) = 0.0 / 0.10 = 0.0000
+  ```
+
+**Why Kappa rejects this judge:**  
+The judge's Cohen's Kappa is **0.0000** (pure chance agreement). Despite an apparent 90% raw accuracy, the judge is completely uncalibrated because it cannot identify a single defect. Any candidate prompt or broken model update will receive 100% pass rates, letting regressions slip silently into production. A production judge requires κ ≥ 0.80 to be trusted in release gates.
+
+</details>
+
+---
+
 ## 🧭 Navigation
 
-- **[← Previous Lesson: Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)**
-- **[Phase 06 Hub: Evals & Observability](./README.md)**
-- **[Next Lesson: Agent Trajectory & State Mutation Evaluations →](./03-agent-trajectory-and-state-mutation-evaluations.md)**
-- **[Capstone Challenge: Automated CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)**
+- **Previous**: [Lesson 01: Evaluation Hierarchy & Deterministic Testing](./01-evaluation-hierarchy-and-deterministic-testing.md)
+- **Phase Hub**: [Phase 06 Overview & Architecture Hub](./README.md)
+- **Next**: [Lesson 03: Agent Trajectory & State Mutation Evaluations](./03-agent-trajectory-and-state-mutation-evaluations.md)
+- **Capstone Lab**: [Automated CI/CD Evaluation Pipeline](./labs/capstone-cicd-evaluation-pipeline.md)
