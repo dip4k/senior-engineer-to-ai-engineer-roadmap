@@ -4,7 +4,7 @@
 
 > **Production Gateway Defense**: Dual-Phase Streaming Token Bucket + Upfront Token Reservation + Post-Stream Settlement + TPM/RPM Throttling  
 > 
-> [🔙 Back to Module 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Gateway Core](../agent-forge/agent_forge/gateway/) • [📓 Interactive Colab Defense](../notebooks/05_token_bucket_and_failure_defense.ipynb)
+> [🔙 Back to Phase 01: Prompt & Context Engineering](../phase-01/) • [🔙 Back to Phase 07: Production Deployment](../phase-07/) • [🧪 All Practice Labs](README.md) • [⚒️ AgentForge Gateway Core](../agent-forge/agent_forge/gateway/) • [📓 Interactive Colab Defense](../notebooks/05_token_bucket_and_failure_defense.ipynb)
 
 ---
 
@@ -19,16 +19,16 @@ This lab delivers an enterprise-grade **Dual-Phase Token Bucket Limiter** design
 
 ```mermaid
 flowchart TD
-    UserReq["👤 Inbound Streaming Request<br>(Estimated tokens: 2,000)"] --> Acquire["📥 1. TokenBucketLimiter.acquire()<br>Check TPM and RPM Buckets"]
-    
-    Acquire --> CheckCap{"⚖️ Tokens Available?<br>(TPM Remaining >= 2,000)"}
-    CheckCap -- "No" --> Throttled["🛑 429 RateLimitError<br>(Throttled; return retry-after header)"]
-    
-    CheckCap -- "Yes" --> Reserve["🔒 2. Upfront Token Reservation<br>Deduct 2,000 tokens from Bucket"]
-    Reserve --> Stream["⚡ 3. Stream Tokens from LLM<br>(Actual generated: 1,200 tokens)"]
-    
-    Stream --> Settle["📊 4. TokenBucketLimiter.settle()<br>Delta = 2,000 - 1,200 = 800 tokens"]
-    Settle --> Refund["💰 5. Refund Unused Reservation<br>Add 800 tokens back to Bucket"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    UserReq["Inbound Streaming Request<br>(Estimated tokens: 2,000)"]:::default --> Acquire["1. TokenBucketLimiter.acquire()<br>Check TPM and RPM Buckets"]:::highlight
+    Acquire --> CheckCap{"Tokens Available?<br>(TPM Remaining >= 2,000)"}:::default
+    CheckCap -- "No" --> Throttled["429 RateLimitError<br>(Throttled; return retry-after)"]:::highlight
+    CheckCap -- "Yes" --> Reserve["2. Upfront Token Reservation<br>Deduct 2,000 tokens from Bucket"]:::default
+    Reserve --> Stream["3. Stream Tokens from LLM<br>(Actual generated: 1,200 tokens)"]:::default
+    Stream --> Settle["4. TokenBucketLimiter.settle()<br>Delta = 2,000 - 1,200 = 800 tokens"]:::highlight
+    Settle --> Refund["5. Refund Unused Reservation<br>Add 800 tokens back to Bucket"]:::highlight
 ```
 
 #### Diagram Walkthrough:

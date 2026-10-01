@@ -10,32 +10,32 @@
 
 ```mermaid
 flowchart TD
-    subgraph Regulatory["Regulatory Mandates and Standards"]
-        EU["⚖️ EU AI Act\n(Binding Law • Up to €35M / 7% Fine)"]
-        GDPR["📜 GDPR / CCPA\n(Art. 17 Right to Erasure)"]
-        NIST["📐 NIST AI RMF 1.0 / 600-1\n(Govern • Map • Measure • Manage)"]
-        ISO["📋 ISO/IEC 42001:2023\n(AI Management Systems)"]
-    end
+    Reg["1. Regulatory Ingress (EU AI Act & NIST)"]
+    Classify["2. Risk Classifier (Risk Tier Triage)"]
+    PII["3. PII Sanitizer & Tokenizer"]
+    Runtime["4. Foundation Models & Agent Tools"]
+    HITL{"5. HITL Interceptor (Approval Gate)"}
+    Audit["6. Tamper-Evident Audit & Memory Vault"]
 
-    subgraph Gateway["Compliance Gateway Architecture"]
-        Classify["🔍 1. Risk Classifier Engine\n(Unacceptable / High / Limited / Minimal)"]
-        PII["🔒 2. PII Sanitizer and Tokenizer\n(Pre-Inference Anonymization)"]
-        HITL["⏸️ 3. Human-in-the-Loop Interceptor\n(Step-Up Auth and Approval Queues)"]
-        Crypto["🔑 4. Crypto-Shredded Memory Vault\n(Per-User AES-GCM Key Shredding)"]
-        Audit["📝 5. Cryptographic Audit Logger\n(HMAC-SHA256 Tamper-Evident Trail)"]
-        Watermark["🏷️ 6. Output Watermarker and Discloser\n(C2PA Metadata • Bot Disclosures)"]
-    end
+    Reg --> Classify
+    Classify --> PII
+    PII --> Runtime
+    Runtime --> HITL
+    HITL --> Audit
 
-    subgraph Runtime["Hosted Runtime and Infrastructure"]
-        LLM["🤖 Foundation Models and GPAI\n(OpenAI, Anthropic, Gemini, Llama)"]
-        VectorDB["💾 Vector DBs and Episodic Memory\n(Pinecone, Qdrant, pgvector)"]
-        Tools["⚙️ Agent Tools and Sandboxes\n(APIs, DB Updates, Shells)"]
-    end
-
-    Regulatory --> Gateway
-    Gateway --> Runtime
-    Classify --> PII --> HITL --> Crypto --> Audit --> Watermark
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class HITL gate;
 ```
+
+#### Architecture Walkthrough
+1. **Regulatory Ingress**: Ingests legal requirements from the EU AI Act, GDPR Article 17, and NIST AI RMF 1.0.
+2. **Risk Classifier**: Triages system use cases into risk tiers (unacceptable, high, limited, or minimal).
+3. **PII Sanitizer & Tokenizer**: Anonymizes sensitive personal data before transmitting payloads to LLMs.
+4. **Foundation Models & Agent Tools**: Executes model inference and bounded actions within isolated container runtimes.
+5. **HITL Interceptor**: Catches consequential actions (e.g., account cancellation) for human review before execution.
+6. **Tamper-Evident Audit & Memory Vault**: Emits immutable HMAC audit records and provides per-user crypto-shredded storage.
+
 
 ---
 

@@ -1,6 +1,8 @@
 # Enterprise Use Case 7: Copilot Studio & Enterprise PaaS MCP Bridge
+> **Serverless MCP over SSE, Azure Container Apps, Hybrid AI Search & Microsoft Entra ID Governance**
 
-> [🔙 Back to Senior Transition Guide](../senior-transition-guide.md)
+> **Phase Alignment**: [Phase 02: Enterprise Retrieval & Knowledge Systems](../02-retrieval-augmented-generation-and-knowledge-systems/README.md) (Primary) • [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md)
 
 ---
 
@@ -11,49 +13,37 @@ Enterprise organizations increasingly deploy conversational agents through low-c
 - Perform high-precision hybrid retrieval across millions of documents in **Azure AI Search**.
 - Safely query and mutate state in mission-critical Systems of Record (**SAP S/4HANA**, **ServiceNow**, **Salesforce**) without triggering security violations or data corruption.
 
-Rather than authoring brittle, point-to-point custom connectors for each PaaS platform, leading enterprise architectures standardize on the **Model Context Protocol (MCP 2026)** over **Server-Sent Events (SSE)**. This architectural blueprint details how enterprise low-code copilots securely invoke custom Python/.NET microservices hosted on **Azure Container Apps**, grounded in **Azure AI Search** and governed by **Microsoft Entra ID (Azure AD)**.
+Rather than authoring brittle, point-to-point custom connectors for each PaaS platform, leading enterprise architectures standardize on the **Model Context Protocol (MCP 2026, governed under the Linux Foundation / AAIF)** over **Server-Sent Events (SSE)**. This architectural blueprint details how enterprise low-code copilots securely invoke custom Python/.NET microservices hosted on **Azure Container Apps**, grounded in **Azure AI Search** and governed by **Microsoft Entra ID (Azure AD)**.
 
 ```mermaid
 flowchart TD
-    subgraph Client["Low-Code Conversational Layer"]
-        User(["👤 Enterprise User"]) <--> Teams["💬 Microsoft Teams / Web Canvas"]
-        Teams <--> CS["🤖 Microsoft Copilot Studio<br>(Generative AI Orchestrator)"]
-    end
+    User["1. User Query (Copilot Studio / Teams)"]
+    Auth["2. Entra ID (OBO Token Exchange)"]
+    Gateway["3. Azure APIM (JWT & SSE Stream Guard)"]
+    Bridge["4. Container App MCP Server (FastMCP / .NET 9)"]
+    Search["5. Azure AI Search (Hybrid + Reranker)"]
+    ERP["6. Systems of Record (SAP S/4HANA / ServiceNow)"]
 
-    subgraph Identity["Identity and Trust Boundary"]
-        Entra["🔐 Microsoft Entra ID (Azure AD)<br>• OIDC / OAuth 2.0 SSO<br>• On-Behalf-Of (OBO) Token Exchange<br>• App Scope: api://mcp-bridge/Tools.Execute"]
-    end
+    User --> Auth
+    Auth --> Gateway
+    Gateway --> Bridge
+    Bridge --> Search
+    Bridge --> ERP
+    Search --> Bridge
+    ERP --> Bridge
+    Bridge --> User
 
-    subgraph Gateway["Perimeter and Gateway Layer"]
-        APIM["🛡️ Azure API Management (APIM)<br>• JWT Validation and Scope Verification<br>• SSE HTTP Stream Buffering Disabled<br>• Rate Limiting and Tracing"]
-    end
-
-    subgraph Compute["Serverless MCP Execution Runtime"]
-        ACA["⚙️ Azure Container Apps (FastMCP Python / .NET 9)<br>• Scale-to-Zero Container Environment<br>• Persistent SSE Transport (`/sse`, `/messages`)<br>• User Context and Claims Extraction<br>• Managed Identity (MI) Integration"]
-    end
-
-    subgraph Grounding["Grounding and Retrieval Layer"]
-        AISearch[("🔍 Azure AI Search<br>• Dense HNSW + Sparse BM25 Fusion<br>• Microsoft Turing Semantic Reranker<br>• OData Query-Time ACL Pre-Filtering")]
-    end
-
-    subgraph SoR["Systems of Record (SoR)"]
-        SAP[("🏢 SAP S/4HANA<br>(BAPIs via RFC / OData)")]
-        SNOW[("🎫 ServiceNow<br>(Table API / ITIL Workflows)")]
-    end
-
-    User -.->|1. Authenticate SSO| Entra
-    CS -->|2. Get User OBO Token| Entra
-    CS -->|3. Call MCP Plugin over SSE| APIM
-    APIM -->|4. Forward Stream + User JWT| ACA
-    ACA -->|5. Managed Identity| AISearch
-    ACA -->|6. Scoped User Execution| SAP
-    ACA -->|7. Field-Masked REST| SNOW
-    AISearch -.->|Grounded Chunks + Captions| ACA
-    SAP -.->|Material / PO Status| ACA
-    SNOW -.->|Incident Context| ACA
-    ACA -->>|8. JSON-RPC Result over SSE Stream| CS
-    CS -->>|9. Grounded Natural Language Answer| Teams
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
 ```
+
+#### Diagram Walkthrough:
+1. **User Query**: An enterprise user interacts with Microsoft Copilot Studio or Microsoft Teams canvas.
+2. **Entra ID Authentication**: Exchanges user identity claims via OAuth 2.0 On-Behalf-Of (OBO) flow to establish caller scope.
+3. **Azure API Management (APIM)**: Validates incoming JWT tokens, enforces rate limits, and proxies Server-Sent Events (SSE) streams without buffering.
+4. **Container App MCP Server**: Scalable FastMCP Python or .NET 9 microservice executes requested tools via standardized JSON-RPC 2.0.
+5. **Azure AI Search Grounding**: Retrieves enterprise knowledge using hybrid HNSW vector search, BM25 keyword matching, and semantic reranking.
+6. **Systems of Record**: Safely queries or mutates state in SAP S/4HANA or ServiceNow under the authenticated user's permission boundary.
+
 
 ---
 

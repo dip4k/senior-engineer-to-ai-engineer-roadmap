@@ -1,7 +1,8 @@
 # Enterprise Use Case 6: Agent-to-Agent (A2A) Protocols & Swarm Orchestration
 > **Google A2A Open Protocol, Autonomous Agent Capability Cards, Task Envelopes, Loop Circuit Breakers & Saga Compensations**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [System Design 5: Customer Operations Peer Swarm](../architecture/enterprise-ai-system-designs.md#5-omnichannel-customer-operations-triage-peer-swarm-a2a-mcp) • [ADR-005: A2A vs MCP Boundary](../architecture/adrs/ADR-005-agent-to-agent-a2a-vs-model-context-protocol-mcp.md)
+> **Phase Alignment**: [Phase 04: Stateful Agent Orchestration](../04-agentic-systems-and-orchestration/README.md) (Primary) • [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [System Design 5: Customer Operations Peer Swarm](../architecture/enterprise-ai-system-designs.md#5-omnichannel-customer-operations-triage-peer-swarm-a2a-mcp) • [ADR-005: A2A vs MCP Boundary](../architecture/adrs/ADR-005-agent-to-agent-a2a-vs-model-context-protocol-mcp.md)
 
 ---
 
@@ -23,39 +24,34 @@ To address these challenges, enterprise architectures adopt the **Google Agent2A
 
 ```mermaid
 flowchart TD
-    subgraph IngressLayer["1. Ingress and Fast Triage"]
-        Customer["👤 Customer Request<br>('Billing dispute on locked account')"] --> Triage["🤖 Triage Agent (Fast SLM Classifier)<br>• Extracts Account ID<br>• Detects Multi-Intent Boundary"]
-    end
+    User["1. Customer Request (Multi-Intent Query)"]
+    Triage["2. Triage Agent (Intent & Account Scoping)"]
+    Broker["3. A2A Broker (Capability Cards)"]
+    Billing["4. Billing Agent (MCP ERP Tool Calls)"]
+    SecAgent["5. Security Agent (MCP Identity Calls)"]
+    Governor{"6. Hop Governor (Hops < 3?)"}
 
-    subgraph A2A_Mesh["2. Horizontal A2A Federation"]
-        Triage --> Router{"🔀 A2A Delegation Broker<br>(Inspects Capability Cards)"}
-        
-        Router -->|"Task Envelope (Hops: 1/3)"| Billing["💳 Billing Specialist Agent<br>• Domain Capability Card<br>• Scoped Auth Token"]
-        
-        Billing -->|"A2A Sub-Task (Hops: 2/3)"| SecAgent["🛡️ Security Specialist Agent<br>• Domain Capability Card<br>• Identity Verification"]
-    end
+    User --> Triage
+    Triage --> Broker
+    Broker --> Billing
+    Billing --> SecAgent
+    SecAgent --> Governor
+    Governor -- "Resolved" --> Response["Synthesized Customer Response"]
+    Governor -- "Hop Limit >= 3" --> Escalate["Halt Loop & Escalate to Human"]
 
-    subgraph MCP_Layer["3. Vertical MCP Tool Layer"]
-        Billing -->|"tools/call"| MCP_ERP["⚙️ MCP ERP Server<br>(Stateless SAP/Postgres)"]
-        SecAgent -->|"tools/call"| MCP_Okta["🔑 MCP Identity Server<br>(Okta / Entra ID)"]
-    end
-
-    subgraph Governance["4. State and Safety Governance"]
-        Triage --> WAL[("📜 EventStore Write-Ahead Log<br>(Saga Checkpoints and State)")]
-        Billing --> WAL
-        SecAgent --> WAL
-        
-        SecAgent --> Complete{"⚖️ Task Resolved?"}
-        Complete -- "Yes" --> Response["✅ Synthesize Verified Response to Customer"]
-        Complete -- "Hop Limit (>=3)" --> HITL["🚨 Halt Loop and Escalate to Human Lead"]
-    end
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Governor gate;
 ```
 
 #### Diagram Walkthrough:
 1. **Ingress & Fast Triage**: Customer queries enter via a lightweight SLM classifier (Gemini 2.5 Flash / Claude 3.5 Haiku) that identifies domain intents without holding mutating credentials.
-2. **Horizontal A2A Task Delegation**: The broker evaluates the target agents' published Capability Cards and dispatches a structured A2A Task Envelope containing verified state, credentials, and an immutable hop counter.
-3. **Vertical Tool Execution via MCP**: Each specialist agent accesses domain-specific enterprise data via stateless Model Context Protocol JSON-RPC servers.
-4. **State Persistence & Loop Circuit Breakers**: All agent state transitions are journaled to an event-sourced Write-Ahead Log. If the hop counter reaches 3 without resolution, execution terminates immediately to prevent cyclic deadlocks.
+2. **Intent Scoping**: Extracts target account entities and constructs the root task specification.
+3. **Horizontal A2A Task Delegation**: The broker evaluates published Capability Cards and dispatches structured A2A Task Envelopes containing verified claims and an immutable hop counter.
+4. **Billing Specialist Execution**: Resolves financial disputes using domain-specific tools via stateless Model Context Protocol (MCP) servers.
+5. **Security Specialist Execution**: Verifies identity and manages credential unlock routines over MCP identity servers.
+6. **Hop Governor & Circuit Breakers**: All agent transitions journal to an event-sourced Write-Ahead Log. If the hop counter reaches 3 without resolution, execution halts immediately to prevent cyclic deadlocks.
+
 
 ---
 

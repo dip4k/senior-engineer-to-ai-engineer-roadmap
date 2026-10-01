@@ -136,7 +136,9 @@ public sealed class AgentOrchestrator
                 Delay = TimeSpan.FromMilliseconds(500),
                 BackoffType = DelayBackoffType.Exponential,
                 UseJitter = true,
-                ShouldHandle = new PredicateBuilder().Handle<HttpRequestException>().Handle<TimeoutException>()
+                ShouldHandle = new PredicateBuilder()
+                    .Handle<HttpRequestException>()
+                    .Handle<TimeoutException>()
             })
             .AddCircuitBreaker(new CircuitBreakerStrategyOptions
             {
@@ -144,6 +146,9 @@ public sealed class AgentOrchestrator
                 SamplingDuration = TimeSpan.FromSeconds(30),
                 MinimumThroughput = 10,
                 BreakDuration = TimeSpan.FromSeconds(15),
+                ShouldHandle = new PredicateBuilder()
+                    .Handle<HttpRequestException>()
+                    .Handle<TimeoutException>(),
                 OnOpened = args =>
                 {
                     _logger.LogError("CRITICAL: Primary LLM Circuit Breaker tripped OPEN! Diverting to Secondary.");

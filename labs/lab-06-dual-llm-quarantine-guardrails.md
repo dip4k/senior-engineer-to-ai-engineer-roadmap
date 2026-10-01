@@ -4,7 +4,7 @@
 
 > **Zero-Trust AI Perimeter Defense**: Untrusted Ingestion DMZ + Privilege Separation + Data/Instruction Demarcation + Policy Denial Gates  
 > 
-> [🔙 Back to Module 05: AI Security](../05-ai-security-and-guardrails/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Policy Engine](../agent-forge/agent_forge/mcp/) • [🛡️ Interactive Policy & Guardrail Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
+> [🔙 Back to Phase 05: AI Security & Guardrails](../phase-05/) • [🧪 All Practice Labs](README.md) • [⚒️ AgentForge Policy Engine](../agent-forge/agent_forge/mcp/) • [🛡️ Interactive Policy & Guardrail Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
 
 ---
 
@@ -19,17 +19,16 @@ This lab delivers an enterprise-grade **Dual-LLM Privilege Quarantine Architectu
 
 ```mermaid
 flowchart TD
-    UntrustedPayload["📥 Untrusted External Document<br>(Contains Indirect Prompt Injection Attack)"] --> DMZ["🔒 1. Quarantine DMZ: Unprivileged LLM<br>• ZERO Tool Access<br>• ZERO Network / DB Access<br>• Task: Extract structured JSON fields ONLY"]
-    
-    DMZ --> SchemaValidation["📋 2. Strict Pydantic Schema Validation<br>(Sanitize and Validate Field Types)"]
-    
-    SchemaValidation --> PrivilegedAgent["🤖 3. Privileged Orchestrator Agent<br>(Receives typed data, NOT raw untrusted text)"]
-    
-    PrivilegedAgent --> PolicyGate["🛡️ 4. Zero-Trust PolicyEngine.evaluate()<br>Check Tenant, Role and Tool Target"]
-    
-    PolicyGate --> Decision{"⚖️ Tool Permitted?<br>(e.g. admin_drop_database)"}
-    Decision -- "Denied (Admin / Unprivileged)" --> Halt["🛑 5. DENIED<br>(Block Execution and Log Alert)"]
-    Decision -- "Permitted" --> SafeExec["✅ 6. Execute Authorized Tool"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    UntrustedPayload["Untrusted Payload<br>(Contains Indirect Prompt Injection)"]:::default --> DMZ["1. Quarantine DMZ: Ingestion LLM<br>• ZERO Tools • Output JSON Only"]:::highlight
+    DMZ --> SchemaValidation["2. Strict Pydantic Schema Validation<br>(Sanitize and Validate Types)"]:::default
+    SchemaValidation --> PrivilegedAgent["3. Privileged Orchestrator<br>(Receives typed data, NOT raw text)"]:::default
+    PrivilegedAgent --> PolicyGate["4. PolicyEngine.evaluate()<br>Check Tenant, Role & Tool Target"]:::highlight
+    PolicyGate --> Decision{"Tool Permitted?<br>(e.g. admin_drop_database)"}:::default
+    Decision -- "Denied" --> Halt["5. DENIED<br>(Block Execution & Alert)"]:::highlight
+    Decision -- "Permitted" --> SafeExec["6. Execute Authorized Tool"]:::default
 ```
 
 #### Diagram Walkthrough:

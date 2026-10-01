@@ -21,16 +21,27 @@ At the Senior (L5), Staff (L6/L7), and Staff AI Engineer levels, behavioral inte
 
 ```mermaid
 flowchart TD
-    subgraph SixArchetypes["THE 6 HIGH-STAKES STORY ARCHETYPES"]
-        A1["💥 1. Cascading Outages and Containment"]
-        A2["⚠️ 2. Silent Failures in Production"]
-        A3["🗣️ 3. Pushing Back on AI Hype"]
-        A4["🛑 4. Sunk Cost Fallacy and Teardowns"]
-        A5["🤝 5. Team Conflicts and Deadlocks"]
-        A6["⚖️ 6. Ethical Dilemmas and Compliance"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    subgraph SixArchetypes ["The 6 High-Stakes Story Archetypes"]
+        A1["1. Cascading Outages & Blast Containment"]:::highlight
+        A2["2. Silent Non-Deterministic Failures"]:::default
+        A3["3. Pushing Back on AI Hype"]:::default
+        A4["4. Sunk Cost Fallacy & Teardowns"]:::highlight
+        A5["5. Team Conflicts & Architectural Alignment"]:::default
+        A6["6. Ethical Governance & Compliance"]:::default
         A1 --> A2 --> A3 --> A4 --> A5 --> A6
     end
+
+    style SixArchetypes fill:none,stroke:#4a5568,stroke-width:2px;
 ```
+
+#### Behavioral Story Progression:
+1. **Operational Defense**: Prove triage under active outages before addressing technical debt or organizational conflict.
+2. **Quality & Drift Rigor**: Demonstrate hypothesis-driven debugging for silent failures that do not trigger 500 errors.
+3. **Engineering Pragmatism**: Defend technical decisions with cost-per-token math rather than adopting frontier AI models blindly.
+4. **Leadership Maturity**: Show ability to kill projects gracefully, resolve cross-functional deadlocks, and adhere to statutory compliance.
 
 ### Archetype 1: Major Production Incidents & Blast Radius Containment
 * **What interviewers probe:** Crisis composure, triage under chaos, balancing immediate containment vs. permanent fixes, blast-radius isolation, blameless post-mortem culture, and systemic remediation.

@@ -21,14 +21,14 @@ These ADRs provide **battle-tested, defensible decisions** ready for Architectur
 
 ## 📑 ADR Repository Index
 
-| ADR ID | Decision Title | Status | Primary Decision Driver |
-| :---: | :--- | :---: | :--- |
-| [**ADR-001**](./ADR-001-pgvector-vs-dedicated-vector-database.md) | **PostgreSQL `pgvector 0.7+` vs. Dedicated Vector Engines (Qdrant / Milvus)** | `ACCEPTED` | Operational simplicity & unified ACID transactions vs. 100M+ high-QPS sharding. |
-| [**ADR-002**](./ADR-002-model-context-protocol-vs-bespoke-api-integrations.md) | **Model Context Protocol (MCP) vs. Bespoke REST / gRPC Tool Bindings** | `ACCEPTED` | Vendor-neutral tool interoperability, client-side schema caching & microVM isolation. |
-| [**ADR-003**](./ADR-003-test-time-compute-vs-domain-slm-routing.md) | **Frontier Reasoning Models (Test-Time Compute) vs. Local Domain SLMs** | `ACCEPTED` | High-complexity System 2 verification vs. sub-50ms unit economics at scale. |
-| [**ADR-004**](./ADR-004-radixattention-kv-cache-vs-external-memory-stores.md) | **RadixAttention Shared KV-Cache Prefill vs. External Semantic Memory Stores** | `ACCEPTED` | Prefill latency & GPU bandwidth reduction vs. cross-session episodic knowledge persistence. |
-| [**ADR-005**](./ADR-005-agent-to-agent-a2a-vs-model-context-protocol-mcp.md) | **Agent-to-Agent (A2A) Protocol vs. Model Context Protocol (MCP) Boundary** | `ACCEPTED` | Horizontal inter-agent federation & capability cards vs. vertical deterministic tool execution. |
-| [**ADR-006**](./ADR-006-native-fp8-precision-vs-4bit-weight-quantization.md) | **Native FP8 Precision (E4M3/E5M2) vs. 4-Bit Weight Quantization (AWQ/GPTQ)** | `ACCEPTED` | Native Hopper/Blackwell Tensor Core throughput & FP8 KV-cache vs. 4-bit register unpack overhead. |
+| ADR ID | Decision Title | Phase Alignment | Status | Primary Decision Driver |
+| :---: | :--- | :---: | :---: | :--- |
+| [**ADR-001**](./ADR-001-pgvector-vs-dedicated-vector-database.md) | **PostgreSQL `pgvector 0.7+` vs. Dedicated Vector Engines (Qdrant / Milvus)** | `Phase 02` (Retrieval) | `ACCEPTED` | Operational simplicity & unified ACID transactions vs. 100M+ high-QPS sharding. |
+| [**ADR-002**](./ADR-002-model-context-protocol-vs-bespoke-api-integrations.md) | **Model Context Protocol (MCP) vs. Bespoke REST / gRPC Tool Bindings** | `Phase 03` (Tools & MCP) | `ACCEPTED` | Vendor-neutral tool interoperability, client-side schema caching & microVM isolation. |
+| [**ADR-003**](./ADR-003-test-time-compute-vs-domain-slm-routing.md) | **Frontier Reasoning Models (Test-Time Compute) vs. Local Domain SLMs** | `Phase 00` • `Phase 07` | `ACCEPTED` | High-complexity System 2 verification vs. sub-50ms unit economics at scale. |
+| [**ADR-004**](./ADR-004-radixattention-kv-cache-vs-external-memory-stores.md) | **RadixAttention Shared KV-Cache Prefill vs. External Semantic Memory Stores** | `Phase 00` • `Phase 07` | `ACCEPTED` | Prefill latency & GPU bandwidth reduction vs. cross-session episodic knowledge persistence. |
+| [**ADR-005**](./ADR-005-agent-to-agent-a2a-vs-model-context-protocol-mcp.md) | **Agent-to-Agent (A2A) Protocol vs. Model Context Protocol (MCP) Boundary** | `Phase 04` • `Phase 03` | `ACCEPTED` | Horizontal inter-agent federation & capability cards vs. vertical deterministic tool execution. |
+| [**ADR-006**](./ADR-006-native-fp8-precision-vs-4bit-weight-quantization.md) | **Native FP8 Precision (E4M3/E5M2) vs. 4-Bit Weight Quantization (AWQ/GPTQ)** | `Phase 00` • `Phase 07` | `ACCEPTED` | Native Hopper/Blackwell Tensor Core throughput & FP8 KV-cache vs. 4-bit register unpack overhead. |
 
 ---
 

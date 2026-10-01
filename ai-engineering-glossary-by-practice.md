@@ -30,6 +30,7 @@
 21. [Transformer Architecture](#21-transformer-architecture)
 22. [Engineering Decision Matrix (Trade-offs & Rules of Thumb)](#22-engineering-decision-matrix-trade-offs-rules-of-thumb)
 23. [Enterprise Case Study: Operations Assistant Blueprint & Question Tree](#23-enterprise-case-study-operations-assistant-blueprint-question-tree)
+24. [Agentic Coding & AI-Assisted SDLC (Phase 08 Standards)](#24-agentic-coding--ai-assisted-sdlc-phase-08-standards)
 
 ---
 
@@ -63,6 +64,9 @@
 | **Speculative Decoding** | An inference acceleration technique where a small, fast "draft" model proposes candidate tokens verified concurrently by a large "target" model in a single forward pass. It doubles generation speed without altering output quality or mathematical accuracy. | Key modern technique for slashing TPOT latency on flagship models. |
 | **Test-Time Compute / Thinking Tokens** | Spending inference-time compute on internal reasoning chains (e.g., OpenAI o-series, DeepSeek-R1) before emitting user-visible tokens. It allows models to self-correct and verify complex logic, trading higher latency for state-of-the-art accuracy. | Used for high-stakes math, complex planning, coding, and architecture tasks. |
 | **Model Selection Tiering** | The architectural practice of routing tasks across small, medium, and frontier models based on task complexity. Lightweight models handle classification and extraction cheaply, reserving large models for complex reasoning. | Essential pattern for reducing enterprise LLM operational costs by 60–80%. |
+| **Lost-in-the-Middle Effect** | The empirical drop in recall when vital facts sit near the center of a long prompt rather than at the start or finish. Language models attend strongest to prompt edges due to positional bias. | Place core system instructions and critical evidence at the very top or bottom of prompts. |
+| **RadixAttention** | A tree-structured caching algorithm in engines like SGLang that retains KV-cache states across branching conversation trees. It enables instant cache hits for multi-turn agents and parallel tool calls. | Drops prefill latency by up to 80% in multi-turn agent workflows. |
+| **KV-Cache Sizing Formula** | The memory equation calculating required GPU RAM: `2 * layers * heads * head_dim * bytes_per_elem * seq_len * batch_size`. It quantifies the hardware ceiling for concurrent serving sessions. | Sizing rule for provisioning VRAM clusters and planning continuous batching concurrency. |
 
 ---
 
@@ -83,6 +87,8 @@
 | **Prompt Injection** | A security vulnerability where adversarial user inputs manipulate the model into ignoring its system prompt and executing unauthorized instructions. It treats user input as executable logic rather than passive data. | Requires prompt separation, input sanitization, and dual-LLM guardrails. |
 | **Prompt Versioning** | Treating system prompts as mission-critical application source code managed in Git with semantic versioning and regression test suites. It prevents unexpected model drift or breakage across application deployments. | Managed via CI/CD pipelines alongside model evaluation datasets. |
 | **Prompt vs. Retrieval vs. Tool vs. Model** | The senior decision framework diagnosing whether an error requires prompt tuning (formatting), retrieval tuning (missing facts), tool tuning (bad execution), or model upgrades (reasoning limits). Misdiagnosing the layer wastes engineering cycles on prompt tweaks when retrieval is the root cause. | Core senior interview question demonstrating mature root-cause troubleshooting. |
+| **Context Compaction Pipeline** | An automated 4-tier process that drops, truncates, summarizes, and evicts older conversation tokens as sessions expand. It preserves key facts while keeping prompt sizes inside strict token budgets. | Mandatory architecture pattern to avoid context rot in multi-turn agents. |
+| **DSPy & MIPROv2** | A programmatic framework and optimizer that compiles prompts and selects few-shot exemplars automatically via teleprompters. It replaces manual prompt string editing with reproducible, metric-driven optimization algorithms. | Enterprise pattern for systematically tuning prompt pipelines against test assertions. |
 
 ---
 
@@ -104,6 +110,7 @@
 | **Dimensionality & Matryoshka Embeddings**| Dimensionality is the fixed count of float values in an embedding (e.g., 768, 1536, 3072); Matryoshka models allow truncating these vectors to smaller dimensions with minimal loss of accuracy. Truncation slashes vector storage footprints and search latency. | Enables flexible trade-offs between RAM cost and retrieval precision. |
 | **Metadata Filtering** | Restricting the vector search space using relational boolean filters (e.g., `TenantId == 42`, `Date >= 2026`) prior to or during vector traversal. It guarantees hard tenant isolation and domain scoping across search queries. | Required for multitenant security and permission-aware retrieval systems. |
 | **Why Not Put Everything in Prompt?** | Large documents stuffed into prompts explode token costs, introduce seconds of TTFT latency, degrade model reasoning through "lost-in-the-middle" effects, and hit hard context boundaries. Vector databases retrieve only the exact relevant snippets, keeping prompts focused and cheap. | Standard senior interview question testing your understanding of RAG ROI. |
+| **SPLADE (Learned Sparse Embeddings)** | An embedding architecture that projects text into sparse token weights across the full vocabulary. It combines the exact keyword precision of inverted indexes with the semantic synonym expansion of neural networks. | Bridges traditional BM25 search engines with neural semantic ranking without dense vector math. |
 
 ---
 
@@ -127,6 +134,9 @@
 | **Restricted vs. Unrestricted Queries** | Classifying incoming user prompts into restricted queries (requiring verified retrieval grounding and ACL checks) versus unrestricted/conversational queries. Out-of-scope or unauthorized queries are rejected early before invoking expensive retrieval. | Prevents off-topic abuse and protects privileged corporate data. |
 | **Agentic RAG** | An advanced paradigm where an agent uses dynamic planning and tools to formulate multiple search queries, evaluate document adequacy, and perform iterative multi-hop retrieval. It overcomes the limitations of static single-shot retrieval. | Essential for complex research questions spanning multiple internal systems. |
 | **GraphRAG** | Extracting entities and relationships from documents into a knowledge graph to augment vector search with structured graph traversals. It allows LLMs to synthesize macro-level themes and multi-hop relationships across thousands of documents. | Developed by Microsoft; ideal for enterprise knowledge graphs and deep investigations. |
+| **Contextual Retrieval** | An Anthropic technique that prepends document-level explanatory context to every chunk prior to embedding and indexing. It prevents isolated chunks from losing their parent meaning during vector and BM25 searches. | Cuts retrieval failure rates by up to 49% when paired with reranking. |
+| **HyDE (Hypothetical Document Embeddings)** | Generating a hypothetical answer with an LLM first, then using that synthetic answer's embedding to search the vector database. It bridges the semantic vocabulary gap between short user queries and detailed documents. | Highly effective for broad, conceptual questions that lack direct keyword overlap. |
+| **ColBERT & Late Interaction** | A token-level retrieval architecture that keeps token embeddings independent until query time, computing relevance via fast MaxSim operations. It delivers cross-encoder reranker accuracy at near-bi-encoder vector search speeds. | Powers high-precision semantic search engines without heavy cross-encoder compute costs. |
 
 ---
 
@@ -160,6 +170,7 @@
 | **Plan-and-Solve Pattern** | Decoupling the explicit planning phase (generating a multi-step checklist) from the execution phase where each step is completed sequentially. It prevents the model from drifting off-target during long multi-step runs. | Significantly outperforms raw ReAct on multi-step analytical and mathematical problems. |
 | **Loop Detection & Max Iterations** | Safeguard mechanisms that track tool execution history and enforce hard limits on step counts to prevent infinite loops. If an agent repeats identical tool arguments or hits the threshold, execution halts gracefully. | Mandatory production circuit breaker to prevent runaway compute costs. |
 | **Human-in-the-Loop (HITL)** | Pausing agent execution at designated critical decision nodes to await human inspection, review, and authorization before proceeding. It combines agentic speed with human accountability for high-risk actions. | Required for financial transactions, record deletion, and customer communications. |
+| **CodeAct (Code as Action)** | An agent paradigm where the model writes and runs executable Python code directly instead of making repeated JSON tool calls. It cuts turn latency and handles loops and data transformations inside a single sandboxed execution step. | Adopted in high-performance coding and data analysis agents to eliminate tool ping-pong. |
 
 ---
 
@@ -237,6 +248,9 @@
 | **MCP Prompts** | Pre-engineered, server-managed prompt templates exposed to clients to standardize how agents interact with specific external systems. They encode domain best practices directly into reusable server endpoints. | Centralizes enterprise prompt standards across multi-language teams. |
 | **MCP vs. Function Calling** | Function calling is a model-specific capability to output JSON arguments for hardcoded local functions; MCP is an architectural protocol standardizing discovery, authentication, and execution across distributed networks. | MCP standardizes tools across providers; function calling is the low-level model primitive. |
 | **MCP vs. REST API** | REST APIs provide uniform endpoints for software applications, while MCP provides semantic discovery, input schema introspection, resources, and standardized prompt primitives tailored specifically for LLM ingestion. | Wrap existing enterprise REST APIs in MCP servers so agents can safely discover them. |
+| **MCP Transports (stdio vs. SSE/HTTP)** | The communication layer carrying JSON-RPC 2.0 messages between host and server. Local child processes use standard I/O (`stdio`), while distributed remote microservices stream over Server-Sent Events (SSE) or HTTP. | Choose `stdio` for local developer tools; choose streamable HTTP/SSE for cloud services. |
+| **MCP Roots** | Protocol-level boundary paths declared by the client during initialization that specify which filesystem folders the server may access. They prevent malicious or buggy tools from traversing the host disk outside project roots. | Core zero-trust isolation boundary in desktop and coding agent hosts. |
+| **MCP Sampling (Reverse LLM Calls)** | A bidirectional capability allowing an MCP server to request an LLM completion back from the host client. The host retains total visibility and user approval authority over the requested generation. | Enables autonomous server-side sub-agents while keeping the human in control. |
 
 ---
 
@@ -267,6 +281,9 @@
 | **Insecure Output Handling** | Trusting raw LLM generation and directly executing it as SQL queries, shell commands, or rendering it raw in browser DOM (XSS). LLM outputs must be treated as untrusted, user-supplied content. | Demands parameterized queries, HTML sanitization, and strict schema parsers. |
 | **Tool Poisoning** | An attack where an adversary alters external tool metadata or API responses to trick an agent into executing unauthorized secondary actions. It subverts the agent's reasoning by corrupting its environmental observation channel. | Requires schema signing, mutual TLS, and response validation gates. |
 | **Credential & Secret Exposure** | The risk of API keys, connection strings, or system secrets leaking into LLM contexts through unredacted system prompts or error stack traces. Once inside the context window, secrets can be exfiltrated via prompt extraction attacks. | Mandates runtime secret masking and externalized key vault management. |
+| **Crescendo Attack** | A multi-turn social engineering exploit that begins with innocent questions and gradually guides the model toward generating restricted outputs. It bypasses single-turn safety classifiers by accumulating context over successive turns. | Defend with multi-turn conversation evaluators and rolling state safety scanners. |
+| **Skeleton Key Attack** | A jailbreak pattern that instructs the model to augment rather than replace its guidelines by appending benign research disclaimers to harmful requests. It bypasses safety filters by tricking the model's refusal threshold. | Defend with intent-based output guardrails rather than static keyword filters. |
+| **ASCII Smuggling / Unicode Steganography** | Hiding malicious instructions inside invisible Unicode tag characters or visual homoglyphs that human reviewers miss but LLM tokenizers parse directly. When pasted into prompts or RAG documents, the hidden tokens trigger unauthorized actions. | Strip non-printable Unicode ranges and normalize characters at the API gateway. |
 
 ---
 
@@ -300,6 +317,8 @@
 | **Task Success Rate (Agent)** | The percentage of end-to-end multi-step agent executions that successfully achieve their declared business objective without human intervention. It serves as the primary North Star KPI for autonomous workflows. | The true business measurement of agent maturity and reliability. |
 | **Tool Selection Accuracy** | The frequency with which an agent picks the correct tool and provides properly structured, valid parameters on its first attempt. Poor accuracy points to ambiguous tool schemas or underperforming model tiers. | Used to diagnose agent execution failures and refine OpenAPI descriptions. |
 | **Agent Trajectory Evaluation** | Evaluating the efficiency and correctness of the step-by-step path an agent took, penalizing unnecessary tool calls, redundant steps, and wasteful backtracking. It ensures agents solve problems along the most cost-effective and direct route. | Essential for optimizing agent latency and operating budgets. |
+| **DeepEval & Promptfoo** | Developer-friendly CLI and unit-testing runners that evaluate LLM outputs, tool calls, and security guardrails inside CI/CD pipelines. They catch regressions in prompts and model updates before deploying to production. | The AI testing equivalent to JUnit or pytest for continuous integration. |
+| **Ragas Triad** | A composite evaluation framework combining Faithfulness, Answer Relevance, and Context Recall to grade RAG pipelines without requiring human labeling. Each metric targets a distinct pipeline failure mode. | The standard score card used to baseline and validate production RAG systems. |
 
 ---
 
@@ -329,6 +348,8 @@
 | **Queue-Decoupled Processing** | Decoupling long-running agent workflows from front-facing HTTP requests using persistent message brokers (Azure Service Bus, RabbitMQ, Kafka). The client receives an immediate job receipt while the agent executes asynchronously in the background. | Necessary for multi-step agent tasks that take 15 to 90 seconds to finish. |
 | **Model Fallback Routing** | Automatically failing over from a primary frontier model (e.g., Azure OpenAI) to an alternative provider or local model when encountering HTTP 429 (Rate Limit) or 5xx errors. It maintains continuous system availability during cloud provider outages. | Required for high-reliability 99.9% uptime enterprise SLAs. |
 | **Native FP8 Tensor Core GEMM** | Serving foundation models in native 8-bit floating point precision (E4M3/E5M2) directly on modern silicon (NVIDIA Hopper/Blackwell), doubling compute throughput over FP16 with zero register dequantization stalls. | Enterprise standard for low-latency datacenter serving; replaces 4-bit AWQ on modern GPU hardware. |
+| **vLLM & PagedAttention** | A high-throughput serving engine that stores KV-cache tensors in non-contiguous physical memory blocks inspired by OS virtual memory paging. It slashes memory waste from 60–80% down to under 4%, multiplying concurrent serving capacity. | The default open-source serving engine for hosting private models at scale. |
+| **EAGLE-3 Speculative Engine** | A state-of-the-art speculative decoding framework that uses lightweight draft heads over transformer feature maps to guess candidate tokens. It doubles generation speed while keeping the output identical to the target model. | Slashing TPOT latency for self-hosted enterprise model endpoints. |
 
 ---
 
@@ -448,49 +469,32 @@
 
 ```mermaid
 flowchart TD
-    User["👤 End User / Browser (Angular)"] --> API["🌐 BFF API Gateway (.NET 9 Web API)"]
-    API --> Auth["🔑 Authentication and RBAC (Entra ID)"]
-    Auth --> Orchestrator["🔄 AI Orchestrator (LangGraph)"]
-    
-    subgraph Guardrails["Security Perimeter"]
-        InputGuard["🛡️ Input Guardrail (PII + Injections)"]
-        OutputGuard["🛡️ Output Guardrail (Schema Validation)"]
-    end
-    
-    Orchestrator --> InputGuard
-    InputGuard --> Router["🔀 Router Node"]
-    
-    subgraph AgentMesh["Specialized Agent Mesh"]
-        RAGAgent["📚 RAG Knowledge Agent"]
-        OrderAgent["📦 Order Processing Agent"]
-        EscalationAgent["📞 Escalation and Support Agent"]
-    end
-    
-    Router --> RAGAgent
-    Router --> OrderAgent
-    Router --> EscalationAgent
-    
-    subgraph EnterpriseBackbone["Enterprise Data and Systems"]
-        AzureSearch["🔍 Azure AI Search (Hybrid + Rerank)"]
-        MCPServer["🔌 MCP Tool Server (Enterprise APIs)"]
-        ServiceBus["📨 Azure Service Bus (Async Queue)"]
-    end
-    
-    RAGAgent --> AzureSearch
-    OrderAgent --> MCPServer
-    EscalationAgent --> ServiceBus
-    
-    RAGAgent --> SynthesisNode["🧠 Synthesis and Decision Node"]
-    OrderAgent --> SynthesisNode
-    EscalationAgent --> SynthesisNode
-    
-    SynthesisNode --> HITL{"⚖️ Requires Human Approval?<br/>(e.g., Refund > 500 USD)"}
-    HITL -- Yes --> ApprovalQueue["📥 Approval Inbox (Human-in-the-Loop)"]
-    ApprovalQueue --> OutputGuard
-    HITL -- No --> OutputGuard
-    
-    OutputGuard --> API
+    User["1. User Request (Angular / BFF)"]
+    Gateway["2. Security Gateway (Entra ID + PII Filter)"]
+    Router["3. AI Orchestrator (LangGraph Router)"]
+    RAG["4. RAG Engine (Azure AI Search)"]
+    MCP["5. MCP Tool Service (Enterprise APIs)"]
+    Review{"6. HITL Gate (Refund > \$500?)"}
+
+    User --> Gateway
+    Gateway --> Router
+    Router --> RAG
+    Router --> MCP
+    RAG --> Review
+    MCP --> Review
+
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Review gate;
 ```
+
+#### Diagram Walkthrough
+1. **User Request**: The frontend client sends the user query to the backend API gateway.
+2. **Security Gateway**: Entra ID verifies caller identity, and input filters strip PII and prompt injection payloads.
+3. **AI Orchestrator**: LangGraph evaluates intent and routes the task to specialized sub-agents.
+4. **RAG Engine**: Retrieves grounded corporate facts from Azure AI Search using hybrid search and reranking.
+5. **MCP Tool Service**: Dispatches side-effecting transactions across internal ERP and ticketing services.
+6. **HITL Gate**: Inspects outputs; actions exceeding \$500 halt for human supervisor approval before dispatch.
 
 ### Senior Interview Defense: The Architectural Question Tree
 
@@ -512,3 +516,21 @@ When interviewing for Senior/Lead AI roles (such as TCS, Microsoft, or global en
 5. **Scalability, Cost & Performance**
    * *What happens at 10,000 concurrent users?* Decouple long-running agent tasks via Azure Service Bus, leverage Redis for semantic caching, and enforce rate-limiting circuit breakers via Polly.
    * *How would you reduce LLM operational costs by 50%?* Implement semantic caching for recurring queries, apply model selection tiering (route 70% of basic requests to SLMs/Mini models), and leverage prompt caching on system prefixes.
+
+---
+
+## 24. Agentic Coding & AI-Assisted SDLC (Phase 08 Standards)
+
+*Core engineering patterns, tool protocols, and verification harnesses for autonomous coding agents.*
+
+| Term / Concept | 1–2 Sentence Explanation | Senior Engineering Context / Interview Takeaway |
+| :--- | :--- | :--- |
+| **Agentic Coding Assistant** | An AI tool that reads codebases, plans multi-file changes, runs shell commands, and verifies test suites autonomously. Examples include Claude Code CLI, Cursor, and Aider. | Shifts developer focus from typing code to authoring specifications and verifying outputs. |
+| **Skills (`SKILL.md` Progressive Disclosure)** | Modular instruction folders that agents load on demand. The host agent reads only light frontmatter metadata first, saving tokens until the task requires the full skill file. | Scalable pattern for teaching agents hundreds of private repository runbooks without context bloat. |
+| **Hooks (Deterministic Lifecycle Interceptors)** | Deterministic shell scripts or programs that execute before or after agent tool calls. They enforce linting, permission checks, and safety rules outside the model's control. | Hard security guardrails that prevent agents from running prohibited commands or committing bad syntax. |
+| **Plugins (Declarative Capability Bundles)** | Packaged bundles that group prompts, tools, hooks, and skills into a single installable unit. They standardize tool distribution across engineering teams. | Enables modular distribution of agent capabilities across development teams. |
+| **Environment Setup (Sandboxed Virtualenvs)** | Isolated runtime environments (`uv`, Python virtual environments, or containers) dedicated to agent work. They prevent generated code from corrupting the host operating system. | Essential defensive isolation pattern for running untrusted agent-generated code. |
+| **Repo Maps (Tree-sitter AST & Symbol Graphs)** | Compact summaries of codebases generated from syntax trees and symbol definitions. They let models navigate large codebases without stuffing whole files into prompt memory. | Keeps repository context under 2,000 tokens while guiding agents to exact target files. |
+| **Spec-Driven Development (SDD) & `AGENT.md`** | Writing machine-readable contracts and architecture constraints before asking an agent to write code. It anchors model output to verified specifications. | Standard enterprise engineering harness ensuring agent output satisfies architecture rules. |
+| **SWE-bench & Coding Benchmarks** | An industry-standard evaluation benchmark that tests whether AI agents can resolve real GitHub issues from open-source repositories. | The primary benchmark measuring agentic coding autonomy, test-driven iteration, and bug fixing. |
+

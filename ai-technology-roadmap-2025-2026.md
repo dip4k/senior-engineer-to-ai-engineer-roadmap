@@ -2,7 +2,7 @@
 ### Breakthrough Architectures, Test-Time Compute, Agent Protocols & Systems Engineering
 
 > **The Definitive Technology Roadmap for Tech Leads, Principal Architects, and Engineering Leadership.**  
-> [Home / Master Curriculum](./README.md) • [🛡️ Production Readiness Review (PRR)](./architecture/production-readiness-review.md) • [🏛️ Architectural ADRs](./architecture/adrs/README.md) • [🚨 Post-Mortems](./architecture/post-mortems/README.md) • [System Design Interview Sheet](./interview/80-20-ai-interview-prep-sheet.md) • [Behavioral Stories](./interview/high-stakes-behavioral-and-scenario-guide.md)
+> [Master Curriculum Syllabus](./README.md) • [The Complete AI Engineer Roadmap (Phases 00–08)](./AI_ENGINEER_ROADMAP.md) • [Senior Platform Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md) • [Production Readiness Review (PRR)](./architecture/production-readiness-review.md) • [Architectural ADRs](./architecture/adrs/README.md) • [Post-Mortems](./architecture/post-mortems/README.md)
 
 ---
 
@@ -11,23 +11,31 @@
 As of late 2026, AI engineering has passed several foundational inflection points:
 
 1. **The Dual Scaling Law Paradigm:** Scaling compute is no longer confined to pre-training clusters. **Test-time compute (inference scaling)** has established a second scaling axis (System 2 thinking), trading inference latency for verified, multi-step problem solving.
-2. **From Conversational Chat to Governed Agentic Infrastructure:** The ecosystem has converged on open interoperability protocols—specifically the **Model Context Protocol (MCP)** under the Linux Foundation—and microVM execution sandboxes (Firecracker/E2B), transforming agents from fragile prompt loops into governed distributed systems.
+2. **From Conversational Chat to Governed Agentic Infrastructure:** The ecosystem has converged on open interoperability protocols—specifically the **Model Context Protocol (MCP)** and Google's **Agent-to-Agent (A2A)** protocol under the Linux Foundation—and microVM execution sandboxes (Firecracker/E2B), transforming agents from fragile prompt loops into governed distributed systems.
 3. **From "Vibe Coding" to Spec-Driven Development (SDD):** Engineering teams are abandoning uncontrolled prompt-driven coding in favor of formal, machine-readable specifications (`SPEC.md`, architectural contracts, and deterministic verification gates).
 4. **Context-Augmented Infrastructure & Inference Acceleration:** Radical breakthroughs in KV-cache sharing (**RadixAttention**), **GraphRAG**, and **Speculative Decoding (EAGLE-3/P-EAGLE)** deliver 2–4x latency improvements and 70–80% cost reductions.
 5. **Governance-as-Code:** Phased enforcement of the **EU AI Act** and certification under **ISO 42001** have made automated evaluation suites, LLM-as-a-judge guardrails, and adversarial red-teaming mandatory release criteria.
 
 ```mermaid
 flowchart TD
-    subgraph S1["1. Modern AI Stack (2025–2026)"]
-        A["💻 Interface and Development<br>• Spec-Driven Development (SDD)<br>• Autonomous SWE Agents (CodeRabbit, Qodo)"]
-        B["🔌 Agentic Protocols and Security<br>• Model Context Protocol (MCP - Linux Foundation)<br>• MicroVM Sandboxes (Firecracker / E2B)"]
-        C["⚡ Inference and Reasoning Scaling<br>• Test-Time Compute (PRM, MCTS, Long-CoT)<br>• Speculative Decoding (EAGLE-3, P-EAGLE)"]
-        D["🧠 Context and Data Infrastructure<br>• RadixAttention KV Caches (SGLang/vLLM)<br>• GraphRAG (Neo4j / Community Summaries)"]
+    subgraph ModernStack ["The Modern AI Engineering Stack (2025–2026)"]
+        A["💻 Interface and Development<br>• Spec-Driven Development (SDD)<br>• Autonomous SWE Agents (Claude Code, Antigravity)"]
+        B["🔌 Protocols and Sandboxing<br>• Model Context Protocol (MCP - Linux Foundation AAIF)<br>• Agent-to-Agent (A2A) • MicroVMs (Firecracker/E2B)"]
+        C["⚡ Inference and Reasoning Scaling<br>• Test-Time Compute (PRM, MCTS, Thinking Tokens)<br>• Speculative Decoding (EAGLE-3, P-EAGLE)"]
+        D["🧠 Context and Data Infrastructure<br>• RadixAttention KV Caches (SGLang/vLLM)<br>• Contextual Retrieval • GraphRAG (Neo4j / Leiden)"]
         E["📱 Edge Runtime and SLMs<br>• Frontier SLMs (Phi-4, Qwen 2.5)<br>• 1.58-Bit Ternary Quantization (BitNet)"]
-        F["🛡️ Governance and Quality Gates<br>• Automated Continuous Evals (Promptfoo)<br>• ISO 42001 and EU AI Act Auditing"]
+        F["🛡️ Governance and Quality Gates<br>• Automated Continuous Evals (DeepEval, Promptfoo)<br>• ISO 42001 and EU AI Act Compliance-as-Code"]
         
         A --> B --> C --> D --> E --> F
     end
+
+    style ModernStack fill:none,stroke:#2563eb,stroke-width:2px
+    style A stroke:#2563eb,stroke-width:2px
+    style B stroke:#16a34a,stroke-width:2px
+    style C stroke:#d97706,stroke-width:2px
+    style D stroke:#16a34a,stroke-width:2px
+    style E stroke:#7c3aed,stroke-width:2px
+    style F stroke:#dc2626,stroke-width:2px
 ```
 
 ---
@@ -35,25 +43,27 @@ flowchart TD
 ## 1. Agentic AI & Orchestration Architecture
 
 ### 1.1 Model Context Protocol (MCP) as the Open Standard
-* **Current State & Evolution:** Donated to the Linux Foundation (Agentic AI Foundation), MCP has become the industry-standard **"USB-C for AI."** It replaces bespoke tool integrations with a universal, client-host-server protocol based on JSON-RPC 2.0. The specification features a stateless, routable, and cacheable architecture supporting horizontal load balancing.
+* **Current State & Evolution:** Donated to the Linux Foundation's **Agentic AI Foundation (AAIF)**, MCP is the industry-standard **"USB-C for AI."** It replaces bespoke tool integrations with a universal, client-host-server protocol based on JSON-RPC 2.0. The specification features a stateless, routable, and cacheable architecture supporting horizontal load balancing.
 * **Core Primitives:**
   - **Tools:** Action-oriented executable functions (APIs, databases, bash runners) invoked by model decisions.
   - **Resources:** Data-oriented, read-only context streams (file descriptors, logs, database records) for zero-hallucination grounding.
   - **Prompts:** Workflow-oriented reusable templates and slash-commands exposed directly by the server.
+  - **Roots & Reverse Sampling:** File system boundary declarations and server-initiated model completion requests (`sampling/createMessage`).
 * **Transport Mechanisms:** Dual support for `stdio` (local IDE/CLI development) and **Streamable HTTP/SSE (Server-Sent Events)** for cloud-native, scalable production clusters.
 * **Roadmap Recommendation:** Deprecate proprietary tool bindings; expose internal data sources and microservices through containerized MCP servers.
 
 ### 1.2 MicroVM Sandboxes & Secure Code Execution (Firecracker / E2B)
-* **Threat Model:** AI agents generating and executing non-deterministic code introduce severe vectors: credential exfiltration, prompt injection jailbreaks, and container breakout escapes.
+* **Threat Model:** AI agents generating and executing non-deterministic code introduce severe attack vectors: credential exfiltration, prompt injection jailbreaks, and container breakout escapes.
 * **Architectural Solutions:**
   - **Firecracker MicroVMs (E2B):** Hardware-level virtualization providing an independent Linux kernel per agent session with sub-second startup (<200ms) for ephemeral task execution.
   - **gVisor Container Isolation (Modal):** Intercepts system calls in user space; ideal for serverless GPU-bound tasks and heavy ML pipelines.
   - **Persistent Workspaces (Daytona):** Stateful developer environments (Docker/Kata/Sysbox) where agents maintain dependencies and file state over long sessions.
   - **Egress & Syscall Governance:** Deny-by-default network firewalls, ephemeral credential injection (preventing the LLM from seeing raw API keys), and strict seccomp syscall filtering.
 
-### 1.3 Multi-Agent Frameworks & Human-in-the-Loop (HITL)
-* **Orchestration Paradigms:** Moving away from monolithic prompt chains to deterministic Directed Acyclic Graphs (DAGs) and state machines (Google ADK / Antigravity, LangGraph, Microsoft Agent Framework, LlamaIndex Workflows).
-* **Supervisor vs. Swarm Architectures:** Centralized supervisor agents handle routing and sub-task delegation, while choreographic swarms pass typed message payloads through shared event buses.
+### 1.3 Multi-Agent Frameworks & Agent-to-Agent (A2A) Protocols
+* **Orchestration Paradigms:** Moving away from monolithic prompt chains to deterministic Directed Acyclic Graphs (DAGs) and state machines (Google ADK / Antigravity, LangGraph, Microsoft Agent Framework).
+* **Supervisor vs. Swarm Architectures:** Centralized supervisor agents handle routing and sub-task delegation, while choreographic swarms pass typed message payloads over shared event buses.
+* **The Open Protocol Stack:** MCP governs the **Agent-to-Tool** foreign function boundary; Google's **Agent-to-Agent (A2A)** protocol (Linux Foundation standard) governs **Agent-to-Agent** task delegation, discovery, and Agent Cards.
 * **Human-in-the-Loop Workflows:**
   - **Durable Execution & Breakpointing:** Agent execution pauses before executing state-mutating actions (financial transactions, DB writes, code deployment).
   - **Time-Travel Debugging:** State replay and state mutation allowing human reviewers to edit context or fork execution before resuming.
@@ -86,26 +96,34 @@ flowchart TD
 * **RadixAttention (SGLang) & PagedAttention (vLLM):** Organizes KV caches into a radix tree (compressed prefix tree), allowing instant KV reuse across divergent agent requests.
 * **Context-Augmented Generation (CAG):** Instead of repeated retrieval queries, enterprises pre-load stable enterprise knowledge bases directly into cached memory, transforming latency from multi-second RAG to near-instant token generation.
 
-### 3.2 Hybrid RAG & Knowledge Graphs (GraphRAG)
+### 3.2 Contextual Retrieval & Knowledge Graphs (GraphRAG)
+* **Contextual Retrieval (Anthropic):** Prepending document-level context to each chunk before embedding and BM25 indexing, reducing retrieval failures by 35% to 67%.
 * **Limitations of Vector-Only RAG:** Vector search fails at multi-hop reasoning, thematic aggregation, and understanding complex relationships across documents.
 * **GraphRAG Architecture:**
-  - Extracts entities and directed relationships into a Knowledge Graph (e.g., Neo4j, Microsoft GraphRAG).
+  - Extracts entities and directed relationships into a Knowledge Graph (Neo4j, Microsoft GraphRAG).
   - Performs community detection (Leiden algorithm) and generates hierarchical summaries.
-  - **Hybrid Retrieval Triad:** Combines dense semantic vector search + sparse BM25/SPLADE lexical search + graph traversal queries, ranked via reciprocal rank fusion (RRF) and cross-encoder rerankers.
+  - **Hybrid Retrieval Triad:** Combines dense semantic vector search + sparse BM25 lexical search + graph traversal queries, ranked via reciprocal rank fusion (RRF) and cross-encoder rerankers.
 
 ```mermaid
 flowchart LR
     Q["👤 User Query"] --> Router{"🔀 Query Classifier"}
     Router -->|"Semantic / Specific"| Dense["🧠 Dense Vector Search<br>(HNSW Index)"]
-    Router -->|"Exact Keywords / IDs"| Sparse["📑 Sparse Lexical Search<br>(BM25 / SPLADE)"]
+    Router -->|"Exact Keywords / IDs"| Sparse["📑 Sparse Lexical Search<br>(BM25 Index)"]
     Router -->|"Multi-Hop / Relational"| Graph["🕸️ GraphRAG Traversal<br>(Community Summaries)"]
     
-    Dense --> RRF["⚡ Reciprocal Rank Fusion<br>(RRF)"]
+    Dense --> RRF["⚡ Reciprocal Rank Fusion<br>(RRF k=60)"]
     Sparse --> RRF
     Graph --> RRF
     
     RRF --> Rerank["🎯 Cross-Encoder Reranker"]
     Rerank --> Context["📄 Compacted Grounded Context"]
+
+    style Router stroke:#2563eb,stroke-width:2px
+    style Dense stroke:#16a34a,stroke-width:2px
+    style Sparse stroke:#16a34a,stroke-width:2px
+    style Graph stroke:#16a34a,stroke-width:2px
+    style RRF stroke:#d97706,stroke-width:2px
+    style Rerank stroke:#7c3aed,stroke-width:2px
 ```
 
 ---
@@ -154,47 +172,78 @@ flowchart LR
 | **Speculative Decoding (EAGLE-3 / P-EAGLE)** | **Production-Ready** | 2x–4x inference speedup with zero quality degradation; slashes HBM bandwidth saturation. | Enable speculative drafting in vLLM/SGLang configurations for all high-throughput inference endpoints. | Using poorly trained, non-aligned draft models that cause verification rejections and latency penalties. |
 | **Test-Time Compute (Reasoning Models)** | **Accelerating** | Autonomous System 2 verification, complex logic solving, self-correcting code generation. | Route high-complexity tasks (architecture design, bug diagnosis, math) to reasoning models; use token budget caps. | Defaulting every simple user prompt to reasoning models (wasting latency and budget). |
 | **RadixAttention & Context Caching** | **Production-Ready** | Up to 80% reduction in Time to First Token (TTFT) and input token costs via shared KV caches. | Transition to SGLang/vLLM engines with prefix caching; structure system prompts with static prefixes first. | Frequently modifying the beginning of system prompts, invalidating KV-cache trees. |
-| **GraphRAG + Hybrid Retrieval** | **Accelerating** | Eliminates multi-hop reasoning failures; maps complex enterprise entity relationships. | Build community knowledge graphs for dense documentation; use a router to switch between vector and GraphRAG. | Forcing simple FAQ/lookup queries through an expensive multi-hop knowledge graph query. |
-| **Automated Eval Suites & LLM Judges** | **Production-Ready** | Deterministic CI/CD release gates; prevents regression in prompts and agent capabilities. | Integrate Promptfoo/DeepEval into GitHub Actions; run pairwise evaluations against frozen ground-truth sets. | Relying on subjective manual eyeballing or a single uncalibrated LLM judge. |
+| **GraphRAG + Contextual Retrieval** | **Accelerating** | Eliminates multi-hop reasoning failures; maps complex enterprise entity relationships. | Build community knowledge graphs for dense documentation; prepend chunk context before indexing. | Forcing simple FAQ/lookup queries through an expensive multi-hop knowledge graph query. |
+| **Automated Eval Suites (DeepEval / Promptfoo)** | **Production-Ready** | Deterministic CI/CD release gates; prevents regression in prompts and agent capabilities. | Integrate Promptfoo/DeepEval into GitHub Actions; run pairwise evaluations against frozen ground-truth sets. | Relying on subjective manual eyeballing or a single uncalibrated LLM judge. |
 | **ISO 42001 & Guardrails Governance** | **Accelerating / Mandatory** | Demonstrable compliance with EU AI Act; operationalizes enterprise AI risk management. | Implement runtime input/output guardrails (Llama Guard); create audit-ready logging of all model decisions. | Treating compliance as a post-launch manual audit rather than automated "Compliance-as-Code". |
 | **Frontier SLMs (Phi-4, Qwen 2.5) on Edge** | **Production-Ready** | Zero API cost, sub-10ms latency, 100% on-premise data privacy; runs on commodity NPUs/Macs. | Deploy SLMs for localized extraction, classification, and drafting tasks using Ollama or vLLM; explore WebGPU for web clients. | Assuming frontier cloud LLMs are required for simple structured data transformation tasks. |
 | **Spec-Driven Development (SDD)** | **Production-Ready** (High ROI) | Prevents code bloat, architectural decay, and hallucinated logic in AI-assisted development. | Enforce formal `SPEC.md` and repository guidelines (`.cursorrules`, `AGENTS.md`) before agents write code; verify via CI. | "Vibe coding" directly against production branches without specification bounds or deterministic tests. |
 
 ---
 
-## 🗓️ Phased Implementation Plan (0–12 Months)
+## 🗓️ Enterprise Adoption Horizon (0–12 Months)
 
 ```mermaid
 flowchart LR
-    subgraph P1["Phase 1: Foundations (M0-M3)"]
+    subgraph H1["Horizon 1: Foundations (Months 0–3)"]
         T1["📝 IDE Contracts (SPEC.md / AGENTS.md)"]
-        T2["🧪 Automated CI/CD Eval Gates"]
-        T3["🔌 Internal MCP Tool Servers"]
+        T2["🧪 Automated CI/CD Eval Gates (DeepEval)"]
+        T3["🔌 Internal MCP Tool Servers (AAIF Standard)"]
         T1 --> T2 --> T3
     end
 
-    subgraph P2["Phase 2: Performance (M3-M6)"]
+    subgraph H2["Horizon 2: Performance (Months 3–6)"]
         T4["⚡ RadixAttention and Prefix Caches"]
         T5["🎯 Speculative Decoding (EAGLE-3)"]
-        T6["🔒 MicroVM Execution (Firecracker)"]
-        T7["🕸️ Hybrid RAG and GraphRAG"]
+        T6["🔒 MicroVM Execution (Firecracker / E2B)"]
+        T7["🕸️ Contextual Retrieval and GraphRAG"]
         T4 --> T5 --> T6 --> T7
     end
 
-    subgraph P3["Phase 3: Scaling and Edge (M6-M12)"]
-        T8["🔀 Test-Time Compute Router"]
+    subgraph H3["Horizon 3: Scale and Edge (Months 6–12)"]
+        T8["🔀 Test-Time Compute Task Router"]
         T9["📱 Edge SLMs (Phi-4, BitNet 1.58b)"]
-        T10["🛡️ ISO 42001 and EU AI Act Audit"]
+        T10["🛡️ ISO 42001 and EU AI Act Auditing"]
         T8 --> T9 --> T10
     end
 
     T3 --> T4
     T7 --> T8
 
-    style P1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style P2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style P3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style H1 fill:none,stroke:#2563eb,stroke-width:2px
+    style H2 fill:none,stroke:#d97706,stroke-width:2px
+    style H3 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style T1 stroke:#2563eb,stroke-width:2px
+    style T2 stroke:#2563eb,stroke-width:2px
+    style T3 stroke:#2563eb,stroke-width:2px
+    style T4 stroke:#d97706,stroke-width:2px
+    style T5 stroke:#d97706,stroke-width:2px
+    style T6 stroke:#d97706,stroke-width:2px
+    style T7 stroke:#d97706,stroke-width:2px
+    style T8 stroke:#16a34a,stroke-width:2px
+    style T9 stroke:#16a34a,stroke-width:2px
+    style T10 stroke:#16a34a,stroke-width:2px
 ```
 
 ### Key Takeaway for Engineering Leaders
 The winning engineering organizations in 2025–2026 are not those frantically experimenting with every new model; they are those that build **modular, standardized infrastructure** (MCP, microVM sandboxes, RadixAttention KV caching, and Spec-Driven CI/CD pipelines) that can seamlessly incorporate whatever frontier reasoning model or edge SLM emerges tomorrow.
+
+---
+
+## 🧭 Navigation
+
+- **Master Curriculum Syllabus**: [← Back to Master Curriculum & Architecture (README.md)](./README.md)
+- **Conceptual Roadmap**: [🗺️ The Complete AI Engineer Roadmap (Phases 00–08)](./AI_ENGINEER_ROADMAP.md)
+- **Senior Platform Infrastructure**: [🏗️ The Senior AI Platform & Agent Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md)
+- **Senior Transition Guide**: [🏛️ The Senior AI Transition Guide](./senior-transition-guide.md)
+- **Production Audit**: [🛡️ Production Readiness Review (PRR)](./architecture/production-readiness-review.md)
+- **Phase Hubs**:
+  - [Phase 00: Foundations & Token Mechanics](./00-foundations-and-token-mechanics/README.md)
+  - [Phase 01: Prompt & Context Engineering](./01-prompt-and-context-engineering/README.md)
+  - [Phase 02: Retrieval & Knowledge Systems](./02-rag-and-knowledge-systems/README.md)
+  - [Phase 03: Tools & Model Context Protocol](./03-tools-and-model-context-protocol/README.md)
+  - [Phase 04: Agentic Systems & Orchestration](./04-agentic-systems-and-orchestration/README.md)
+  - [Phase 05: AI Security & Guardrails](./05-ai-security-and-guardrails/README.md)
+  - [Phase 06: Evals & Observability](./06-evals-and-observability/README.md)
+  - [Phase 07: High-Throughput Serving & LLMOps](./07-production-deployment-and-llmops/README.md)
+  - [Phase 08: AI-Augmented SDLC & Leadership](./08-ai-augmented-sdlc-and-leadership/README.md)

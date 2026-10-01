@@ -177,7 +177,7 @@ flowchart TD
 | **05** | [**AI Security, Guardrails & Trust**](./05-ai-security-and-guardrails/README.md) | OWASP Top 10 for GenAI, Dual-LLM Quarantine pattern, cryptographic canary tokens, PII masking vaults, prompt injection defense, and **Algorithmic Bias, Disparate Impact & Fairlearn audits (EU AI Act compliance)**. | 1 Week | Lead |
 | **06** | [**Evals, Observability & Telemetry**](./06-evals-and-observability/README.md) | Automated evaluation flywheels, multi-turn tool trajectory FSM validation, groundedness judges, **Explainable AI (XAI / SHAP attribution grounding)**, and OpenTelemetry `semantic-conventions-genai` repo standards. | 1 Week | Lead |
 | **07** | [**Production Deployment & LLMOps**](./07-production-deployment-and-llmops/README.md) | Multi-provider resilient AI gateways, Token-Bucket TPM/RPM throttling, vector semantic caching, Batch APIs (50% discount), **Dynamic Multi-LoRA Adapter Serving (S-LoRA / vLLM multi-adapter routing)**, and Edge AI deployment. | 2 Weeks | Lead/Ops |
-| **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | The Big Seven agentic coding tools, Spec-Driven Development (SDD), machine-readable `AGENT.md` contracts, The Trust Gap (92% adoption vs 29% trust), headless CI/CD review bots, 14-day rework metrics, and modular capability accelerators. | Ongoing | Executive |
+| **08** | [**AI-Augmented SDLC & Leadership**](./08-ai-augmented-sdlc-and-leadership/README.md) | Software 3.0 paradigm, the Big Seven agentic coding tools, Spec-Driven Development (SDD), machine-readable `AGENT.md` contracts, The Trust Gap (84% adoption vs 29% trust), headless CI/CD review bots, 14-day rework metrics, and modular capability accelerators. | Ongoing | Executive |
 
 ---
 

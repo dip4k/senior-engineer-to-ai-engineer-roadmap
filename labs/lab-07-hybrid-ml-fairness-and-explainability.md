@@ -4,7 +4,7 @@
 
 > **Regulated Decisioning Pipeline**: Tabular Risk Scoring + Fairlearn Bias Audit + SHAP Attributions + Grounded LLM Adverse Action Generator  
 > 
-> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🛡️ Module 05: Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [🏗️ Enterprise AI System Designs](../architecture/enterprise-ai-system-designs.md) • [📓 Interactive Colab Fairness & SHAP](../notebooks/07_ml_fairness_and_shap_explainability.ipynb)
+> [🔙 Back to Phase 06: Evals & Observability](../phase-06/) • [🛡️ Phase 05: AI Security & Guardrails](../phase-05/) • [🧪 All Practice Labs](README.md) • [🏗️ Enterprise AI System Designs](../architecture/enterprise-ai-system-designs.md) • [📓 Interactive Colab Fairness & SHAP](../notebooks/07_ml_fairness_and_shap_explainability.ipynb)
 
 ---
 
@@ -19,25 +19,19 @@ This lab delivers an end-to-end, enterprise-grade **Hybrid ML + GenAI** pipeline
 
 ```mermaid
 flowchart TD
-    Data["📊 Applicant / Vendor Data<br>(Financials + Protected Attributes)"] --> Model["🤖 Deterministic Tabular Model<br>(Logistic Regression / XGBoost)"]
-    
-    Model --> Predictions["📈 Prediction Probabilities<br>and Decisions (Threshold = 0.5)"]
-    
-    Predictions --> FairlearnAudit["⚖️ 1. Fairlearn Bias Audit<br>• Disparate Impact (80% Rule)<br>• Demographic Parity Difference"]
-    
-    FairCheck{"🔍 Fairness Passed?<br>(DI >= 0.80 and DPD <= 0.10)"}
-    FairlearnAudit --> FairCheck
-    FairCheck -- "Fail" --> Mitigate["🛑 Halt Deployment / Apply Re-Weighing"]
-    FairCheck -- "Pass" --> SHAP_Engine["🔬 2. SHAP Attribution Engine<br>• Local Additive Feature Attributions (φ_i)<br>• Base Value and Waterfall Sort"]
-    
-    SHAP_Engine --> TopFactors["📋 Top Negative Attribution Drivers<br>(e.g., debt_to_income, late_payments)"]
-    
-    TopFactors --> LLM_Gen["✍️ 3. LLM Explainability Generator<br>(Structured Adverse Action Notice)"]
-    
-    LLM_Gen --> Guardrail{"🛡️ 4. Groundedness Guardrail<br>• Strict Feature Grounding<br>• Hallucination Assertion Gate"}
-    
-    Guardrail -- "Verified Grounded" --> CompliantNotice["✅ Issue Regulated Adverse Action Notice"]
-    Guardrail -- "Hallucinated Reason" --> Quarantined["🛑 Reject Output and Fallback to Rule Template"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    Data["Applicant Data"]:::default --> Model["Deterministic Tabular Model"]:::default
+    Model --> Predictions["Prediction Probabilities (0.50)"]:::default
+    Predictions --> FairlearnAudit["1. Fairlearn Bias Audit<br>(80% Four-Fifths Rule)"]:::highlight
+    FairlearnAudit --> FairCheck{"Fairness Passed?"}:::default
+    FairCheck -- "Fail" --> Mitigate["Halt Deployment"]:::highlight
+    FairCheck -- "Pass" --> SHAP_Engine["2. SHAP Attribution Engine<br>(Local Feature Attributions)"]:::default
+    SHAP_Engine --> LLM_Gen["3. LLM Explainability Generator<br>(Adverse Action Notice)"]:::highlight
+    LLM_Gen --> Guardrail{"4. Groundedness Guardrail"}:::default
+    Guardrail -- "Verified" --> CompliantNotice["Issue Regulated Notice"]:::highlight
+    Guardrail -- "Hallucinated" --> Quarantined["Fallback to Rule Template"]:::highlight
 ```
 
 #### Diagram Walkthrough:

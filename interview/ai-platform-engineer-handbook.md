@@ -41,13 +41,24 @@ Picture this scene: You join the video call for your final System Design round. 
 
 ```mermaid
 flowchart TD
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#e53e3e,stroke-width:2px;
+
     subgraph Nightmare ["What Broke at 2:15 AM?"]
-        A["1. Unconstrained Retries<br>(No Idempotency Key)"] -->|"Double Charge"| F1["Financial Loss"]
-        B["2. In-Memory Loops<br>(Worker Crash Drops State)"] -->|"Lost Context"| F2["Broken User Sessions"]
-        C["3. Naive Vector Post-Filter<br>(Scans 100K Chunks)"] -->|"P99 Spikes to 4s"| F3["Thread Starvation"]
-        D["4. Cascading Upstream 429s<br>(No Dynamic Token Bucket)"] -->|"Throttling Stampede"| F4["Platform Outage"]
+        A["1. Unconstrained Retries<br>(No Idempotency Key)"]:::default -->|"Double Charge"| F1["Financial Loss"]:::highlight
+        B["2. In-Memory Loops<br>(Worker Crash Drops State)"]:::default -->|"Lost Context"| F2["Broken User Sessions"]:::highlight
+        C["3. Naive Vector Post-Filter<br>(Scans 100K Chunks)"]:::default -->|"P99 Spikes to 4s"| F3["Thread Starvation"]:::highlight
+        D["4. Cascading Upstream 429s<br>(No Dynamic Token Bucket)"]:::default -->|"Throttling Stampede"| F4["Platform Outage"]:::highlight
     end
+
+    style Nightmare fill:none,stroke:#4a5568,stroke-width:2px;
 ```
+
+#### Incident Failure Walkthrough:
+1. **Unconstrained Retries**: Without deterministic idempotency keys (`idempotency_key`), network timeouts re-trigger side-effecting financial tools, duplicating charges.
+2. **In-Memory Loops**: Container restarts destroy volatile session state, leaving users stranded mid-turn.
+3. **Naive Post-Filtering**: Retrieving top-K globally and filtering tenants in application memory causes high latency and thread pool starvation.
+4. **Cascading 429s**: Lack of upfront token bucket reservation creates thundering-herd rate-limit storms against upstream model APIs.
 
 The candidates who pass this round are not those reciting textbook definitions. They are the ones who can step up to the board, draw the distributed state machine, write out the KV-cache sizing math, explain where the locks live, and show how the Write-Ahead Log (WAL) ensures atomic execution.
 

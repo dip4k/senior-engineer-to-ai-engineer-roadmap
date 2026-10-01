@@ -1,16 +1,24 @@
 # Edge AI, Local Model Runtimes & Hybrid Cloud-Device Routing
 
-> **[Tier: 🔵 Advanced]**  
-> **Architecting hybrid client-cloud systems: on-device Small Language Models (SLMs), browser-native WebGPU runtimes (WebLLM), Apple MLX, and tiered edge-to-cloud fallback cascades.**
+> **Tier**: 🔵 Advanced  
+> **Estimated Reading Time**: 16 minutes  
+> **Prerequisites**: Lesson 01 (Resilient AI Gateways), Lesson 06 (Dynamic Multi-LoRA Serving)  
+> **Core Concept**: Hybrid edge-cloud routing delegates routine tasks and privacy-sensitive data to client-side Small Language Models (SLMs) via WebGPU or local runtimes, dispatching complex reasoning to cloud gateways.
 
 ---
 
-## 🎯 What You Will Learn
-
-- How to architect hybrid edge-cloud systems that balance privacy, offline availability, and compute cost.
-- The mechanics of local execution engines: WebLLM (WebGPU), Apple MLX, Ollama (GGUF), and ONNX Runtime GenAI.
-- How to probe client hardware capabilities and VRAM constraints before instantiating local models.
-- How to design tiered routing: running local SLMs for intent classification and PII scrubbing while dispatching complex reasoning to cloud gateways.
+### Term Ledger
+| Term | Status | Definition / Clarification |
+| :--- | :--- | :--- |
+| **Small Language Model (SLM)** | Introduced | A compact neural network (1B to 4B parameters) optimized to execute directly on consumer CPUs, GPUs, or NPUs with minimal memory footprints. |
+| **WebGPU** | Introduced | A modern web browser API providing direct, low-level hardware acceleration to browser tabs without installing native drivers. |
+| **WebLLM** | Introduced | A high-performance in-browser serving engine that runs quantized models directly on WebGPU in client browser tabs. |
+| **ONNX Runtime GenAI** | Introduced | A native cross-platform execution engine for running generative models on Windows, Linux, and edge IoT devices via DirectML or CPU. |
+| **Hybrid Edge-Cloud Routing** | Introduced | An architecture where client devices resolve low-latency and privacy-sensitive requests locally, falling back to centralized cloud models for heavy reasoning. |
+| **Token** | Assumed | Basic chunk of processed text from earlier lessons. |
+| **Quantization** | Assumed | Technique reducing weight precision (for example, FP16 to INT4) to save VRAM and memory bandwidth. |
+| **AI Gateway** | Assumed | Centralized reverse proxy handling routing, fallbacks, and rate limiting across model endpoints. |
+| **vLLM** | Assumed | High-throughput server engine using PagedAttention for large model deployments. |
 
 ---
 
@@ -109,12 +117,11 @@ Pre-Flight Hardware Check Pipeline:
 
 ## 5. Concrete Scenario & Code Implementation
 
-The following Python 3.12+ implementation demonstrates a **Hybrid Edge-Cloud Client with Local SLM Execution and Cloud Gateway Failover**:
+The following Python 3.12+ implementation demonstrates a **Hybrid Edge-Cloud Client with Local SLM Execution, Privacy Boundary Enforcement, and Cloud Gateway Failover**:
 
 ```python
 import asyncio
 import time
-import httpx
 from typing import Optional, Dict, Any
 from pydantic import BaseModel, Field
 
@@ -138,77 +145,85 @@ class HybridEdgeCloudClient:
     Evaluates local execution constraints, attempts local SLM execution,
     and falls back seamlessly to the cloud gateway.
     """
-    def __init__(self, local_ollama_url: str = "http://localhost:11434", cloud_gateway_url: str = "https://api.gateway.internal/v1"):
-        self.local_url = local_ollama_url
-        self.cloud_url = cloud_gateway_url
-        self.local_model = "phi4:mini"
+    def __init__(self, local_available: bool = True):
+        self.local_available = local_available
+        self.local_model = "phi4:mini-4bit"
         self.cloud_model = "claude-3-7-sonnet"
 
     async def probe_local_runtime(self) -> bool:
-        """Verifies if local inference daemon is healthy and accessible."""
-        try:
-            async with httpx.AsyncClient(timeout=0.5) as client:
-                res = await client.get(f"{self.local_url}/api/tags")
-                return res.status_code == 200
-        except Exception:
-            return False
+        """Simulates probing local WebGPU/NPU device availability and memory budget."""
+        await asyncio.sleep(0.01)
+        return self.local_available
 
     async def execute(self, req: HybridInferenceRequest) -> HybridInferenceResponse:
         start_time = time.monotonic()
         is_local_healthy = await self.probe_local_runtime()
 
-        # Decision Policy:
-        # If privacy is strictly required, we MUST run locally or fail.
+        # Decision Policy 1: Zero-egress privacy mandate
         if req.require_privacy:
             if not is_local_healthy:
-                raise RuntimeError("Privacy required, but local inference engine is unavailable.")
+                raise RuntimeError("Zero-egress privacy mandated, but local runtime is unavailable.")
             return await self._execute_local(req, start_time)
 
-        # If complexity is low or offline, attempt local SLM
+        # Decision Policy 2: Low-complexity edge-first execution
         if req.complexity_hint == "low" and is_local_healthy:
             try:
                 return await self._execute_local(req, start_time)
             except Exception as local_err:
                 print(f"[EDGE WARNING] Local inference failed: {local_err}. Falling back to cloud.")
 
-        # Default / High Complexity: Execute via Cloud Gateway
+        # Decision Policy 3: Default / High Complexity cloud gateway dispatch
         return await self._execute_cloud(req, start_time)
 
     async def _execute_local(self, req: HybridInferenceRequest, start_time: float) -> HybridInferenceResponse:
-        async with httpx.AsyncClient(timeout=10.0) as client:
-            payload = {
-                "model": self.local_model,
-                "prompt": req.prompt,
-                "stream": False
-            }
-            res = await client.post(f"{self.local_url}/api/generate", json=payload)
-            res.raise_for_status()
-            data = res.json()
-            latency = (time.monotonic() - start_time) * 1000.0
-            return HybridInferenceResponse(
-                content=data.get("response", ""),
-                execution_location="LOCAL_EDGE_SLM",
-                model_name=self.local_model,
-                latency_ms=round(latency, 2)
-            )
-
-    async def _execute_cloud(self, req: HybridInferenceRequest, start_time: float) -> HybridInferenceResponse:
-        # Simulated Cloud Gateway dispatch
-        await asyncio.sleep(0.35)  # Simulate network + cloud generation
+        # Simulate local NPU/GPU execution (zero network egress, ~40ms)
+        await asyncio.sleep(0.04)
         latency = (time.monotonic() - start_time) * 1000.0
         return HybridInferenceResponse(
-            content=f"Cloud synthesized analysis of: '{req.prompt}'",
+            content=f"Locally processed (zero-egress): {req.prompt.upper()}",
+            execution_location="LOCAL_EDGE_SLM",
+            model_name=self.local_model,
+            latency_ms=round(latency, 2)
+        )
+
+    async def _execute_cloud(self, req: HybridInferenceRequest, start_time: float) -> HybridInferenceResponse:
+        # Simulate Cloud Gateway dispatch (network round-trip + generation, ~180ms)
+        await asyncio.sleep(0.18)
+        latency = (time.monotonic() - start_time) * 1000.0
+        return HybridInferenceResponse(
+            content=f"Cloud synthesized frontier reasoning for: {req.prompt}",
             execution_location="CLOUD_GATEWAY",
             model_name=self.cloud_model,
             latency_ms=round(latency, 2)
         )
+
+if __name__ == "__main__":
+    async def main():
+        client = HybridEdgeCloudClient(local_available=True)
+
+        # 1. Low complexity task resolved on edge
+        req1 = HybridInferenceRequest(prompt="Format name: Alice", complexity_hint="low")
+        res1 = await client.execute(req1)
+        print(f"Query 1: {res1.execution_location} | {res1.model_name} | {res1.latency_ms}ms -> {res1.content}")
+
+        # 2. High complexity reasoning routed to cloud
+        req2 = HybridInferenceRequest(prompt="Diagnose distributed deadlock in raft cluster", complexity_hint="high")
+        res2 = await client.execute(req2)
+        print(f"Query 2: {res2.execution_location} | {res2.model_name} | {res2.latency_ms}ms -> {res2.content}")
+
+        # 3. Privacy sensitive task strictly held on edge
+        req3 = HybridInferenceRequest(prompt="SSN: 000-12-3456 Patient: Bob", require_privacy=True)
+        res3 = await client.execute(req3)
+        print(f"Query 3 (Privacy): {res3.execution_location} | {res3.model_name} | {res3.latency_ms}ms -> {res3.content}")
+
+    asyncio.run(main())
 ```
 
 ---
 
 ## 6. Engineering Solutions: Polyglot .NET 9 Client Architecture
 
-In enterprise desktop environments (e.g. WPF, MAUI, or Windows services), .NET 9 provides native local and cloud abstractions via `Microsoft.Extensions.AI`:
+In enterprise desktop environments (e.g. WPF, MAUI, or Windows background services), .NET 9 provides native local and cloud abstractions via `Microsoft.Extensions.AI`:
 
 ```csharp
 // C# .NET 9: Hybrid IChatClient with Ollama Local Fallback
@@ -235,7 +250,7 @@ public class HybridClientService
     {
         if (forceLocal)
         {
-            // Execute on local Ollama / ONNX instance
+            // Execute on local Ollama / ONNX instance (zero-egress guarantee)
             return await _localClient.GetResponseAsync(prompt, cancellationToken: ct);
         }
 
@@ -268,22 +283,22 @@ public class HybridClientService
 flowchart TD
     subgraph ClientDevice["Client Workstation / Edge Device"]
         UI["User Interface (Web / Desktop)"] --> Router{"Hybrid Edge-Cloud<br/>Decision Router"}
-        
-        Router -->|"1a. High Privacy / Low Complexity"| LocalEngine["Local Runtime (WebGPU / Ollama / ONNX)"]
+        Router -->|"Low Complexity / Zero Egress"| LocalEngine["Local Runtime (WebGPU / ONNX)"]
         LocalEngine --> SLM["Local 4-bit SLM<br/>(Phi-4 / Gemma 2)"]
     end
 
-    subgraph CloudInfrastructure["Enterprise Cloud Tier"]
-        Router -->|"1b. High Complexity / RAG"| CloudGW["Enterprise AI Gateway"]
-        CloudGW --> Frontier["Frontier Cloud Models<br/>(Claude 3.7 / GPT-4o / vLLM 70B)"]
+    subgraph CloudTier["Enterprise Cloud Tier"]
+        Router -->|"High Complexity / RAG"| CloudGW["Enterprise AI Gateway"]
+        CloudGW --> Frontier["Frontier Models<br/>(vLLM / Claude / GPT)"]
     end
 
-    subgraph Observability["Distributed Edge-to-Cloud Telemetry"]
-        Router -->|"Record Routing Decision"| Metrics["OTel Metric: edge_execution_ratio"]
+    subgraph Telemetry["Distributed Telemetry"]
+        Router -->|"Routing Log"| Metrics["OTel Metric: edge_execution_ratio"]
     end
 
-    ClientDevice ~~~ CloudInfrastructure
-    CloudInfrastructure ~~~ Observability
+    style ClientDevice fill:none,stroke:#3b82f6,stroke-width:2px
+    style CloudTier fill:none,stroke:#10b981,stroke-width:2px
+    style Telemetry fill:none,stroke:#64748b,stroke-width:2px
 ```
 
 ### Visual Walkthrough
@@ -346,7 +361,47 @@ flowchart TD
 
 ---
 
-## 12. Key Takeaways & Verified Resources
+## 🔬 12. Scenario-Driven Quick Check
+
+### Scenario 1: Preventing Out-of-Memory Tab Crashes in Browser WebGPU
+A team develops an internal customer support assistant that downloads a 4-bit 7B parameter SLM into the browser using WebLLM. On senior engineer laptops with 32 GB RAM, the tool loads smoothly. However, customer support representatives using thin-client laptops with 4 GB shared memory experience instant browser tab crashes and out-of-memory errors.
+**Question**: What architectural safeguard should you put in place before attempting model initialization in the browser?
+
+<details>
+<summary>View Solution</summary>
+
+Implement an explicit pre-flight hardware probe using WebGPU APIs (`navigator.deviceMemory` and `GPUAdapter.limits.maxStorageBufferBindingSize`). If available memory is below 4 GB or the device is a thin client, abort local model weight download entirely and transparently redirect all inference requests to the enterprise Cloud AI Gateway.
+</details>
+
+---
+
+### Scenario 2: Zero-Egress Privacy Guarantees vs. Unattended Fallbacks
+Your hybrid routing client has an automated fallback rule: if local SLM execution fails or times out after 2 seconds, the client dispatches the prompt to the cloud gateway. An employee inputs unredacted financial records into a privacy-mandated workflow, but the local inference daemon is stopped.
+**Question**: What critical security vulnerability occurs if the default fallback triggers, and how do you remediate it?
+
+<details>
+<summary>View Solution</summary>
+
+The fallback would transmit unredacted sensitive financial data over the public internet to third-party cloud servers, violating zero-egress compliance mandates. The remediation is a strict **Hard Privacy Boundary Policy**: when `require_privacy=True` is set on the request, the client must completely disable cloud fallback. If the local runtime is offline, the client must fail fast with a descriptive local exception and never transmit raw payload bytes across the network boundary.
+</details>
+
+---
+
+### Scenario 3: Mitigating Thermal Throttling and Battery Depletion on Mobile Devices
+Field technicians using mobile tablets in off-grid environments run local voice-to-text and form-filling SLMs. Technicians report that after 20 minutes of continuous inspection workflows, the tablets become hot, CPU clocks throttle down, and battery levels drop rapidly from 80% to 30%.
+**Question**: How do you architect local inference execution to balance mobile hardware health and user workflows?
+
+<details>
+<summary>View Solution</summary>
+
+1. Subscribe to the OS Battery Status API (`navigator.getBattery()`) and thermal state hooks.
+2. Restrict continuous autoregressive generation: batch field observations into discrete, on-demand completions rather than open-ended real-time loops.
+3. If battery drops below 20% or thermal throttling is signaled by the OS, throttle generation speed, switch to a smaller 1B quantized model, or alert the technician to connect to external power before initiating subsequent inference tasks.
+</details>
+
+---
+
+## 13. Key Takeaways & Verified Resources
 
 - **Edge AI eliminates data egress and marginal token costs**: Local SLMs run on consumer hardware for immediate response times.
 - **Always probe hardware before instantiating models**: Verify VRAM capacity, power source, and WebGPU limits to prevent browser crashes.

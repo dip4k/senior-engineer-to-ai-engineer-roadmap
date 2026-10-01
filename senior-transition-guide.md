@@ -1,20 +1,21 @@
 # The Senior AI Engineer & Architect Transition Guide
 ## Enterprise Architecture, Decision Frameworks, and Implementation Playbook
 
-> **An authoritative architectural guide for Senior Engineers, Tech Leads, Principal Developers, and Software Architects designing and deploying production AI applications and autonomous agentic systems.**
+> **An authoritative architectural guide for Senior Engineers, Tech Leads, Principal Developers, and Software Architects designing and deploying production AI applications and autonomous agentic systems.**  
+> [Master Curriculum Syllabus](./README.md) • [The Complete AI Engineer Roadmap (Phases 00–08)](./AI_ENGINEER_ROADMAP.md) • [Senior Platform Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md) • [Production Readiness Review (PRR)](./architecture/production-readiness-review.md) • [Architectural ADRs](./architecture/adrs/README.md)
 
 ---
 
 ```mermaid
 flowchart LR
-    subgraph NonAI["Legacy Software: 1.0 and 2.0"]
+    subgraph NonAI ["Legacy Software: 1.0 and 2.0"]
         B1["⚙️ Imperative Code and SQL Schemas"]
         B2["⏰ Static Business Rules and Cron Jobs"]
         B3["📊 Fixed Statistical ML Models"]
         B4["⚠️ Fragile on Unstructured Text"]
     end
     
-    subgraph AISolution["AI-Native Software: Systems 3.0"]
+    subgraph AISolution ["AI-Native Software: Systems 3.0"]
         A1["🧠 Probabilistic Reasoning Services"]
         A2["🛡️ Deterministic Guardrail Harness"]
         A3["🔌 Model Context Protocol (MCP)"]
@@ -24,12 +25,20 @@ flowchart LR
     B2 --> A2
     B4 --> A1
 
-    style NonAI fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style AISolution fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style NonAI fill:none,stroke:#2563eb,stroke-width:2px
+    style AISolution fill:none,stroke:#16a34a,stroke-width:2px
+    style B1 stroke:#2563eb,stroke-width:2px
+    style B2 stroke:#2563eb,stroke-width:2px
+    style B3 stroke:#2563eb,stroke-width:2px
+    style B4 stroke:#dc2626,stroke-width:2px
+    style A1 stroke:#16a34a,stroke-width:2px
+    style A2 stroke:#16a34a,stroke-width:2px
+    style A3 stroke:#16a34a,stroke-width:2px
+    style A4 stroke:#16a34a,stroke-width:2px
 ```
 
 ### Visual Architecture Walkthrough:
-1. **The Traditional Baseline**: Software 1.0 & 2.0 excel at deterministic business logic and specialized statistical classification, but break when confronted with unstructured ambiguity or multi-step reasoning.
+1. **The Traditional Baseline**: Software 1.0 and 2.0 excel at deterministic business rules and statistical classification, but break when handling unstructured text or multi-step reasoning.
 2. **The Systems Harness**: Software 3.0 pairs probabilistic reasoning engines with deterministic software harnesses (schemas, MCP tools, stateful WALs, and CI/CD evaluation gates) to deliver reliable production systems.
 
 ---
@@ -46,17 +55,17 @@ To understand where foundation models fit in production, let's trace how we got 
 
 ```mermaid
 flowchart TD
-    subgraph S1["Software 1.0: Deterministic"]
+    subgraph S1 ["Software 1.0: Deterministic"]
         A1["💻 Code: Handcrafted Logic"] --> B1["💾 Data: Structured Records"]
         B1 --> C1["📤 Output: Deterministic Result"]
     end
 
-    subgraph S2["Software 2.0: Statistical ML"]
+    subgraph S2 ["Software 2.0: Statistical ML"]
         A2["📚 Data: Curated Training Sets"] --> B2["⚙️ Training: Weight Optimization"]
         B2 --> C2["📈 Output: Numeric Predictions"]
     end
 
-    subgraph S3["Software 3.0: AI-Native Systems"]
+    subgraph S3 ["Software 3.0: AI-Native Systems"]
         A3["📝 Context: Prompts and Schemas"] --> B3["🧠 Model: Reasoning Microservice"]
         B3 --> C3["🕹️ Harness: State Machines and MCP"]
         C3 --> D3["🎯 Output: Goal Completion"]
@@ -65,9 +74,19 @@ flowchart TD
     C1 ~~~ A2
     C2 ~~~ A3
 
-    style S1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style S2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style S3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style S1 fill:none,stroke:#2563eb,stroke-width:2px
+    style S2 fill:none,stroke:#d97706,stroke-width:2px
+    style S3 fill:none,stroke:#16a34a,stroke-width:2px
+    style A1 stroke:#2563eb,stroke-width:2px
+    style B1 stroke:#2563eb,stroke-width:2px
+    style C1 stroke:#2563eb,stroke-width:2px
+    style A2 stroke:#d97706,stroke-width:2px
+    style B2 stroke:#d97706,stroke-width:2px
+    style C2 stroke:#d97706,stroke-width:2px
+    style A3 stroke:#16a34a,stroke-width:2px
+    style B3 stroke:#16a34a,stroke-width:2px
+    style C3 stroke:#16a34a,stroke-width:2px
+    style D3 stroke:#16a34a,stroke-width:2px
 ```
 
 ### 📊 Software Evolution Comparison Table
@@ -85,16 +104,16 @@ flowchart TD
 - **Where it hits a wall**: Real-world ambiguity. Traditional code fails when dealing with unstructured natural language, messy PDFs, free-text customer inquiries, or fuzzy multi-step problem solving. Every single edge case has to be manually anticipated and coded by a developer.
 
 #### Step 2: Software 2.0 — Specialized Statistical Machine Learning
-- **How we built it**: Instead of writing the rules manually, data science teams trained neural networks or gradient-boosted trees on domain datasets to learn statistical patterns (e.g., spam classifiers, recommendation engines, fraud scoring).
-- **The Strength**: Handled high-dimensional patterns that humans couldn't write rules for.
-- **Where it hits a wall**: Extremely fragile, task-specific, and expensive to maintain. A model trained for sentiment analysis cannot extract structured entities from an invoice. They output probabilities or classifications, not dynamic multi-step actions.
+- **How we built it**: Instead of writing rules manually, data science teams trained neural networks or gradient-boosted trees on domain datasets to learn statistical patterns (e.g., spam classifiers, recommendation engines, fraud scoring).
+- **The Strength**: Handled high-dimensional patterns that humans could not write rules for.
+- **Where it hits a wall**: Extremely fragile, task-specific, and expensive to maintain. A model trained for sentiment analysis cannot extract structured entities from an invoice. Models output probabilities, not dynamic multi-step actions.
 
 #### Step 3: Software 3.0 — The AI-Native Reasoning Harness
 - **How we build it**: We treat large language models as **probabilistic reasoning microservices**. They consume rich context (prompts, schemas, tools) and generate decisions or structured calls.
 - **The Senior Architect's Role**: We do not let models roam free. We build a **deterministic software harness** around the probabilistic core:
   - We constrain model outputs using strict JSON schemas and FSM logit masking.
   - We ground reasoning with hybrid vector search and document-level RBAC.
-  - We isolate external actions behind sandboxed runtimes and Human-in-the-Loop step-up authorization gates.
+  - We isolate external actions behind sandboxed runtimes and Human-in-the-Loop authorization gates.
   - We track execution traces with OpenTelemetry and enforce regression test suites in CI/CD.
 
 ---
@@ -105,9 +124,9 @@ AI system architecture is language-agnostic. Enterprise architectures frequently
 
 | Runtime Ecosystem | Primary Roles & Strengths | Recommended Libraries & Frameworks |
 |:---|:---|:---|
-| **Python** | Prototyping, data ingestion, scientific computing, orchestrators | `google-genai`, `anthropic`, `langgraph`, `pydantic`, `fastmcp` |
+| **Python** | Prototyping, data ingestion, scientific computing, orchestrators | `google-genai`, `anthropic`, `pydantic`, `fastmcp` |
 | **TypeScript / Node.js** | Web frontends, edge handlers, event streaming, CLI agents | `@modelcontextprotocol/sdk`, `@google/genai`, `@anthropic-ai/sdk`, `zod` |
-| **C# / .NET 9+** | High-throughput enterprise backends, microservice pipelines | Microsoft Semantic Kernel, `Google.GenAI`, Polly resilience policies |
+| **C# / .NET 9+** | High-throughput enterprise backends, microservice pipelines | Microsoft Semantic Kernel, Polly resilience policies, YARP reverse proxy |
 | **Java / Go** | Distributed backend workers, high-concurrency microservices | Spring AI, Vertex AI Java SDK, containerized cloud workers |
 
 ---
@@ -136,7 +155,7 @@ To calibrate depth, prerequisites, and pacing, all topics in this curriculum are
 | **Knowledge Systems** | **Reciprocal Rank Fusion (RRF) & Reranking** | `🟡 Engineering Depth` | Fusing heterogeneous candidate lists and scoring deep relevance with cross-encoders. | Search ranking algorithms, Sorting |
 | **Tooling & Protocols** | **Model Context Protocol (MCP) JSON-RPC 2.0** | `🟢 Core` | Standardized open protocol connecting models to internal data sources and tools. | JSON-RPC, REST, Microservices |
 | **Tooling & Protocols** | **Tool Sandboxing & Ephemeral Execution** | `🟡 Engineering Depth` | Isolating dynamic code and file modifications inside containerized boundaries. | Container isolation (Docker, gVisor) |
-| **Agentic Systems** | **Deterministic State Machines** | `🟢 Core` | Replacing loose loops with explicit state transitions, graph reducers, and checkpointing. | Finite State Machines, Saga pattern |
+| **Agentic Systems** | **Deterministic State Machines & Durable WAL** | `🟢 Core` | Replacing loose loops with explicit state transitions, event stores, and checkpointing. | Finite State Machines, Saga pattern |
 | **Agentic Systems** | **Human-in-the-Loop (HITL) Step-Up Approval** | `🟡 Engineering Depth` | Enforcing human approval tokens for irreversible state mutations (writes, payments). | 2FA, Authorization gates, Workflow engines |
 | **Security & Guardrails** | **Dual-LLM Privilege Separation (Quarantine)** | `🟢 Core` | Isolating untrusted external data in an unprivileged model before calling internal tools. | DMZ architecture, Privilege separation |
 | **Security & Guardrails** | **Cryptographic Canary Tokens** | `🟡 Engineering Depth` | Detecting system prompt exfiltration through high-entropy gateway trap tokens. | Honeypots, Intrusion detection |
@@ -144,8 +163,7 @@ To calibrate depth, prerequisites, and pacing, all topics in this curriculum are
 | **Evals & Telemetry** | **OpenTelemetry GenAI Semantic Conventions** | `🟡 Engineering Depth` | Standardized distributed tracing spans across model calls, retrieval, and tool executions. | OpenTelemetry (OTel), APM, Tracing |
 | **LLMOps & Infra** | **Multi-Provider AI Gateway & Fallbacks** | `🟢 Core` | Routing traffic with circuit breakers, rate limiters, and automated provider failover. | API Gateway, Reverse proxy, Polly |
 | **LLMOps & Infra** | **Dual-Tier Caching (SHA-256 + Semantic Vector)** | `🟡 Engineering Depth` | Serving exact and near-match requests from memory caches to eliminate LLM invocation costs. | Redis, Distributed caching |
-| **SDLC & Engineering** | **Autonomous Coding Agents & Repository Directives** | `🟢 Core` | Accelerating developer workflows using explicit machine-readable guidelines (`AGENT.md`). | Code review, Linting, Architecture ADRs |
-
+| **SDLC & Engineering** | **Autonomous Coding Agents & Repository Directives** | `🟢 Core` | Accelerating developer workflows using explicit machine-readable guidelines (`AGENTS.md`). | Code review, Linting, Architecture ADRs |
 
 ---
 
@@ -153,21 +171,34 @@ To calibrate depth, prerequisites, and pacing, all topics in this curriculum are
 
 ```mermaid
 flowchart TD
-    Start["🚀 Senior Engineer Transition"] --> P0["🧱 1. Foundations and Tokens"]
-    P0 --> P1["🎯 2. Prompt and Context"]
+    Start["🚀 Senior Engineer Transition"] --> P0["🧱 Phase 00: Foundations and Tokens"]
+    P0 --> P1["🎯 Phase 01: Prompt and Context"]
     P1 --> Branch{"Choose Application Track"}
     
-    Branch -- "Knowledge and Search" --> P2["📚 3. Enterprise RAG Systems"]
-    Branch -- "Autonomous Workflows" --> P3["🔌 3. Tools and MCP Standards"]
+    Branch -- "Knowledge and Search" --> P2["📚 Phase 02: Enterprise RAG Systems"]
+    Branch -- "Autonomous Workflows" --> P3["🔌 Phase 03: Tools and MCP Standards"]
     
-    P2 --> P4["🤖 4. Agentic Systems"]
+    P2 --> P4["🤖 Phase 04: Agentic Systems"]
     P3 --> P4
     
-    P4 --> P5["🛡️ 5. AI Security and Guardrails"]
-    P5 --> P6["📊 6. Evals and Observability"]
-    P6 --> P7["⚡ 7. Production LLMOps"]
-    P7 --> P8["👥 8. AI-Augmented SDLC"]
-    P8 --> Prep["🎓 9. Interview and Prep"]
+    P4 --> P5["🛡️ Phase 05: AI Security and Guardrails"]
+    P5 --> P6["📊 Phase 06: Evals and Observability"]
+    P6 --> P7["⚡ Phase 07: High-Throughput Serving"]
+    P7 --> P8["👥 Phase 08: AI-Augmented SDLC"]
+    P8 --> Prep["🎓 Career & Interview Mastery"]
+
+    style Start stroke:#2563eb,stroke-width:2px
+    style P0 stroke:#2563eb,stroke-width:2px
+    style P1 stroke:#2563eb,stroke-width:2px
+    style Branch stroke:#d97706,stroke-width:2px
+    style P2 stroke:#16a34a,stroke-width:2px
+    style P3 stroke:#16a34a,stroke-width:2px
+    style P4 stroke:#d97706,stroke-width:2px
+    style P5 stroke:#d97706,stroke-width:2px
+    style P6 stroke:#7c3aed,stroke-width:2px
+    style P7 stroke:#7c3aed,stroke-width:2px
+    style P8 stroke:#7c3aed,stroke-width:2px
+    style Prep stroke:#16a34a,stroke-width:2px
 ```
 
 ---
@@ -178,7 +209,7 @@ Each enterprise use case has been extracted into a standalone architectural blue
 
 | # | Enterprise Use Case | Core Architectural Pattern | Dedicated Blueprint |
 |:---:|:---|:---|:---:|
-| **01** | **AI-Assisted SDLC & Software 3.0** | Machine-readable repository contracts (`AGENT.md`), AST-driven CI/CD review gates, and automated TDD loops. | [View Blueprint](./use-cases/use-case-01-ai-assisted-sdlc.md) |
+| **01** | **AI-Assisted SDLC & Software 3.0** | Machine-readable repository contracts (`AGENTS.md`), AST-driven CI/CD review gates, and automated TDD loops. | [View Blueprint](./use-cases/use-case-01-ai-assisted-sdlc.md) |
 | **02** | **Enterprise AI Clients & SDK Resilience** | Distributed rate limiting, connection pooling, and exponential backoff with jitter across multi-cloud SDKs. | [View Blueprint](./use-cases/use-case-02-enterprise-sdks-resilience.md) |
 | **03** | **MCP Tooling, Sandboxing & Deployment** | Model Context Protocol JSON-RPC 2.0 standards, gVisor container sandboxing, and Human-in-the-Loop step-up gates. | [View Blueprint](./use-cases/use-case-03-mcp-sandboxing-tooling.md) |
 | **04** | **Enterprise Failure Modes & Defense** | Mitigating indirect prompt injection, runaway iteration deadlocks, context drift, and unbounded token spend. | [View Blueprint](./use-cases/use-case-04-failure-modes-defense.md) |
@@ -192,15 +223,15 @@ Each enterprise use case has been extracted into a standalone architectural blue
 
 ## 5. Hands-On Practice Labs for Senior Engineers
 
-| Lab | Name | Module Reference | Standalone Lab Specification |
-|:---:|:---|:---|:---|
-| **1** | Multi-Tenant Hybrid RAG | [Module 02: RAG & Knowledge](./02-rag-and-knowledge-systems/README.md) | [Lab 1 Specification](./labs/lab-01-multi-tenant-hybrid-rag.md) |
-| **2** | Tool Execution with MCP | [Module 03: Tools & MCP](./03-tools-and-model-context-protocol/README.md) | [Lab 2 Specification](./labs/lab-02-tool-execution-with-mcp.md) |
-| **3** | Stateful Agent Orchestration | [Module 04: Agentic Systems](./04-agentic-systems-and-orchestration/README.md) | [Lab 3 Specification](./labs/lab-03-stateful-agent-orchestration.md) |
-| **4** | Agent Failure Defense | [Module 04: Agentic Systems](./04-agentic-systems-and-orchestration/README.md) | [Lab 4 Specification](./labs/lab-04-agent-failure-defense.md) |
-| **5** | AI Observability & Tracing | [Module 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 5 Specification](./labs/lab-05-ai-observability-tracing.md) |
-| **6** | Dual-LLM Quarantine & Guardrails | [Module 05: Security & Guardrails](./05-ai-security-and-guardrails/README.md) | [Lab 6 Specification](./labs/lab-06-dual-llm-quarantine-guardrails.md) |
-| **7** | Hybrid ML Fairness & Explainability | [Module 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 7 Specification](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) |
+| Lab | Name | Module Reference | Standalone Lab Specification | Platform Implementation |
+|:---:|:---|:---|:---|:---|
+| **1** | Multi-Tenant Hybrid RAG | [Phase 02: RAG & Knowledge](./02-rag-and-knowledge-systems/README.md) | [Lab 1 Specification](./labs/lab-01-multi-tenant-hybrid-rag.md) | `agent_forge.retrieval` |
+| **2** | Tool Execution with MCP | [Phase 03: Tools & MCP](./03-tools-and-model-context-protocol/README.md) | [Lab 2 Specification](./labs/lab-02-tool-execution-with-mcp.md) | `agent_forge.mcp` |
+| **3** | Stateful Agent Orchestration | [Phase 04: Agentic Systems](./04-agentic-systems-and-orchestration/README.md) | [Lab 3 Specification](./labs/lab-03-stateful-agent-orchestration.md) | `agent_forge.runtime` |
+| **4** | Agent Failure Defense | [Phase 04: Agentic Systems](./04-agentic-systems-and-orchestration/README.md) | [Lab 4 Specification](./labs/lab-04-agent-failure-defense.md) | `agent_forge.gateway` |
+| **5** | AI Observability & Tracing | [Phase 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 5 Specification](./labs/lab-05-ai-observability-tracing.md) | `agent_forge.observability` |
+| **6** | Dual-LLM Quarantine & Guardrails | [Phase 05: Security & Guardrails](./05-ai-security-and-guardrails/README.md) | [Lab 6 Specification](./labs/lab-06-dual-llm-quarantine-guardrails.md) | `agent_forge.mcp.policy_engine` |
+| **7** | Hybrid ML Fairness & Explainability | [Phase 06: Evals & Observability](./06-evals-and-observability/README.md) | [Lab 7 Specification](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | `agent_forge.evals` |
 
 ---
 
@@ -208,19 +239,19 @@ Each enterprise use case has been extracted into a standalone architectural blue
 
 ```mermaid
 flowchart LR
-    subgraph Month1["Month 1: Precision Core"]
+    subgraph Month1 ["Month 1: Precision Core"]
         M1A["💰 Token Budgets and Economics"] --> M1B["⚡ Prompt Caching and Schemas"]
         M1B --> M1C["🔍 Hybrid RAG and Reranking"]
         M1C --> M1D["🔌 Model Context Protocol Tools"]
     end
 
-    subgraph Month2["Month 2: Industrial Systems"]
+    subgraph Month2 ["Month 2: Industrial Systems"]
         M2A["🔄 State Machines and Reducers"] --> M2B["🛡️ SDK Resilience (Polly/Tenacity)"]
         M2B --> M2C["🔒 Dual-LLM Security and Sandboxes"]
         M2C --> M2D["👤 Human-in-the-Loop Approval"]
     end
 
-    subgraph Month3["Month 3: Production LLMOps"]
+    subgraph Month3 ["Month 3: Production LLMOps"]
         M3A["📈 OpenTelemetry GenAI Tracing"] --> M3B["🧪 Discrete Binary CI/CD Evals"]
         M3B --> M3C["🌐 Resilient Multi-Provider Gateway"]
         M3C --> M3D["🐝 Multi-Agent Swarms and SDLC"]
@@ -229,9 +260,22 @@ flowchart LR
     M1D --> M2A
     M2D --> M3A
 
-    style Month1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style Month2 fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style Month3 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
+    style Month1 fill:none,stroke:#2563eb,stroke-width:2px
+    style Month2 fill:none,stroke:#d97706,stroke-width:2px
+    style Month3 fill:none,stroke:#16a34a,stroke-width:2px
+
+    style M1A stroke:#2563eb,stroke-width:2px
+    style M1B stroke:#2563eb,stroke-width:2px
+    style M1C stroke:#2563eb,stroke-width:2px
+    style M1D stroke:#2563eb,stroke-width:2px
+    style M2A stroke:#d97706,stroke-width:2px
+    style M2B stroke:#d97706,stroke-width:2px
+    style M2C stroke:#d97706,stroke-width:2px
+    style M2D stroke:#d97706,stroke-width:2px
+    style M3A stroke:#16a34a,stroke-width:2px
+    style M3B stroke:#16a34a,stroke-width:2px
+    style M3C stroke:#16a34a,stroke-width:2px
+    style M3D stroke:#16a34a,stroke-width:2px
 ```
 
 ### Visual 90-Day Progression Walkthrough:
@@ -254,10 +298,10 @@ flowchart LR
 - **Week 8**: Execution Boundaries: Sandboxed runtimes (Docker, gVisor) and asynchronous Human-in-the-Loop authorization. ([`./use-cases/use-case-03-mcp-sandboxing-tooling.md`](./use-cases/use-case-03-mcp-sandboxing-tooling.md))
 
 #### Month 3: Production LLMOps & Leadership (Days 61–90)
-- **Week 9**: Observability: OpenTelemetry GenAI semantic conventions, distributed tracing (Langfuse/Arize Phoenix). ([`./06-evals-and-observability/README.md`](./06-evals-and-observability/README.md))
+- **Week 9**: Observability: OpenTelemetry GenAI semantic conventions, distributed tracing. ([`./06-evals-and-observability/README.md`](./06-evals-and-observability/README.md))
 - **Week 10**: Continuous Evaluation: Discrete binary LLM-as-a-judge rubrics, CI/CD regression gates. ([`./use-cases/use-case-05-otel-evals-telemetry.md`](./use-cases/use-case-05-otel-evals-telemetry.md))
 - **Week 11**: Production Infrastructure: Multi-provider AI gateway routing, circuit breakers, exact SHA-256 and semantic caching. ([`./07-production-deployment-and-llmops/README.md`](./07-production-deployment-and-llmops/README.md))
-- **Week 12**: Multi-Agent Swarms & SDLC Leadership: Supervisor and swarm architectures, repository contracts (`AGENT.md`), technical leadership. ([`./08-ai-augmented-sdlc-and-leadership/README.md`](./08-ai-augmented-sdlc-and-leadership/README.md))
+- **Week 12**: Multi-Agent Swarms & SDLC Leadership: Supervisor and swarm architectures, repository contracts (`AGENTS.md`), technical leadership. ([`./08-ai-augmented-sdlc-and-leadership/README.md`](./08-ai-augmented-sdlc-and-leadership/README.md))
 
 ---
 
@@ -294,4 +338,21 @@ Before approving any LLM or agent application for enterprise production, verify 
 
 ---
 
-👉 [Back to Master Curriculum Roadmap](./README.md) | [Comprehensive Resource Map](./resources/topics-and-resource-map.md) | [80/20 Interview Prep Sheet](./interview/80-20-ai-interview-prep-sheet.md)
+## 🧭 Navigation
+
+- **Master Curriculum Syllabus**: [← Back to Master Curriculum & Architecture (README.md)](./README.md)
+- **Conceptual Roadmap**: [🗺️ The Complete AI Engineer Roadmap (Phases 00–08)](./AI_ENGINEER_ROADMAP.md)
+- **Senior Platform Infrastructure**: [🏗️ The Senior AI Platform & Agent Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md)
+- **Technology Strategy**: [🗺️ Emerging AI Technology Roadmap (2025–2026)](./ai-technology-roadmap-2025-2026.md)
+- **Production Audit**: [🛡️ Production Readiness Review (PRR)](./architecture/production-readiness-review.md)
+- **Interview Suite**: [🎯 80/20 AI System Design Interview Prep Sheet](./interview/80-20-ai-interview-prep-sheet.md)
+- **Phase Hubs**:
+  - [Phase 00: Foundations & Token Mechanics](./00-foundations-and-token-mechanics/README.md)
+  - [Phase 01: Prompt & Context Engineering](./01-prompt-and-context-engineering/README.md)
+  - [Phase 02: Retrieval & Knowledge Systems](./02-rag-and-knowledge-systems/README.md)
+  - [Phase 03: Tools & Model Context Protocol](./03-tools-and-model-context-protocol/README.md)
+  - [Phase 04: Agentic Systems & Orchestration](./04-agentic-systems-and-orchestration/README.md)
+  - [Phase 05: AI Security & Guardrails](./05-ai-security-and-guardrails/README.md)
+  - [Phase 06: Evals & Observability](./06-evals-and-observability/README.md)
+  - [Phase 07: High-Throughput Serving & LLMOps](./07-production-deployment-and-llmops/README.md)
+  - [Phase 08: AI-Augmented SDLC & Leadership](./08-ai-augmented-sdlc-and-leadership/README.md)

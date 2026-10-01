@@ -1,7 +1,9 @@
 # Capstone Lab: Production Multi-Provider Resilient AI Gateway
 
-> **[Tier: 🟡 Engineering Depth — Capstone Lab]**  
-> **Parent Module:** [Phase 07: High-Throughput Serving & LLMOps](../README.md)
+> **Tier**: 🟡 Engineering Depth (Capstone Lab)  
+> **Parent Module**: [Phase 07: High-Throughput Serving & LLMOps](../README.md)  
+> **Estimated Lab Time**: 60–90 minutes  
+> **Core Deliverable**: An enterprise-grade resilient AI Gateway microservice with dual-tier caching, token-bucket rate limiting, circuit breaking, SSE streaming, and client disconnect cancellation.
 
 ---
 
@@ -10,14 +12,14 @@ Architect and implement an enterprise-grade **Resilient Multi-Provider AI Gatewa
 
 ```mermaid
 flowchart TD
-    Scope["<b>CAPSTONE ARCHITECTURAL SCOPE</b>"]
+    Scope["CAPSTONE ARCHITECTURAL SCOPE"]
     
-    C1["<b>1. Dual-Tier Cache</b><br/>Exact SHA-256 + Semantic Vector (Redis)"]
-    C2["<b>2. Distributed Rate Limiter</b><br/>Token-Bucket Algorithm (TPM / RPM)"]
-    C3["<b>3. Tiered Model Fallback</b><br/>Primary ➔ Secondary ➔ Graceful Degradation"]
-    C4["<b>4. SSE Token Streaming</b><br/>Server-Sent Events (data: {...}\n\n)"]
-    C5["<b>5. Cancellation Propagation</b><br/>Client Disconnect ➔ Abort Upstream Tokens"]
-    C6["<b>6. OpenTelemetry Tracing</b><br/>Standard GenAI Spans & Latency Ledgers"]
+    C1["1. Dual-Tier Cache<br/>Exact SHA-256 + Semantic Vector"]
+    C2["2. Distributed Rate Limiter<br/>Two-Phase Token-Bucket (TPM / RPM)"]
+    C3["3. Tiered Model Fallback<br/>Primary -> Secondary -> Degraded"]
+    C4["4. SSE Token Streaming<br/>Server-Sent Events Protocol"]
+    C5["5. Cancellation Propagation<br/>Client Disconnect Aborts Upstream"]
+    C6["6. OpenTelemetry Tracing<br/>GenAI SemConv Spans & Metrics"]
     
     Scope --> C1
     Scope --> C2
@@ -25,6 +27,14 @@ flowchart TD
     Scope --> C4
     Scope --> C5
     Scope --> C6
+
+    style Scope fill:none,stroke:#3b82f6,stroke-width:2px
+    style C1 fill:none,stroke:#10b981,stroke-width:2px
+    style C2 fill:none,stroke:#f59e0b,stroke-width:2px
+    style C3 fill:none,stroke:#ef4444,stroke-width:2px
+    style C4 fill:none,stroke:#8b5cf6,stroke-width:2px
+    style C5 fill:none,stroke:#ec4899,stroke-width:2px
+    style C6 fill:none,stroke:#64748b,stroke-width:2px
 ```
 
 #### Diagram Walkthrough
@@ -38,20 +48,33 @@ The capstone architecture integrates six production systems capabilities into a 
 
 ---
 
+### Term Ledger
+| Term | Status | Definition / Clarification |
+| :--- | :--- | :--- |
+| **Token-Bucket Rate Limiting** | Assumed | Rate limiting algorithm that regulates consumption by replenishing token credits at fixed rates. |
+| **Two-Phase Token Reservation** | Assumed | Reserving estimated token quota upfront and settling actual usage post-stream. |
+| **Exact Hash Cache** | Assumed | Sub-5ms SHA-256 string hash lookup for deterministic query caching. |
+| **Semantic Vector Cache** | Assumed | Cosine similarity matching against vector embeddings for near-duplicate queries. |
+| **Circuit Breaker** | Assumed | Automated failover pattern stopping outbound calls to degraded providers to prevent cascading failure. |
+| **Server-Sent Events (SSE)** | Assumed | Unidirectional HTTP streaming protocol delivering real-time text chunks (`data: {...}\n\n`). |
+| **Cancellation Propagation** | Assumed | Terminating upstream LLM generation immediately when a client disconnects to prevent zombie token burn. |
+
+---
+
 ### 📐 Architectural & Functional Requirements
 
 1. **Dual-Tier Cache Engine**:
    - **Tier 1**: Exact string hash matching (`SHA-256`) against Redis with TTL = 24 hours.
-   - **Tier 2**: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity ≥ 0.92, serve cached content immediately.
+   - **Tier 2**: Semantic vector similarity search against Redis Vector or pgvector using dense embeddings (`text-embedding-3-small`). If cosine similarity >= 0.85–0.92, serve cached content immediately.
 2. **Dynamic Tiered Resilience Router**:
    - **Primary Model**: Claude 3.7 Sonnet or Azure OpenAI GPT-4o / o3.
    - **Secondary Model**: Google Cloud Vertex AI Gemini 2.0 Flash.
    - **Tertiary Model (Degraded)**: Claude 3.5 Haiku or Local vLLM SLM.
-   - Configure a circuit breaker: If the primary provider fails 5 times consecutively or returns HTTP 429, trip the circuit into `OPEN` state for 30 seconds and route traffic directly to the secondary provider.
+   - Configure a circuit breaker: If the primary provider fails 3–5 times consecutively or returns HTTP 429, trip the circuit into `OPEN` state for 15–30 seconds and route traffic directly to the secondary provider.
 3. **Token Budget & Rate Limiting**:
    - Enforce a tenant quota: 100,000 tokens per tenant per day.
    - Maintain a sliding window rate limiter: Max 30 requests per minute per user.
-   - Implement two-phase reservation: atomical reservation before generation and post-stream settlement.
+   - Implement two-phase reservation: atomic reservation before generation and post-stream settlement.
 4. **Streaming Protocol**:
    - Expose endpoint `POST /v1/gateway/chat/stream`.
    - Stream tokens formatted as standard SSE (`data: {...}\n\n`).
@@ -71,8 +94,8 @@ Your capstone implementation must pass the following simulated production chaos 
   - Dispatch identical prompt again.
   - **Assertion**: Response returned with `"cached": true`, latency < 15ms, and zero upstream LLM API calls generated.
 - [ ] **Test Case 2: The Semantic Cache Hit**:
-  - Dispatch prompt: *"Explain the CAP theorem in 2 concise sentences."*
-  - **Assertion**: Cosine similarity exceeds 0.92; response returned from cache with `"cache_type": "semantic"`, latency < 50ms.
+  - Dispatch prompt: *"Explain the CAP theorem in two concise sentences."*
+  - **Assertion**: Cosine similarity matches cached entry; response returned from cache with `"cache_type": "semantic"`, latency < 50ms.
 - [ ] **Test Case 3: Primary Provider 429 Outage Simulation**:
   - Inject a mock or proxy rule forcing the Primary Model to return `HTTP 429 Too Many Requests`.
   - Dispatch 5 requests.
@@ -86,19 +109,48 @@ Your capstone implementation must pass the following simulated production chaos 
   - Dispatch an additional request.
   - **Assertion**: Gateway immediately returns `HTTP 429 Quota Exceeded` before executing vector search or calling any cloud models.
 
+### ⚡ Running the Automated Evaluation Harness
+Execute the self-contained verification runner from the repository root:
+
+```bash
+python scripts/verify_phase_07_capstone.py
+```
+
+Expected output:
+```text
+======================================================================
+ 🧪 PHASE 07 CAPSTONE: RESILIENT AI GATEWAY AUTOMATED VERIFICATION
+======================================================================
+
+[✅ PASS] Test Case 1: The Exact Cache Hit (SHA-256)
+[✅ PASS] Test Case 2: The Semantic Cache Hit (Vector Similarity)
+[✅ PASS] Test Case 3: Primary Provider 429 Outage Simulation
+[✅ PASS] Test Case 4: Client Disconnect Cancellation Propagation
+[✅ PASS] Test Case 5: Tenant Quota Enforcement (Token Bucket)
+
+======================================================================
+ Summary: 5/5 Capstone Acceptance Tests Passing
+======================================================================
+```
+
 ---
 
 ### 🔗 Architecture & Implementation References
+- [Lesson 00: LLM Serving Fundamentals & The Inference Lifecycle](../00-llm-serving-fundamentals-and-the-inference-lifecycle.md)
 - [Lesson 01: Multi-Provider AI Gateways & Rate Limiting](../01-resilient-ai-gateways-and-rate-limiting.md)
 - [Lesson 02: High-Performance Token Streaming & Backpressure](../02-high-performance-token-streaming-and-backpressure.md)
 - [Lesson 03: Dual-Tier Caching & Asynchronous Batch APIs](../03-dual-tier-caching-and-batch-apis.md)
 - [Lesson 04: Continuous Batching, PagedAttention & RadixAttention](../04-vllm-continuous-batching-and-radixattention.md)
-- [Reference Implementation: FastAPI Gateway Service](../../agent-forge/gateway/)
+- [Production Reference: Python AI Gateway Engine](../examples/gateway_service.py)
+- [Production Reference: C# .NET 9 Polly v8 Gateway](../examples/ResilientAgentService.cs)
+- [Reference Implementation: AgentForge Gateway Service](../../agent-forge/agent_forge/gateway/)
+- [Automated Verification Harness: scripts/verify_phase_07_capstone.py](../../scripts/verify_phase_07_capstone.py)
 
 ---
 
 ## 🧭 Navigation
 
 - **[← Phase 07 Hub: Orientation & Navigation](../README.md)**
+- **[Lesson 00: LLM Serving Fundamentals & The Inference Lifecycle](../00-llm-serving-fundamentals-and-the-inference-lifecycle.md)**
 - **[Lesson 01: Multi-Provider AI Gateways & Rate Limiting](../01-resilient-ai-gateways-and-rate-limiting.md)**
 - **[Next Phase: Phase 08 — AI-Augmented SDLC & Leadership →](../../08-ai-augmented-sdlc-and-leadership/README.md)**

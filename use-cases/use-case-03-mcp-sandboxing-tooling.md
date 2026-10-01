@@ -1,7 +1,8 @@
 # Enterprise Use Case 3: MCP Tool Architecture, Zero-Trust Sandboxing & Human-in-the-Loop Governance
 > **Model Context Protocol (JSON-RPC 2.0), gVisor Container Sandboxing, ABAC Policy Gates & Step-Up Human Approvals**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md) • [Lab 02: Tool Execution with MCP](../labs/lab-02-tool-execution-with-mcp.md)
+> **Phase Alignment**: [Phase 03: Tools & Model Context Protocol](../03-tools-and-model-context-protocol/README.md) (Primary) • [Phase 05: AI Security & Guardrails](../05-ai-security-and-guardrails/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Lab 02: Tool Execution with MCP](../labs/lab-02-tool-execution-with-mcp.md)
 
 ---
 
@@ -15,7 +16,7 @@ In enterprise production architectures, this naive approach introduces catastrop
 3. **Integration Sprawl & Brittle Schemas:** Connecting M distinct LLM clients to N enterprise microservices creates M × N bespoke integration glue code that breaks whenever an upstream API schema changes.
 4. **Unconstrained Financial Mutations:** Without automated spending thresholds, an autonomous agent can execute high-volume mutations (refunds, order placements) exceeding corporate authorization boundaries in seconds.
 
-To address these vulnerabilities, enterprise architects combine three decoupled architectural layers: **the standardized Model Context Protocol (MCP 2026) wire bus, an Attribute-Based Access Control (ABAC) Policy Engine with Human-in-the-Loop (HITL) step-up gates, and kernel-isolated container sandboxes (gVisor / Firecracker)**.
+To address these vulnerabilities, enterprise architectures combine three decoupled architectural layers: **the standardized Model Context Protocol (MCP 2026, governed under the Linux Foundation / Agentic AI Foundation) wire bus, an Attribute-Based Access Control (ABAC) Policy Engine with Human-in-the-Loop (HITL) step-up gates, and kernel-isolated container sandboxes (gVisor / Firecracker)**.
 
 ---
 
@@ -23,43 +24,35 @@ To address these vulnerabilities, enterprise architects combine three decoupled 
 
 ```mermaid
 flowchart TD
-    subgraph Client["1. Agent Reasoning and Tool Call"]
-        User["👤 User Request"] --> Agent["🤖 Autonomous Agent Orchestrator"]
-        Agent --> Decision["📝 Model Emits Tool Call Intent<br>(Tool: 'payment_issue_refund', Args: {'amount': 350.0})"]
-    end
+    Agent["1. Agent Tool Call Intent (JSON-RPC)"]
+    Policy["2. ABAC Policy Engine (Role & Dollar Limit)"]
+    Gate{"3. Risk & Value Gate (Amount > \$100?)"}
+    HITL["4. Human Sign-Off (Step-Up Approval)"]
+    MCP["5. MCP Server (Streamable HTTP/SSE or stdio)"]
+    Sandbox["6. gVisor Micro-Sandbox (Zero-Trust Kernel)"]
 
-    subgraph PolicyGate["2. Zero-Trust ABAC Policy Gate"]
-        Decision --> PolicyEngine["🛡️ PolicyEngine.evaluate()<br>• Tenant ID and User Role<br>• Action Risk Tier<br>• Dollar Threshold Rule"]
-        
-        PolicyEngine --> RiskCheck{"⚖️ Policy Evaluation"}
-        RiskCheck -- "Administrative / Destructive" --> Deny["🛑 Status: DENIED<br>(Halt Execution Immediately)"]
-        RiskCheck -- "Low Risk (Amount <= $100)" --> AutoApprove["✅ Status: PERMITTED<br>(Dispatch Immediately)"]
-        RiskCheck -- "High Value (Amount > $100)" --> Suspend["⏸️ Status: REQUIRES_APPROVAL<br>(Suspend State and Emit HMAC Token)"]
-        
-        Suspend --> HITL["👥 Human Controller Review<br>(Slack / Teams Step-Up Approval)"]
-        HITL -- "Rejected" --> Deny
-        HITL -- "Approved" --> AutoApprove
-    end
+    Agent --> Policy
+    Policy --> Gate
+    Gate -- "Permitted (<= \$100)" --> MCP
+    Gate -- "Requires Approval" --> HITL
+    HITL -- "Approved" --> MCP
+    Gate -- "Destructive / Prohibited" --> Deny["Execution Denied"]
+    MCP --> Sandbox
+    Sandbox --> Result["Sanitized Tool Response"]
 
-    subgraph MCP_Boundary["3. MCP Wire Protocol Boundary"]
-        AutoApprove --> MCP_Client["🔌 MCP Host Client<br>(tools/call over stdio or HTTP/SSE)"]
-        MCP_Client --> MCP_Server["⚙️ Isolated MCP Server<br>(Stateless Microservice with Pydantic Schemas)"]
-    end
-
-    subgraph SandboxEnv["4. Kernel-Isolated Sandbox"]
-        MCP_Server --> gVisor["🔒 gVisor Container Sandbox (runsc)<br>• Intercepts Syscalls<br>• Read-Only Root Filesystem<br>• Network Isolated (--network none)"]
-        gVisor --> Ledger[("💾 Transactional Enterprise System<br>(With Idempotency Key and Saga Rollback)")]
-        Ledger --> Result["📦 Sanitized Tool Response DTO"]
-    end
-
-    Result --> Agent
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Gate gate;
 ```
 
 #### Diagram Walkthrough:
-1. **Tool Invocation Decision**: The agent emits a tool call intent specifying the tool name and strongly-typed arguments.
-2. **Zero-Trust ABAC Policy Gate**: Before any execution occurs, the invocation passes through an isolated `PolicyEngine`. Low-value operations (<= $100.00) auto-execute; destructive commands are blocked unconditionally; high-value operations (> $100.00) suspend state and require cryptographic human sign-off.
-3. **Model Context Protocol (MCP 2026)**: Permitted calls route over standardized JSON-RPC 2.0 wire schemas (`tools/call`), decoupling model clients from backend tool implementations.
-4. **Kernel-Isolated Container Sandbox**: Any dynamic code execution is confined to ephemeral gVisor micro-containers (`runsc`) that intercept kernel syscalls, blocking host credential access and lateral network traversal.
+1. **Agent Tool Call Intent**: The model emits a structured JSON-RPC `tools/call` intent specifying the tool name and typed arguments.
+2. **ABAC Policy Engine**: Evaluates caller identity, tenant roles, and financial thresholds before granting tool execution permissions.
+3. **Risk & Value Gate**: Permits low-risk actions (<= \$100.00) automatically, halts high-value operations (> \$100.00) for human review, and blocks destructive calls unconditionally.
+4. **Human Sign-Off**: Suspends execution and alerts human supervisors via Teams/Slack to approve or reject the sensitive transaction.
+5. **Model Context Protocol Server**: Routes permitted calls across standardized Linux Foundation MCP transports (`stdio` for local tools, Streamable HTTP/SSE for remote services).
+6. **gVisor Micro-Sandbox**: Confines dynamic code execution inside an ephemeral container (`runsc`) that intercepts kernel syscalls, blocking host secret access and lateral network pivoting.
+
 
 ---
 

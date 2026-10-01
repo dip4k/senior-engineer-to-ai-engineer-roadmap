@@ -18,27 +18,38 @@ In **AI-Native Systems (Software 3.0)**, traditional testing is insufficient. Be
 
 ```mermaid
 flowchart TD
-    subgraph PRRGate["THE 6 PRODUCTION READINESS GATES"]
-        G1["⚡ Gate 1: Availability, Resilience and Latency SLAs"]
-        G2["💰 Gate 2: Cost Governance and Token Limits"]
-        G3["🔒 Gate 3: Security and Privilege Quarantine"]
-        G4["💾 Gate 4: State Durability and Saga Rollbacks"]
-        G5["📊 Gate 5: Telemetry and OpenTelemetry Spans"]
-        G6["⚖️ Gate 6: Evals and EU AI Act Compliance"]
-    end
-    
-    G1 --> Pass{"🔍 All 50 Points<br>Verified?"}
-    G2 --> Pass
-    G3 --> Pass
-    G4 --> Pass
-    G5 --> Pass
-    G6 --> Pass
-    
-    Pass -->|"Yes: Signed Off"| Prod["🚀 Approved for Production"]
-    Pass -->|"No: P0 Blocker"| Reject["🛑 Deployment Halted"]
+    G1["1. Resilience & Latency SLAs"]
+    G2["2. Cost & Token Governance"]
+    G3["3. Security & Privilege Quarantine"]
+    G4["4. State Durability & Sagas"]
+    G5["5. Telemetry & OTel Spans"]
+    G6["6. Evals & EU AI Act Compliance"]
+    Audit{"All 50 Points Verified?"}
+
+    G1 --> Audit
+    G2 --> Audit
+    G3 --> Audit
+    G4 --> Audit
+    G5 --> Audit
+    G6 --> Audit
+    Audit -- "Yes (100% P0, >=90% P1)" --> Prod["Approved for Production"]
+    Audit -- "No (P0 Blocker Found)" --> Halt["Deployment Halted"]
+
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Audit gate;
 ```
 
+#### Production Readiness Gate Walkthrough:
+1. **Resilience & Latency SLAs**: Confirms provider fallback cascades, circuit breakers, connection pooling, and sub-second TTFT targets.
+2. **Cost & Token Governance**: Validates sliding-window token buckets, exact prefix caching, and semantic cache hit rates.
+3. **Security & Privilege Quarantine**: Verifies Dual-LLM unprivileged reader isolation, cryptographic canary tokens, and PII redaction.
+4. **State Durability & Sagas**: Audits event-sourced Write-Ahead Logs (WAL), idempotency keys, and compensating rollback handlers.
+5. **Telemetry & OTel Spans**: Ensures full OpenTelemetry GenAI semantic convention instrumentation across gateway, model, and tool spans.
+6. **Evals & Compliance**: Mandates automated Level 1/Level 2 binary evaluation regression suites and EU AI Act risk tier compliance.
+
 This PRR establishes **50 concrete, verifiable criteria across 6 core operational gates**. A system must achieve **100% compliance on P0 Blockers** and **≥ 90% compliance on P1 Criteria** before receiving sign-off from the Tech Lead, Security Architect, and SRE Lead.
+
 
 ---
 

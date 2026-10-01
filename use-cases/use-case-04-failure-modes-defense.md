@@ -1,7 +1,8 @@
 # Enterprise Use Case 4: Enterprise Failure Modes, Adversarial Defenses & Privilege Quarantine
 > **Dual-LLM Privilege Separation, Indirect Prompt Injection Defenses, Canary Token Verification & Cyclic Loop Governors**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 05: AI Security & Guardrails](../05-ai-security-and-guardrails/README.md) • [System Design 8: Dual-LLM Quarantine Architecture](../architecture/enterprise-ai-system-designs.md#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion)
+> **Phase Alignment**: [Phase 05: AI Security & Guardrails](../05-ai-security-and-guardrails/README.md) (Primary) • [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [System Design 8: Dual-LLM Quarantine Architecture](../architecture/enterprise-ai-system-designs.md#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion)
 
 ---
 
@@ -28,29 +29,25 @@ To mitigate these risks, enterprise architectures deploy the **Dual-LLM Privileg
 
 ```mermaid
 flowchart TD
-    subgraph UntrustedZone["1. Untrusted Ingress Zone"]
-        Ingress["📥 Untrusted External Document<br>(Customer Email / Scraped Web / Vendor Invoice)"] --> CanaryInjector["🏷️ Canary Injector<br>(Inserts Cryptographic Nonce: CANARY_9f1a2)"]
-    end
+    Ingress["1. Untrusted Document (Canary Token Tagged)"]
+    Reader["2. Unprivileged Reader LLM (Zero Tools)"]
+    Canary{"3. Canary & Schema Gate (Intact & Clean?)"}
+    Governor["4. State-Hash Loop Governor (Cycle Detection)"]
+    Controller["5. Privileged Controller LLM (Authorized Tools)"]
+    Egress["6. Egress Sanitizer (Strip Markdown Exfiltration)"]
 
-    subgraph QuarantineZone["2. Reader LLM Quarantine"]
-        CanaryInjector --> ReaderLLM["🔒 Unprivileged Reader LLM<br>• ZERO Tools Registered<br>• ZERO API Keys / Credentials<br>• Constrained JSON Grammar (CFG)"]
-        ReaderLLM --> ExtractedDTO["📄 Structured JSON Payload<br>{ sender, amount, items, canary_echo }"]
-    end
+    Ingress --> Reader
+    Reader --> Canary
+    Canary -- "Compromised / Lost" --> Quarantine["Quarantine to SOC"]
+    Canary -- "Clean DTO" --> Governor
+    Governor -- "Deadlock Detected" --> Halt["Halt & Escalate"]
+    Governor -- "Valid State" --> Controller
+    Controller --> Egress
+    Egress --> SafeOutput["Safe Execution Result"]
 
-    subgraph SecurityGate["3. Canary and Schema Gate"]
-        ExtractedDTO --> CanaryGate{"⚖️ Canary Token Intact and<br>Zero Injection Signatures?"}
-        CanaryGate -- "Canary Missing or Escaped" --> Quarantined["🛑 Status: MALICIOUS_INJECTION<br>(Drop Payload • Alert SIEM / SOC)"]
-        CanaryGate -- "Clean and Grounded" --> LoopGovernor["⏱️ State-Hash Loop Governor<br>(Tracks Action Hashes: MD5(tool+args))"]
-    end
-
-    subgraph PrivilegedZone["4. Controller LLM Zone"]
-        LoopGovernor --> LoopCheck{"🔄 Identical State Repeated<br>or Turns > 5?"}
-        LoopCheck -- "Loop Detected" --> Terminate["🚨 Halt Execution and Escalate to Human"]
-        LoopCheck -- "Valid" --> ControllerLLM["🧠 Privileged Controller LLM<br>• Authorized Context<br>• Enterprise System Prompts"]
-        ControllerLLM --> MCP_Tools["⚙️ Authorized MCP Tools<br>(Database, ERP, Payment Gateway)"]
-        MCP_Tools --> EgressFilter["🛡️ Egress Filter: Strip Markdown Images"]
-        EgressFilter --> SafeResult["✅ Grounded Safe Execution Output"]
-    end
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Canary gate;
 ```
 
 #### Diagram Walkthrough:
@@ -58,7 +55,9 @@ flowchart TD
 2. **Unprivileged Reader Quarantine**: The text is parsed exclusively by an unprivileged Reader LLM that has zero access to tools or mutating APIs. The Reader model is constrained via Context-Free Grammars to output strictly typed JSON.
 3. **Canary & Schema Gate**: If the Reader output attempts prompt escape or loses the canary token, the payload is immediately dropped and quarantined to the SIEM.
 4. **State-Hash Loop Governor**: Before the privileged Controller LLM receives the sanitized JSON, a loop governor checks the action history hash to terminate cyclic deadlocks.
-5. **Privileged Controller & Egress Filtering**: The privileged Controller plans actions using approved tools, and outbound responses pass through an egress filter that strips markdown image tags to prevent data exfiltration.
+5. **Privileged Controller**: The privileged Controller plans actions using approved tools based exclusively on sanitized facts from the Reader DTO.
+6. **Egress Sanitization**: Outbound responses pass through an egress filter that strips markdown image tags to prevent browser-based zero-click data exfiltration.
+
 
 ---
 

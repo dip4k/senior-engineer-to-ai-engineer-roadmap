@@ -1,7 +1,8 @@
 # Enterprise Use Case 2: Resilient Enterprise AI Gateways, SDKs & Client Architecture
 > **Distributed Rate Limiting, Connection Pooling, Adaptive Hedging & Multi-Provider Failover Cascades**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md) • [System Design 6: Enterprise AI Gateway](../architecture/enterprise-ai-system-designs.md#6-enterprise-dual-tier-ai-gateway-with-cost-governor-semantic-caching)
+> **Phase Alignment**: [Phase 07: Production Deployment & LLMOps](../07-production-deployment-and-llmops/README.md) (Primary) • [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [System Design 6: Enterprise AI Gateway](../architecture/enterprise-ai-system-designs.md#6-enterprise-dual-tier-ai-gateway-with-cost-governor-semantic-caching)
 
 ---
 
@@ -21,37 +22,34 @@ To maintain 99.95% application availability and predictable cost ceilings, enter
 
 ```mermaid
 flowchart TD
-    subgraph ClientLayer["1. Client Ingress and Quota"]
-        App["📱 Internal Enterprise Apps<br>(Web / Microservices / Batch)"] --> Gateway["🛡️ Enterprise AI Gateway / Client SDK"]
-        Gateway --> Quota{"⚖️ Tenant Token Bucket<br>(Redis Atomic Lua Script)"}
-        Quota -- "Limit Exceeded" --> Err429["🛑 HTTP 429 (Retry-After Header)"]
-    end
+    App["1. Client Ingress (Web / Microservices)"]
+    Quota{"2. Token Bucket Quota (Redis Lua Script)"}
+    Primary["3. Primary Provider (Circuit Breaker)"]
+    Secondary["4. Fallback Provider (Gemini / vLLM)"]
+    Settle["5. Token Settlement (Actual vs Reserved)"]
+    OTel["6. OTel GenAI Spans (Telemetry Ledger)"]
 
-    subgraph ResilienceLayer["2. Resilience and Routing Mesh"]
-        Quota -- "Token Reserved" --> CircuitPrimary{"⚡ Circuit Breaker<br>(Primary: Claude 3.7 / GPT-4.5)"}
-        
-        CircuitPrimary -- "Closed (Healthy)" --> PoolPrimary["🌐 HTTP/2 Connection Pool<br>(Keep-Alive • TCP Multiplexing)"]
-        PoolPrimary --> PrimaryProvider["☁️ Primary Provider Endpoint"]
-        
-        CircuitPrimary -- "Open / 5xx / Timeout" --> CircuitSecondary{"⚡ Circuit Breaker<br>(Secondary: Gemini 2.5 Pro)"}
-        CircuitSecondary -- "Closed (Healthy)" --> PoolSecondary["🌐 HTTP/2 Connection Pool"]
-        PoolSecondary --> SecondaryProvider["☁️ Secondary Provider Endpoint"]
-        
-        CircuitSecondary -- "Tripped" --> LocalFallback["🖥️ Local Fallback Cluster<br>(Self-Hosted vLLM on L40S)"]
-    end
+    App --> Quota
+    Quota -- "Tokens Reserved" --> Primary
+    Quota -- "Quota Exceeded" --> Err429["HTTP 429 Throttle"]
+    Primary -- "Healthy" --> Settle
+    Primary -- "5xx / Timeout Trip" --> Secondary
+    Secondary --> Settle
+    Settle --> OTel
 
-    subgraph TelemetryLayer["3. Settlement and Observability"]
-        PrimaryProvider --> Settle["💰 Settle Actual Tokens Used<br>(Reconcile Reserved vs Actual in Redis)"]
-        SecondaryProvider --> Settle
-        LocalFallback --> Settle
-        Settle --> OTel[("📊 OpenTelemetry GenAI Spans<br>Latency • Tokens • Cost Ledger")]
-    end
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Quota gate;
 ```
 
 #### Diagram Walkthrough:
 1. **Client Ingress & Token Reservation**: Requests pass into the gateway where an atomic Redis token-bucket script reserves estimated tokens (`prompt_tokens + max_output_tokens`). If tenant quotas are exhausted, requests fail fast with HTTP 429.
-2. **Circuit Breakers & Connection Pooling**: The request routes through a circuit breaker to the primary model provider over a persistent HTTP/2 connection pool. If consecutive timeouts or 5xx errors trip the breaker, traffic automatically shifts to the secondary provider with zero application downtime.
-3. **Token Settlement & OTel Telemetry**: Upon stream completion, actual prompt and completion token counts are reconciled in Redis (refunding unspent reserved tokens) and emitted to OpenTelemetry distributed traces.
+2. **Token Bucket Quota**: Prevents provider rate-limit penalties by enforcing tenant-level concurrency ceilings before dispatching outbound network traffic.
+3. **Primary Provider (Circuit Breaker)**: The request routes to the primary model provider over a persistent HTTP/2 connection pool with keep-alive multiplexing.
+4. **Fallback Provider**: If consecutive timeouts or 5xx errors trip the primary breaker, traffic shifts automatically to the secondary provider with zero downtime.
+5. **Token Settlement**: Upon stream completion, actual prompt and completion token counts reconcile in Redis (refunding unspent reserved tokens).
+6. **OTel GenAI Spans**: Emits standardized distributed tracing attributes (`gen_ai.system`, latency, tokens) to centralized APM backends.
+
 
 ---
 

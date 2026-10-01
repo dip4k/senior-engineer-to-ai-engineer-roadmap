@@ -2,7 +2,7 @@
 
 > **The definitive master study sheet for Senior Developers, Tech Leads, and AI Architects preparing for Senior & Staff AI Engineer System Design, Architecture, and Technical Interviews.**
 > 
-> [Home / Master Curriculum](../README.md) • [📖 Production AI Glossary by Practice](../ai-engineering-glossary-by-practice.md) • [🎙️ AI Platform Engineer Interview Handbook](./ai-platform-engineer-handbook.md) • [🎯 High-Stakes Behavioral Stories Guide](./high-stakes-behavioral-and-scenario-guide.md) • [🗺️ Emerging AI Roadmap (2025–2026)](../ai-technology-roadmap-2025-2026.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [Phase 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [Phase 02: Enterprise RAG](../02-rag-and-knowledge-systems/README.md)
+> [Home / Master Curriculum](../README.md) • [📖 Production AI Glossary by Practice](../ai-engineering-glossary-by-practice.md) • [🎙️ AI Platform Engineer Interview Handbook](./ai-platform-engineer-handbook.md) • [🎯 High-Stakes Behavioral Stories Guide](./high-stakes-behavioral-and-scenario-guide.md) • [🗺️ Emerging AI Roadmap (2025–2026)](../ai-technology-roadmap-2025-2026.md) • [Phase 04: Agentic Systems](../phase-04/) • [Phase 03: Tools & MCP](../phase-03/) • [Phase 02: Enterprise RAG](../phase-02/) • [Phase 08: SDLC & Coding](../phase-08/)
 
 > [!TIP]
 > **Technical vs. Behavioral vs. Platform Engineering**: This sheet covers general **System Design & Technical Architecture**. For deep-dive capacity math, vector engine storage internals (tombstoning, 1B sharding), 45-minute live coding challenges, and SRE incident war stories, study the companion [**AI Platform Engineer Interview Handbook**](./ai-platform-engineer-handbook.md). For crisis leadership and CARL+S frameworks, see [**High-Stakes Behavioral & Scenario Interviews Guide**](./high-stakes-behavioral-and-scenario-guide.md).
@@ -20,16 +20,26 @@ All interview topics and blueprints are calibrated against the curriculum's [Arc
 
 ```mermaid
 flowchart TD
-    subgraph Triad["The AI Architect Interview Triad"]
-        Title["📐 System Design • Hardware Reality • Defensive Controls"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    subgraph Triad ["The AI Architect Interview Triad"]
+        Title["System Design • Hardware Reality • Defensive Controls"]:::highlight
     end
     
-    Triad --> PC["🖥️ PHYSICAL CONSTRAINTS<br/>• KV-Cache VRAM Math<br/>• TTFT vs. TPS Latency<br/>• Token Asymmetry Cost<br/>• FlashAttention / RoPE"]
-    Triad --> SDP["🏗️ SYSTEM DESIGN PATTERNS<br/>• Hybrid RAG and RRF<br/>• ReAct vs. Workflows<br/>• Model Context Protocol<br/>• Dual-LLM Quarantine"]
+    Triad --> PC["PHYSICAL CONSTRAINTS<br>• KV-Cache VRAM Math<br>• TTFT vs. TPS Latency<br>• Token Asymmetry Cost"]:::default
+    Triad --> SDP["SYSTEM DESIGN PATTERNS<br>• Hybrid RAG & RRF<br>• ReAct vs. Workflows<br>• MCP & A2A Federation"]:::default
     
-    PC --> DPH["🛡️ DETERMINISTIC PRODUCTION HARNESS<br/>Binary Evals • OpenTelemetry Traces • Strict FSM Grammars"]
+    PC --> DPH["DETERMINISTIC HARNESS<br>• Binary Evals • OTel Traces • Strict FSM Grammars"]:::highlight
     SDP --> DPH
+
+    style Triad fill:none,stroke:#4a5568,stroke-width:2px;
 ```
+
+#### Walkthrough:
+1. **Physical Constraints**: Hardware memory limits (KV cache VRAM sizing) dictate maximum concurrent active sessions and batch sizes.
+2. **System Design Patterns**: Distributed retrieval (hybrid BM25 + dense RRF) and governed execution (MCP AAIF + A2A swarms) decouple business logic from probabilistic models.
+3. **Deterministic Production Harness**: Binary evaluation gates and OpenTelemetry distributed tracing ensure non-deterministic model behaviors are bounded by strict SLAs.
 
 ---
 

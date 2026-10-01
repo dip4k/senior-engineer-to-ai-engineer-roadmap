@@ -1,52 +1,80 @@
-# AI Engineer Roadmap
+# 🗺️ The Complete AI Engineer Roadmap (Phases 00–08)
 
-> A simple, practical roadmap for software engineers transitioning to AI engineering. Every category, topic, and subtopic is explained in simple, everyday terms (ELI10) without confusing abbreviations.
+> **A practical, systems-first roadmap for software engineers transitioning into production AI engineering.**  
+> Every concept, phase, and subtopic is explained in simple, everyday language without confusing academic jargon.
 >
-> [← Master Curriculum & Architecture (README.md)](./README.md) • [📖 Glossary by Practice](./ai-engineering-glossary-by-practice.md) • [🤖 Learning with Agents](./LEARNING_WITH_AGENTS.md)
+> [← Master Curriculum & Architecture (README.md)](./README.md) • [📖 Glossary by Practice](./ai-engineering-glossary-by-practice.md) • [🤖 Learning with Agents](./LEARNING_WITH_AGENTS.md) • [🏗️ Platform Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md)
 
 ---
 
-## Table of Contents
+## 📑 Table of Contents
 
-- [1. AI & LLM Fundamentals](#1-ai--llm-fundamentals)
-  - [1.1 Role Foundations: AI Engineer vs. ML Engineer](#11-role-foundations-ai-engineer-vs-ml-engineer)
-  - [1.2 What Is a Large Language Model (LLM)](#12-what-is-a-large-language-model-llm)
-  - [1.3 Generation Mechanics & Sampling Parameters](#13-generation-mechanics--sampling-parameters)
-  - [1.4 Model Families, APIs & Open-Source Options](#14-model-families-apis--open-source-options)
-- [2. Prompt & Context Engineering](#2-prompt--context-engineering)
-  - [2.1 Prompt Engineering Techniques](#21-prompt-engineering-techniques)
-  - [2.2 Context Engineering & Compaction](#22-context-engineering--compaction)
-  - [2.3 Structured Outputs & Schema Contracts](#23-structured-outputs--schema-contracts)
-- [3. Embeddings & Vector Search](#3-embeddings--vector-search)
-  - [3.1 Embeddings & Semantic Search](#31-embeddings--semantic-search)
-  - [3.2 Vector Databases & Indexing](#32-vector-databases--indexing)
-  - [3.3 Hybrid Search & Ranking](#33-hybrid-search--ranking)
-- [4. Retrieval-Augmented Generation (RAG)](#4-retrieval-augmented-generation-rag)
-  - [4.1 Basic RAG Pipeline](#41-basic-rag-pipeline)
-  - [4.2 Document Ingestion & Chunking](#42-document-ingestion--chunking)
-  - [4.3 Advanced RAG & Retrieval Quality](#43-advanced-rag--retrieval-quality)
-- [5. AI Agents & Stateful Orchestration](#5-ai-agents--stateful-orchestration)
-  - [5.1 Agent Fundamentals & the ReAct Loop](#51-agent-fundamentals--the-react-loop)
-  - [5.2 Agent Tools & Function Calling](#52-agent-tools--function-calling)
-  - [5.3 State, Memory & Checkpoints](#53-state-memory--checkpoints)
-  - [5.4 Stateful Workflows & State Machines](#54-stateful-workflows--state-machines)
-  - [5.5 Model Context Protocol (MCP)](#55-model-context-protocol-mcp)
-  - [5.6 Multi-Agent Coordination & Agent-to-Agent (A2A)](#56-multi-agent-coordination--agent-to-agent-a2a)
-- [6. Reliability, Safety & Guardrails](#6-reliability-safety--guardrails)
-  - [6.1 Failure Engineering & Fallbacks](#61-failure-engineering--fallbacks)
-  - [6.2 Bounded Execution & Loop Prevention](#62-bounded-execution--loop-prevention)
-  - [6.3 Human-in-the-Loop (HITL) & Approval Gates](#63-human-in-the-loop-hitl--approval-gates)
-  - [6.4 Guardrails & Prompt Injection Defense](#64-guardrails--prompt-injection-defense)
-- [7. Evaluation & Observability](#7-evaluation--observability)
-  - [7.1 Deterministic & Metric-Based Evals](#71-deterministic--metric-based-evals)
-  - [7.2 LLM-as-a-Judge & Model-Based Evals](#72-llm-as-a-judge--model-based-evals)
-  - [7.3 Agent Trajectory & Behavior Evaluation](#73-agent-trajectory--behavior-evaluation)
-  - [7.4 Observability, Tracing & Golden Signals](#74-observability-tracing--golden-signals)
-- [8. Production, Inference & Systems Optimization](#8-production-inference--optimization)
-  - [8.1 Latency, Cost & Caching Optimization](#81-latency-cost--caching-optimization)
-  - [8.2 Serving, KV Cache & Continuous Batching](#82-serving-kv-cache--continuous-batching)
-  - [8.3 Multi-Modal AI Systems](#83-multi-modal-ai-systems)
-  - [8.4 Enterprise Capstone: Production Agent Architecture](#84-enterprise-capstone-production-agent-architecture)
+- [🗺️ Master Visual Roadmap](#️-master-visual-roadmap)
+- [Phase 00: Foundations & Token Mechanics](#phase-00-foundations--token-mechanics)
+  - [0.1 Role Foundations: AI Engineer vs. Machine Learning Engineer](#01-role-foundations-ai-engineer-vs-machine-learning-engineer)
+  - [0.2 Large Language Models & Token Mechanics](#02-large-language-models--token-mechanics)
+  - [0.3 Generation Mechanics & Sampling Parameters](#03-generation-mechanics--sampling-parameters)
+  - [0.4 Hardware Constraints & Compute Physics](#04-hardware-constraints--compute-physics)
+  - [0.5 Model Tiers & Open-Weight Foundations](#05-model-tiers--open-weight-foundations)
+- [Phase 01: Prompt & Context Engineering](#phase-01-prompt--context-engineering)
+  - [1.1 Context Architecture & The Prompt AST](#11-context-architecture--the-prompt-ast)
+  - [1.2 Context Compaction & Token Budgeting](#12-context-compaction--token-budgeting)
+  - [1.3 Prompt Caching Mechanics & Prefix Alignment](#13-prompt-caching-mechanics--prefix-alignment)
+  - [1.4 Programmatic Prompt Optimization & Delimiters](#14-programmatic-prompt-optimization--delimiters)
+  - [1.5 Structured Outputs & Schema Contracts](#15-structured-outputs--schema-contracts)
+- [Phase 02: Retrieval & Knowledge Systems](#phase-02-retrieval--knowledge-systems)
+  - [2.1 Embeddings & Dense Semantic Vector Space](#21-embeddings--dense-semantic-vector-space)
+  - [2.2 Vector Storage, Indexing & Approximate Nearest Neighbors](#22-vector-storage-indexing--approximate-nearest-neighbors)
+  - [2.3 Sparse Keyword Search & Hybrid Search](#23-sparse-keyword-search--hybrid-search)
+  - [2.4 Reciprocal Rank Fusion & Cross-Encoder Reranking](#24-reciprocal-rank-fusion--cross-encoder-reranking)
+  - [2.5 Advanced Retrieval: Contextual RAG, HyDE & GraphRAG](#25-advanced-retrieval-contextual-rag-hyde--graphrag)
+  - [2.6 Ingestion Pipelines & Late Chunking](#26-ingestion-pipelines--late-chunking)
+  - [2.7 Multi-Tenant Isolation & Enterprise Data Partitioning](#27-multi-tenant-isolation--enterprise-data-partitioning)
+- [Phase 03: Tools & Model Context Protocol (MCP)](#phase-03-tools--model-context-protocol-mcp)
+  - [3.1 Function Calling & Foreign-Function Interfaces](#31-function-calling--foreign-function-interfaces)
+  - [3.2 The Model Context Protocol Standard](#32-the-model-context-protocol-standard)
+  - [3.3 Protocol Transports: stdio vs. Streamable HTTP/SSE](#33-protocol-transports-stdio-vs-streamable-httpsse)
+  - [3.4 MCP Primitives: Tools, Resources, Prompts & Roots](#34-mcp-primitives-tools-resources-prompts--roots)
+  - [3.5 The CodeAct Paradigm: Executable Code Actions](#35-the-codeact-paradigm-executable-code-actions)
+  - [3.6 Execution Sandboxing & Zero-Trust Tool Security](#36-execution-sandboxing--zero-trust-tool-security)
+- [Phase 04: Agentic Systems & Stateful Orchestration](#phase-04-agentic-systems--stateful-orchestration)
+  - [4.1 Autonomous Agent Fundamentals & The ReAct Loop](#41-autonomous-agent-fundamentals--the-react-loop)
+  - [4.2 Durable Execution & Event-Sourced Write-Ahead Logs](#42-durable-execution--event-sourced-write-ahead-logs)
+  - [4.3 Agent Memory Hierarchy & Time-Travel Debugging](#43-agent-memory-hierarchy--time-travel-debugging)
+  - [4.4 Bounded Iterations, Tool Call Repair & Infinite Loop Prevention](#44-bounded-iterations-tool-call-repair--infinite-loop-prevention)
+  - [4.5 Multi-Agent Systems & Agent-to-Agent Protocols](#45-multi-agent-systems--agent-to-agent-protocols)
+- [Phase 05: AI Security & Guardrails](#phase-05-ai-security--guardrails)
+  - [5.1 Threat Modeling & The OWASP Top 10 for LLMs](#51-threat-modeling--the-owasp-top-10-for-llms)
+  - [5.2 Direct & Indirect Prompt Injection Defenses](#52-direct--indirect-prompt-injection-defenses)
+  - [5.3 Multi-Turn Jailbreak Defenses & Crescendo Attacks](#53-multi-turn-jailbreak-defenses--crescendo-attacks)
+  - [5.4 Dual-LLM Quarantine Architecture](#54-dual-llm-quarantine-architecture)
+  - [5.5 Semantic Firewalls, PII Masking & Runtime Guardrails](#55-semantic-firewalls-pii-masking--runtime-guardrails)
+  - [5.6 Algorithmic Fairness, Bias Detection & Explainability](#56-algorithmic-fairness-bias-detection--explainability)
+- [Phase 06: Evals & Observability](#phase-06-evals--observability)
+  - [6.1 Evaluation Hierarchy: Deterministic vs. Model-Based Evals](#61-evaluation-hierarchy-deterministic-vs-model-based-evals)
+  - [6.2 Production Evaluation Frameworks: DeepEval, Promptfoo & Ragas](#62-production-evaluation-frameworks-deepeval-promptfoo--ragas)
+  - [6.3 Groundedness, Faithfulness & Hallucination Scoring](#63-groundedness-faithfulness--hallucination-scoring)
+  - [6.4 LLM-as-a-Judge Calibration & Bias Mitigation](#64-llm-as-a-judge-calibration--bias-mitigation)
+  - [6.5 Agent Trajectory Evaluation](#65-agent-trajectory-evaluation)
+  - [6.6 OpenTelemetry GenAI Observability & Trace Waterfalls](#66-opentelemetry-genai-observability--trace-waterfalls)
+- [Phase 07: High-Throughput Serving & LLMOps](#phase-07-high-throughput-serving--llmops)
+  - [7.1 Serving Engine Internals & PagedAttention](#71-serving-engine-internals--pagedattention)
+  - [7.2 Serving Latency Triad & KV-Cache Sizing Math](#72-serving-latency-triad--kv-cache-sizing-math)
+  - [7.3 Prefix Caching & RadixAttention KV-Cache Sharing](#73-prefix-caching--radixattention-kv-cache-sharing)
+  - [7.4 Speculative Decoding: EAGLE-3 & P-EAGLE](#74-speculative-decoding-eagle-3--p-eagle)
+  - [7.5 Resilient AI Gateways & Traffic Control](#75-resilient-ai-gateways--traffic-control)
+  - [7.6 Model Fine-Tuning Realities & Parameter-Efficient Tuning](#76-model-fine-tuning-realities--parameter-efficient-tuning)
+- [Phase 08: AI-Augmented SDLC & Agentic Development](#phase-08-ai-augmented-sdlc--agentic-development)
+  - [8.1 Spec-Driven Development vs. Vibe Coding](#81-spec-driven-development-vs-vibe-coding)
+  - [8.2 The Agentic Coding Loop & Terminal Execution](#82-the-agentic-coding-loop--terminal-execution)
+  - [8.3 Agentic Extensibility: Skills, Hooks, Plugins & Environment Setup](#83-agentic-extensibility-skills-hooks-plugins--environment-setup)
+  - [8.4 Codebase Context: Repo Maps & Tree-sitter ASTs](#84-codebase-context-repo-maps--tree-sitter-asts)
+  - [8.5 Automated TDD Loops & Compiler Verification Gates](#85-automated-tdd-loops--compiler-verification-gates)
+  - [8.6 Agentic Coding Tools & SWE-bench Benchmarks](#86-agentic-coding-tools--swe-bench-benchmarks)
+  - [8.7 Autonomous Pull Request Reviews & CI/CD Agents](#87-autonomous-pull-request-reviews--cicd-agents)
+  - [8.8 Enterprise Governance, ISO 42001 & EU AI Act Compliance](#88-enterprise-governance-iso-42001--eu-ai-act-compliance)
+- [🧪 Hands-On Labs & Interactive Companion Notebooks](#-hands-on-labs--interactive-companion-notebooks)
+- [🧭 Navigation](#-navigation)
 
 ---
 
@@ -54,339 +82,529 @@
 
 ```mermaid
 flowchart TD
-    subgraph Track1["Stage 1: Core Primitives"]
-        C1["🧠 **1. AI and LLM Fundamentals**<br>(Tokens, Next-Word Math, Sampling)"] --> C2["📝 **2. Prompt and Context**<br>(Context AST, Schemas, Caching)"]
+    subgraph Track1["Track 1: Core Primitives & Input Harness"]
+        P00["🧠 Phase 00: Foundations & Token Mechanics<br>(Tokens • Memory Math • RoPE • Lost in the Middle)"]
+        P01["📝 Phase 01: Prompt & Context Engineering<br>(Context AST • Prompt Caching • DSPy • Schemas)"]
+        P00 --> P01
     end
 
-    subgraph Track2["Stage 2: Knowledge Retrieval"]
-        C3["🧭 **3. Embeddings and Vectors**<br>(Idea Galaxy and Coordinate Math)"] --> C4["📚 **4. Retrieval-Augmented Gen**<br>(Contextual Chunking, BM25, RRF)"]
+    subgraph Track2["Track 2: Knowledge Systems & Tool Protocols"]
+        P02["🔍 Phase 02: Retrieval & Knowledge Systems<br>(Hybrid RAG • Contextual Retrieval • GraphRAG • RRF)"]
+        P03["🔌 Phase 03: Tools & Model Context Protocol<br>(MCP JSON-RPC • CodeAct • Sandboxed MicroVMs)"]
+        P02 --> P03
     end
 
-    subgraph Track3["Stage 3: Autonomous Agents"]
-        C5["🤖 **5. AI Agents and Loops**<br>(MCP Tools, Memory, Durable WAL)"] --> C6["🛡️ **6. Safety and Guardrails**<br>(Dual-LLM Quarantine, Fallbacks)"]
+    subgraph Track3["Track 3: Autonomous Action & Defensive Systems"]
+        P04["🔄 Phase 04: Agentic Systems & Orchestration<br>(ReAct Loop • Durable WAL • Memory • A2A Swarms)"]
+        P05["🛡️ Phase 05: AI Security & Guardrails<br>(Prompt Injection • Dual-LLM Quarantine • PII Masking)"]
+        P04 --> P05
     end
 
-    subgraph Track4["Stage 4: Production Operations"]
-        C7["📊 **7. Evals and Observability**<br>(LLM Judges, OTel Spans, Tracing)"] --> C8["⚡ **8. Serving and LLMOps**<br>(vLLM, Continuous Batching, KV Cache)"]
+    subgraph Track4["Track 4: Production Scale, Observability & Agentic SDLC"]
+        P06["📊 Phase 06: Evals & Observability<br>(OTel GenAI • DeepEval • Promptfoo • Ragas • Judges)"]
+        P07["⚡ Phase 07: High-Throughput Serving & LLMOps<br>(vLLM • RadixAttention • EAGLE-3 • Latency Triad)"]
+        P08["💻 Phase 08: AI-Augmented SDLC & Agentic Dev<br>(Spec-Driven Dev • Repo Maps • SWE-bench • CI/CD)"]
+        P06 --> P07 --> P08
     end
 
-    C2 --> C3
-    C4 --> C5
-    C6 --> C7
+    P01 --> P02
+    P03 --> P04
+    P05 --> P06
 
-    style Track1 fill:#f0f7ff,stroke:#0066cc,stroke-width:2px
-    style Track2 fill:#f6fff0,stroke:#2e7d32,stroke-width:2px
-    style Track3 fill:#fffbf0,stroke:#d97706,stroke-width:2px
-    style Track4 fill:#f8f5ff,stroke:#7c3aed,stroke-width:2px
+    style Track1 fill:none,stroke:#2563eb,stroke-width:2px
+    style Track2 fill:none,stroke:#16a34a,stroke-width:2px
+    style Track3 fill:none,stroke:#d97706,stroke-width:2px
+    style Track4 fill:none,stroke:#7c3aed,stroke-width:2px
+
+    style P00 stroke:#2563eb,stroke-width:2px
+    style P01 stroke:#2563eb,stroke-width:2px
+    style P02 stroke:#16a34a,stroke-width:2px
+    style P03 stroke:#16a34a,stroke-width:2px
+    style P04 stroke:#d97706,stroke-width:2px
+    style P05 stroke:#d97706,stroke-width:2px
+    style P06 stroke:#7c3aed,stroke-width:2px
+    style P07 stroke:#7c3aed,stroke-width:2px
+    style P08 stroke:#7c3aed,stroke-width:2px
 ```
 
 ### Visual Roadmap Walkthrough:
-1. **Stage 1 (Blue / Primitives)**: Learn how models read text word-by-word (tokens) and how to package instructions into structured, cached prompts.
-2. **Stage 2 (Green / Knowledge)**: Turn text into coordinates (embeddings) and combine keyword indexes with vector search to give the model open-book access (RAG).
-3. **Stage 3 (Amber / Autonomous Action)**: Connect the model to tools over the Model Context Protocol (MCP), log actions to disk before executing (WAL), and guard against prompt injections.
-4. **Stage 4 (Purple / Scale & Evals)**: Measure system accuracy with automated judges and OpenTelemetry, and serve high-throughput traffic using continuous batching.
+1. **Track 1 (Blue / Primitives)**: Master tokens, GPU memory math, attention mechanics, and compiled prompt structures (Phase 00 & 01).
+2. **Track 2 (Green / Knowledge & Tools)**: Ground models with Contextual RAG, GraphRAG, and connect them to external APIs over MCP and CodeAct (Phase 02 & 03).
+3. **Track 3 (Amber / Action & Defenses)**: Build crash-resilient agents backed by durable Write-Ahead Logs (WAL) and secure them against prompt injection with dual-LLM quarantines (Phase 04 & 05).
+4. **Track 4 (Purple / Scale & SDLC)**: Instrument traces with OpenTelemetry, serve models with PagedAttention and speculative decoding, and lead engineering with Spec-Driven agentic workflows (Phase 06, 07 & 08).
 
 ---
 
-## 1. **AI & LLM Fundamentals**
-### Learn how smart computer brains read your text and guess the next words.
+## Phase 00: Foundations & Token Mechanics
+### Understand how models process text, guess words, and consume hardware resources.
 
-### 1.1 **Role Foundations: AI Engineer vs. ML Engineer**
-> An AI Engineer uses pre-trained models and tools to build practical apps, while an ML Engineer trains models and manages math algorithms from scratch.
+[📂 Explore Phase 00 Hub & Lessons](./00-foundations-and-token-mechanics/README.md)
 
-- **1.1.1 AI Engineer Focus** -> Connecting existing Large Language Models to databases, tools, APIs, and user interfaces to solve business problems.
-- **1.1.2 Machine Learning (ML) Engineer Focus** -> Training, fine-tuning, and mathematically tuning raw neural network architectures on massive GPU clusters.
-- **1.1.3 Artificial General Intelligence (AGI) vs Narrow AI** -> Narrow AI does specific tasks like writing text or recognizing images; AGI refers to a theoretical future system that can do any intellectual task as well as a human.
+### 0.1 **Role Foundations: AI Engineer vs. Machine Learning Engineer**
+> An AI Engineer uses foundation models, databases, and APIs to ship reliable software. An ML Engineer trains neural networks from scratch on GPU clusters.
 
-### 1.2 **What Is a Large Language Model (LLM)**
-> An LLM is a giant computer program trained on billions of books and websites to guess the next word in a sentence.
+- **0.1.1 AI Engineer Responsibilities** -> Connecting foundation models to enterprise databases, microservice APIs, and user interfaces using deterministic software harnesses.
+- **0.1.2 Machine Learning (ML) Engineer Responsibilities** -> Designing model architectures, curating massive training datasets, and running distributed gradient descent on GPU clusters.
+- **0.1.3 The Software 3.0 Mindset** -> Shifting from handwritten if-statements (Software 1.0) and trained statistical models (Software 2.0) to prompt context engineering and probabilistic reasoning microservices.
 
-- **1.2.1 Tokens** -> Word puzzle pieces (around 3 to 4 letters) that the AI reads and writes instead of entire words.
-- **1.2.2 Context Window** -> The short-term memory limit showing how much text the AI can see at one time before forgetting earlier lines.
-- **1.2.3 Hallucinations** -> Confident false answers made up by the AI because it only knows how to sound realistic, not check real facts.
-- **1.2.4 In-Context Learning** -> How an LLM temporarily picks up new skills or styles just from reading your prompt without retraining its brain.
+### 0.2 **Large Language Models & Token Mechanics**
+> A Large Language Model (LLM) predicts text one token at a time based on probabilities, not a database lookup.
 
-### 1.3 **Generation Mechanics & Sampling Parameters**
-> Models write one tiny piece at a time by constantly recalculating probabilities controlled by specific dials.
+- **0.2.1 Tokens** -> Subword fragments (around 3 to 4 letters) that models read and generate instead of full words.
+- **0.2.2 Byte-Pair Encoding (BPE)** -> An algorithm that merges frequent character pairs into a fixed vocabulary table (typically 32,000 to 128,000 tokens).
+- **0.2.3 Context Window** -> The maximum token budget (prompt input plus generated response) an LLM can process in a single request.
+- **0.2.4 "Lost in the Middle" Effect** -> The proven U-shaped attention curve where models remember facts at the start and end of prompts, but miss facts buried in the middle.
+- **0.2.5 Hallucination** -> A confident false statement generated when a model completes statistical patterns without factual grounding context.
 
-- **1.3.1 Autoregressive Generation** -> Writing one word chunk at a time where each new word depends on everything written previously.
-- **1.3.2 Temperature** -> A creativity dial where zero gives the most predictable, boring answer and higher numbers make the AI more adventurous.
-- **1.3.3 Top-P (Nucleus Sampling)** -> A filter that tells the AI to only pick from words that make up the top percentage of total probability, preventing gibberish.
-- **1.3.4 Top-K Sampling** -> A filter that forces the AI to consider only the top K most likely next words, cutting out weird wild guesses.
-- **1.3.5 Stop Sequences** -> Special marker phrases or symbols that tell the AI to immediately stop writing more text.
+### 0.3 **Generation Mechanics & Sampling Parameters**
+> Models generate text one token at a time by calculating probability odds across their entire vocabulary.
 
-### 1.4 **Model Families, APIs & Open-Source Options**
-> You usually do not train models from scratch; instead, you call existing models over the internet through APIs or run open models on your own servers.
+- **0.3.1 Autoregressive Generation** -> Sequential generation where each newly predicted token is added back to the prompt before predicting the next token.
+- **0.3.2 Logits & Softmax** -> Raw unnormalized scores (logits) converted into probabilities summing to 1.0 using the softmax math function.
+- **0.3.3 Temperature** -> A dial scaling logits; `0.0` forces deterministic greedy choice, while higher numbers (`0.7`–`1.0`) increase lexical variety.
+- **0.3.4 Top-P (Nucleus Sampling)** -> A filter restricting choices to the smallest set of tokens whose combined odds exceed probability P.
+- **0.3.5 Top-K Sampling** -> A filter restricting choices to the K highest-probability tokens, cutting off strange wild guesses.
 
-- **1.4.1 Commercial Cloud APIs (Application Programming Interfaces)** -> Ready-to-use cloud models like OpenAI GPT-4o, Anthropic Claude, and Google Gemini paid per token.
-- **1.4.2 Open-Weight Models & Local Hosting** -> Downloadable models like Meta Llama and Mistral that you can run on your own computers using tools like Ollama for total privacy.
-- **1.4.3 Small vs. Large Models (Model Tiers)** -> Small models are cheap and lightning fast for easy chores, while large models are smarter but slower and pricier.
+### 0.4 **Hardware Constraints & Compute Physics**
+> AI inference is strictly bounded by GPU memory bandwidth and Video RAM (VRAM) capacity.
 
----
+- **0.4.1 Arithmetic Intensity & Roofline Model** -> The ratio of compute operations (FLOPs) to memory reads (Bytes). Prefill is compute-bound; decoding is memory-bandwidth bound.
+- **0.4.2 Key-Value (KV) Cache** -> GPU memory buffers storing past attention vectors so the model does not recalculate them for every new word.
+- **0.4.3 Prefill Phase vs. Decode Phase** -> Prefill processes the prompt in parallel with high compute intensity. Decode generates words one by one with low compute intensity.
+- **0.4.4 Multi-Query (MQA) & Grouped-Query Attention (GQA)** -> Techniques that share Key and Value attention heads to slash KV-cache memory usage by 4x to 8x.
+- **0.4.5 Rotary Position Embedding (RoPE)** -> The modern positional encoding method used in Llama, Mistral, and Qwen that allows models to handle long context windows.
 
-## 2. **Prompt & Context Engineering**
-### Learn how to talk to models clearly so they give you structured, dependable answers.
+### 0.5 **Model Tiers & Open-Weight Foundations**
+> Select between cloud APIs and local open-weight models based on cost, speed, and privacy.
 
-### 2.1 **Prompt Engineering Techniques**
-> Giving the AI crystal-clear instructions so it does what you want instead of making random guesses.
-
-- **2.1.1 System Prompts** -> Secret setup instructions that define the AI's identity, rules, and boundaries before any human speaks.
-- **2.1.2 Zero-Shot vs. Few-Shot Prompting** -> Zero-shot gives instructions with no examples; few-shot provides two or three examples so the model copies the exact pattern.
-- **2.1.3 Chain-of-Thought (CoT)** -> Asking the AI to explain its thinking step-by-step before giving the final answer, which avoids silly math and logic mistakes.
-- **2.1.4 Role & Persona Prompting** -> Telling the AI to act like a specific professional, like a senior security engineer or a tax lawyer, to get deeper answers.
-
-### 2.2 **Context Engineering & Compaction**
-> Packing the AI's limited memory window with only the most helpful background notes for the current task.
-
-- **2.2.1 Context Composition** -> Assembling the system rules, conversation history, and fresh facts into a single clean message.
-- **2.2.2 Context Overflow & Compaction** -> Shrinking or summarizing older chat history so the conversation does not exceed the model's memory limits.
-- **2.2.3 Context Relevance & Noise Pruning** -> Keeping out useless chatter so the AI does not get distracted by background noise.
-
-### 2.3 **Structured Outputs & Schema Contracts**
-> Forcing the AI to reply in computer-friendly formats like JSON (JavaScript Object Notation) instead of messy free text.
-
-- **2.3.1 JSON Mode & Schema Enforcement** -> Setting strict rules that guarantee the AI fills out every required field in a predefined data format.
-- **2.3.2 Pydantic Validation** -> Using code checks to ensure numbers are actually numbers and required text fields are not missing.
-- **2.3.3 Malformed Output Recovery** -> Automatically asking the AI to fix its mistake or retrying whenever it returns broken data.
+- **0.5.1 Commercial Cloud APIs** -> Ready-to-use cloud models (OpenAI, Anthropic, Google Gemini) billed per million tokens with zero GPU management.
+- **0.5.2 Open-Weight Foundations** -> Downloadable models (Meta Llama, Mistral, Qwen) that run on private servers using runtimes like Ollama or vLLM.
+- **0.5.3 Small Language Models (SLMs)** -> Fast, compact models (1B to 14B parameters, like Phi-4 and Qwen 2.5) that handle classification and extraction cheaply.
+- **0.5.4 Quantization (AWQ, GPTQ, GGUF)** -> Compressing 16-bit weights into 8-bit or 4-bit numbers, allowing models to fit inside much smaller GPU memory.
 
 ---
 
-## 3. **Embeddings & Vector Search**
-### Learn how to turn words into lists of numbers so computers can search ideas by meaning.
+## Phase 01: Prompt & Context Engineering
+### Structure model inputs to enforce deterministic interfaces and maximize cache reuse.
 
-### 3.1 **Embeddings & Semantic Search**
-> Translating sentences into long lists of numbers called vectors that measure what ideas mean.
+[📂 Explore Phase 01 Hub & Lessons](./01-prompt-and-context-engineering/README.md)
 
-- **3.1.1 Vectors** -> Lists of numbers that act like GPS coordinates for an idea inside the computer's memory space.
-- **3.1.2 Semantic Similarity** -> Mathematical matching showing that "dog" and "puppy" mean almost the same thing even though they are spelled differently.
-- **3.1.3 Embedding Dimensions** -> The length of the number list; longer lists capture finer details but take up more storage space.
-- **3.1.4 Embedding Models** -> Dedicated programs that turn raw text into vectors; you must always use the same model to save and search.
+### 1.1 **Context Architecture & The Prompt AST**
+> Treat prompts as compiled Abstract Syntax Trees (ASTs) rather than glued-together text strings.
 
-### 3.2 **Vector Databases & Indexing**
-> Special digital filing cabinets designed to quickly find number lists that are close together.
+- **1.1.1 The Context Abstract Syntax Tree (AST)** -> Breaking prompts into modular nodes (System Rules, Exemplars, Dynamic Context, User Request).
+- **1.1.2 Instruction Hierarchy** -> Ordering prompt layers so high-priority system rules cannot be overridden by untrusted user data.
+- **1.1.3 Zero-Shot vs. Few-Shot Prompting** -> Giving instructions alone (zero-shot) versus supplying clear input-output examples (few-shot) for format compliance.
+- **1.1.4 Chain-of-Thought (CoT)** -> Instructing the model to show its step-by-step reasoning before answering, preventing logic and calculation errors.
 
-- **3.2.1 Approximate Nearest Neighbor (ANN)** -> A fast math shortcut that finds the closest matching vectors in milliseconds across millions of items.
-- **3.2.2 Popular Vector Databases** -> Specialized storage tools like Chroma, Qdrant, Pinecone, Weaviate, and pgvector (PostgreSQL vector extension).
-- **3.2.3 Metadata Filtering** -> Tagging documents with labels like date, user, or category so you only search through relevant folders.
+### 1.2 **Context Compaction & Token Budgeting**
+> Actively manage the token budget to avoid memory overflows and lost instructions.
 
-### 3.3 **Hybrid Search & Ranking**
-> Combining classic word matching with modern meaning search so you get the best of both worlds.
+- **1.2.1 Maximum Effective Context Window (MECW)** -> The practical token limit before an LLM's retrieval accuracy drops.
+- **1.2.2 Context Compaction Pipelines** -> Summarizing older conversation turns, stripping useless HTML markup, and pruning irrelevant details.
+- **1.2.3 Token Budget Allocation** -> Reserving dedicated token limits for system prompts, chat history, retrieved notes, and generated output.
 
-- **3.3.1 Keyword Search (BM25 - Best Matching 25)** -> A classic search formula that ranks documents by counting exact matching words, numbers, and IDs.
-- **3.3.2 Hybrid Search** -> Blending keyword search (exact word matches) with vector search (concept matches) for top-tier accuracy.
-- **3.3.3 Reciprocal Rank Fusion (RRF)** -> A simple math formula that merges two ranked search lists into one master list without needing extra AI calls.
+### 1.3 **Prompt Caching Mechanics & Prefix Alignment**
+> Structure prompt beginnings so inference engines reuse precomputed KV-cache states.
 
----
+- **1.3.1 Ephemeral Prefix Caching** -> Saving precomputed KV caches for identical leading prompt tokens, cutting latency by 80% and cost by 90%.
+- **1.3.2 Static Prefix Ordering** -> Placing unchanging text (system instructions, tool declarations) at the absolute start of the prompt.
+- **1.3.3 Dynamic Suffix Placement** -> Confining variable parameters (timestamps, user questions) to the end of the prompt to avoid breaking cache hits.
 
-## 4. **Retrieval-Augmented Generation (RAG)**
-### Giving the AI an open book of your private documents so it answers with real facts instead of making things up.
+### 1.4 **Programmatic Prompt Optimization & Delimiters**
+> Move from brittle manual prompt tweaking to algorithmic prompt optimization.
 
-### 4.1 **Basic RAG Pipeline**
-> Looking up the right page in your company notes and handing it to the AI before asking it to write an answer.
+- **1.4.1 Declarative Optimization (DSPy / MIPROv2)** -> Compiling prompts programmatically by using Stanford DSPy and Bayesian optimizers (MIPROv2) to discover high-performing instructions automatically.
+- **1.4.2 XML Boundary Delimiters** -> Isolating untrusted data using explicit structural tags (`<context>`, `<instructions>`, `<user_input>`).
+- **1.4.3 System Prompt Extraction Defense** -> Hardening system instructions against jailbreak attempts that try to leak internal prompts.
 
-- **4.1.1 Document Indexing** -> Converting your company articles and manuals into searchable vectors inside a vector database.
-- **4.1.2 Candidate Retrieval** -> Finding the top matching paragraphs from your database using vector similarity search.
-- **4.1.3 Prompt Augmentation** -> Sticking the retrieved paragraphs directly inside the prompt so the AI can read them before answering.
-- **4.1.4 Groundedness & Hallucination Defense** -> Making sure the AI's final answer only uses facts found in your notes rather than its own imagination.
-- **4.1.5 RAG vs. Fine-Tuning** -> RAG gives the model fresh facts at query time without changing its brain; fine-tuning changes model weights permanently to learn style or vocabulary.
+### 1.5 **Structured Outputs & Schema Contracts**
+> Force models to return strictly valid JSON payloads matching Pydantic and JSON schemas.
 
-### 4.2 **Document Ingestion & Chunking**
-> Cleaning and preparing messy files like PDFs, spreadsheets, and web pages so the computer can read them smoothly.
-
-- **4.2.1 Document Parsing** -> Stripping out headers, footers, and messy formatting from PDFs and scanned images.
-- **4.2.2 Chunking Strategies** -> Chopping big documents into smaller, bite-sized paragraphs (by size, sentence, or hierarchy) so they fit neatly into the AI's memory.
-- **4.2.3 Index Freshness & Sync** -> Keeping your search index up to date whenever source documents are edited, added, or deleted.
-
-### 4.3 **Advanced RAG & Retrieval Quality**
-> Measuring and polishing search results with smart sorting models so the AI gets the best possible clues.
-
-- **4.3.1 Re-Ranking** -> Running a specialized sorting model over your top search results to score how well each paragraph actually answers the question.
-- **4.3.2 Precision@K & Recall@K** -> Precision measures how clean your top search results are; Recall measures whether you missed any key documents.
-- **4.3.3 Mean Reciprocal Rank (MRR)** -> A metric that checks how close the very first correct answer was to the top of the search results list.
-- **4.3.4 Retrieval Quality Frameworks (RAGAS)** -> Automated tools that test if your RAG pipeline finds the right documents and generates truthful answers.
+- **1.5.1 Grammar-Constrained Decoding** -> Masking invalid token logits using Finite State Machines (FSMs) so schema violations are mathematically impossible.
+- **1.5.2 Pydantic v2 Schema Contracts** -> Declaring typed Python models with data validations and type assertions.
+- **1.5.3 Automated Output Recovery** -> Feeding validation error traces back to the model for single-turn syntax correction.
 
 ---
 
-## 5. **AI Agents & Stateful Orchestration**
-### Turning an AI from a talking assistant into a worker that can browse tools, take actions, and solve multi-step problems.
+## Phase 02: Retrieval & Knowledge Systems
+### Ground models with private enterprise data using hybrid search and ranking algorithms.
 
-### 5.1 **Agent Fundamentals & the ReAct Loop**
-> An AI inside a loop that can think, pick a tool, look at the result, and repeat until the job is done.
+[📂 Explore Phase 02 Hub & Lessons](./02-rag-and-knowledge-systems/README.md)
 
-- **5.1.1 What is an AI Agent vs Chatbot** -> A chatbot only talks back and forth; an AI agent plans, decides, and executes external actions autonomously.
-- **5.1.2 The ReAct Loop (Reason + Act)** -> A repeating cycle where the AI reasons about what to do, takes an action, and examines the result.
-- **5.1.3 Agent Harness** -> The outer code wrapper you write to run the agent loop, enforce safety rules, and stop runaway behavior.
-- **5.1.4 Stop Conditions** -> Explicit triggers that tell the agent its mission is accomplished and it should return the final answer.
+### 2.1 **Embeddings & Dense Semantic Vector Space**
+> Convert text chunks into high-dimensional numerical coordinates that capture conceptual meaning.
 
-### 5.2 **Agent Tools & Function Calling**
-> Giving the AI permission to invoke specific code functions in the real world.
+- **2.1.1 Semantic Embeddings** -> Dense vectors (typically 768 to 3,072 numbers) acting as concept coordinates in geometric space.
+- **2.1.2 Distance Metrics (Cosine Similarity vs. Dot Product)** -> Measuring vector angles (cosine) or combined angle and length (dot product) to calculate similarity.
+- **2.1.3 Embedding Model Selection** -> Balancing latency, context limits, and language accuracy when choosing embedding models.
 
-- **5.2.1 Tool Schemas** -> Clear descriptions that tell the AI what each tool does, what arguments it needs, and what it returns.
-- **5.2.2 Execution Sandboxing** -> Running risky code or tools inside safe, isolated containers so a bug cannot harm your servers.
-- **5.2.3 Tool Failure Recovery** -> Teaching the agent how to read tool error messages and try an alternative tool instead of giving up.
+### 2.2 **Vector Storage, Indexing & Approximate Nearest Neighbors**
+> Specialized databases designed to find closest matching vectors in milliseconds across millions of items.
 
-### 5.3 **State, Memory & Checkpoints**
-> Helping the agent remember what it already accomplished so it does not lose its place or repeat work.
+- **2.2.1 Hierarchical Navigable Small World (HNSW)** -> A multi-layer graph index delivering logarithmic search speeds over vector spaces.
+- **2.2.2 ACORN Indexing** -> Predicate-aware graph traversal algorithms that prevent graph disconnection on heavily filtered enterprise queries.
+- **2.2.3 Vector Tombstones & Compaction** -> Managing soft deletes and background graph compaction to prevent search accuracy drops over time.
 
-- **5.3.1 Short-Term Memory** -> The current chat window holding recent user messages and immediate tool outputs.
-- **5.3.2 Long-Term Episodic vs. Semantic Memory** -> Episodic memory stores specific past events and past conversations; semantic memory stores timeless facts and learned user preferences.
-- **5.3.3 Checkpoints & Session Persistence** -> Saved snapshots of the agent's work after every tool call so it can pick back up if the computer crashes.
+### 2.3 **Sparse Keyword Search & Hybrid Search**
+> Combine exact word matching with semantic concept search to eliminate exact-match blind spots.
 
-### 5.4 **Stateful Workflows & State Machines**
-> Connecting multiple steps like a train schedule so complex jobs follow strict, predictable tracks.
+- **2.3.1 BM25 (Best Matching 25)** -> A sparse keyword index that scores documents by term frequency, excelling at exact SKUs and IDs.
+- **2.3.2 The Vector-Only Blindspot** -> Dense vectors frequently confuse similar alphanumeric codes (e.g., `ERR_001` vs `ERR_002`) where exact word match is mandatory.
+- **2.3.3 Hybrid Search** -> Querying dense vector indexes and sparse BM25 indexes simultaneously across the same documents.
 
-- **5.4.1 State Machines** -> A clear diagram of allowed steps (like PLAN -> SEARCH -> APPROVE -> FINISH) that keeps the agent on track.
-- **5.4.2 Write-Ahead Log (WAL)** -> Saving the agent's next planned step to disk before running it, ensuring no steps get mysteriously lost.
-- **5.4.3 Parallel Tool Calls** -> Asking the model to call several independent tools simultaneously to cut down waiting time.
+### 2.4 **Reciprocal Rank Fusion & Cross-Encoder Reranking**
+> Merge search results and re-score top candidates for maximum precision.
 
-### 5.5 **Model Context Protocol (MCP)**
-> A universal USB cable for AI that lets agents plug into databases, servers, and tools without custom wiring.
+- **2.4.1 Reciprocal Rank Fusion (RRF)** -> Merging ranked lists using a simple rank formula without needing score normalization:
+  ```text
+  RRF_Score(d) = Σ [ 1 / (60 + rank_m(d)) ]  for each search method m
+  ```
+- **2.4.2 Cross-Encoder Rerankers** -> Deep transformer models scoring query-document pairs together for fine-grained relevance at slightly higher latency.
+- **2.4.3 Two-Stage Retrieval** -> Fast first-stage hybrid retrieval (getting top 50 matches) followed by precision cross-encoder reranking (passing top 5 to the LLM).
 
-- **5.5.1 MCP Server** -> A small program that exposes internal tools and private data (like a database or file system) using a standard protocol.
-- **5.5.2 MCP Client** -> The AI agent or application that connects to MCP servers to discover and invoke tools dynamically.
-- **5.5.3 MCP Host & Tools** -> The user environment (like Claude Desktop, an IDE, or an agent runtime) that manages the MCP connections securely.
+### 2.5 **Advanced Retrieval: Contextual RAG, HyDE & GraphRAG**
+> Overcome the limitations of simple passage chunking.
 
-### 5.6 **Multi-Agent Coordination & Agent-to-Agent (A2A)**
-> Dividing difficult projects among a team of specialized AI workers instead of asking one agent to do everything.
+- **2.5.1 Contextual Retrieval (Anthropic)** -> Prepending document-level context to each chunk before embedding, cutting retrieval failures by 35% to 67%.
+- **2.5.2 Hypothetical Document Embeddings (HyDE)** -> Asking the model to write a hypothetical answer first, then embedding that answer to find real documents.
+- **2.5.3 GraphRAG (Microsoft / Neo4j)** -> Extracting entities, relationships, and Leiden community summaries to answer complex multi-hop questions.
+- **2.5.4 Late Interaction / ColBERT** -> Storing multi-vector token representations to compute fine-grained token alignments instead of single vectors.
 
-- **5.6.1 Orchestrator-Worker Pattern** -> One manager agent plans the work and hands smaller jobs to specialized worker agents.
-- **5.6.2 Agent-to-Agent (A2A) Protocols** -> Standard rules for how two different AI agents pass messages and hand off tasks to each other.
-- **5.6.3 Shared State & Conflict Resolution** -> Using locks and task queues so two agents working at the same time do not accidentally overwrite each other.
+### 2.6 **Ingestion Pipelines & Late Chunking**
+> Prepare, clean, and partition documents into clean contextual units.
 
----
+- **2.6.1 Chunking Strategies** -> Splitting text by character count, sentence boundaries, or structural markdown headers.
+- **2.6.2 Late Chunking** -> Embedding the entire document first and pooling embeddings into chunk spans to preserve cross-paragraph meaning.
 
-## 6. **Reliability, Safety & Guardrails**
-### Making sure your AI apps do not crash, loop forever, spend too much money, or do dangerous things.
+### 2.7 **Multi-Tenant Isolation & Enterprise Data Partitioning**
+> Prevent cross-tenant data leakage in corporate knowledge bases.
 
-### 6.1 **Failure Engineering & Fallbacks**
-> Preparing for when tools break, networks fail, or the AI gives a confusing response.
-
-- **6.1.1 Retries with Exponential Backoff** -> Trying a failed network request again while waiting twice as long between each attempt.
-- **6.1.2 Dynamic Fallbacks** -> Automatically switching to a simpler model or alternate tool if the primary one goes down or errors out.
-- **6.1.3 Idempotency Keys** -> Unique receipt codes that make sure retrying a tool call (like charging a credit card) never happens twice.
-- **6.1.4 Degraded Modes** -> Answering with partial information safely when an external service is unavailable instead of crashing completely.
-
-### 6.2 **Bounded Execution & Loop Prevention**
-> Putting strict speed limits and seatbelts on AI agents so they never go rogue or waste budget.
-
-- **6.2.1 Iteration Limits** -> A hard maximum cap on loop cycles (usually 5 to 10 turns) to prevent infinite thinking loops.
-- **6.2.2 Token & Cost Budgets** -> Setting a dollar spending limit per task so a runaway query does not drain your bank account.
-- **6.2.3 Timeout Limits** -> Killing tool calls or agent runs that take too long to respond so users are not left waiting forever.
-
-### 6.3 **Human-in-the-Loop (HITL) & Approval Gates**
-> Requiring a real person to review and click 'approve' before the AI performs any dangerous or permanent action.
-
-- **6.3.1 Approval Gates** -> Deliberate pause buttons where the agent stops and waits for a human to confirm before deleting data or sending money.
-- **6.3.2 Risk-Based Autonomy** -> Letting the AI do safe chores (reading files) freely, but strictly locking down dangerous actions (modifying databases).
-- **6.3.3 Escalation Rules** -> Explicit instructions telling the agent to stop and ask for help whenever its confidence is low or it feels stuck.
-
-### 6.4 **Guardrails & Prompt Injection Defense**
-> Security checkpoints that scan what enters and exits the AI to catch bad inputs and harmful outputs.
-
-- **6.4.1 Prompt Injections & Jailbreaks** -> Tricks where malicious users hide commands in their text to make the AI ignore its safety instructions.
-- **6.4.2 Input & Output Guardrails** -> Scanning user questions for toxic or hacking text, and scanning AI replies for leaked passwords or confidential files.
-- **6.4.3 Dual-LLM Quarantine** -> Using a small guard model to inspect untrusted text from the web before letting the main reasoning model touch it.
+- **2.7.1 Tenant Pre-Filtering** -> Restricting search at the index boundary before scoring, preventing unauthorized data from ever leaking into results.
+- **2.7.2 Document-Level RBAC** -> Checking retrieved chunks against user security permissions before sending context to the model.
 
 ---
 
-## 7. **Evaluation & Observability**
-### Proving your AI system actually works well and watching every step in production like a flight recorder.
+## Phase 03: Tools & Model Context Protocol (MCP)
+### Connect models to external APIs, databases, and services using standardized wire protocols.
 
-### 7.1 **Deterministic & Metric-Based Evals**
-> Fast, automated code checks that grade whether your AI is giving exact, expected answers.
+[📂 Explore Phase 03 Hub & Lessons](./03-tools-and-model-context-protocol/README.md)
 
-- **7.1.1 Schema & Invariant Checks** -> Testing that responses always match the required format and never violate hard rules.
-- **7.1.2 Exact Match & String Tests** -> Checking if critical answers contain exact expected words, IDs, or formulas.
-- **7.1.3 Golden Datasets** -> A curated test bank of real-world questions paired with verified answers used to test system improvements.
+### 3.1 **Function Calling & Foreign-Function Interfaces**
+> Enable models to invoke external tools instead of just outputting text.
 
-### 7.2 **LLM-as-a-Judge & Model-Based Evals**
-> Using a capable model like GPT-4 or Claude to grade another model's answers against an explicit scoring rubric.
+- **3.1.1 Tool Declaration Schemas** -> JSON Schema descriptions defining tool names, descriptions, parameter types, and required fields.
+- **3.1.2 Parallel Tool Execution** -> Handling model responses that request multiple function calls in a single turn.
+- **3.1.3 Tool Choice Controls** -> Forcing tool usage (`required`), allowing optional calls (`auto`), or disabling tools (`none`).
 
-- **7.2.1 Evaluation Rubrics** -> Clear grading guidelines given to the judge model defining what counts as a good or bad answer.
-- **7.2.2 Faithfulness & Groundedness Evals** -> Measuring whether an answer was backed up 100% by the retrieved documents or made up out of thin air.
-- **7.2.3 Judge Calibration & Bias Checks** -> Making sure the judge model grades fairly and does not prefer long-winded answers over concise ones.
+### 3.2 **The Model Context Protocol Standard**
+> An open standard for connecting AI clients to tools and data, governed by the Linux Foundation's Agentic AI Foundation (AAIF).
 
-### 7.3 **Agent Trajectory & Behavior Evaluation**
-> Grading the agent's full path of tool choices to see if it took smart, efficient steps rather than stumbling around.
+- **3.2.1 The Universal Adapter Model** -> Eliminating custom tool connectors for each LLM provider by using one standard protocol.
+- **3.2.2 Architecture: Client, Host, and Server** -> The **Host** (e.g. IDE/runtime) manages security; the **Client** maintains connections; the **Server** exposes tools.
+- **3.2.3 JSON-RPC 2.0 Core** -> Typed bidirectional messages (`tools/call`, `resources/read`, `prompts/get`).
 
-- **7.3.1 Trajectory Steps** -> Reviewing the chronological list of every tool call, argument, and observation the agent made.
-- **7.3.2 Tool Selection Accuracy** -> Measuring whether the agent called the most appropriate tool for the job or picked tools randomly.
-- **7.3.3 Efficiency Scoring** -> Checking whether the agent finished the task in 3 smart steps or wasted time and money taking 12 clumsy steps.
+### 3.3 **Protocol Transports: stdio vs. Streamable HTTP/SSE**
+> Managing how MCP messages travel between systems.
 
-### 7.4 **Observability, Tracing & Golden Signals**
-> A live dashboard showing every thought, tool call, token count, and dollar spent for every user request.
+- **3.3.1 Local Process Transport (`stdio`)** -> Spawning local server subprocesses over standard input and standard output for development.
+- **3.3.2 Server-Sent Events (SSE) & Streamable HTTP** -> Cloud-native networking for connecting distributed agents to remote microservices.
 
-- **7.4.1 Distributed Tracing** -> Recording an entire agent journey as a tree of steps so you can see which specific tool or prompt caused a delay.
-- **7.4.2 Spans & Traces** -> A trace is the complete story of a user request; a span is one single chapter, like a database query or model call.
-- **7.4.3 OpenTelemetry (OTel) GenAI Conventions** -> An industry-standard format for logging AI token counts, model names, and response durations.
-- **7.4.4 Golden Signals (Cost, Latency, Errors)** -> Live alerts that sound if your response time slows down, errors spike, or token costs jump.
+### 3.4 **MCP Primitives: Tools, Resources, Prompts & Roots**
+> Core capabilities exposed across the protocol.
+
+- **3.4.1 Tools** -> Executable actions (running SQL, sending emails, processing payments).
+- **3.4.2 Resources** -> Read-only data streams (file descriptors, database records) for zero-hallucination grounding.
+- **3.4.3 Prompts** -> Reusable prompt templates and slash-commands exposed directly by the server.
+- **3.4.4 Roots & Reverse Sampling** -> Workspace root inspection and server-initiated model completion requests (`sampling/createMessage`).
+
+### 3.5 **The CodeAct Paradigm: Executable Code Actions**
+> Having agents write and execute Python code in a sandboxed REPL instead of rigid JSON schemas (ICML 2024).
+
+- **3.5.1 Code-as-Actions** -> Letting the agent write Python code to orchestrate loops, data filters, and multi-step math directly.
+- **3.5.2 Token & Step Efficiency** -> Solving complex data analysis tasks in fewer round-trips than traditional JSON tool calling.
+
+### 3.6 **Execution Sandboxing & Zero-Trust Tool Security**
+> Isolate untrusted code execution from backend infrastructure.
+
+- **3.6.1 MicroVM Sandboxing (Firecracker / E2B)** -> Running agent code in lightweight, hardware-isolated virtual machines booting in under 200ms.
+- **3.6.2 Syscall Interception (gVisor)** -> Trapping Linux system calls in user space to prevent container breakout exploits.
+- **3.6.3 Egress Firewalls** -> Denying outbound network access by default and injecting credentials securely so models never see raw API keys.
 
 ---
 
-## 8. **Production, Inference & Systems Optimization**
-### Making your AI apps lightning fast, inexpensive to run, and ready for millions of real users.
+## Phase 04: Agentic Systems & Stateful Orchestration
+### Build autonomous multi-turn systems that reason, act, persist state, and recover from failures.
 
-### 8.1 **Latency, Cost & Caching Optimization**
-> Cutting your monthly AI bill and speeding up response times without sacrificing quality.
+[📂 Explore Phase 04 Hub & Lessons](./04-agentic-systems-and-orchestration/README.md)
 
-- **8.1.1 Model Routing** -> Directing simple tasks to tiny, cheap models and saving expensive flagship models only for hard reasoning.
-- **8.1.2 Semantic Caching** -> Saving answers to common questions so if someone asks the same idea in different words, you answer instantly for free.
-- **8.1.3 Prompt Caching** -> Storing the model's memory of long static prompts on the server so you do not pay or wait to re-read them every time.
-- **8.1.4 Async & Parallel Processing** -> Firing off multiple independent tool lookups at the same time instead of waiting for them one by one.
+### 4.1 **Autonomous Agent Fundamentals & The ReAct Loop**
+> Combining reasoning steps with action execution inside an iterative loop.
 
-### 8.2 **Serving, KV Cache & Continuous Batching**
-> Understanding how the hardware and servers hosting AI models handle heavy traffic.
+- **4.1.1 The ReAct Loop (Reason + Act)** -> Repeating cycles where the model thinks, invokes a tool, observes the output, and decides the next move.
+- **4.1.2 Agents vs. Chatbots** -> Chatbots answer questions in one turn; agents autonomously pursue goals across multiple turns.
+- **4.1.3 Deterministic Software Harness** -> The outer code wrapper that manages state, enforces limits, and terminates execution safely.
 
-- **8.2.1 KV Cache (Key-Value Cache)** -> A GPU memory trick that stores the mathematical notes of past tokens so the model does not recalculate them from scratch.
-- **8.2.2 Continuous Batching (vLLM)** -> A smart server trick that squeezes multiple user requests into the GPU simultaneously without waiting for previous requests to finish.
-- **8.2.3 Rate Limiting & Load Shedding** -> Gracefully slowing down or queueing requests so your app does not crash when hitting API quotas.
-- **8.2.4 Speculative Decoding** -> Using a tiny model to draft several words quickly and a big model to verify them all in one fast pass.
+### 4.2 **Durable Execution & Event-Sourced Write-Ahead Logs**
+> Ensure agent workflows survive crashes without losing progress.
 
-### 8.3 **Multi-Modal AI Systems**
-> Expanding beyond plain text so your AI can see pictures, listen to voices, and inspect videos.
+- **4.2.1 Event-Sourced Write-Ahead Logs (WAL)** -> Appending every prompt, thought, tool call, and tool output to an append-only disk ledger before acting.
+- **4.2.2 State Rehydration** -> Rebuilding an agent's working memory from its event log after unexpected container restarts.
+- **4.2.3 Tool Idempotency Keys** -> Attaching unique transaction keys to tool calls so retrying never charges a user twice.
 
-- **8.3.1 Vision Processing** -> Feeding images, diagrams, and scanned forms to the model so it can describe what it sees and extract data.
-- **8.3.2 Speech-to-Text (STT) & Text-to-Speech (TTS)** -> Transcribing spoken words into written text and turning written replies back into natural human speech.
-- **8.3.3 Cross-Modal Reasoning** -> Asking the AI questions that require checking both a picture and written instructions at the exact same time.
+### 4.3 **Agent Memory Hierarchy & Time-Travel Debugging**
+> Managing how agents remember information over short and long horizons.
 
-### 8.4 **Enterprise Capstone: Production Agent Architecture**
-> Bringing all eight categories together into one deterministic, fault-tolerant enterprise system.
+- **4.3.1 Memory Tiers** -> Active scratchpad (in context), episodic memory (past sessions in SQL), and semantic memory (timeless facts in vector DBs).
+- **4.3.2 Time-Travel Debugging & Replay** -> Pausing an agent run, rewinding past turns, editing context, and resuming execution.
 
-- **8.4.1 End-to-End Pipeline Integration** -> Connecting Document Ingestion -> RAG Retrieval -> Agent Reasoning -> Tool Execution -> Guardrails -> Output.
-- **8.4.2 Auditability & Compliance** -> Storing complete execution logs and human approval timestamps for corporate governance and regulatory review.
-- **8.4.3 CI/CD Evaluation Gates** -> Automatically running your test suite of evals before deploying any new prompt, model version, or tool to production.
- 
+### 4.4 **Bounded Iterations, Tool Call Repair & Infinite Loop Prevention**
+> Keep agents from running away, deadlocking, or draining budgets.
+
+- **4.4.1 Bounded Iteration Caps** -> Setting hard maximum loop limits (typically 5 to 10 turns) and token spending caps per task.
+- **4.4.2 Action Fingerprinting** -> Hashing recent tool calls and parameters to detect repetitive loops and break them early.
+- **4.4.3 Automated Tool Repair** -> Automatically detecting schema mismatches (e.g. string instead of float) and coercing parameters cleanly.
+
+### 4.5 **Multi-Agent Systems & Agent-to-Agent Protocols**
+> Coordinate teams of specialized agents to solve large tasks.
+
+- **4.5.1 Subagent Delegation** -> Spawning focused subagents (Planner, Researcher, Coder, Reviewer) with clean, separate context windows.
+- **4.5.2 Agent-to-Agent (A2A) Protocols** -> Open messaging protocols and Agent Cards for cross-framework collaboration (Linux Foundation standard).
+- **4.5.3 Distributed Sagas & Compensating Actions** -> Designing rollback steps when multi-step workflows fail midway through execution.
+
+---
+
+## Phase 05: AI Security & Guardrails
+### Defend systems against prompt injections, data exfiltration, toxic outputs, and model drift.
+
+[📂 Explore Phase 05 Hub & Lessons](./05-ai-security-and-guardrails/README.md)
+
+### 5.1 **Threat Modeling & The OWASP Top 10 for LLMs**
+> Systematically identify vulnerabilities unique to generative AI.
+
+- **5.1.1 OWASP Top 10 for LLMs** -> Standard risk checklist including prompt injection, data disclosure, and excessive agency.
+- **5.1.2 Direct vs. Indirect Injections** -> Direct attacks come from user prompts; indirect attacks hide in external web pages, emails, or uploaded PDFs.
+
+### 5.2 **Direct & Indirect Prompt Injection Defenses**
+> Stop untrusted text from overriding system directives.
+
+- **5.2.1 Data vs. Instruction Separation** -> Quarantining untrusted data using explicit structural tags and treating text strictly as data.
+- **5.2.2 Canary Tokens** -> Injecting secret canary strings into system prompts to detect and block prompt leakage attempts immediately.
+
+### 5.3 **Multi-Turn Jailbreak Defenses & Crescendo Attacks**
+> Defend against subtle, iterative attack vectors.
+
+- **5.3.1 Crescendo Attacks** -> Adversaries gradually nudging conversations over many turns to bypass single-turn safety filters.
+- **5.3.2 Encoding & Obfuscation Filters** -> Detecting Base64, ROT13, or cipher payloads designed to bypass simple keyword blocklists.
+- **5.3.3 Context Stuffing DoS** -> Flooding context windows to trigger GPU out-of-memory errors and burn token budgets.
+
+### 5.4 **Dual-LLM Quarantine Architecture**
+> Use an isolated model to inspect external text before the main reasoning model reads it.
+
+- **5.4.1 Untrusted Text Quarantine** -> Routing external content through an unprivileged analyzer model that strips instructions.
+- **5.4.2 Privilege Separation** -> Ensuring models with sensitive tool permissions never process raw, uninspected web content.
+
+### 5.5 **Semantic Firewalls, PII Masking & Runtime Guardrails**
+> Validate inputs and outputs against corporate security policies.
+
+- **5.5.1 PII Masking (Microsoft Presidio)** -> Redacting names, credit cards, and social security numbers before sending prompts to cloud models.
+- **5.5.2 Input & Output Guardrails** -> Scanning prompts for jailbreaks and checking outputs for toxic claims or hallucinated commitments.
+- **5.5.3 Guardrail Models (Llama Guard, NeMo Guardrails)** -> Lightweight models tuned to classify prompt and response safety in real time.
+
+### 5.6 **Algorithmic Fairness, Bias Detection & Explainability**
+> Ensure algorithmic fairness and compliance in enterprise decisions.
+
+- **5.6.1 Fairness Metrics** -> Measuring Disparate Impact and Demographic Parity to prevent biased automated outcomes.
+- **5.6.2 Explainability (SHAP / LIME)** -> Calculating feature attribution to explain why a specific classification was made.
+
+---
+
+## Phase 06: Evals & Observability
+### Quantify model accuracy, evaluate tool trajectories, and monitor production traces with OpenTelemetry.
+
+[📂 Explore Phase 06 Hub & Lessons](./06-evals-and-observability/README.md)
+
+### 6.1 **Evaluation Hierarchy: Deterministic vs. Model-Based Evals**
+> Build a testing pyramid combining fast code assertions with capable model judges.
+
+- **6.1.1 Deterministic Assertions** -> Invariant code checks testing output JSON schemas, latency budgets, and regex patterns.
+- **6.1.2 Golden Evaluation Datasets** -> Curated banks of representative inputs paired with verified reference outputs.
+- **6.1.3 Automated CI/CD Regression Gates** -> Running evaluations on pull requests to stop regressions before deploying prompts or tools.
+
+### 6.2 **Production Evaluation Frameworks: DeepEval, Promptfoo & Ragas**
+> Industry-standard evaluation tools for development and release pipelines.
+
+- **6.2.1 Promptfoo** -> CLI tool for side-by-side model benchmarking, prompt iteration, and security red-teaming.
+- **6.2.2 DeepEval** -> `pytest`-native evaluation framework for gating Python pull requests with unit test assertions.
+- **6.2.3 Ragas** -> Specialized evaluation library scoring RAG metrics (Context Precision, Context Recall, Faithfulness).
+
+### 6.3 **Groundedness, Faithfulness & Hallucination Scoring**
+> Mathematically score whether outputs are truthful and supported by retrieved context.
+
+- **6.3.1 Faithfulness (Groundedness)** -> The percentage of claims in the generated response directly supported by retrieved text.
+- **6.3.2 Answer Relevance** -> Checking if the output directly answers the user's question without adding fluff.
+- **6.3.3 Context Recall** -> Checking if the retrieval engine retrieved all necessary facts.
+
+### 6.4 **LLM-as-a-Judge Calibration & Bias Mitigation**
+> Use capable models to grade outputs against explicit guidelines.
+
+- **6.4.1 Scoring Rubrics** -> Clear guidelines (1 to 5 scale or pass/fail) given to judge models to keep grading objective.
+- **6.4.2 Verbosity & Self-Enhancement Biases** -> Calibrating judges to prevent favoring overly long answers or preferring their own model family.
+
+### 6.5 **Agent Trajectory Evaluation**
+> Grade the sequence of tool calls made by an autonomous agent.
+
+- **6.5.1 Trajectory Diffing** -> Comparing an agent's tool steps against a golden reference path to verify efficiency.
+- **6.5.2 Tool Call Precision** -> Measuring whether the agent picked the right tool and passed clean, valid parameters.
+
+### 6.6 **OpenTelemetry GenAI Observability & Trace Waterfalls**
+> Monitor and trace AI requests across distributed production environments.
+
+- **6.6.1 OTel GenAI Semantic Conventions** -> Standardized trace attributes (`gen_ai.agent.id`, `gen_ai.tool.name`, `gen_ai.usage.input_tokens`) from the dedicated `semantic-conventions-genai` repo.
+- **6.6.2 Distributed Trace Waterfalls** -> Recording an entire user transaction as a nested tree of spans showing latency per step.
+- **6.6.3 Golden Signals (Cost, Latency, Errors)** -> Live dashboards tracking Time to First Token (TTFT), error spikes, and token spending per tenant.
+
+---
+
+## Phase 07: High-Throughput Serving & LLMOps
+### Optimize inference speed, manage GPU memory, and deploy resilient gateways.
+
+[📂 Explore Phase 07 Hub & Lessons](./07-production-deployment-and-llmops/README.md)
+
+### 7.1 **Serving Engine Internals & PagedAttention**
+> Understand how modern inference engines manage GPU memory under high load.
+
+- **7.1.1 Continuous Batching** -> Inserting new requests dynamically into running GPU batches without waiting for long sequences to finish.
+- **7.1.2 PagedAttention (vLLM)** -> Managing KV-cache memory in virtual pages (like OS virtual memory), eliminating memory waste and boosting throughput by 2x to 4x.
+
+### 7.2 **Serving Latency Triad & KV-Cache Sizing Math**
+> Accurately measure latency and calculate GPU memory footprints.
+
+- **7.2.1 The Latency Triad** -> **TTFT** (Time to First Token - prefill speed), **TPOT** (Time Per Output Token - decode speed), and **ITL** (Inter-Token Latency - streaming smoothness).
+- **7.2.2 KV-Cache Sizing Formula** -> Calculate exact GPU VRAM needed for caching:
+  ```text
+  VRAM (Bytes) = 2 * Layers * Heads * HeadDim * BatchSize * SeqLen * PrecisionBytes
+  ```
+
+### 7.3 **Prefix Caching & RadixAttention KV-Cache Sharing**
+> Reuse computed attention states across divergent agent turns and concurrent requests.
+
+- **7.3.1 RadixAttention (SGLang)** -> Storing KV caches as a compressed prefix tree to automatically discover and reuse common prompt prefixes.
+- **7.3.2 Context-Augmented Generation (CAG)** -> Pre-loading static enterprise documents into cached memory, turning slow RAG lookups into instant token generation.
+
+### 7.4 **Speculative Decoding: EAGLE-3 & P-EAGLE**
+> Bypass memory-bandwidth bottlenecks to speed up generation.
+
+- **7.4.1 Speculative Drafting** -> Using a lightweight draft model to propose tokens verified in parallel by the target model.
+- **7.4.2 EAGLE-3 & P-EAGLE** -> Advanced speculative draft heads fusing multi-layer hidden states and drafting in parallel, doubling generation speed with zero quality loss.
+
+### 7.5 **Resilient AI Gateways & Traffic Control**
+> Manage traffic spikes, quotas, caching, and multi-provider failover.
+
+- **7.5.1 Token-Bucket Rate Limiting** -> Throttling requests per tenant by Requests Per Minute (RPM) and Tokens Per Minute (TPM).
+- **7.5.2 Semantic Response Caching** -> Returning cached answers for semantically equivalent questions using fast vector similarity checks.
+- **7.5.3 Multi-Provider Failover** -> Routing traffic to secondary providers or falling back to local SLMs during cloud API outages.
+
+### 7.6 **Model Fine-Tuning Realities & Parameter-Efficient Tuning**
+> Know when to fine-tune models versus relying on context engineering.
+
+- **7.6.1 The Decision Triad** -> Prompting fixes format; RAG provides factual knowledge; Fine-tuning adjusts style, domain vocabulary, or small model behaviors.
+- **7.6.2 Parameter-Efficient Fine-Tuning (PEFT / LoRA)** -> Freezing base model weights and training lightweight low-rank adapters, slashing GPU memory needs during training.
+
+---
+
+## Phase 08: AI-Augmented SDLC & Agentic Development
+### Master Spec-Driven Development, autonomous coding agents, repo maps, and engineering leadership.
+
+[📂 Explore Phase 08 Hub & Lessons](./08-ai-augmented-sdlc-and-leadership/README.md)
+
+### 8.1 **Spec-Driven Development vs. Vibe Coding**
+> Replace unstructured prompt-driven coding with formal, verifiable specifications.
+
+- **8.1.1 The Dangers of "Vibe Coding"** -> Asking LLMs to write code from informal prompts creates compounding technical debt, subtle edge cases, and architectural drift.
+- **8.1.2 The Spec-Driven Development (SDD) Cycle** -> Writing formal specs (`SPEC.md`), defining typing contracts, letting agents generate code, and verifying conformance via compilers and tests.
+
+### 8.2 **The Agentic Coding Loop & Terminal Execution**
+> The core Plan → Execute → Observe → Iterate cycle powering modern coding agents.
+
+- **8.2.1 Autonomous Agent Loops** -> Coding agents plan changes, execute tool calls (read files, run shell commands), inspect errors, and iterate until tests pass.
+- **8.2.2 Human Permission Gates** -> Prompting developers for explicit approval before running destructive shell commands or deleting files.
+- **8.2.3 File Edit Strategies** -> Whole-file rewriting vs. unified diffs vs. targeted search-and-replace blocks for reliable file patching.
+
+### 8.3 **Agentic Extensibility: Skills, Hooks, Plugins & Environment Setup**
+> Structure agent capabilities so instructions and safety rules stay modular without bloating context.
+
+- **8.3.1 Modular Agent Skills (`SKILL.md`)** -> Self-contained task instructions loaded on demand via progressive disclosure, preventing context window exhaustion.
+- **8.3.2 Deterministic Lifecycle Hooks** -> Code checkpoints triggered before or after tool executions (`pre-tool`, `post-tool`, `pre-commit`) to enforce linting, formatting, and safety rules.
+- **8.3.3 Agent Plugins & Packs** -> Distributable packages bundling multiple skills, hooks, and MCP servers into sharable team extensions.
+- **8.3.4 Environment Setup & Sandboxing** -> Setting up isolated virtual environments (`uv`, `venv`), devcontainers, and shell allowlists so agents develop safely.
+- **8.3.5 Specialized Subagent Personas** -> Dividing large tasks across distinct agent roles (Architect, Coder, Reviewer, Tester) with scoped permissions.
+
+### 8.4 **Codebase Context: Repo Maps & Tree-sitter ASTs**
+> Help agents navigate large repositories without burning context windows.
+
+- **8.4.1 Compressed Repo Maps** -> Generating a ranked map of classes, functions, and cross-file dependencies so agents understand repo architecture without reading every line.
+- **8.4.2 Tree-sitter AST Parsing** -> Concrete syntax tree parsing across 100+ languages to extract precise symbol definitions and relationships.
+- **8.4.3 Repository Directives (`AGENTS.md`, `CLAUDE.md`)** -> Defining project boundaries, typing rules, testing requirements, and architectural standards for agents.
+
+### 8.5 **Automated TDD Loops & Compiler Verification Gates**
+> Close the development loop using deterministic compiler and test feedback.
+
+- **8.5.1 Test-Driven Development (TDD) Loops** -> Writing failing tests first, letting the agent generate the minimal code to pass, and verifying with test runners.
+- **8.5.2 Compiler & Linter Feedback Loops** -> Feeding syntax errors, type checker outputs (`mypy`, `tsc`), and linter warnings back to the agent for automated repair.
+
+### 8.6 **Agentic Coding Tools & SWE-bench Benchmarks**
+> Leading tools and industry standards for evaluating autonomous coding performance.
+
+- **8.6.1 Terminal-Native Coding Agents** -> Command-line agents with direct shell and file access (Anthropic Claude Code, Aider, OpenHands, Google Antigravity).
+- **8.6.2 IDE-Integrated Coding Assistants** -> Context-aware editor agents (Cursor, Windsurf, GitHub Copilot).
+- **8.6.3 SWE-bench & SWE-bench Verified** -> The industry standard benchmark evaluating agent ability to solve real-world GitHub issues end-to-end.
+
+### 8.7 **Autonomous Pull Request Reviews & CI/CD Agents**
+> Embed review and triage agents directly into developer workflows.
+
+- **8.7.1 Automated PR Review Agents** -> Checking code diffs against architectural guidelines, spotting security regressions, and validating test coverage.
+- **8.7.2 Automated Bug Localization** -> Running failing CI test logs through agents to locate, patch, and verify bug fixes autonomously.
+
+### 8.8 **Enterprise Governance, ISO 42001 & EU AI Act Compliance**
+> Manage risk and compliance across enterprise AI deployments.
+
+- **8.8.1 EU AI Act Obligations** -> Classifying systems by risk tiers (Prohibited, High-Risk, GPAI, Minimal) and enforcing audit logging and transparency.
+- **8.8.2 ISO/IEC 42001 (AIMS)** -> Implementing Artificial Intelligence Management Systems to treat evaluation scorecards, guardrail logs, and agent audit trails as compliance evidence.
+
 ---
 
 ## 🧪 Hands-On Labs & Interactive Companion Notebooks
 
-While this roadmap introduces core mental models in plain language, each major engineering milestone is paired with a verified CLI evaluation lab and an interactive **Google Colab companion notebook** (launchable with 1 click, zero local setup):
+Every major phase in this roadmap is paired with a verified CLI evaluation lab and an interactive **Google Colab companion notebook** (runnable with 1 click, zero local setup):
 
-| Roadmap Milestone | Canonical Lab Guide | Google Colab Companion Notebook | 1-Click Launch |
+| Phase / Milestone | Canonical Lab Guide | Google Colab Companion Notebook | 1-Click Launch |
 | :--- | :--- | :--- | :---: |
-| **Category 1: Token Mechanics** | [Phase 00 Lab](./00-foundations-and-token-mechanics/labs/capstone-token-economics-analyzer.md) | [`00_token_mechanics_and_kv_cache.ipynb`](./notebooks/00_token_mechanics_and_kv_cache.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/00_token_mechanics_and_kv_cache.ipynb) |
-| **Category 2: Context Engineering** | [Phase 01 Lab](./01-prompt-and-context-engineering/labs/capstone-context-engineering-pipeline.md) | [`01_prompt_caching_and_budgeting.ipynb`](./notebooks/01_prompt_caching_and_budgeting.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/01_prompt_caching_and_budgeting.ipynb) |
-| **Category 3: Hybrid Retrieval & RAG** | [Lab 01: Multi-Tenant RAG](./labs/lab-01-multi-tenant-hybrid-rag.md) | [`02_hybrid_rag_and_rrf_visualizer.ipynb`](./notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) |
-| **Category 4: Tools & Protocols (MCP)** | [Lab 02: Tool Execution MCP](./labs/lab-02-tool-execution-with-mcp.md) | [`03_mcp_client_and_tool_inspector.ipynb`](./notebooks/03_mcp_client_and_tool_inspector.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
-| **Category 5: Stateful Agent Loops** | [Lab 03: Stateful Orchestration](./labs/lab-03-stateful-agent-orchestration.md) | [`04_stateful_agent_and_wal_replay.ipynb`](./notebooks/04_stateful_agent_and_wal_replay.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/04_stateful_agent_and_wal_replay.ipynb) |
-| **Category 6: Gateway & Failure Defenses** | [Lab 04: Agent Failure Defense](./labs/lab-04-agent-failure-defense.md) | [`05_token_bucket_and_failure_defense.ipynb`](./notebooks/05_token_bucket_and_failure_defense.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb) |
-| **Category 7: Observability & Evals** | [Lab 05: Tracing & Observability](./labs/lab-05-ai-observability-tracing.md) | [`06_eval_flywheel_and_trace_trees.ipynb`](./notebooks/06_eval_flywheel_and_trace_trees.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb) |
-| **Category 8: Algorithmic Fairness & XAI** | [Lab 07: ML Fairness & XAI](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | [`07_ml_fairness_and_shap_explainability.ipynb`](./notebooks/07_ml_fairness_and_shap_explainability.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb) |
+| **Phase 00: Token Mechanics** | [Phase 00 Capstone Lab](./00-foundations-and-token-mechanics/labs/capstone-token-economics-analyzer.md) | [`00_token_mechanics_and_kv_cache.ipynb`](./notebooks/00_token_mechanics_and_kv_cache.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/00_token_mechanics_and_kv_cache.ipynb) |
+| **Phase 01: Context Engineering** | [Phase 01 Capstone Lab](./01-prompt-and-context-engineering/labs/capstone-context-engineering-pipeline.md) | [`01_prompt_caching_and_budgeting.ipynb`](./notebooks/01_prompt_caching_and_budgeting.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/01_prompt_caching_and_budgeting.ipynb) |
+| **Phase 02: Hybrid Retrieval & RAG** | [Lab 01: Multi-Tenant RAG](./labs/lab-01-multi-tenant-hybrid-rag.md) | [`02_hybrid_rag_and_rrf_visualizer.ipynb`](./notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/02_hybrid_rag_and_rrf_visualizer.ipynb) |
+| **Phase 03: Tools & Protocols (MCP)** | [Lab 02: Tool Execution MCP](./labs/lab-02-tool-execution-with-mcp.md) | [`03_mcp_client_and_tool_inspector.ipynb`](./notebooks/03_mcp_client_and_tool_inspector.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/03_mcp_client_and_tool_inspector.ipynb) |
+| **Phase 04: Stateful Agent Loops** | [Lab 03: Stateful Orchestration](./labs/lab-03-stateful-agent-orchestration.md) | [`04_stateful_agent_and_wal_replay.ipynb`](./notebooks/04_stateful_agent_and_wal_replay.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/04_stateful_agent_and_wal_replay.ipynb) |
+| **Phase 05: Gateways & Failure Defenses** | [Lab 04: Agent Failure Defense](./labs/lab-04-agent-failure-defense.md) | [`05_token_bucket_and_failure_defense.ipynb`](./notebooks/05_token_bucket_and_failure_defense.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/05_token_bucket_and_failure_defense.ipynb) |
+| **Phase 06: Observability & Evals** | [Lab 05: Tracing & Observability](./labs/lab-05-ai-observability-tracing.md) | [`06_eval_flywheel_and_trace_trees.ipynb`](./notebooks/06_eval_flywheel_and_trace_trees.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/06_eval_flywheel_and_trace_trees.ipynb) |
+| **Phase 07: ML Fairness & Explainability** | [Lab 07: ML Fairness & XAI](./labs/lab-07-hybrid-ml-fairness-and-explainability.md) | [`07_ml_fairness_and_shap_explainability.ipynb`](./notebooks/07_ml_fairness_and_shap_explainability.ipynb) | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/dip4k/senior-engineer-to-ai-engineer-roadmap/blob/main/notebooks/07_ml_fairness_and_shap_explainability.ipynb) |
 
-*For complete setup instructions (running locally vs. Google Colab) and deep algorithmic walkthroughs, see the [Companion Notebook Directory](./notebooks/README.md).*
+*For complete local and cloud execution instructions, see the [Companion Notebook Directory](./notebooks/README.md).*
 
 ---
 
 ## 🧭 Navigation
  
 - **Master Curriculum Syllabus**: [← Back to Master Curriculum & Architecture (README.md)](./README.md)
-- **Companion Notebooks**: [📓 Interactive Google Colab Notebook Suite](./notebooks/README.md)
+- **Interactive Companion Notebooks**: [📓 Google Colab Notebook Suite](./notebooks/README.md)
 - **Practice Glossary**: [📖 Production AI & Agentic Glossary by Practice](./ai-engineering-glossary-by-practice.md)
-- **Interactive Agents**: [🤖 Interactive Learning & Practice with Agents](./LEARNING_WITH_AGENTS.md)
+- **Interactive Learning**: [🤖 Interactive Learning & Practice with Agents](./LEARNING_WITH_AGENTS.md)
+- **Platform Infrastructure**: [🏗️ Senior AI Platform & Agent Infrastructure Roadmap](./ai-platform-and-agent-infrastructure-roadmap.md)
+- **Technology Strategy**: [🗺️ Emerging AI Technology Roadmap (2025–2026)](./ai-technology-roadmap-2025-2026.md)
 - **Phase Hubs**:
   - [Phase 00: Foundations & Token Mechanics](./00-foundations-and-token-mechanics/README.md)
   - [Phase 01: Prompt & Context Engineering](./01-prompt-and-context-engineering/README.md)
-  - [Phase 02: RAG & Knowledge Systems](./02-rag-and-knowledge-systems/README.md)
+  - [Phase 02: Retrieval & Knowledge Systems](./02-rag-and-knowledge-systems/README.md)
   - [Phase 03: Tools & Model Context Protocol](./03-tools-and-model-context-protocol/README.md)
   - [Phase 04: Agentic Systems & Orchestration](./04-agentic-systems-and-orchestration/README.md)
   - [Phase 05: AI Security & Guardrails](./05-ai-security-and-guardrails/README.md)

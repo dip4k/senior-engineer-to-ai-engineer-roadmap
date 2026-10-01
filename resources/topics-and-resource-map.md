@@ -229,15 +229,21 @@ We categorize all topics into four practical tiers:
 - The Shift in Senior Engineering: From code synthesizer to specification author, reviewer, and verification arbiter
 - The Enterprise Trust Gap: Reconciling 90% developer adoption with 29% architectural trust
 - The Big Seven Agentic Coding Assistants: Claude Code CLI, Cursor, Windsurf, GitHub Copilot, Codex, Aider, and Cline
+- Agentic Coding Architecture: Skills (`SKILL.md` progressive disclosure), Hooks (deterministic lifecycle interceptors), Plugins (declarative capability bundles), Environment Setup (sandboxed virtualenvs)
+- Repository context indexing: Repo Maps, Tree-sitter AST parsing, and ctags symbol graphs
 - Machine-Readable Codebase Contracts: Hierarchical `AGENT.md` specifications and context boundaries
 - Spec-Driven Development (SDD): Architectural Decision Records (ADRs) as prompt inputs and verification targets
 - Automated PR Verification: AI-driven review bots, AST syntax checks, and test assertion gates
 - Developer Productivity Metrics: AI Code Share vs. 14-Day Rework Rate and Mean-Time-To-Remediate (MTTR)
+- Coding benchmarks and evaluation: SWE-bench, HumanEval, and live test-driven verification loops
 - Establishing an enterprise AI Architecture Review Board (ARB) and 50-point Production Readiness Review (PRR)
 
 ### Curated Resources
 - [Anthropic Claude Code CLI Documentation](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code) — *Terminal-native agentic coding assistant with MCP support*
 - [Cursor Documentation & Best Practices](https://docs.cursor.com/) — *Repository indexing, `.cursorrules`, and agentic multi-file editing*
+- [Aider — AI Pair Programming in your Terminal](https://github.com/Aider-AI/aider) — *Tree-sitter repo maps, git auto-commit workflows, and multi-file code editing*
+- [SWE-bench Official Benchmark](https://www.swebench.com/) — *Evaluating language models on resolving end-to-end GitHub issues*
+- [OpenHands Project](https://github.com/All-Hands-AI/OpenHands) — *Open-source platform for software development agents*
 - [Andrej Karpathy — Software 2.0 & Software 3.0 Essays](https://karpathy.medium.com/) — *The paradigm shift from handcrafted code to probabilistic neural systems*
 - [GitClear — Coding on Copilot: 2024 Developer Research](https://www.gitclear.com/coding_on_copilot_data_2024) — *Empirical analysis of code churn, duplicate code, and the 14-day rework rate*
 - [ThoughtWorks Technology Radar](https://www.thoughtworks.com/radar) — *Emerging software engineering techniques, platforms, and AI tools*
@@ -312,9 +318,19 @@ If you have limited time and need to maximize your architectural ROI, study thes
 
 ```mermaid
 flowchart TD
-    Step1["🤖 1. Anthropic: Building Effective Agents<br>Master workflows vs autonomous loops"] --> Step2
-    Step2["🔌 2. MCP Specification (JSON-RPC 2.0)<br>Understand open tool and resource standards"] --> Step3
-    Step3["📄 3. Jina AI: Late Chunking Paper<br>Solve semantic boundary degradation in RAG"] --> Step4
-    Step4["⚖️ 4. Hamel Husain: Creating LLM Judges<br>Calibrate automated binary evaluation gates"] --> Step5
-    Step5["⚡ 5. vLLM: PagedAttention and RadixAttention<br>Master GPU memory physics and inference scale"]
+    Step1["1. Building Effective Agents (Anthropic)<br>Master workflows vs autonomous loops"] --> Step2
+    Step2["2. MCP Specification (JSON-RPC 2.0)<br>Understand open tool and resource standards"] --> Step3
+    Step3["3. Late Chunking Paper (Jina AI)<br>Solve boundary degradation in RAG"] --> Step4
+    Step4["4. Creating LLM Judges (Hamel Husain)<br>Calibrate automated binary evaluation gates"] --> Step5
+    Step5["5. PagedAttention & RadixAttention (vLLM/SGLang)<br>Master GPU memory physics and inference scale"]
+
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
 ```
+
+#### Reading Sequence Walkthrough
+1. **Building Effective Agents**: Internalize the difference between deterministic DAG workflows and autonomous loops first.
+2. **MCP Specification**: Learn how modern AI agents connect to tools, resources, and enterprise systems over standard protocols.
+3. **Late Chunking**: Understand how to retain document-level transformer embeddings for high-precision vector search.
+4. **Creating LLM Judges**: Replace manual prompt inspection with systematic, calibrated binary evaluation harnesses.
+5. **PagedAttention & RadixAttention**: Learn how modern serving engines eliminate memory waste and scale concurrent token throughput.
+

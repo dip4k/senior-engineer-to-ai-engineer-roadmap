@@ -1,7 +1,8 @@
 # Enterprise Use Case 5: OpenTelemetry Distributed Tracing, Evals & Production LLMOps
 > **OpenTelemetry GenAI Semantic Conventions, 3-Level Evaluation Flywheels, Binary LLM Judges & CI/CD Regression Gates**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 06: Evals & Observability](../06-evals-and-observability/README.md) • [Lab 05: AI Observability & Tracing](../labs/lab-05-ai-observability-tracing.md) • [System Design 7: Continuous Automated LLM Evaluation Gate](../architecture/enterprise-ai-system-designs.md#7-continuous-automated-llm-evaluation-regression-gate-hamel-3-level-evals)
+> **Phase Alignment**: [Phase 06: GenAI Evals & Observability](../06-evals-and-observability/README.md) (Primary) • [Phase 07: High-Throughput Serving & LLMOps](../07-production-deployment-and-llmops/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Lab 05: AI Observability & Tracing](../labs/lab-05-ai-observability-tracing.md) • [System Design 7: Continuous Automated LLM Evaluation Gate](../architecture/enterprise-ai-system-designs.md#7-continuous-automated-llm-evaluation-regression-gate-hamel-3-level-evals)
 
 ---
 
@@ -13,7 +14,7 @@ Deploying Generative AI and autonomous agents into enterprise production without
 3. **Unattributed Cloud Cost Spikes:** Without distributed span tracing, engineering leaders cannot identify which business unit, user prompt, or agent tool loop generated a $10,000 monthly cost spike.
 4. **Uncorrelated Multi-Hop Latency:** An autonomous agent making 8 tool calls across 4 microservices presents a 25-second delay to the user; without OpenTelemetry distributed context propagation, SREs cannot determine whether the bottleneck was network latency, database lock contention, or slow model prefill.
 
-Enterprise LLMOps replaces vibe checks with **OpenTelemetry GenAI semantic conventions, distributed span context propagation, and the Hamel Husain 3-Level Evaluation Flywheel**.
+Enterprise LLMOps replaces vibe checks with **OpenTelemetry GenAI semantic conventions (standardized under `open-telemetry/semantic-conventions-genai`), distributed span context propagation, and the Hamel Husain 3-Level Evaluation Flywheel**.
 
 ---
 
@@ -21,38 +22,35 @@ Enterprise LLMOps replaces vibe checks with **OpenTelemetry GenAI semantic conve
 
 ```mermaid
 flowchart TD
-    subgraph CICD["1. CI/CD Pre-Deploy Eval Gate"]
-        PR["📝 Prompt / RAG / Model PR"] --> L1["⚡ Level 1: Fast Deterministic Gates (<1s)<br>• JSON Schema Validity<br>• Regex Format Asserters<br>• Token Budget Ceilings"]
-        
-        L1 --> L1_Check{"⚖️ L1 Passed?"}
-        L1_Check -- "Fail" --> BlockPR["🛑 Block PR (Deterministic Bug)"]
-        
-        L1_Check -- "Pass" --> L2["🧠 Level 2: Binary LLM-as-a-Judge<br>• Curated Golden Set (200 cases)<br>• Independent Judge Family (Claude 3.7 / o3)<br>• Binary Chain-of-Thought Rubric"]
-        
-        L2 --> ScoreCheck{"⚖️ Pass Rate >= 98% and<br>Zero Safety Regressions?"}
-        ScoreCheck -- "No" --> BlockPR
-        ScoreCheck -- "Yes" --> Deploy["🚀 Deploy to Production"]
-    end
+    PR["1. Prompt / Model Pull Request"]
+    L1["2. Level 1 Deterministic Gate (Regex & Schema)"]
+    L2["3. Level 2 Binary LLM Judge (Golden Dataset)"]
+    Deploy["4. Production Deployment"]
+    Tracer["5. OTel GenAI Distributed Tracing"]
+    Flywheel["6. Level 3 Feedback Flywheel (Golden Set Update)"]
 
-    subgraph Runtime["2. Production Observability (OTel)"]
-        Deploy --> UserTraffic["👥 Live Production Traffic"]
-        UserTraffic --> Tracer["📡 OTel GenAI Span Tracer<br>• gen_ai.system<br>• gen_ai.request.model<br>• gen_ai.usage.prompt_tokens<br>• gen_ai.usage.completion_tokens"]
-        Tracer --> OTelCollector[("📊 OpenTelemetry Collector / APM<br>(Datadog / Dynatrace / Langfuse)")]
-    end
+    PR --> L1
+    L1 -- "Fail (<1s)" --> Block["Block PR"]
+    L1 -- "Pass" --> L2
+    L2 -- "Pass Rate < 98%" --> Block
+    L2 -- "Pass Rate >= 98%" --> Deploy
+    Deploy --> Tracer
+    Tracer --> Flywheel
+    Flywheel -.-> L2
 
-    subgraph Flywheel["3. Level 3 Evaluation Flywheel"]
-        OTelCollector --> AnomalyDetector["🔍 Drift and Low-Confidence Detector<br>(Flags P99 Latency and User Thumbs-Down)"]
-        AnomalyDetector --> HardCases["⚠️ Curate Real-World Failures"]
-        HardCases --> GoldenSet["💾 Update Versioned Golden Dataset"]
-        GoldenSet -.-> L2
-    end
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class L2 gate;
 ```
 
 #### Diagram Walkthrough:
-1. **Level 1 Fast Deterministic Gates**: PRs altering prompts or schemas run through sub-second unit tests checking JSON contracts, regex constraints, and token bounds before invoking expensive models.
-2. **Level 2 Binary LLM Judges**: Passing changes execute against a curated 200-case golden dataset. An independent judge model evaluates discrete binary assertions (`1` or `0`) with chain-of-thought rationale. A pass rate >= 98% is required to merge.
-3. **OpenTelemetry GenAI Telemetry**: Production requests emit standard `gen_ai.*` semantic spans capturing prompt tokens, completion tokens, latency waterfalls, and tenant IDs.
-4. **Level 3 Quality Flywheel**: Hard production failures and negative user feedback automatically feed back into the versioned golden test set, creating a self-improving quality harness.
+1. **Prompt / Model Pull Request**: A pull request modifies system instructions, chunking strategies, or model hyperparameters.
+2. **Level 1 Fast Deterministic Gates**: PRs run through sub-second unit tests checking JSON contracts, regex constraints, and token bounds before invoking expensive models.
+3. **Level 2 Binary LLM Judges**: Passing changes execute against a curated 200-case golden dataset. An independent judge model evaluates discrete binary assertions (`1` or `0`) with chain-of-thought rationale. A pass rate >= 98% is required to merge.
+4. **Production Deployment**: Releases automatically deploy through CI/CD pipelines once both quality gates clear.
+5. **OpenTelemetry GenAI Telemetry**: Production requests emit standard `gen_ai.*` semantic spans capturing prompt tokens, completion tokens, latency waterfalls, and tenant IDs.
+6. **Level 3 Quality Flywheel**: Hard production failures, drift alerts, and negative user feedback automatically feed back into the versioned golden test set, creating a continuous improvement cycle.
+
 
 ---
 

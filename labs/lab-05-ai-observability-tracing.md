@@ -4,7 +4,7 @@
 
 > **Production AI Observability**: OpenTelemetry GenAI Conventions + Span Lifecycle Tracking + Prompt/Completion Token Accounting + Duration Telemetry  
 > 
-> [🔙 Back to Module 06: Evals & Observability](../06-evals-and-observability/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Observability Core](../agent-forge/agent_forge/observability/) • [📓 Interactive Colab Traces & Evals](../notebooks/06_eval_flywheel_and_trace_trees.ipynb)
+> [🔙 Back to Phase 06: Evals & Observability](../phase-06/) • [🔙 Back to Phase 07: Production Deployment](../phase-07/) • [🧪 All Practice Labs](README.md) • [⚒️ AgentForge Observability Core](../agent-forge/agent_forge/observability/) • [📓 Interactive Colab Traces & Evals](../notebooks/06_eval_flywheel_and_trace_trees.ipynb)
 
 ---
 
@@ -21,14 +21,14 @@ This lab delivers a lightweight, production-grade **OpenTelemetry GenAI Tracer**
 
 ```mermaid
 flowchart TD
-    Req["🚀 Agent Turn Execution Started"] --> StartSpan["⏱️ 1. GenAITracer.start_span('agent_turn_execution')<br>Records Start Timestamp (t0)"]
-    
-    StartSpan --> SetAttrs["🏷️ 2. Set OpenTelemetry GenAI Attributes<br>• gen_ai.request.model = 'claude-3-7-sonnet'<br>• gen_ai.usage.prompt_tokens = 142<br>• gen_ai.usage.completion_tokens = 56"]
-    
-    SetAttrs --> ChildSpan["⚙️ 3. Execute Sub-Operations<br>(Child span: vector_retrieval / mcp_tool_call)"]
-    
-    ChildSpan --> EndSpan["📊 4. GenAITracer.end_span(span)<br>Records End Timestamp (t1) and Duration (ms)"]
-    EndSpan --> TraceBuffer["📦 5. Root Spans Committed to Buffer<br>(Ready for OTel Collector Export)"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    Req["Agent Turn Execution Started"]:::default --> StartSpan["1. GenAITracer.start_span('agent_turn')<br>Records Start Timestamp (t0)"]:::highlight
+    StartSpan --> SetAttrs["2. Set OTel GenAI Attributes<br>• gen_ai.request.model = 'claude-3-7-sonnet'<br>• gen_ai.usage.prompt_tokens = 142"]:::default
+    SetAttrs --> ChildSpan["3. Execute Sub-Operations<br>(Child span: retrieval / tool_call)"]:::default
+    ChildSpan --> EndSpan["4. GenAITracer.end_span(span)<br>Records Duration in ms"]:::highlight
+    EndSpan --> TraceBuffer["5. Root Spans Committed<br>(Ready for OTel Collector Export)"]:::highlight
 ```
 
 #### Diagram Walkthrough:

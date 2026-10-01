@@ -31,27 +31,59 @@ The system is decomposed into 6 decoupled, single-responsibility modules:
 
 ```mermaid
 flowchart TD
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
     subgraph Ingress ["1. Ingress and Gateway"]
-        Query["👤 Client Query"] --> Gateway["🚪 AI Gateway<br>(Token-Bucket Limiter • Semantic Cache)"]
+        Query["Client Query"]:::default --> Gateway["AI Gateway<br>(Limiter • Semantic Cache)"]:::highlight
     end
 
     subgraph CorePlatform ["2. Durable Execution and Engine"]
-        Gateway --> Orchestrator["🔄 Durable Orchestrator<br>(Turn Loop • Tool Repair • Checkpointing)"]
-        Orchestrator <--> WAL[("💾 Event Store (WAL)<br>Append-Only Ledger")]
-        Orchestrator <--> HybridEngine["🔍 Hybrid Retriever<br>(Dense HNSW + Sparse BM25 + RRF)"]
+        Gateway --> Orchestrator["Durable Orchestrator<br>(Turn Loop • WAL • Checkpoints)"]:::highlight
+        Orchestrator <--> WAL[("Event Store WAL<br>Append-Only Ledger")]:::default
+        Orchestrator <--> HybridEngine["Hybrid Retriever<br>(Dense HNSW • BM25 • RRF)"]:::default
     end
 
     subgraph MCPPlane ["3. Zero-Trust MCP Tool Plane"]
-        Orchestrator --> PolicyEngine{"🛡️ Policy Engine<br>(Auto-Refund Cap: $100)"}
-        PolicyEngine -->|"Permitted"| MCPClient["🔌 MCP 2026 Client"]
-        MCPClient --> Tools["⚙️ Order Server | Payment Server | Policy Server"]
+        Orchestrator --> PolicyEngine{"Policy Engine<br>(Auto-Cap: $100)"}:::highlight
+        PolicyEngine -->|"Permitted"| MCPClient["MCP 2026 Client"]:::default
+        MCPClient --> Tools["Order • Payment • Policy Servers"]:::default
     end
 
     subgraph Governance ["4. Observability and CI Gates"]
-        Orchestrator -.-> OTel["📊 OpenTelemetry GenAI Tracer"]
-        OTel -.-> EvalGate["✅ CI Quality Gate<br>(Trajectory Diff • Groundedness)"]
+        Orchestrator -.-> OTel["OTel GenAI Tracer"]:::default
+        OTel -.-> EvalGate["CI Quality Gate<br>(Trajectory Diff • Groundedness)"]:::highlight
     end
+
+    style Ingress fill:none,stroke:#4a5568,stroke-width:2px;
+    style CorePlatform fill:none,stroke:#4a5568,stroke-width:2px;
+    style MCPPlane fill:none,stroke:#4a5568,stroke-width:2px;
+    style Governance fill:none,stroke:#4a5568,stroke-width:2px;
 ```
+
+#### Architecture Walkthrough:
+1. **Ingress Check**: The AI Gateway intercepts incoming client queries, evaluates tenant rate limits via a streaming token bucket, and checks the vector semantic cache for instant hits.
+2. **Hybrid Knowledge Retrieval**: Uncached queries trigger the hybrid retrieval engine, querying dense embeddings and sparse BM25 indices simultaneously with Reciprocal Rank Fusion ($k=60$).
+3. **Durable Orchestration Loop**: The agent plans multi-turn steps, committing every turn and tool call to an append-only Write-Ahead Log (WAL) event store for crash recovery.
+4. **Zero-Trust Policy Validation**: Proposed tool calls pass through an ABAC policy engine. Operations exceeding risk thresholds (e.g. refunds $> \$100$) pause execution for approval.
+5. **Telemetry & CI Quality Gate**: OpenTelemetry GenAI spans record latency, tokens, and cost. Automated evals check trajectory compliance and factual groundedness before final emission.
+
+---
+
+## 🗺️ Curriculum & Hands-On Lab Alignment
+
+AgentForge serves as the reference production platform tying together the curriculum's canonical phases and labs:
+
+| Submodule | Target Phase | Hands-On Lab | Architectural Responsibility |
+| :--- | :--- | :--- | :--- |
+| `agent_forge/gateway/` | [Phase 01](../phase-01/) | [Lab 04: Agent Failure Defense](../labs/lab-04-agent-failure-defense.md) | Token bucket rate limiter, semantic cache, prefix cache optimization |
+| `agent_forge/retrieval/` | [Phase 02](../phase-02/) | [Lab 01: Multi-Tenant Hybrid RAG](../labs/lab-01-multi-tenant-hybrid-rag.md) | ACORN-1 predicate traversal, BM25 + dense HNSW, RRF fusion, tombstones |
+| `agent_forge/mcp/` | [Phase 03](../phase-03/) | [Lab 02: Tool Execution with MCP](../labs/lab-02-tool-execution-with-mcp.md) | JSON-RPC 2.0 stdio/SSE client, zero-trust policy engine, tool servers |
+| `agent_forge/runtime/` | [Phase 04](../phase-04/) | [Lab 03: Stateful Agent Orchestration](../labs/lab-03-stateful-agent-orchestration.md) | Durable orchestrator loop, event-sourced WAL, tool repair, crash rehydration |
+| `agent_forge/mcp/policy_engine.py` | [Phase 05](../phase-05/) | [Lab 06: Dual-LLM Quarantine Defenses](../labs/lab-06-dual-llm-quarantine-guardrails.md) | Zero-trust parameter validation, financial caps, idempotency keys |
+| `agent_forge/evals/` | [Phase 06](../phase-06/) | [Lab 05: AI Observability & Tracing](../labs/lab-05-ai-observability-tracing.md) | Deterministic trajectory diff, groundedness evaluator, LLM-as-judge |
+| `agent_forge/observability/` | [Phase 07](../phase-07/) | [Lab 05: AI Observability & Tracing](../labs/lab-05-ai-observability-tracing.md) | OpenTelemetry GenAI semantic conventions, trace waterfall export |
+| `tests/test_all.py` & `demo.py` | [Phase 08](../phase-08/) | [E2E Platform Verification](../labs/README.md) | CI/CD test gates, automated regression harness, multi-turn replay |
 
 ---
 
@@ -63,7 +95,7 @@ agent-forge/
 ├── requirements.txt               # Dependencies (pure Python 3.10+ & Pydantic)
 ├── demo.py                        # Executable end-to-end production simulation
 ├── tests/
-│   └── test_all.py                # Complete unit test suite (5/5 passing)
+│   └── test_all.py                # Complete unit test suite (10/10 passing)
 └── agent_forge/
     ├── gateway/
     │   ├── model_router.py        # Multi-provider routing, failover, & prefix caching

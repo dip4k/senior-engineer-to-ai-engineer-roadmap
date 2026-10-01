@@ -1,84 +1,95 @@
 # Phase 07: High-Throughput Serving & LLMOps
 
-> **Architectural overview and learning progression for Lead Developers and Solutions Architects.**
+> **Architectural overview and learning progression for Principal Systems Engineers, Lead Developers, and Solutions Architects transitioning from single-call AI prototypes to production-grade, high-throughput serving infrastructure.**
 
 ---
 
 ## 🎯 Phase Engineering Goal
 
-Phase 07 equips senior developers, staff software engineers, and solutions architects to transition from fragile single-call prototypes to **high-throughput, resilient, enterprise-grade AI serving infrastructure (Software 3.0)**. 
+Phase 07 equips senior backend, systems, and distributed computing engineers to build and operate resilient, cost-efficient, and high-throughput AI serving infrastructure.
 
 By the end of this phase, you will be able to:
-- Architect resilient multi-provider AI gateways capable of surviving upstream provider outages via automated circuit breakers, decorrelated jitter, and distributed two-phase token-bucket rate limiting.
-- Manage network wire flow control across streaming Server-Sent Events (SSE), prevent socket buffer bloat, and terminate zombie token generation via active cancellation token propagation.
-- Cut inferencing costs by 40–50% using sub-5ms exact string hashing, semantic vector caching (tau ≥ 0.92), and asynchronous Batch API offloading.
-- Deploy and configure self-hosted high-throughput inference engines (vLLM and SGLang) leveraging continuous (iteration-level) batching, PagedAttention virtual memory block tables, and RadixAttention trie prefix reuse.
-- Break the autoregressive memory bandwidth wall using speculative decoding (draft-and-verify) and native FP8 hardware acceleration on NVIDIA Hopper and Blackwell GPUs.
-- Serve hundreds of specialized domain and tenant adaptations concurrently on a shared frozen base model cluster using dynamic Multi-LoRA (S-LoRA) runtimes.
-- Build privacy-preserving, zero-egress hybrid edge-cloud applications running quantized Small Language Models (SLMs) locally on WebGPU, Apple MLX, and ONNX Runtime.
+- **Profile the inference lifecycle**: Dissect the prefill (compute-bound) and decode (memory-bound) phases, calculate KV cache memory footprints, and measure Time-To-First-Token (TTFT) and Inter-Token Latency (ITL).
+- **Architect resilient multi-provider gateways**: Implement circuit breakers with decorrelated jitter and distributed two-phase token-bucket rate limiting in Redis to protect upstream quotas and survive provider outages.
+- **Master network wire streaming protocols**: Handle Server-Sent Events (SSE) flow control, eliminate TCP socket buffer bloat, and terminate upstream zombie generation via client disconnect cancellation tokens.
+- **Slash inference costs by 40–50%**: Deploy dual-tier caches (sub-5ms SHA-256 exact matching and pgvector semantic cosine similarity) and asynchronous Batch API pipelines for background workloads.
+- **Deploy continuous batching engines**: Configure self-hosted vLLM and SGLang clusters leveraging iteration-level continuous batching, PagedAttention virtual memory block tables, and RadixAttention trie prefix reuse.
+- **Accelerate decode throughput**: Break the autoregressive memory bandwidth wall using draft-and-verify speculative decoding and modern hardware quantization (FP8 and AWQ INT4).
+- **Serve hundreds of fine-tuned adapters**: Host dynamic Multi-LoRA adapters on a single shared frozen base model cluster using segmented batched GEMM kernels and host-to-device memory paging.
+- **Deploy hybrid edge-cloud systems**: Run quantized Small Language Models (SLMs) locally on client devices via WebGPU (WebLLM), Apple MLX, and ONNX Runtime GenAI with zero-egress privacy boundaries.
 
 ---
 
-## 🗺️ Learning Path & System Topology
+## 🗺️ Dual-Track Architecture & Learning Progression
+
+Phase 07 is organized into two complementary systems engineering tracks:
+
+### Track A: Gateway, Wire Protocols & Economic Optimization
 
 ```mermaid
 flowchart TD
-    subgraph IngressTier["1. Gateway & Wire Protocols Tier"]
-        L1["<b>Lesson 01: Multi-Provider AI Gateways</b><br/>Circuit Breakers & Token-Bucket Rate Limiting<br/><i>[🟢 HIGH ROI / CORE]</i>"]
-        L2["<b>Lesson 02: High-Performance Token Streaming</b><br/>SSE Wire Flow Control & Cancellation Tokens<br/><i>[🟢 HIGH ROI / CORE]</i>"]
-        L1 --> L2
-    end
+    L00["Lesson 00: Serving Fundamentals<br/>Prefill vs. Decode Physics & VRAM Math<br/><i>Tier: 🟢 Core</i>"]
+    L01["Lesson 01: Resilient AI Gateways<br/>Circuit Breakers & Token-Bucket Rate Limiting<br/><i>Tier: 🟢 Core</i>"]
+    L02["Lesson 02: Token Streaming & Backpressure<br/>SSE Protocols & Cancellation Tokens<br/><i>Tier: 🟢 Core</i>"]
+    L03["Lesson 03: Dual-Tier Caching & Batch APIs<br/>Exact SHA-256 + Semantic Vector Caching<br/><i>Tier: 🟡 Engineering Depth</i>"]
 
-    subgraph GovernanceTier["2. Economic Caching & Offloading Tier"]
-        L3["<b>Lesson 03: Dual-Tier Caching & Batch APIs</b><br/>SHA-256 + Vector Similarity & 50% Off Batch<br/><i>[🟡 IMPORTANT / NEXT]</i>"]
-        L2 --> L3
-    end
+    L00 --> L01
+    L01 --> L02
+    L02 --> L03
 
-    subgraph CoreEngineTier["3. High-Throughput Inference Engines Tier"]
-        L4["<b>Lesson 04: Continuous Batching & RadixAttention</b><br/>PagedAttention VRAM Paging & Trie Prefix Reuse<br/><i>[⚫ REFERENCE / AWARENESS]</i>"]
-        L5["<b>Lesson 05: Speculative Decoding & Quantization</b><br/>Draft Verification Math & Native FP8 Compute<br/><i>[⚫ REFERENCE / AWARENESS]</i>"]
-        L3 --> L4
-        L4 --> L5
-    end
-
-    subgraph SpecializationTier["4. Enterprise Scale & Edge Deployment Tier"]
-        L6["<b>Lesson 06: Dynamic Multi-LoRA Serving</b><br/>S-LoRA Multi-Tenant Adapters on Shared Base<br/><i>[🔵 ADVANCED / SPECIALIZED]</i>"]
-        L7["<b>Lesson 07: Edge AI & Hybrid Cloud Routing</b><br/>WebGPU, Apple MLX & Tiered Local Routing<br/><i>[🔵 ADVANCED / SPECIALIZED]</i>"]
-        L5 --> L6
-        L6 --> L7
-    end
-
-    subgraph LabTier["5. Hands-On Verification"]
-        Lab["<b>Capstone Lab: Resilient AI Gateway</b><br/>Dual-Tier Cache, Token-Bucket & SSE Cancellation<br/><i>[🟡 IMPORTANT / NEXT — Capstone Lab]</i>"]
-        L7 --> Lab
-    end
-
-    IngressTier ~~~ GovernanceTier
-    GovernanceTier ~~~ CoreEngineTier
-    CoreEngineTier ~~~ SpecializationTier
-    SpecializationTier ~~~ LabTier
+    style L00 fill:none,stroke:#10b981,stroke-width:2px
+    style L01 fill:none,stroke:#10b981,stroke-width:2px
+    style L02 fill:none,stroke:#10b981,stroke-width:2px
+    style L03 fill:none,stroke:#f59e0b,stroke-width:2px
 ```
 
-### Visual Walkthrough of the Phase Architecture
-1. **Gateway & Network Wire (Lessons 01 & 02)**: We establish the perimeter defense. Incoming client traffic is throttled using distributed two-phase token reservation in Redis and protected by circuit breakers that divert traffic during provider outages. Tokens stream back via unbuffered Server-Sent Events, with active socket polling terminating upstream generation when clients disconnect.
-2. **Economic Optimization (Lesson 03)**: Before touching compute, requests pass through a dual-tier cache (sub-5ms exact SHA-256 hash followed by semantic vector cosine similarity). Non-real-time bulk evaluation and backfill jobs are diverted to asynchronous Batch APIs for a 50% token cost reduction.
-3. **Inference Engine Mechanics (Lessons 04 & 05)**: For self-hosted infrastructure, we dive into GPU silicon realities. Continuous batching and PagedAttention eliminate memory fragmentation, while RadixAttention maintains a trie of KV blocks to reuse prompt prefixes across requests. Speculative decoding and native FP8 Tensor Core GEMMs double decoding speed.
-4. **Specialization & Edge (Lessons 06 & 07)**: We scale to hundreds of enterprise tenants by hosting low-rank LoRA adapters on a single base model cluster (S-LoRA), and deploy on-device SLMs with hybrid cloud-edge failover.
-5. **Hands-On Capstone Lab**: Learners implement an end-to-end resilient gateway microservice passing simulated chaos tests.
+#### Track A Walkthrough
+1. **Serving Fundamentals (Lesson 00)**: Establishes the physical realities of model execution: memory bandwidth constraints, KV cache memory formulas, and the operational divide between prompt prefill and token decode.
+2. **Gateway Perimeter (Lesson 01)**: Deploys the perimeter proxy: multi-provider fallback cascades, automated circuit breakers, and distributed two-phase token reservation.
+3. **Streaming Wire (Lesson 02)**: Eliminates the blank screen using Server-Sent Events (SSE), applies socket flow control, and prevents zombie token generation through cancellation propagation.
+4. **Economic Optimization (Lesson 03)**: Traps duplicate requests in a sub-5ms dual-tier cache and routes non-latency-sensitive batch jobs to 50% discounted asynchronous provider queues.
 
 ---
 
-## 📚 Modular Curriculum Lessons (Master Navigation Table)
+### Track B: High-Throughput Engines, Hardware Mechanics & Edge Deployment
 
-| # | Lesson Module | Depth Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
+```mermaid
+flowchart TD
+    L04["Lesson 04: Continuous Batching & RadixAttention<br/>PagedAttention VRAM & Trie Prefix Caching<br/><i>Tier: ⚫ Deep Dive</i>"]
+    L05["Lesson 05: Speculative Decoding & Quantization<br/>Draft Verification Math & FP8 Tensor Cores<br/><i>Tier: ⚫ Deep Dive</i>"]
+    L06["Lesson 06: Dynamic Multi-LoRA Serving<br/>Shared Base Models & Segmented GEMM<br/><i>Tier: 🔵 Advanced</i>"]
+    L07["Lesson 07: Edge AI & Hybrid Cloud Routing<br/>WebGPU, SLMs & Zero-Egress Fallbacks<br/><i>Tier: 🔵 Advanced</i>"]
+
+    L04 --> L05
+    L05 --> L06
+    L06 --> L07
+
+    style L04 fill:none,stroke:#64748b,stroke-width:2px
+    style L05 fill:none,stroke:#64748b,stroke-width:2px
+    style L06 fill:none,stroke:#3b82f6,stroke-width:2px
+    style L07 fill:none,stroke:#3b82f6,stroke-width:2px
+```
+
+#### Track B Walkthrough
+1. **Self-Hosted Engines (Lesson 04)**: Solves memory fragmentation in self-hosted clusters using vLLM PagedAttention and reuses prompt prefixes via SGLang RadixAttention.
+2. **Decoding Acceleration (Lesson 05)**: Overcomes the memory bandwidth wall using draft-and-verify speculative decoding and hardware-native FP8 execution.
+3. **Multi-Tenant Scale (Lesson 06)**: Serves hundreds of fine-tuned domain adapters concurrently on a single base model cluster using segmented GEMM kernels.
+4. **Edge & Hybrid Execution (Lesson 07)**: Shifts routine tasks and privacy-mandated data to client devices using browser WebGPU and local SLMs, reserving cloud gateways for heavy reasoning.
+
+---
+
+## 📚 Master Navigation Table
+
+| # | Lesson Module | Tier | Est. Time | Core Systems Focus | Key Engineering Outcome |
 |---|---|:---:|:---:|---|---|
-| **01** | [Resilient Multi-Provider AI Gateways](./01-resilient-ai-gateways-and-rate-limiting.md) | `🟢 HIGH ROI / CORE` | ~20 min | Multi-provider fallback cascades, circuit breakers, decorrelated jitter, distributed two-phase token-bucket rate limiting. | Zero-downtime provider failover and hard quota protection. |
-| **02** | [High-Performance Token Streaming & Backpressure](./02-high-performance-token-streaming-and-backpressure.md) | `🟢 HIGH ROI / CORE` | ~18 min | Server-Sent Events (SSE) wire protocols, chunked transfer encoding, socket backpressure, client cancellation propagation. | Elimination of the 15s blank screen and zero zombie token burn. |
-| **03** | [Dual-Tier Caching & Asynchronous Batch APIs](./03-dual-tier-caching-and-batch-apis.md) | `🟡 IMPORTANT / NEXT` | ~22 min | Sub-5ms exact SHA-256 hashing, semantic vector caching (tau ≥ 0.92), tenant key isolation, 50% off Batch API pipelines. | 25–40% inference bill reduction and sub-50ms cache hits. |
-| **04** | [Continuous Batching, PagedAttention & RadixAttention](./04-vllm-continuous-batching-and-radixattention.md) | `⚫ REFERENCE / AWARENESS` | ~25 min | Autoregressive memory bandwidth wall, iteration-level continuous batching, virtual memory paging for KV tensors, Radix trie prefix caching. | 3–5× GPU throughput increase on self-hosted vLLM/SGLang clusters. |
-| **05** | [Speculative Decoding & Modern Hardware Quantization](./05-speculative-decoding-and-model-quantization.md) | `⚫ REFERENCE / AWARENESS` | ~25 min | Draft-and-verify speculative decoding, acceptance rate mathematics, native FP8 GEMM on Hopper/Blackwell, AWQ 4-bit weight quantization. | 2–3× wall-clock decoding speedup with zero perplexity loss. |
-| **06** | [Dynamic Multi-LoRA Adapter Serving at Scale](./06-dynamic-multi-lora-adapter-serving.md) | `🔵 ADVANCED / SPECIALIZED` | ~22 min | Low-Rank Adaptation (LoRA) mathematics, S-LoRA/Punica runtimes, memory pooling, batched segmented GEMMs across shared base clusters. | Serving 100+ fine-tuned tenant adapters on a single shared GPU cluster. |
-| **07** | [Edge AI, Local Runtimes & Hybrid Cloud Routing](./07-edge-ai-and-client-side-inference.md) | `🔵 ADVANCED / SPECIALIZED` | ~20 min | WebLLM (WebGPU), Apple MLX, Ollama (GGUF), ONNX Runtime GenAI, hardware capability probing, tiered edge-cloud continuum. | Zero-egress privacy, offline availability, and zero-cost local execution. |
+| **00** | [LLM Serving Fundamentals & The Inference Lifecycle](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md) | `🟢 Core` | ~18 min | Prefill vs. decode phase physics, KV cache memory sizing formulas, TTFT vs. ITL latency metrics. | Mathematical precision in VRAM sizing and inference bottleneck profiling. |
+| **01** | [Resilient Multi-Provider AI Gateways & Rate Limiting](./01-resilient-ai-gateways-and-rate-limiting.md) | `🟢 Core` | ~20 min | Multi-provider fallback cascades, circuit breakers with decorrelated jitter, distributed two-phase token-bucket rate limiting. | Zero-downtime provider failover and guaranteed tenant quota protection. |
+| **02** | [High-Performance Token Streaming & Backpressure](./02-high-performance-token-streaming-and-backpressure.md) | `🟢 Core` | ~18 min | Server-Sent Events (SSE) wire protocol, chunked transfer encoding, socket backpressure, client cancellation propagation. | Elimination of the 15s blank screen and zero zombie token waste. |
+| **03** | [Dual-Tier Caching & Asynchronous Batch APIs](./03-dual-tier-caching-and-batch-apis.md) | `🟡 Engineering Depth` | ~22 min | Sub-5ms exact SHA-256 hashing, semantic vector cosine caching (tau ≥ 0.92), tenant key isolation, 50% off Batch APIs. | 25–50% inference bill reduction and sub-50ms cache hits. |
+| **04** | [Continuous Batching, PagedAttention & RadixAttention](./04-vllm-continuous-batching-and-radixattention.md) | `⚫ Deep Dive` | ~25 min | Iteration-level continuous batching, virtual memory paging for KV tensors, Radix trie prefix reuse. | 3–5x GPU throughput increase on self-hosted vLLM and SGLang clusters. |
+| **05** | [Speculative Decoding & Modern Hardware Quantization](./05-speculative-decoding-and-model-quantization.md) | `⚫ Deep Dive` | ~25 min | Draft-and-verify speculative decoding, acceptance rate mathematics, native FP8 Tensor Core compute, AWQ 4-bit weights. | 2–3x wall-clock decoding speedup with zero perplexity loss. |
+| **06** | [Dynamic Multi-LoRA Adapter Serving at Scale](./06-dynamic-multi-lora-adapter-serving.md) | `🔵 Advanced` | ~22 min | Low-Rank Adaptation (LoRA) mathematics, S-LoRA/Punica runtimes, memory pooling, batched segmented GEMMs on shared models. | Serving 100+ fine-tuned tenant adapters on a single shared base GPU cluster. |
+| **07** | [Edge AI, Local Runtimes & Hybrid Cloud Routing](./07-edge-ai-and-client-side-inference.md) | `🔵 Advanced` | ~16 min | WebLLM (WebGPU), Apple MLX, Ollama (GGUF), ONNX Runtime GenAI, hardware probing, tiered edge-cloud continuum. | Zero-egress privacy, offline field availability, and zero-cost local execution. |
 
 ---
 
@@ -88,10 +99,10 @@ flowchart TD
   - Build a FastAPI or .NET 9 AI Gateway implementing dual-tier caching, token-bucket rate limiting, circuit breaking, SSE streaming, and cancellation tokens.
   - Pass the 5 automated chaos verification test cases.
 - **Reference Microservice Implementation**:
-  - Located at `agent-forge/gateway/`
+  - Located at `agent-forge/agent_forge/gateway/`
   - Run verification harness:
     ```bash
-    python -m unittest agent-forge/tests/test_gateway.py
+    python -m unittest agent-forge/tests/test_all.py
     ```
 
 ---
@@ -99,9 +110,9 @@ flowchart TD
 ## 📋 Prerequisites & Cross-Phase Dependencies
 
 - **Required Prior Knowledge**:
-  - [Phase 00: Foundations & Token Mechanics](../00-foundations-and-token-mechanics/README.md) (Transformer memory bandwidth wall, KV cache sizing formulas, and prefill vs. decode physics).
-  - [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md) (Context budgeting, token compaction, and prompt prefix alignment).
-  - [Phase 05: AI Security & Guardrails](../05-ai-security-and-guardrails/README.md) (Zero-trust gateway boundaries and prompt injection quarantine).
+  - [Phase 00: Foundations & Token Mechanics](../00-foundations-and-token-mechanics/README.md) (Transformer architecture, KV cache sizing formulas, prefill vs. decode physics).
+  - [Phase 01: Prompt & Context Engineering](../01-prompt-and-context-engineering/README.md) (Context budgeting, token compaction, prompt prefix alignment).
+  - [Phase 05: AI Security & Guardrails](../05-ai-security-and-guardrails/README.md) (Zero-trust gateway boundaries, prompt injection quarantine).
   - [Phase 06: GenAI Evals & Observability](../06-evals-and-observability/README.md) (OpenTelemetry GenAI semantic conventions and inference latency golden signals).
 - **Downstream Beneficiaries**:
   - Feeds into [Phase 08: AI-Augmented SDLC & Leadership](../08-ai-augmented-sdlc-and-leadership/README.md) (Production Readiness Reviews, SLA budgets, and Architecture Review Board governance).
@@ -127,6 +138,7 @@ flowchart TD
 - **Next Phase**: **[Phase 08: AI-Augmented SDLC & Leadership →](../08-ai-augmented-sdlc-and-leadership/README.md)**
 
 ### Direct Chapter & Lesson Directory
+- **[Lesson 00: LLM Serving Fundamentals & The Inference Lifecycle](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md)**
 - **[Lesson 01: Multi-Provider AI Gateways & Rate Limiting](./01-resilient-ai-gateways-and-rate-limiting.md)**
 - **[Lesson 02: High-Performance Token Streaming & Backpressure](./02-high-performance-token-streaming-and-backpressure.md)**
 - **[Lesson 03: Dual-Tier Caching & Asynchronous Batch APIs](./03-dual-tier-caching-and-batch-apis.md)**

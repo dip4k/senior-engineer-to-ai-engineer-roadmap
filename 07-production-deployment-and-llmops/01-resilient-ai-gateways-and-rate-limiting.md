@@ -1,192 +1,192 @@
-# Resilient Multi-Provider AI Gateways: Circuit Breakers, Fallback Cascades & Token-Bucket Rate Limiting
+# Lesson 01: Resilient Multi-Provider AI Gateways & Rate Limiting
 
-> **[Tier: 🟢 HIGH ROI / CORE]**  
-> **Architecting resilient, multi-provider AI gateway infrastructure with automated circuit breaking, decorrelated jitter backoff, and distributed two-phase token-bucket rate limiting.**
-
----
-
-## 🎯 What You Will Learn
-
-- How to architect a multi-provider fallback cascade that survives upstream provider outages without client disruption.
-- How to implement two-phase distributed token-bucket rate limiting (reservation and post-stream settlement) in Redis.
-- How to configure automated circuit breakers that detect HTTP 429 surges and provider degradation.
-- How to measure and protect the production SLA triad: Time-To-First-Token (TTFT), Tokens-Per-Second (TPS), and Error Budgets.
+> **Tier**: `🟢 Core` | **Read time**: ~15 min | **Prerequisites**: [Lesson 00: LLM Serving Fundamentals](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md)  
+> **Core Concept**: Traditional request-based rate limiting fails for LLMs because token costs vary by orders of magnitude; an AI gateway protects infrastructure with two-phase token reservation, circuit breakers, and automated multi-provider failover.  
+> **New AI terms introduced**: token-bucket rate limiting, two-phase token reservation, fallback cascade, circuit breaker, decorrelated jitter  
+> **AI terms assumed from earlier lessons**: [token](../00-foundations-and-token-mechanics/01-tokenization-and-bpe-mechanics.md), [time-to-first-token](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md), [tokens per second](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md)
 
 ---
 
-## 1. The Problem: The Prototype Trap
+## 🧩 The Problem: The Prototype Trap
 
-In a prototype or proof-of-concept, an application binds directly to a single foundation model provider via an SDK client:
+In a prototype, application code binds directly to a single foundation model provider via an SDK client:
 
 ```text
 Application Code ──(Direct API Call)──> Single Cloud LLM Endpoint (e.g., api.anthropic.com)
 ```
 
-In an enterprise production environment processing tens of thousands of requests per hour, this direct coupling creates critical operational vulnerabilities:
+In production processing tens of thousands of requests per hour, this direct coupling creates critical vulnerabilities:
 
-1. **Hard Quota Exhaustion (HTTP 429)**: Providers enforce hard ceilings on Tokens Per Minute (TPM) and Requests Per Minute (RPM). A single burst of automated batch queries can exhaust a tenant's quota, triggering cascading 429 errors across customer-facing services.
-2. **Provider Outages & Silent Latency Degradation**: Model providers experience regional infrastructure failures, hardware degradation, and network partitions. When a primary provider experiences a 30-second p99 latency spike or returns HTTP 500/503 errors, an unshielded application hangs, exhausts its connection pool, and fails.
-3. **Thundering Herd Retries**: Naive retry loops that retry failed requests immediately or with fixed intervals synchronize retries across thousands of clients, causing a thundering herd that prolongs upstream provider recovery.
-
----
-
-## 2. The Core Idea & Why Naive Fails
-
-### Why Naive Request-Counting Limiters Fail
-Traditional web API gateways (such as NGINX or Envoy) rate-limit clients by counting HTTP requests (for example, 100 requests per minute). 
-
-In Large Language Model serving, request counting fails fundamentally because **requests do not have uniform compute or financial costs**:
-- Request A: 50 input tokens, 20 output tokens (Total: 70 tokens, cost: $0.0002).
-- Request B: 85,000 input tokens, 4,000 output tokens (Total: 89,000 tokens, cost: $0.28).
-
-If a tenant dispatches 100 instances of Request B, a naive request limiter admits all of them. Upstream, this consumes 8.9 million tokens in 60 seconds, instantly blowing past enterprise tier limits and plunging the entire tenant organization into an unrecoverable 429 lockout.
-
-### The Engineering Solution: Resilient AI Gateway
-The solution is an **AI Gateway Microservice** positioned between application clients and upstream model providers. The gateway acts as an intelligent, policy-driven reverse proxy that enforces:
-1. **Two-Phase Token-Bucket Rate Limiting**: Atomically reserving estimated prompt and completion tokens before dispatching inference, and settling the actual consumed delta after stream termination.
-2. **Dynamic Circuit Breakers**: Automatically isolating degraded or failing providers and diverting traffic to warm secondary models.
-3. **Exponential Backoff with Decorrelated Jitter**: Smoothing retry distributions across time to eliminate thundering herd synchronization.
+1. **Hard Quota Exhaustion (HTTP 429)**: Providers enforce hard ceilings on Tokens Per Minute (TPM) and Requests Per Minute (RPM). A single burst of automated batch queries exhausts quota, triggering cascading 429 errors across customer-facing services.
+2. **Provider Outages & Silent Latency Spikes**: Model providers experience regional infrastructure failures and GPU degradation. When a primary provider suffers a 30-second p99 latency spike or returns HTTP 500/503 errors, an unshielded application hangs, exhausts connection pools, and drops user traffic.
+3. **Thundering Herd Retries**: Naive retry loops that retry failed requests immediately or at fixed intervals synchronize retries across thousands of clients, causing a thundering herd that prolongs upstream provider recovery.
 
 ---
 
-## 3. Mental Model: The Resilient Ingress & Fuel Tank
+## 🧒 The Mental Model: The Airport Ground Controller & Fuel Reserve
 
-Think of the resilient gateway as an **Intelligent Airport Ground Controller with a Fuel Reserve**:
+Think of an AI gateway as an **Intelligent Airport Ground Controller with a Fuel Reserve**:
 
 ```text
-[ Client Requests ]
-        │
-        ▼
 ┌───────────────────────────────────────────────────────────┐
 │                    AI INGRESS GATEWAY                     │
+├───────────────────────────────────────────────────────────┤
+│ 1. Fuel Tank (Redis Token Bucket)                         │
+│    Check tenant balance: reserve estimated fuel for trip. │
 │                                                           │
-│  1. Check Tenant Fuel Tank (Redis Token Bucket)          │
-│     Reserve: Prompt Length + Estimated Output             │
+│ 2. Ground Controller (Circuit Breaker)                    │
+│    Runway blocked at Provider A? Divert flight to B.      │
 │                                                           │
-│  2. Circuit Breaker Health Check                          │
-│     Primary Provider Open? ──YES──> Route to Secondary    │
-│     Primary Provider Closed? ──NO──> Route to Primary     │
-│                                                           │
-│  3. Stream Completion & Settlement                        │
-│     Actual Tokens Used < Reserved? ──> Refund Delta       │
+│ 3. Fuel Settlement (Refund Delta)                         │
+│    Flight lands early? Return unused fuel to tank.        │
 └───────────────────────────────────────────────────────────┘
-        │                                   │
-        ▼                                   ▼
-[ Primary Provider: Claude 3.7 ]     [ Secondary Provider: Gemini 2.0 ]
 ```
 
-- **The Fuel Tank (Token Bucket)**: Each tenant has a bucket refilled with tokens at a constant rate. Before generation begins, the gateway inspects the prompt, reserves the estimated tokens required for the trip, and locks them.
+- **The Fuel Tank (Token Bucket)**: Each tenant has a bucket refilled with tokens at a constant rate. Before generation begins, the gateway inspects the prompt, reserves estimated fuel, and locks it.
 - **The Ground Controller (Circuit Breaker)**: If the runway at Provider A is blocked (HTTP 429 or 5xx errors), the controller diverts flights immediately to Provider B without forcing passengers to re-book.
-- **The Fuel Reconciliation (Settlement)**: When the plane lands early (generation stops after 100 tokens instead of the estimated 1,000), the unused fuel is immediately returned to the tenant's tank.
+- **The Fuel Reconciliation (Settlement)**: When generation stops early (e.g., 100 tokens emitted instead of 1,000 max), unused fuel is immediately returned to the tenant's tank.
+
+> ⚠️ **Where this analogy breaks**: Airplanes burn fuel continuously in transit. In LLM generation, token consumption is non-deterministic: the gateway cannot know the exact output token count until the model generates an End-of-Sequence (EOS) token or hits the token ceiling.
 
 ---
 
-## 4. How It Works: Mechanics & Protocols
+## ⚠️ Why Naive Request-Counting Limiters Fail
 
-### A. The Circuit Breaker State Machine
-The gateway tracks upstream provider health using a finite state machine:
+Traditional web gateways (such as standard NGINX or Envoy) rate-limit clients by counting HTTP requests (e.g., 100 requests per minute). 
+
+In LLM serving, request counting fails fundamentally because **requests do not have uniform compute or financial costs**:
+- **Request A**: 50 input tokens, 20 output tokens (Total: 70 tokens, cost: $0.0002).
+- **Request B**: 85,000 input tokens, 4,000 output tokens (Total: 89,000 tokens, cost: $0.28).
+
+If a tenant dispatches 100 instances of Request B, a naive request limiter admits all of them. Upstream, this consumes 8.9 million tokens in 60 seconds, blowing past provider tier limits and plunging the entire organization into an unrecoverable HTTP 429 lockout.
+
+The solution is an **AI Gateway Microservice** (such as Agent Router, formerly Envoy AI Gateway GA, or LiteLLM) positioned as an intelligent reverse proxy that coordinates token-aware budgeting and automated provider failover.
+
+---
+
+## ⚙️ Core Gateway Mechanisms: One Term at a Time
 
 ```mermaid
 flowchart TD
-    Closed["<b>CLOSED (Healthy)</b><br/>All traffic routed to Primary.<br/>Failure counter reset on success."]
-    Open["<b>OPEN (Tripped)</b><br/>Primary marked down.<br/>100% traffic routed to Secondary.<br/>Cool-off timer running (e.g. 30s)."]
-    HalfOpen["<b>HALF-OPEN (Probing)</b><br/>Canary test requests sent to Primary.<br/>If canary passes ➔ CLOSED.<br/>If canary fails ➔ OPEN."]
+    Closed["🟢 CLOSED (Healthy)<br/>Traffic routed to Primary.<br/>Failure counter reset on success."]
+    Open["🔴 OPEN (Tripped)<br/>Primary marked down.<br/>100% traffic routed to Secondary.<br/>Cool-off timer running."]
+    HalfOpen["🟡 HALF-OPEN (Probing)<br/>Canary probe sent to Primary.<br/>Passes: Reset to CLOSED.<br/>Fails: Return to OPEN."]
 
-    Closed -->|"Consecutive failures >= Threshold<br/>(e.g., 5 failures or 3x HTTP 429)"| Open
-    Open -->|"Cool-off duration expires<br/>(e.g., 30 seconds)"| HalfOpen
-    HalfOpen -->|"Canary succeeds"| Closed
+    Closed -->|"Errors >= Threshold<br/>(e.g., 3x HTTP 429 or 5xx)"| Open
+    Open -->|"Cool-off expires<br/>(e.g., 30 seconds)"| HalfOpen
+    HalfOpen -->|"Canary passes"| Closed
     HalfOpen -->|"Canary fails"| Open
+
+    style Closed stroke:#16a34a,stroke-width:2px,fill:none
+    style Open stroke:#dc2626,stroke-width:2px,fill:none
+    style HalfOpen stroke:#d97706,stroke-width:2px,fill:none
 ```
 
-#### Diagram Walkthrough
-1. **CLOSED State**: In normal operation, all requests route to the primary model provider. Each successful request resets the failure counter to zero.
-2. **Tripping to OPEN**: When consecutive errors (HTTP 429 rate limits, 500 internal errors, or timeouts exceeding SLA thresholds) hit the trigger limit (e.g., 5 failures), the circuit trips to `OPEN`.
-3. **Bypassing in OPEN**: For the duration of the cool-off period (e.g., 30 seconds), zero traffic is sent to the primary provider. Requests are automatically rerouted to the secondary model, allowing the primary provider's rate limit window to recover.
-4. **HALF-OPEN Verification**: Once the timer expires, the breaker admits a small percentage of canary traffic (e.g., 5% of requests). If the canary calls succeed, the circuit resets to `CLOSED`. If any canary fails, the circuit re-trips to `OPEN` for another cool-off cycle.
+### Walkthrough of the Circuit Breaker State Machine
+1. **CLOSED State**: In normal operation, all requests route to the primary model provider. Successful requests keep the failure counter at zero.
+2. **Tripping to OPEN**: When consecutive errors (HTTP 429 rate limits, 5xx errors, or latency timeouts) breach the threshold (e.g., 3 consecutive failures), the circuit trips to `OPEN`.
+3. **Bypassing in OPEN**: For the duration of the cool-off period (e.g., 30 seconds), zero traffic reaches the primary provider. Requests route automatically to the secondary model, allowing the primary quota to recover.
+4. **HALF-OPEN Verification**: Once the timer expires, the breaker admits a canary test request. If the canary succeeds, the circuit resets to `CLOSED`. If it fails, the circuit re-trips to `OPEN` for another cool-off cycle.
 
 ---
 
-### B. Decorrelated Jitter Exponential Backoff
-When retrying transient network errors or rate limits, naive exponential backoff calculates delay as:
+### Mechanism 1: Two-Phase Distributed Token-Bucket Reservation
 
-```text
-delay = min(max_delay, base_delay * (2 ^ attempt))
-```
+- 🧒 **Analogy**: A hotel pre-authorizing your credit card for a 200-dollar security deposit when you check in, then billing only the exact 45-dollar room service charge when you check out.
+- ⚙️ **Engineering**: 
+  - To prevent quota exhaustion without underutilizing capacity, the gateway coordinates distributed reservation in Redis:
+    ```text
+    Phase 1: Ingestion & Reservation
+    1. Client submits prompt with max_tokens = 1000.
+    2. Gateway estimates prompt_tokens = len(prompt) // 4 (e.g., 450 tokens).
+    3. Total estimated reservation = 450 + 1000 = 1450 tokens.
+    4. Atomically check Redis: Available_Tokens >= 1450?
+       - YES: Deduct 1450 tokens. Admit request.
+       - NO : Reject immediately with HTTP 429 (Zero upstream provider load).
 
-Because multiple concurrent clients fail simultaneously, their exponential curves remain synchronized. **Decorrelated Jitter** breaks synchronization by introducing a random uniform spread between the base delay and three times the previous sleep duration:
-
-```text
-sleep_duration = min(max_delay, Uniform(base_delay, previous_sleep * 3))
-```
-
-This prevents request clustering and flattens traffic spikes into a smooth Poisson arrival distribution.
-
----
-
-### C. Two-Phase Token-Bucket Reservation Protocol
-To prevent quota overages without underutilizing capacity, the gateway coordinates distributed reservation in Redis:
-
-```text
-Step 1: Ingestion
-Client sends prompt with max_tokens=1000.
-Tokenizer calculates prompt_tokens = 450.
-Estimated reservation = 450 + 1000 = 1450 tokens.
-
-Step 2: Atomic Reservation (Redis Lua Script)
-Atomically check: Current_Tokens >= 1450?
-  - YES: Current_Tokens = Current_Tokens - 1450. Return HTTP 200 (Admitted).
-  - NO:  Return HTTP 429 (Tenant Quota Exhausted).
-
-Step 3: Upstream Execution & Streaming
-Gateway streams generation from provider.
-Client receives stream. Generation finishes at actual_completion_tokens = 220.
-Total consumed = 450 + 220 = 670 tokens.
-
-Step 4: Atomic Settlement (Redis Lua Script)
-Unused tokens = 1450 - 670 = 780 tokens.
-Atomically credit 780 tokens back to tenant's bucket in Redis.
-```
+    Phase 2: Execution & Settlement
+    5. Upstream model finishes at actual_completion_tokens = 220.
+    6. Actual consumed tokens = 450 + 220 = 670 tokens.
+    7. Unused delta = 1450 - 670 = 780 tokens.
+    8. Atomically credit 780 tokens back to tenant bucket in Redis.
+    ```
+- ⚠️ **What breaks if you skip this**: Without pre-reservation, concurrent requests drain your upstream quota before any call finishes, causing mass HTTP 429 failures. Without settlement, your system permanently leaks quota on requests that stop generating early.
 
 ---
 
-## 5. Concrete Scenario & Code Implementation
+### Mechanism 2: Fallback Cascades & Multi-Provider Redundancy
 
-Here is a production-grade AI Gateway router implemented in Python 3.12+ using FastAPI, Pydantic v2 schemas, and an asynchronous circuit breaker:
+- 🧒 **Analogy**: A dual-fuel generator at a data center that seamlessly switches from primary natural gas to backup diesel when municipal gas pressure drops.
+- ⚙️ **Engineering**: 
+  - The gateway maintains ordered provider pools (e.g., Tier 1: Anthropic Claude 3.7 Sonnet → Tier 2: Google Gemini 2.5 Flash → Tier 3: Internal vLLM cluster).
+  - When the primary circuit breaker trips to `OPEN` or returns an unrecoverable 5xx status, the gateway automatically transforms the payload schema and invokes the secondary provider.
+  - The gateway normalizes responses into a single OpenAI-compatible JSON schema, insulating downstream application code from provider-specific wire schemas.
+- ⚠️ **What breaks if you skip this**: Upstream provider outages (such as regional cloud networking failures) become direct outages for your end-users.
+
+---
+
+### Mechanism 3: Decorrelated Jitter Exponential Backoff
+
+- 🧒 **Analogy**: Instead of everyone trying to squeeze through an exit door at the exact same second after an alarm, a controller staggers arrivals across a random interval.
+- ⚙️ **Engineering**: 
+  - Naive exponential backoff (`delay = base * 2^attempt`) synchronizes retrying clients into repeating traffic spikes.
+  - **Decorrelated Jitter** breaks synchronization by calculating each retry delay as a uniform random value between the base delay and three times the prior sleep:
+    ```text
+    Sleep_Duration = min(Max_Delay, Uniform(Base_Delay, Previous_Sleep × 3))
+    ```
+  - This flattens retry bursts into a smooth Poisson arrival distribution.
+- ⚠️ **What breaks if you skip this**: Thousands of retrying clients hit the recovering provider simultaneously, re-tripping rate limits in a perpetual thundering herd loop.
+
+---
+
+## 💻 Typed Offline Runnable Implementation: Resilient Gateway
+
+The following complete, standalone script implements a resilient gateway with an asynchronous circuit breaker, two-phase token reservation, and automatic secondary provider failover:
 
 ```python
+"""
+Resilient AI Gateway: Circuit Breakers, Token Buckets & Fallback Cascades.
+Runs offline using Python 3.12+ standard library and Pydantic v2.
+"""
+
 import asyncio
-import time
-import random
 from enum import Enum
-from typing import AsyncGenerator, Dict, Any, Optional
+import time
+from typing import Dict
 from pydantic import BaseModel, Field
+
 
 class CircuitState(str, Enum):
     CLOSED = "CLOSED"
     OPEN = "OPEN"
     HALF_OPEN = "HALF_OPEN"
 
+
 class GatewayRequest(BaseModel):
-    tenant_id: str = Field(..., description="Unique enterprise tenant identifier")
-    prompt: str = Field(..., description="User input prompt")
+    tenant_id: str = Field(..., description="Enterprise tenant identifier")
+    prompt: str = Field(..., description="Input prompt text")
     max_tokens: int = Field(default=512, ge=1, le=4096)
-    temperature: float = Field(default=0.7, ge=0.0, le=2.0)
+
 
 class TokenUsage(BaseModel):
     prompt_tokens: int
     completion_tokens: int
     total_tokens: int
 
+
 class GatewayResponse(BaseModel):
     model_used: str
     content: str
     usage: TokenUsage
-    cached: bool = False
     latency_ms: float
+
 
 class CircuitBreaker:
     """Production circuit breaker with cool-off timer and half-open probing."""
-    def __init__(self, failure_threshold: int = 3, recovery_time_sec: float = 30.0):
+
+    def __init__(
+        self, failure_threshold: int = 3, recovery_time_sec: float = 15.0
+    ) -> None:
         self.failure_threshold = failure_threshold
         self.recovery_time_sec = recovery_time_sec
         self.state = CircuitState.CLOSED
@@ -194,11 +194,8 @@ class CircuitBreaker:
         self.last_state_change = time.monotonic()
 
     def record_success(self) -> None:
-        if self.state == CircuitState.HALF_OPEN:
-            self.state = CircuitState.CLOSED
-            self.failure_count = 0
-        elif self.state == CircuitState.CLOSED:
-            self.failure_count = 0
+        self.state = CircuitState.CLOSED
+        self.failure_count = 0
 
     def record_failure(self) -> None:
         self.failure_count += 1
@@ -212,13 +209,15 @@ class CircuitBreaker:
             if now - self.last_state_change >= self.recovery_time_sec:
                 self.state = CircuitState.HALF_OPEN
                 self.last_state_change = now
-                return True  # Allow canary probe
+                return True
             return False
         return True
 
+
 class TokenBucketLimiter:
     """In-memory demonstration of two-phase token reservation and settlement."""
-    def __init__(self, capacity: int, refill_rate_per_sec: float):
+
+    def __init__(self, capacity: int, refill_rate_per_sec: float) -> None:
         self.capacity = capacity
         self.tokens = float(capacity)
         self.refill_rate = refill_rate_per_sec
@@ -241,54 +240,64 @@ class TokenBucketLimiter:
     def _refill(self) -> None:
         now = time.monotonic()
         delta = now - self.last_refill
-        self.tokens = min(float(self.capacity), self.tokens + (delta * self.refill_rate))
+        self.tokens = min(
+            float(self.capacity), self.tokens + (delta * self.refill_rate)
+        )
         self.last_refill = now
+
 
 class ResilientGatewayRouter:
     """Orchestrates primary and fallback provider cascades with rate limiting."""
-    def __init__(self):
-        self.primary_breaker = CircuitBreaker(failure_threshold=3, recovery_time_sec=15.0)
+
+    def __init__(self) -> None:
+        self.primary_breaker = CircuitBreaker(
+            failure_threshold=2, recovery_time_sec=10.0
+        )
         self.tenant_limiters: Dict[str, TokenBucketLimiter] = {}
 
     def get_limiter(self, tenant_id: str) -> TokenBucketLimiter:
         if tenant_id not in self.tenant_limiters:
-            # 100,000 tokens capacity, refills 1,000 tokens per second
-            self.tenant_limiters[tenant_id] = TokenBucketLimiter(capacity=100000, refill_rate_per_sec=1000.0)
+            self.tenant_limiters[tenant_id] = TokenBucketLimiter(
+                capacity=5000, refill_rate_per_sec=500.0
+            )
         return self.tenant_limiters[tenant_id]
 
     async def execute(self, req: GatewayRequest) -> GatewayResponse:
         start_time = time.monotonic()
         limiter = self.get_limiter(req.tenant_id)
-        
+
         # Estimate prompt tokens (~4 chars per token)
         prompt_tokens_est = max(1, len(req.prompt) // 4)
         reservation = prompt_tokens_est + req.max_tokens
 
         # Phase 1: Atomic Reservation
         if not await limiter.reserve(reservation):
-            raise RuntimeError(f"HTTP 429: Tenant '{req.tenant_id}' token budget exhausted.")
+            raise RuntimeError(
+                f"HTTP 429: Tenant '{req.tenant_id}' token budget exhausted."
+            )
 
         model_selected = "primary-claude-3-7-sonnet"
         actual_output = ""
         actual_completion_tokens = 0
 
         try:
-            # Attempt Primary Provider if circuit allows
             if self.primary_breaker.allow_request():
                 try:
-                    # Simulated call to primary model
-                    actual_output, actual_completion_tokens = await self._call_primary(req)
+                    actual_output, actual_completion_tokens = (
+                        await self._call_primary(req)
+                    )
                     self.primary_breaker.record_success()
-                except Exception as primary_err:
+                except Exception:
                     self.primary_breaker.record_failure()
-                    # Fallback to secondary provider
-                    model_selected = "secondary-gemini-2-0-flash"
-                    actual_output, actual_completion_tokens = await self._call_secondary(req)
+                    model_selected = "secondary-gemini-2-5-flash"
+                    actual_output, actual_completion_tokens = (
+                        await self._call_secondary(req)
+                    )
             else:
-                # Primary circuit is OPEN; route directly to secondary
-                model_selected = "secondary-gemini-2-0-flash"
-                actual_output, actual_completion_tokens = await self._call_secondary(req)
-
+                model_selected = "secondary-gemini-2-5-flash"
+                actual_output, actual_completion_tokens = (
+                    await self._call_secondary(req)
+                )
         finally:
             # Phase 2: Post-Execution Settlement
             actual_used = prompt_tokens_est + actual_completion_tokens
@@ -302,136 +311,123 @@ class ResilientGatewayRouter:
             usage=TokenUsage(
                 prompt_tokens=prompt_tokens_est,
                 completion_tokens=actual_completion_tokens,
-                total_tokens=actual_used
+                total_tokens=actual_used,
             ),
-            latency_ms=round(latency, 2)
+            latency_ms=round(latency, 2),
         )
 
     async def _call_primary(self, req: GatewayRequest) -> tuple[str, int]:
-        # Simulated primary invocation (with potential 429 chaos)
-        await asyncio.sleep(0.05)
-        return f"Response to '{req.prompt}' from Primary", 45
+        await asyncio.sleep(0.02)
+        return f"Primary response to: {req.prompt}", 40
 
     async def _call_secondary(self, req: GatewayRequest) -> tuple[str, int]:
-        # Simulated secondary invocation
-        await asyncio.sleep(0.04)
-        return f"Response to '{req.prompt}' from Secondary (Fallback)", 42
+        await asyncio.sleep(0.01)
+        return f"Secondary fallback response to: {req.prompt}", 38
+
+
+async def main() -> None:
+    router = ResilientGatewayRouter()
+    request = GatewayRequest(
+        tenant_id="enterprise-corp",
+        prompt="Synthesize quarterly telemetry logs",
+        max_tokens=256,
+    )
+
+    response = await router.execute(request)
+    print("================ GATEWAY INFERENCE RESULT ================")
+    print(f"Model Invoked : {response.model_used}")
+    print(f"Output Content: {response.content}")
+    print(f"Tokens Used   : {response.usage.total_tokens} (Prompt: {response.usage.prompt_tokens}, Completion: {response.usage.completion_tokens})")
+    print(f"Total Latency : {response.latency_ms} ms")
+    print("==========================================================")
+
+
+if __name__ == "__main__":
+    asyncio.run(main())
+```
+
+### Verified Execution Output
+
+```text
+================ GATEWAY INFERENCE RESULT ================
+Model Invoked : primary-claude-3-7-sonnet
+Output Content: Primary response to: Synthesize quarterly telemetry logs
+Tokens Used   : 48 (Prompt: 8, Completion: 40)
+Total Latency : 21.45 ms
+==========================================================
 ```
 
 ---
 
-## 6. Architecture & Telemetry View
+## 🏛️ Ingress Architecture & System Flow
 
 ```mermaid
 flowchart TD
-    subgraph Ingress["Client Gateway Ingress"]
-        Client["Enterprise Client Application"] -->|"POST /v1/chat/completions"| GW["Resilient AI Gateway Service"]
-        GW -->|"1. Check Quota & Reserve"| Redis[("Redis Distributed State<br/>Token Bucket & Circuit States")]
-    end
+    Client(["👤 Client Application"]) -->|1. POST Request| GW["🛡️ AI Gateway Router"]
+    GW -->|2. Check Balance| Redis[("🗄️ Redis State<br/>Token Bucket")]
+    GW -->|3. Evaluate Circuit| Breaker{"🛡️ Circuit Breaker<br/>Primary Up?"}
+    Breaker -->|Yes| Primary["🔌 Primary Provider<br/>Claude 3.7 Sonnet"]
+    Breaker -->|No / Tripped| Backup["⚡ Secondary Provider<br/>Gemini 2.5 Flash"]
+    Primary -.->|On HTTP 429/5xx| Backup
+    Primary -->|4. Settle Delta| Redis
+    Backup -->|4. Settle Delta| Redis
 
-    subgraph Decision["Circuit & Routing Engine"]
-        GW -->|"2. Evaluate Circuit"| Router{"Primary Circuit<br/>Open or Closed?"}
-        Router -->|"Closed / Half-Open"| P_Path["Primary Provider Worker"]
-        Router -->|"Open (Tripped)"| S_Path["Secondary Provider Worker"]
-    end
-
-    subgraph Providers["Upstream LLM Providers"]
-        P_Path -->|"3a. Execute"| P_LLM["Claude 3.7 Sonnet / GPT-4o"]
-        S_Path -->|"3b. Failover"| S_LLM["Gemini 2.0 Flash / Local vLLM"]
-        P_LLM -.->|"On HTTP 429 / 5xx"| S_Path
-    end
-
-    subgraph Observability["OpenTelemetry Semantic Instrumentation"]
-        GW -->|"4. Record gen_ai.* Spans"| OTel["OpenTelemetry Collector<br/>(TTFT, TPS, Error Budgets)"]
-    end
-
-    Ingress ~~~ Decision
-    Decision ~~~ Providers
-    Providers ~~~ Observability
+    style Client stroke:#2563eb,stroke-width:2px,fill:none
+    style GW stroke:#d97706,stroke-width:2px,fill:none
+    style Redis stroke:#16a34a,stroke-width:2px,fill:none
+    style Breaker stroke:#7c3aed,stroke-width:2px,fill:none
+    style Primary stroke:#2563eb,stroke-width:2px,fill:none
+    style Backup stroke:#dc2626,stroke-width:2px,fill:none
 ```
 
-### Visual Walkthrough
-1. **Client Ingress & Token Reservation**: The client submits a completion payload. The gateway queries Redis to execute an atomic token reservation script. If the tenant has exhausted their allocated tokens, the gateway returns HTTP 429 immediately without placing outbound network load on model providers.
-2. **Circuit Routing**: The routing engine queries the circuit state for the primary provider. If the circuit is healthy (`CLOSED`), the request proceeds to the primary worker. If the circuit is tripped (`OPEN`), the request is deflected immediately to the secondary worker.
-3. **Execution & Automatic Failover**: If the primary provider call fails mid-flight with HTTP 429, 500, or a network timeout, the exception triggers circuit failure recording and routes the payload to the secondary provider.
-4. **Telemetry & Settlement**: Upon stream completion, the actual tokens consumed are reconciled in Redis, and OpenTelemetry spans are emitted recording provider models, latency, and cache hit metrics.
+### Walkthrough of the Ingress Lifecycle
+1. **Client Request**: Client sends a completion request specifying prompt text and maximum tokens.
+2. **Token Reservation**: The gateway queries Redis to atomically reserve estimated tokens. If the tenant is over quota, the gateway rejects immediately with HTTP 429.
+3. **Circuit Evaluation**: The gateway checks the circuit state for the primary provider. If healthy, it executes against the primary endpoint. If tripped (`OPEN`), it diverts immediately to the secondary model.
+4. **Settlement**: Upon completion, the unused token delta is returned to Redis, ensuring accurate real-time quota accounting.
 
 ---
 
-## 7. Common Failure Modes & Production Anti-Patterns
+## ⚖️ Trade-offs & Engineering Failure Modes
 
-| Anti-Pattern | Root Cause | Engineering Solution |
+| Dimension | Direct SDK Integration | Resilient AI Gateway |
 |---|---|---|
-| **Cascading Thundering Herd** | Synchronized clients retrying failed requests at identical intervals after a 429 outage. | Implement **Decorrelated Jitter Exponential Backoff**: randomize sleep intervals across a uniform distribution. |
-| **Silent Quota Poisoning** | Failing to account for multi-turn chat history expansion during token budgeting. | Count exact token length of full conversation array before reservation; enforce maximum context window limits. |
-| **Zombie Primary Saturation** | Keeping requests on a primary provider that is intermittently timing out, starving connection pools. | Enforce aggressive **Per-Request Timeouts** (e.g. 5.0s for TTFT) and trip the circuit breaker on latency degradation before 5xx errors occur. |
-| **Token-Bucket Leakage** | Reserving tokens on request entry but failing to refund unused tokens when generation stops early. | Use a `try...finally` settlement block ensuring that unused completion tokens are credited back to the tenant bucket. |
+| **Latency Overhead** | 0 ms | 5–15 ms (Redis lookup and internal routing). |
+| **Outage Resilience** | None: Provider 5xx causes application failure. | High: Automatic diversion to secondary models. |
+| **Quota Protection** | Naive: Burst traffic triggers provider lockout. | Strict: Two-phase token reservation eliminates overages. |
+| **Wire Schema Coupling** | Rigid: Client code binds to provider-specific SDK. | Decoupled: Unified OpenAI-compatible interface. |
+| **Failure Mode** | Thundering herd retries exacerbate provider brownouts. | Incomplete settlement blocks unused quota until TTL expiry. |
 
 ---
 
-## 8. Production View & Evaluation: The SLA Triad
+## ✅ Quick Check
 
-Enterprise inference operations are governed by three primary service-level metrics:
+Your AI Gateway is configured with a primary provider (Claude 3.7 Sonnet) and a fallback provider (Gemini 2.5 Flash). During a cloud provider outage, the primary provider begins returning HTTP 504 Gateway Timeout after 30 seconds of hanging. 
 
-1. **Time-To-First-Token (TTFT)**:
-   - *Definition*: Duration from client request dispatch until the first token byte is received by the client socket.
-   - *Target SLA*: p50 < 400ms, p95 < 900ms.
-   - *Gateway Influence*: Affected by routing overhead, token-bucket Redis lookup latency, and provider queuing.
-2. **Tokens-Per-Second (TPS)**:
-   - *Definition*: Decoding throughput measured as:
-   ```text
-   TPS = Completion_Tokens / (Total_Duration - TTFT)
-   ```
-   - *Target SLA*: 30 to 100+ TPS depending on model size.
-   - *Gateway Influence*: Affected by socket buffer serialization and streaming flow control.
-3. **Error Budget & Availability**:
-   - *Definition*: Percentage of successful generations without HTTP 429, 5xx, or dropped streaming connections.
-   - *Target SLA*: 99.95% availability.
-   - *Gateway Influence*: Multi-provider failover transforms single-provider 99.0% uptime into composite 99.99% system availability.
+Even though you have an automated fallback in place, your application servers experience thread pool exhaustion and crash within three minutes.
 
----
+**What critical gateway configuration is missing, and how does it prevent the crash?**
 
-## 9. When Should You Use It? (Trade-off Matrix)
+<details>
+<summary>Click to reveal the production architectural explanation</summary>
 
-| Architecture Pattern | Latency Overhead | Engineering Complexity | Outage Resilience | Recommended Use Case |
-|---|---|---|---|---|
-| **Direct SDK Coupling** | 0ms (Lowest) | Very Low | None (Single Point of Failure) | Local developer prototyping; offline scripts. |
-| **Simple Round-Robin Proxy** | < 2ms | Low | Basic (No health checks or jitter) | Homogeneous internal microservices with equal quotas. |
-| **Resilient AI Gateway (Full)** | 5–15ms | Medium | **High (Automated circuit tripping & failover)** | **Mission-critical enterprise applications, multi-tenant SaaS.** |
-| **Mesh-Integrated Gateway (Envoy/Kong)** | 3–8ms | High | High (Kernel-level proxying) | Large Kubernetes enterprise clusters with dedicated platform teams. |
+The gateway is missing an aggressive **Per-Request Time-To-First-Token (TTFT) Timeout**.
 
----
+Because the primary provider hangs for 30 seconds before timing out, each incoming request holds an open TCP socket and worker thread for 30 seconds. Under moderate concurrency (e.g., 50 requests/second), this creates 1,500 concurrent blocked threads, exhausting the gateway's connection pool long before the circuit breaker trips.
 
-## 💡 10. Senior Interview Perspective
+**Production Solution**:
+1. Configure an aggressive TTFT timeout (e.g., 3.5 seconds). If the primary provider does not emit its first token within 3.5 seconds, abort the call immediately.
+2. Record the aborted call as a circuit failure and divert the request to the secondary provider immediately.
+3. This trips the circuit to `OPEN` within 7 seconds, routing all subsequent traffic to the secondary model without thread starvation.
 
-### Architectural Scenario: Upstream Provider Degraded Outage
-**Interviewer**: *"Our primary LLM provider is experiencing a brownout: 30% of requests return HTTP 429, and p99 latency has jumped from 600ms to 8 seconds. How do you prevent this from cascading into an outage across our consumer applications?"*
-
-**Architectural Defense**:
-> *"We isolate the failure using an AI Gateway implementing an automated Circuit Breaker with Decorrelated Jitter and Fallback Cascades:*
-> 1. *We configure a fast TTFT timeout threshold (e.g., 3.5 seconds). Requests that do not yield a first token within 3.5 seconds are aborted, preventing socket pool exhaustion.*
-> 2. *The circuit breaker monitors consecutive 429 and timeout errors. Once the error rate exceeds the threshold (e.g. 5 errors in 10 seconds), the circuit trips to `OPEN` for a 30-second cool-off window.*
-> 3. *While `OPEN`, the gateway bypasses the primary provider entirely and routes 100% of traffic to our secondary provider (e.g. Gemini 2.0 Flash or an internal vLLM cluster).*
-> 4. *To prevent client retries from overwhelming the primary provider during recovery, all background retry workers employ decorrelated jitter backoff, smoothing request arrivals into a manageable Poisson process."*
-
----
-
-## 11. Key Takeaways & Verified Resources
-
-- **Direct SDK integration is an enterprise anti-pattern**: Production systems require an intelligent gateway to absorb upstream quotas and outages.
-- **Request-counting rate limiters do not protect LLM systems**: Token-bucket limiters must perform two-phase reservation (prompt + estimated completion) and post-stream settlement.
-- **Circuit breakers prevent brownout cascades**: Tripping to `OPEN` isolates degraded providers and transparently preserves application uptime via warm secondary models.
-
-### Authoritative Primary Sources
-- **LiteLLM Open Source Gateway**: [github.com/BerriAI/litellm](https://github.com/BerriAI/litellm)
-- **Envoy AI Gateway Architecture**: [envoyproxy.io/docs/envoy/latest/intro/arch_overview/upstream/load_balancing/overview](https://www.envoyproxy.io)
-- **Stripe Engineering: Scaling rate limiters with Redis**: [stripe.com/blog/rate-limiters](https://stripe.com/blog/rate-limiters)
-- **AWS Architecture Blog: Exponential Backoff And Jitter**: [aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter](https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter)
+</details>
 
 ---
 
 ## 🧭 Navigation
 
-- **[← Phase 07 Hub: Orientation & Navigation](./README.md)**
-- **[Next Lesson: High-Performance Token Streaming & Backpressure →](./02-high-performance-token-streaming-and-backpressure.md)**
-- **[Hands-On Lab: Resilient Multi-Provider AI Gateway](./labs/capstone-production-ai-gateway.md)**
+### Phase Progression
+- **Previous Lesson**: **[← Lesson 00: LLM Serving Fundamentals & The Inference Lifecycle](./00-llm-serving-fundamentals-and-the-inference-lifecycle.md)**
+- **Phase Hub**: **[Phase 07: High-Throughput Serving & LLMOps Hub](./README.md)**
+- **Next Lesson**: **[Lesson 02: High-Performance Token Streaming & Backpressure →](./02-high-performance-token-streaming-and-backpressure.md)**
+- **Capstone Lab**: **[Capstone Lab: Production Resilient AI Gateway](./labs/capstone-production-ai-gateway.md)**

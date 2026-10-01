@@ -4,7 +4,7 @@
 
 > **Durable Agent Runtime**: Event-Sourced Write-Ahead Log (WAL) + State Rehydration + Deterministic Crash Replay + Session Checkpointing  
 > 
-> [🔙 Back to Module 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge Runtime Core](../agent-forge/agent_forge/runtime/) • [📓 Interactive Colab Replay](../notebooks/04_stateful_agent_and_wal_replay.ipynb)
+> [🔙 Back to Phase 04: Agentic Systems & Orchestration](../phase-04/) • [🧪 All Practice Labs](README.md) • [⚒️ AgentForge Runtime Core](../agent-forge/agent_forge/runtime/) • [📓 Interactive Colab Replay](../notebooks/04_stateful_agent_and_wal_replay.ipynb)
 
 ---
 
@@ -21,16 +21,16 @@ This lab delivers an enterprise-grade **Stateful Agent Event Store** built on th
 
 ```mermaid
 flowchart TD
-    UserTrigger["👤 User Request / Inbound Webhook"] --> SessionInit["📝 1. EventStore.append()<br>Event: 'session_started'"]
-    
-    SessionInit --> ModelStep["🧠 2. Model Generates Decision<br>EventStore.append('model_decision')"]
-    ModelStep --> ToolExec["⚙️ 3. Execute External MCP Tool<br>(Non-idempotent mutation)"]
-    ToolExec --> ToolDone["💾 4. EventStore.append('tool_completed')"]
-    
-    ToolDone --> Crash{"💥 Simulated Pod Crash /<br>OOM Kill Event!"}
-    
-    Crash --> Rehydrate["🔄 5. State Recovery and Rehydration<br>EventStore.get_events(session_id)"]
-    Rehydrate --> Resume["✅ 6. Reconstruct Session State<br>Resume from Turn 2 without re-running Tool!"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    UserTrigger["User Request / Inbound Webhook"]:::default --> SessionInit["1. EventStore.append()<br>Event: 'session_started'"]:::highlight
+    SessionInit --> ModelStep["2. Model Generates Decision<br>EventStore.append('model_decision')"]:::default
+    ModelStep --> ToolExec["3. Execute External Tool<br>(Non-idempotent mutation)"]:::default
+    ToolExec --> ToolDone["4. EventStore.append('tool_completed')"]:::highlight
+    ToolDone --> Crash{"Simulated Pod Crash /<br>OOM Kill Event"}:::default
+    Crash --> Rehydrate["5. State Recovery & Rehydration<br>EventStore.get_events(session_id)"]:::highlight
+    Rehydrate --> Resume["6. Reconstruct Session State<br>Resume without re-running Tool"]:::highlight
 ```
 
 #### Diagram Walkthrough:

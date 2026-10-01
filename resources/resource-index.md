@@ -109,6 +109,9 @@
 | **[ReAct: Synergizing Reasoning and Acting](https://arxiv.org/abs/2210.03629)** | Yao et al. (Princeton / Google Brain) | Interleaving thought generation (reasoning) with action execution (tools). |
 | **[DeepSeek-R1 Technical Report](https://arxiv.org/abs/2501.12948)** | DeepSeek-AI | Pure reinforcement learning (GRPO) for reasoning capabilities without supervised fine-tuning. |
 | **[Building Effective Agents](https://www.anthropic.com/engineering/building-effective-agents)** | Anthropic Applied AI Team | Pragmatic taxonomy of workflows (Chaining, Routing, Orchestrator) vs autonomous agents. |
+| **[Contextual Retrieval](https://www.anthropic.com/news/contextual-retrieval)** | Anthropic Applied AI Team | Prepending document context before chunking and embedding to cut retrieval failures. |
+| **[CodeAct: Executable Code as Unified Action Space](https://arxiv.org/abs/2402.01030)** | Wang et al. (UIUC / Princeton) | Proved executable Python code outperforms JSON tool calls for multi-turn agent tasks. |
+| **[SWE-bench: Can Language Models Resolve Real-World GitHub Issues?](https://arxiv.org/abs/2310.06770)** | Jimenez et al. (Princeton NLP) | The industry-standard benchmark evaluating autonomous code generation on real repositories. |
 
 ---
 
@@ -122,16 +125,32 @@
 - **[LangGraph](https://github.com/langchain-ai/langgraph)**: Cyclical computational graph framework for durable, stateful agent loops with Postgres/Redis checkpointing and HITL.
 - **[LiteLLM](https://github.com/BerriAI/litellm)**: High-throughput API gateway calling 100+ LLMs via unified OpenAI schema with fallback routing and semantic caching.
 
+### High-Throughput Serving & Optimization
+- **[vLLM](https://github.com/vllm-project/vllm)**: High-throughput, low-latency LLM serving engine featuring PagedAttention and continuous batching.
+- **[SGLang](https://github.com/sgl-project/sglang)**: High-performance serving engine featuring RadixAttention trie KV-cache reuse for multi-turn agents.
+
+### Agentic Coding & Developer Platforms
+- **[Claude Code CLI](https://docs.anthropic.com/en/docs/agents-and-tools/claude-code)**: Terminal-native agentic coding tool with MCP support, subagent delegation, and repo mapping.
+- **[Aider](https://github.com/Aider-AI/aider)**: Terminal pair programming agent using Tree-sitter repo maps and Git auto-commits.
+- **[OpenHands](https://github.com/All-Hands-AI/OpenHands)**: Open-source autonomous software development platform powered by CodeAct loops.
+
 ### Evaluation & Observability
 - **[Langfuse](https://github.com/langfuse/langfuse)**: Open source LLM engineering platform for tracing, evals, prompt management, and metrics.
 - **[Arize Phoenix](https://github.com/Arize-ai/phoenix)**: AI observability, OpenTelemetry tracing, evaluation, and vector retrieval visualization.
-- **[Ragas](https://github.com/explodinggradients/ragas)**: Automated evaluation framework for RAG systems (Faithfulness, Answer Relevancy, Context Precision).
+- **[DeepEval](https://github.com/confident-ai/deepeval)**: Production unit-testing framework for LLMs with Pytest integration and synthetic dataset generation.
 - **[Promptfoo](https://github.com/promptfoo/promptfoo)**: CLI and CI/CD testing tool for prompt regression tests, red-teaming, and model comparison.
+- **[Ragas](https://github.com/explodinggradients/ragas)**: Automated evaluation framework for RAG systems (Faithfulness, Answer Relevancy, Context Recall).
 
 ---
 
 ## 7. AI Security, Safety & Governance
 
+### Internal Repository Deep-Dive Guides
+- **[AI Governance, Compliance & The EU AI Act Guide](ai-governance-and-compliance-guide.md)**: Field guide on EU AI Act enforcement, GPAI compliance, risk classification, and GDPR crypto-shredding.
+- **[The Top 15 Beginner Mistakes in AI Engineering](beginner-mistakes-cheatsheet.md)**: Battle-tested prevention guide for runaway agent loops, prefix taint, SQL prompt injections, and vibe-check releases.
+- **[Topics & Resource Map](topics-and-resource-map.md)**: Comprehensive phase-by-phase mapping of topics from Foundations (00) to Agentic SDLC (08).
+
+### Industry Standards & Guardrail Frameworks
 - **[OWASP Top 10 for Large Language Model Applications](https://owasp.org/www-project-top-10-for-large-language-model-applications/)**: The industry standard catalog of vulnerabilities (Prompt Injection, Insecure Output Handling, Excessive Agency).
 - **[NIST AI Risk Management Framework (AI RMF)](https://www.nist.gov/itl/ai-risk-management-framework)**: Federal standard for governance, mapping, measuring, and managing AI system risks.
 - **[NeMo Guardrails (NVIDIA)](https://github.com/NVIDIA/NeMo-Guardrails)**: Open-source programmable safety rails and semantic boundaries around LLMs.
@@ -143,3 +162,4 @@
 
 - **[roadmap.sh AI Engineer](https://roadmap.sh/ai-engineer)**: Developer community guide covering foundational computer science, machine learning, and data progressions.
 - **[AI Engineering Roadmap by Mohsen Bahrami](https://github.com/mohsen-bahrami-mb/AI-Engineering-Roadmap)**: Clean, structured curriculum index prioritizing direct official documentation and open tools.
+

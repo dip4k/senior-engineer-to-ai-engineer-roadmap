@@ -1,13 +1,21 @@
 # Enterprise Use Case 1: AI-Assisted SDLC & Software 3.0
 > **Autonomous Coding Agents, AST-Driven CI/CD Verification Gates & Ephemeral Sandboxes**
 
-> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md) • [Phase 04: Agentic Systems](../04-agentic-systems-and-orchestration/README.md) • [Phase 08: AI-Augmented SDLC](../08-ai-augmented-sdlc-and-leadership/README.md)
+> **Phase Alignment**: [Phase 08: AI-Augmented SDLC & Leadership](../08-ai-augmented-sdlc-and-leadership/README.md) (Primary) • [Phase 04: Stateful Agent Orchestration](../04-agentic-systems-and-orchestration/README.md)  
+> [🔙 Back to Use Cases Directory](./README.md) • [Senior Transition Guide](../senior-transition-guide.md)
 
 ---
 
 ## 1. Architectural Context & Problem Statement
 
-Modern software engineering organizations are transitioning from passive developer autocomplete tools to **autonomous agentic software engineering (Software 3.0)**. Tools like Claude Code, Cursor, Aider, and GitHub Copilot Workspace operate directly on source repositories: reading issue trackers, planning multi-file refactors, synthesizing unit tests, executing local shell builds, and committing pull requests.
+Modern software engineering organizations are transitioning from passive developer autocomplete tools to **autonomous agentic software engineering (Software 3.0)**. Tools like Claude Code CLI, Cursor, Windsurf, and Aider operate directly on source repositories: reading issue trackers, planning multi-file refactors, synthesizing unit tests, executing local shell builds, and committing pull requests.
+
+These agentic coding workflows rely on four foundational architecture components:
+- **Skills (`SKILL.md`)**: Reusable runbooks loaded via progressive disclosure (reading metadata first to save context tokens).
+- **Hooks**: Deterministic pre- and post-tool lifecycle interceptors enforcing linting and permission gates outside the model's control.
+- **Plugins**: Declarative capability bundles grouping prompts, tools, hooks, and skills into installable units.
+- **Environment Setup**: Sandboxed virtual environments (`uv`/`venv` or containers) preventing generated code from modifying host systems.
+- **Repo Maps**: Tree-sitter AST symbol graphs indexing codebases in under 2,000 tokens.
 
 However, deploying unconstrained coding agents across enterprise monorepos creates critical failure modes:
 1. **Hallucinated Dependency Attacks (Package Typosquatting):** Models frequently introduce external packages that do not exist or hallucinate obsolete libraries with known CVEs (`npm install react-markdown-parser-v2`).
@@ -15,7 +23,7 @@ However, deploying unconstrained coding agents across enterprise monorepos creat
 3. **Flaky Test Self-Deception:** Autonomous agents given free rein to write both application logic and test suites often write trivial assertions (`assert True`) or delete failing regression tests to satisfy their completion criteria.
 4. **Token Exhaustion Loops:** Without deterministic execution harnesses, agents attempt iterative debugging loops that burn thousands of dollars across hundreds of failed compiler passes.
 
-To safely harness autonomous developer agents, enterprise architects must establish a **deterministic verification harness**: bounding probabilistic AI agents inside strict machine-readable architectural contracts (`AGENT.md`), Abstract Syntax Tree (AST) validation gates, and isolated micro-VM sandboxes.
+To safely harness autonomous developer agents, enterprise architects must establish a **deterministic verification harness**: bounding probabilistic AI agents inside strict machine-readable architectural contracts (`AGENT.md`), Abstract Syntax Tree (AST) validation gates, isolated micro-VM sandboxes, and SWE-bench-style test verification loops.
 
 ---
 
@@ -23,36 +31,36 @@ To safely harness autonomous developer agents, enterprise architects must establ
 
 ```mermaid
 flowchart TD
-    subgraph Ingress["1. Task Ingress and Context"]
-        Issue["📋 GitHub Issue / Jira Ticket<br>(Feature / Bug Description)"] --> Context["🧠 Context Engine<br>• Gathers AST Call Graph<br>• Loads AGENT.md Contracts<br>• Gathers Golden Unit Tests"]
-    end
+    Issue["1. Task Ingress (Issue & AST Repo Map)"]
+    Contract["2. Contract Guard (AGENT.md & Hooks)"]
+    Planner["3. Autonomous Planner (TDD Spec & Tests)"]
+    Coder["4. Code Synthesizer (Minimal Code Diff)"]
+    Sandbox["5. Ephemeral Sandbox (gVisor Pytest Run)"]
+    Gate{"6. Audit Gate (Pass Coverage & Zero AST Violations?)"}
+    PR["7. Verified Pull Request (Human Tech Lead Review)"]
 
-    subgraph AgentLoop["2. Autonomous TDD Loop"]
-        Context --> Plan["📐 1. Architectural Task Planner<br>(Emits Formal File Mutation Plan)"]
-        Plan --> TDD_Gen["🧪 2. TDD Synthesizer<br>(Generates Failing Unit Tests First)"]
-        TDD_Gen --> Code_Gen["💻 3. Implementation Synthesizer<br>(Applies Minimal Code Diff)"]
-    end
+    Issue --> Contract
+    Contract --> Planner
+    Planner --> Coder
+    Coder --> Sandbox
+    Sandbox --> Gate
+    Gate -- "Fail (Turn < 5)" --> Coder
+    Gate -- "Pass" --> PR
 
-    subgraph Sandbox["3. Isolated Execution Sandbox"]
-        Code_Gen --> Runner["📦 Ephemeral Sandbox Execution<br>• AST Static Linter Pre-Pass<br>• Dependency Whitelist Check<br>• Isolated Pytest / dotnet test"]
-        Runner --> Gate{"⚖️ All Tests Pass and<br>Zero Layer Violations?"}
-        Gate -- "Fail (Turn < 5)" --> SelfCorrect["🔄 Autonomous Self-Correction<br>(Passes Compiler/Test Trace)"]
-        SelfCorrect --> Code_Gen
-        Gate -- "Fail (Turn >= 5)" --> Escalate["🚨 Halt Loop and Escalate to Human"]
-    end
-
-    subgraph Governance["4. CI/CD Governance and PR"]
-        Gate -- "Pass" --> DiffAST["🔍 AST Diff Auditor<br>(Verifies No Prohibited Imports)"]
-        DiffAST --> PR["🚀 Emit GitHub Pull Request<br>• Explanatory Commit Summary<br>• Inline AST Impact Analysis"]
-        PR --> HumanReview["👤 Tech Lead Code Review and Merge"]
-    end
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
+    classDef gate fill:none,stroke:#ef4444,stroke-width:2px;
+    class Gate gate;
 ```
 
 #### Diagram Walkthrough:
-1. **Task Ingress & Architectural Context**: When a feature task or bug is assigned, the context engine parses the repository call graph and loads mandatory contracts from `AGENT.md` (runtime versions, allowed dependencies, forbidden modules).
-2. **Autonomous TDD Generation Loop**: The coding model operates in a strict Test-Driven Development sequence: first generating candidate unit tests capturing the requirement, then generating the minimal code diff.
-3. **Sandbox Execution & Self-Correction**: Code compiles and tests run inside an isolated ephemeral sandbox (gVisor or Firecracker). Compiler errors or failed assertions feedback into the agent loop for self-correction, bounded by a hard limit of 5 turns.
-4. **AST Diff Audit & PR Emission**: Before pull request creation, an independent AST linter validates that zero unauthorized packages or boundary breaches occurred. The verified PR is posted for human tech lead review.
+1. **Task Ingress**: Gathers the issue specification, task requirements, and repository maps generated from Tree-sitter AST symbol graphs.
+2. **Contract Guard**: Reads `AGENT.md` contracts (approved packages, language version, architectural layer boundaries) and deterministic lifecycle hooks.
+3. **Autonomous Planner**: Synthesizes failing unit tests first, following strict Test-Driven Development (TDD) discipline before touching application code.
+4. **Code Synthesizer**: Generates the minimal source code diff required to satisfy the failing unit tests without modifying existing golden test suites.
+5. **Ephemeral Sandbox**: Compiles and runs tests inside a kernel-isolated container (gVisor or Firecracker) with outbound network access restricted.
+6. **Audit Gate**: Evaluates test assertions and AST imports. Test failures or unapproved imports feed compiler traces back to the coder for self-correction (up to a 5-turn hard ceiling).
+7. **Verified Pull Request**: Passes verified code diffs with coverage reports and AST impact analysis to human tech leads for final sign-off.
+
 
 ---
 

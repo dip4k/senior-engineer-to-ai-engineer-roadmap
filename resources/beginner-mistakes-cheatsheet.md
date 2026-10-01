@@ -21,7 +21,16 @@ flowchart TD
         R3["🔒 AST Parameterized Queries and Replicas"]
         R4["🛡️ Continuous Eval Gates and Breakers"]
     end
+
+    classDef default fill:none,stroke:#3b82f6,stroke-width:2px;
 ```
+
+#### Transition Walkthrough
+1. **Unbounded Loops → Deterministic State Machines**: Move from open-ended agent loops to bounded state machines with strict turn caps.
+2. **Uncached Invoices → KV-Cache Discipline**: Pin static system instructions to prompt prefixes to leverage 90% prompt caching discounts.
+3. **Free-Form SQL → AST Validation**: Restrict database tools to read-only replicas and validate abstract syntax trees before execution.
+4. **Vibe Checks → Continuous Eval Gates**: Replace subjective reviews with automated binary test assertions and CI/CD quality gates.
+
 
 ---
 

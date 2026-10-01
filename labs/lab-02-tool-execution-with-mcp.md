@@ -4,7 +4,7 @@
 
 > **Standardized Execution Boundary**: JSON-RPC 2.0 Schemas + Tool Discovery Registry + ABAC Policy Engine + Human-in-the-Loop Step-Up Gates  
 > 
-> [🔙 Back to Module 03: Tools & MCP](../03-tools-and-model-context-protocol/README.md) • [🧪 All Practice Labs](../README.md#hands-on-practice-labs-showcase) • [⚒️ AgentForge MCP Core](../agent-forge/agent_forge/mcp/) • [📓 Interactive Colab Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
+> [🔙 Back to Phase 03: Tools & Model Context Protocol](../phase-03/) • [🧪 All Practice Labs](README.md) • [⚒️ AgentForge MCP Core](../agent-forge/agent_forge/mcp/) • [📓 Interactive Colab Inspector](../notebooks/03_mcp_client_and_tool_inspector.ipynb)
 
 ---
 
@@ -21,19 +21,22 @@ This lab delivers a production-grade **Model Context Protocol (MCP) Tool Executi
 
 ```mermaid
 flowchart TD
-    UserReq["Agent Model Decision<br>(Tool: 'payment_issue_refund', Args: {'amount': 250.0})"] --> Gate["PolicyEngine.evaluate()<br>(Tenant, User, Tool, Arguments)"]
+    classDef default fill:none,stroke:#4a5568,stroke-width:2px;
+    classDef highlight fill:none,stroke:#3182ce,stroke-width:2px;
+
+    UserReq["Agent Model Decision<br>(Tool: 'payment_issue_refund', Args)"]:::default --> Gate["PolicyEngine.evaluate()<br>(Tenant, User, Tool, Arguments)"]:::highlight
     
-    Gate --> CheckAdmin{"Is Administrative /<br>Destructive Tool?"}
-    CheckAdmin -- "Yes (e.g. admin_drop_database)" --> Denied["Status: DENIED<br>(Halt Execution immediately)"]
+    Gate --> CheckAdmin{"Administrative /<br>Destructive Tool?"}:::default
+    CheckAdmin -- "Yes" --> Denied["Status: DENIED<br>(Halt Execution)"]:::highlight
     
-    CheckAdmin -- "No" --> CheckLimit{"Amount <= Limit?<br>(e.g. <= $100.0)"}
-    CheckLimit -- "Yes" --> Permitted["Status: PERMITTED<br>(Auto-execute on PaymentMCPServer)"]
-    CheckLimit -- "No" --> HITL["Status: REQUIRES_APPROVAL<br>(Suspend execution; emit HMAC approval token)"]
+    CheckAdmin -- "No" --> CheckLimit{"Amount <= Limit?<br>(e.g. <= $100.0)"}:::default
+    CheckLimit -- "Yes" --> Permitted["Status: PERMITTED<br>(Auto-execute)"]:::highlight
+    CheckLimit -- "No" --> HITL["Status: REQUIRES_APPROVAL<br>(Suspend execution)"]:::highlight
     
-    Permitted --> Execute["PaymentMCPServer.execute()<br>JSON-RPC 2.0 Response"]
-    HITL --> OperatorReview["Human Controller Approves?"]
-    OperatorReview -- "Approved" --> Execute
-    OperatorReview -- "Rejected" --> Denied
+    Permitted --> Execute["PaymentMCPServer.execute()<br>JSON-RPC 2.0 Response"]:::default
+    HITL --> OperatorReview{"Human Controller Approves?"}:::default
+    OperatorReview -- "Yes" --> Execute
+    OperatorReview -- "No" --> Denied
 ```
 
 #### Diagram Walkthrough:

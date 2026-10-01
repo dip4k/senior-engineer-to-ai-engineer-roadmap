@@ -8,17 +8,19 @@
 
 ## 📑 System Design Index
 
-1. [Autonomous Financial Reconciliation & Exception Management Engine](#1-autonomous-financial-reconciliation-exception-management-engine)
-2. [Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning (GraphRAG + RBAC)](#2-enterprise-multi-tenant-hybrid-rag-with-graph-reasoning-graphrag-rbac)
-3. [Autonomous Cloud Infrastructure SRE & Incident Remediation Agent](#3-autonomous-cloud-infrastructure-sre-incident-remediation-agent)
-4. [Autonomous AI Coding & Pull Request Verification Bot (Software 3.0 SDLC)](#4-autonomous-ai-coding-pull-request-verification-bot-software-30-sdlc)
-5. [Omnichannel Customer Operations Triage & Peer Swarm (A2A + MCP)](#5-omnichannel-customer-operations-triage-peer-swarm-a2a-mcp)
-6. [Enterprise Dual-Tier AI Gateway with Cost Governor & Semantic Caching](#6-enterprise-dual-tier-ai-gateway-with-cost-governor-semantic-caching)
-7. [Continuous Automated LLM Evaluation & Regression Gate (Hamel 3-Level Evals)](#7-continuous-automated-llm-evaluation-regression-gate-hamel-3-level-evals)
-8. [Dual-LLM Privilege Quarantine Architecture for Untrusted Ingestion](#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion)
-9. [Autonomous Supply Chain Predictive Inventory Rebalancing Mesh](#9-autonomous-supply-chain-predictive-inventory-rebalancing-mesh)
-10. [Enterprise HR & Corporate Policy Compliance Agent with PII Vault](#10-enterprise-hr-corporate-policy-compliance-agent-with-pii-vault)
-11. [Autonomous Enterprise Sourcing & Procurement Mesh with Shared Semantic Layer](#11-autonomous-enterprise-sourcing-procurement-mesh-with-shared-semantic-layer)
+| # | System Design Title | Phase Alignment | Core Focus |
+|:---:|:---|:---:|:---|
+| **1** | [**Autonomous Financial Reconciliation Engine**](#1-autonomous-financial-reconciliation-exception-management-engine) | `Phase 03` • `Phase 04` | Kafka ingestion, MCP ERP tools, HITL step-up gates, and Saga compensation rollbacks. |
+| **2** | [**Enterprise Multi-Tenant Hybrid RAG with Graph Reasoning**](#2-enterprise-multi-tenant-hybrid-rag-with-graph-reasoning-graphrag-rbac) | `Phase 02` (RAG) | OData RBAC pre-filtering, hybrid BM25 + HNSW vector search, and GraphRAG Leiden summaries. |
+| **3** | [**Autonomous Cloud Infrastructure SRE & Incident Agent**](#3-autonomous-cloud-infrastructure-sre-incident-remediation-agent) | `Phase 03` • `Phase 04` | Read-only diagnosis, least-privilege runbook execution, and incident remediation loops. |
+| **4** | [**Autonomous AI Coding & PR Verification Bot**](#4-autonomous-ai-coding-pull-request-verification-bot-software-30-sdlc) | `Phase 08` • `Phase 04` | `AGENT.md` contracts, Tree-sitter repo maps, AST linter gates, and isolated gVisor sandboxes. |
+| **5** | [**Omnichannel Customer Operations Triage & Peer Swarm**](#5-omnichannel-customer-operations-triage-peer-swarm-a2a-mcp) | `Phase 04` • `Phase 03` | Google A2A federation, Agent Capability Cards, task envelopes, and EventStore WAL persistence. |
+| **6** | [**Enterprise Dual-Tier AI Gateway with Cost Governor**](#6-enterprise-dual-tier-ai-gateway-with-cost-governor-semantic-caching) | `Phase 07` • `Phase 01` | Sliding-window token buckets, semantic caching, RadixAttention KV-cache prefix hits, and failover. |
+| **7** | [**Continuous Automated LLM Evaluation Gate**](#7-continuous-automated-llm-evaluation-regression-gate-hamel-3-level-evals) | `Phase 06` • `Phase 08` | Hamel Husain 3-level evals, deterministic Level 1 unit tests, binary Level 2 LLM judges, and PR gates. |
+| **8** | [**Dual-LLM Privilege Quarantine Architecture**](#8-dual-llm-privilege-quarantine-architecture-for-untrusted-ingestion) | `Phase 05` (Security) | Unprivileged Reader LLM, cryptographic canary token injection, and privileged Controller separation. |
+| **9** | [**Autonomous Supply Chain Predictive Inventory Mesh**](#9-autonomous-supply-chain-predictive-inventory-rebalancing-mesh) | `Phase 04` (Agents) | Event-driven multi-agent rebalancing, safety stock optimization, and supplier negotiation. |
+| **10** | [**Enterprise HR & Compliance Agent with PII Vault**](#10-enterprise-hr-corporate-policy-compliance-agent-with-pii-vault) | `Phase 05` (Security) | Zero-Knowledge PII tokenization vault, differential privacy, and GDPR Art. 17 crypto-shredding. |
+| **11** | [**Enterprise Sourcing & Procurement Mesh**](#11-autonomous-enterprise-sourcing-procurement-mesh-with-shared-semantic-layer) | `Phase 03` • `Phase 04` | Shared semantic catalog layer, automated RFP contract parsing, and multi-vendor auction bots. |
 
 ---
 
