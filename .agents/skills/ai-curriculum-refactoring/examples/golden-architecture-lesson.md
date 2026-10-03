@@ -6,6 +6,30 @@
 >
 > Real lessons must also carry the header block with the term ledger, the canonical tier badge, every number sourced or marked illustrative, and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)). Define each AI term in plain English before using it.
 
+<!--
+WHAT MAKES THIS LESSON GOLDEN — FOR AGENT AND AUTHOR EYES ONLY
+
+Architecture lessons must show how components fit together and why. Three decisions
+distinguish a good architecture lesson from a block-diagram dump:
+
+1. COMPONENT RESPONSIBILITY BEFORE INTERACTION (Rule: curriculum-principles.md Rule 1)
+   Each component in the architecture gets its own plain-English responsibility statement
+   before it appears in a diagram or a flow. The reader builds the mental model one piece
+   at a time. Never draw the full diagram and then explain it — explain and then draw.
+
+2. NUMBERED PROSE WALKTHROUGH UNDER EVERY DIAGRAM (Rule: quality-gates.md gate #07)
+   Every diagram in this lesson has a numbered walkthrough directly beneath it.
+   This is not optional. A diagram without a walkthrough fails gate #07 (Important defect).
+   The walkthrough should trace a single concrete request through every node in order.
+
+3. HONEST TRADE-OFFS, NO SILVER BULLETS (Rule: curriculum-principles.md Rule 6; gate #09)
+   The trade-off table shows real costs. It does not say "this approach is always best."
+   Every architecture choice carries latency, cost, and complexity implications. The lesson
+   quantifies them or marks them illustrative. Blanket recommendations without costs are
+   an Important defect.
+-->
+
+
 # Retrieval-Augmented Generation Architecture
 
 ## The Problem

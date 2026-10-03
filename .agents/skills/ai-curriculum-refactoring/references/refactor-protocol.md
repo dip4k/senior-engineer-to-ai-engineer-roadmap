@@ -17,7 +17,7 @@ Used in **REFACTOR MODE**. Applies to one lesson at a time. Start only when the 
 | 9 | **Draw diagrams** | Split any flow over 8 nodes. Follow [diagram-guidelines.md](./diagram-guidelines.md). Put a numbered prose walkthrough under each diagram. |
 | 10 | **Write and run the code** | Typed Python 3.12+, Pydantic v2, offline. **Run it.** Paste the real output. Fix failures before continuing. |
 | 11 | **Add Quick Check and navigation** | A scenario question with a hidden answer, then the reciprocal `## 🧭 Navigation` footer. Update the phase README table and neighbouring lessons' links. |
-| 12 | **Validate and report** | Run `scripts/lint_curriculum.py` if it exists. Walk the 15-point gate in [quality-gates.md](./quality-gates.md) through both review lenses. Write the report. |
+| 12 | **Validate and report** | Run `python scripts/validate_lesson.py --file <path>` to execute automated gates. Walk the 15-point gate in [quality-gates.md](./quality-gates.md) through both review lenses (focusing on the 6 human-judgment gates). Write the refactoring report. |
 
 > **Checkpoint B (after step 12)**: STOP. Present the report and the `git diff` summary. Do not start the next lesson until the user approves. Never commit or push.
 

@@ -25,6 +25,8 @@ A model-driven, autonomous AI engineering mentor that guides engineers through a
    - Never just dump theory. Ask the learner to design the interface or write the failing test first.
 4. **Production Software 3.0 Standard**:
    - Enforce determinism: structured output schemas, retry policies with exponential backoff, rate limiting, token budget limits, and loop-break conditions.
+5. **Vocabulary Consistency with Repository Glossary**:
+   - Align all generated challenges and explanations with [GLOSSARY.md](../../../GLOSSARY.md). Never introduce ungrounded jargon when a standardized term already exists in the curriculum glossary.
 
 ---
 

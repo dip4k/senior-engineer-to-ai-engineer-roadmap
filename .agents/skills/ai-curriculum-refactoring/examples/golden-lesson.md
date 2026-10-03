@@ -1,11 +1,37 @@
 <!--
-QUALITY REFERENCE (not a structural clone). Demonstrates a Tier 1 beginner-first lesson:
-- every AI term taught from zero (definition → analogy → tiny example → formal name)
-- term ledger in the header, "where this analogy breaks" note, illustrative numbers labelled
-- diagrams within the 8-node budget, each with a walkthrough
-- code is offline, typed, Pydantic v2, and was executed (output shown is the real output)
-- Quick Check and navigation footer
-Optional sections (evolution table, telemetry, interview) are omitted on purpose.
+WHAT MAKES THIS LESSON GOLDEN — FOR AGENT AND AUTHOR EYES ONLY
+
+This is the canonical Tier 1 (Core) quality reference. Five specific decisions make it work:
+
+1. TERM LEDGER IN THE HEADER (Rule: lesson-template.md § Required Header Block)
+   The header lists exactly which AI terms are new here (embedding, vector, cosine similarity,
+   relevance threshold) and which are assumed from earlier (token, linked back). No AI term
+   appears in the prose before it appears in this ledger. This is the "import statement" pattern
+   for the reader's mental model.
+
+2. ANALOGY WITH A BREAK-NOTE (Rule: SKILL.md guardrail #1; quality-gates.md gate #04 — CRITICAL)
+   The "map of ideas" analogy is vivid and instantly grounded. But immediately after it, the
+   lesson says: "real embeddings do not have 2 or 3 directions. They have hundreds or thousands,
+   nobody labelled them, and 'close' means 'pointing in a similar direction'." This prevents the
+   learner from over-applying the spatial metaphor. EVERY analogy must have this note. Omitting
+   it is a Critical defect that blocks merge.
+
+3. TRIPARTITE RHYTHM ON EACH MECHANISM (Rule: curriculum-principles.md Rule 2)
+   Every mechanism (embeddings, cosine similarity, relevance threshold) follows the same
+   three-part block: Analogy → Engineering mechanics → What happens if you skip this.
+   The rhythm is applied only to the 2-4 core mechanisms, not every paragraph.
+
+4. CODE IS OFFLINE, TYPED, AND THE OUTPUT WAS PASTED (Rule: SKILL.md guardrail #8; gate #08)
+   The code uses Python 3.12+ and Pydantic v2 with field annotations. It runs with zero
+   network calls or API keys. The expected output block shows the REAL output and states
+   which Python and Pydantic versions produced it. Code that was not run is not finished.
+
+5. OPTIONAL SECTIONS ARE OMITTED ON PURPOSE (Rule: lesson-template.md § Structural Flexibility)
+   The evolution table, telemetry section, and interview perspective are all absent. This is
+   deliberate: this is a Tier 1 lesson with a clear, bounded scope. Padding with empty
+   boilerplate to hit a template checklist is an anti-pattern. The six mandatory invariants
+   (header, analogy with break-note, depth with code, trade-offs, Quick Check, navigation)
+   are all present. Everything else was evaluated and cut.
 -->
 
 # Lesson 03: Embeddings: Searching by Meaning Instead of Exact Words

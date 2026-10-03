@@ -15,7 +15,7 @@ Work on one phase at a time. For each step, record findings with file path, line
 | 7 | **Diagrams** | Count nodes per diagram, check theme-adaptive styling, walkthrough present, no cluster-to-cluster edges. See [diagram-guidelines.md](./diagram-guidelines.md). | Over 10 nodes, pastel fills, missing walkthrough. |
 | 8 | **Code** | Check typing, Pydantic v2, no pseudo-code. **Run every block.** Record pass or fail. | Untyped dicts, broken snippets, never-run code. |
 | 9 | **Navigation & links** | Resolve every relative link. Check reciprocal navigation and phase hub directory. | Broken links, one-way navigation. |
-| 10 | **Format hygiene** | LaTeX delimiters, meta-directive leaks, heading style, acronym-only titles, GFM validity. | `$$` blocks, `[MUST-HAVE]` tags, titles like `# BM25 and HNSW`. |
+| 10 | **Format hygiene & automation** | Run `python scripts/validate_lesson.py --phase <NN>` and `python scripts/lint_curriculum.py --phase <NN>` to check mechanical gates automatically: LaTeX delimiters, meta-directive leaks, heading style, acronym-only titles, GFM validity, word budgets, and link integrity. | `$$` blocks, `[MUST-HAVE]` tags, titles like `# BM25 and HNSW`, broken links. |
 
 ## Audit output rules
 

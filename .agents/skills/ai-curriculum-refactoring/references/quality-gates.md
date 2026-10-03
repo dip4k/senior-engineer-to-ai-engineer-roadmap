@@ -62,6 +62,8 @@ The architect reviews the material for technical rigor, scalability, and lasting
 
 When reporting audit findings in **VALIDATION MODE**, group issues into three tiers:
 
+> **Automated vs. Human Gates**: Gates that are mechanical (word count, link integrity, LaTeX presence, term ledger format, `Last verified` age) should be run first via `scripts/validate_lesson.py`. Only the following require human judgment: (1) analogy quality and break-note, (2) trade-off honesty, (3) failure mode coverage, (4) code output correctness, (5) Quick Check quality, (6) phase fit. Run the script first; human reviewers focus on the six judgment gates.
+
 ### 🔴 Critical (Blocks Merge)
 - Factual technical inaccuracies or non-functional code examples.
 - Broken Mermaid diagram (syntax error, failed SVG generation, broken image icon).
@@ -71,13 +73,14 @@ When reporting audit findings in **VALIDATION MODE**, group issues into three ti
 - Leaking internal meta-directives, refactoring tags, or compliance labels (`(Zero-LaTeX)`, `(Refactored)`, `[MUST-HAVE]`) into learner-facing headings or text.
 - Unbounded loops or security anti-patterns presented as best practices.
 - Fabricated citation, URL, API field or model name; code block that fails when run.
+- **Analogy missing its "where this analogy breaks" note.** Readers carry the analogy too far and build incorrect mental models that persist across all downstream lessons.
 
 ### 🟡 Important (Requires Remediation)
 - Diagram present without an accompanying prose walkthrough.
 - Diagram violating renderer invariants: subgraph titles > 35 characters (truncating/overflowing), nested `direction LR/TB` inside subgraphs, or literal `&` inside node labels.
 - Diagram over 10 nodes, or bloated layout (spaghetti lines across subgraphs, single-node subgraph wrappers, backwards-looping edges across clusters).
 - Acronym or AI term introduced without a plain-English definition on first mention, or missing term ledger.
-- Unlabelled number presented as fact; code block never executed; analogy without its "where this breaks" note.
+- Unlabelled number presented as fact; code block never executed.
 - Missing or legacy tier badge.
 - Missing failure-mode analysis or lack of a trade-off table.
 - Monolithic README exceeding 500 lines without modular lesson breakdown.

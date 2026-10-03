@@ -4,6 +4,30 @@
 >
 > This is a quality reference, not a mandatory lesson structure. Real lessons must also carry the header block with the term ledger, the canonical tier badge, a "where this analogy breaks" note, a Quick Check and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)).
 
+<!--
+WHAT MAKES THIS LESSON GOLDEN — FOR AGENT AND AUTHOR EYES ONLY
+
+This example demonstrates how to teach a foundational AI concept to someone who knows
+software terms but has never heard "token" before. Three decisions define concept-style lessons:
+
+1. PROBLEM BEFORE VOCABULARY (Rule: curriculum-principles.md Rule 3)
+   The lesson opens with a concrete statement of what happens differently in LLMs before
+   introducing any term. The reader understands the WHY before the WHAT. Do not name a
+   concept in the first sentence. Show the problem it solves first.
+
+2. PLAIN-ENGLISH DEFINITION BEFORE THE FORMAL NAME (Rule: SKILL.md § Learner Baseline)
+   Each new AI term gets a plain-English definition, an analogy, and a tiny example before
+   its formal name is used in a sentence with technical weight. Follow the sequence:
+   definition → analogy → tiny example → formal name → engineering detail.
+   Never reverse this order.
+
+3. PROSE MECHANICS (Rule: SKILL.md § prose_mechanics)
+   Sentences stay under 28 words. Verbs are Anglo-Saxon and active ("converts", "splits",
+   "produces"). No Latinate abstractions ("tokenizes the input utilizing BPE segmentation").
+   This lesson should pass the Coffee Test: a backend peer could follow it out loud.
+-->
+
+
 # Tokens and Context
 
 ## What Problem Are We Solving?

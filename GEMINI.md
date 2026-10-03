@@ -18,7 +18,7 @@ Antigravity automatically discovers skills and rules located in `.agents/`:
 - **`mcp-tool-architect`**: Model Context Protocol (MCP) server & client construction with JSON-RPC schemas.
 
 ### Custom Workspace Agents (`.agents/agents/`):
-- **`ai-curriculum-architect`**: Workspace agent running in `AUDIT`, `PLAN`, `REFACTOR`, `VALIDATE`, `RESEARCH`, or `INTEGRATION` modes to engineer senior developer curriculum.
+- **`ai-curriculum-architect`**: Workspace agent running in `AUDIT`, `PLAN`, `REFACTOR`, `VALIDATE`, `RESEARCH`, `INTEGRATION`, `GENERATE`, `MAP`, or `LINT` modes to engineer senior developer curriculum.
 
 
 ---
@@ -50,6 +50,9 @@ python scripts/verify_lab.py --lab 1   # Verify specific lab (1-7)
 
 # Run AgentForge platform test suite
 python -m unittest agent-forge/tests/test_all.py
+
+# Run automated curriculum lint & quality gate validation
+python scripts/validate_lesson.py --all
 
 # Run Content Scout Gap Analysis
 python scripts/refresh_content_scout.py --summary

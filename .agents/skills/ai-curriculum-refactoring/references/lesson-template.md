@@ -51,7 +51,7 @@ Every lesson starts with exactly this block, directly under the title:
 ```markdown
 # Lesson <XX>: <Plain-Language Title (Acronym)>
 
-> **Tier**: `🟢 Core` | **Read time**: ~12 min | **Prerequisites**: [Lesson name](./path.md)  
+> **Tier**: `🟢 Core` | **Read time**: ~12 min | **Last verified**: YYYY-MM-DD | **Prerequisites**: [Lesson name](./path.md)  
 > **Core Concept**: One or two plain sentences saying what this lesson lets you do or understand.  
 > **New AI terms introduced**: token, tokenizer, context window  
 > **AI terms assumed from earlier lessons**: [prompt](../01-x/01-y.md)
@@ -61,6 +61,8 @@ Rules:
 - The ledger lists **AI terms only**. Software terms are not listed.
 - Every AI term used in the lesson appears in one of the two ledger lines. Assumed terms link to where they are taught.
 - Write `None` if a line is empty. Do not delete the line.
+- **`Last verified`** is the date the lesson's facts, model names, and code were last checked against primary sources. Update it whenever you touch the lesson in REFACTOR or RESEARCH mode.
+- Any lesson where `Last verified` is more than 180 days old is automatically a RESEARCH candidate. The content scout flags these. Fast-moving topics (MCP versions, reasoning model APIs, quantization toolchains) go stale within weeks.
 
 ---
 

@@ -6,6 +6,31 @@
 >
 > Real lessons must also carry the header block with the term ledger, the canonical tier badge, every number sourced or marked illustrative, and the navigation footer (see [golden-lesson.md](./golden-lesson.md) and [lesson-template.md](../references/lesson-template.md)). Define each AI term in plain English before using it.
 
+<!--
+WHAT MAKES THIS LESSON GOLDEN — FOR AGENT AND AUTHOR EYES ONLY
+
+Engineering lessons teach judgment, not just mechanics. Three decisions define this category:
+
+1. FAILURE-MODE-FIRST STRUCTURE (Rule: curriculum-principles.md Rule 3; gate #10)
+   The lesson opens with what goes wrong in production before it explains how to fix it.
+   Engineers are motivated by pain. "Your RAG system looks fine in dev and breaks in prod"
+   is a stronger opening than "Here is how to evaluate a RAG system." Lead with the
+   failure, then earn the solution.
+
+2. SYMPTOM → ROOT CAUSE → FIX PATTERN (Rule: quality-gates.md gate #10)
+   Every failure mode in this lesson follows a three-part pattern: what the engineer
+   observes (symptom), why it happens (root cause), and what to do about it (fix).
+   This is the same format as a good incident postmortem. Learners remember this structure
+   because they already use it in on-call contexts.
+
+3. PRODUCTION DECISION FRAMING (Rule: curriculum-principles.md Rule 6)
+   Every recommendation in this lesson is framed as a decision under constraints: "if
+   latency matters more than cost, choose X; if recall matters more, choose Y." There are
+   no unconditional best practices. This trains engineers to think like architects rather
+   than recipe followers.
+-->
+
+
 # Evaluating a RAG System
 
 ## The Problem

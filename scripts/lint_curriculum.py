@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """Mechanical quality-gate linter for the AI Engineering curriculum.
 
-Checks the parts of .agents/skills/ai-curriculum-refactoring/references/quality-gates.md
-that a script can verify: header block, tier and word budget, term ledger, diagram size,
-walkthroughs, LaTeX and meta-tag leaks, navigation, links, code syntax, stale model names.
+NOTE: For standard single-lesson or phase automated gate validation during REFACTOR and LINT modes,
+prefer `scripts/validate_lesson.py`.
 
-It cannot judge teaching quality, factual accuracy or analogy quality. Those still need
-the agent's validation mode and a human reviewer.
+This script (`scripts/lint_curriculum.py`) is a deep repository-wide baseline analyzer that additionally
+inspects prose sentence lengths, vocabulary inflation, syntax validation, and detailed model name freshness.
 
 Usage:
     python scripts/lint_curriculum.py                  # all phases, summary

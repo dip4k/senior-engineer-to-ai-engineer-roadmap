@@ -29,6 +29,31 @@ A Phase `README.md` must serve as an **Architectural Orientation Hub**, guiding 
 
 ---
 
+## 🔗 Why This Phase, Why Now?
+
+One paragraph. Complete this sentence structure:
+
+> Without [concept from this phase], [next-phase concept] fails because [concrete reason].
+
+Example: "Without KV cache budgeting (Phase 00), you cannot reason about RAG retrieval costs (Phase 02)
+because every retrieved chunk extends the context window, and you have no model for what that costs in VRAM or latency."
+
+This section must answer: "Why should I read this now and not skip to the next phase?"
+
+---
+
+## 🎯 Who This Phase Is For
+
+Brief, role-specific entry recommendation. One or two lines per role.
+
+> **Data / ML Engineers**: Start here — Phase 02 (RAG) is your highest-ROI phase.
+> **Backend / API Engineers**: Follow the phase order from Phase 00.
+> **SRE / Platform Engineers**: Phase 06 (Evals) and Phase 07 (Serving) are higher ROI; read those first.
+> **Security Engineers**: Phase 05 (AI Security) links back here for tool-call context.
+> **Engineering Managers**: Tier 1 lessons only; Phase 08 (SDLC) is required.
+
+---
+
 ## 🎯 Phase Engineering Goal
 Explain the overarching production capability delivered by this phase:
 - What end-to-end system does this phase prepare the engineer to architect?

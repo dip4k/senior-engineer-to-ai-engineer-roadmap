@@ -166,6 +166,29 @@ Quality references, not structural clones. Start with the first.
 
 ---
 
+## ⚙️ Operating Modes & Tooling Architecture
+
+The agent executes across 9 distinct operating modes supported by automated verification scripts:
+
+| Mode | Purpose | Primary Tool / Script | Artifact Output |
+|---|---|---|---|
+| **AUDIT** | Evaluates phase against 10-step audit protocol | Read-only inspection | `.curriculum-reports/phase-<NN>/PHASE_<NN>_AUDIT.md` |
+| **PLAN** | Structures lesson migrations, splits, merges | Architectural planning | `.curriculum-reports/phase-<NN>/PHASE_<NN>_REFACTORING_PLAN.md` |
+| **REFACTOR** | Rewrites a single approved lesson | 12-step refactor protocol | Edited lesson + `.curriculum-reports/phase-<NN>/REFACTORING_REPORT.md` |
+| **VALIDATE** | Dual-lens review against quality gates | Automated check + 6 human gates | `.curriculum-reports/phase-<NN>/VALIDATION_REPORT.md` |
+| **RESEARCH** | Controlled frontier investigations | `search_web` + primary sources | `.curriculum-reports/phase-<NN>/PHASE_<NN>_RESEARCH.md` |
+| **INTEGRATE** | Incorporates approved research items | Lesson templates + nav | Edited lesson + updates to [GLOSSARY.md](../../../GLOSSARY.md) |
+| **GENERATE** | Scaffolds net-new lesson skeleton from brief | Lesson template generator | `phase-<NN>/LESSON_SCAFFOLD_<topic>.md` |
+| **MAP** | Synchronizes learner journeys across phases | Phase inspection | Root [LEARNING_PATHS.md](../../../LEARNING_PATHS.md) |
+| **LINT** | Automated mechanical quality-gate validation | `python scripts/validate_lesson.py` | `.curriculum-reports/LINT_REPORT.md` |
+
+### Core Verification & Navigation Artifacts
+- **Automated Lesson Linter**: `scripts/validate_lesson.py` validates tier budgets, LaTeX absence, term ledgers, last_verified dates, nav footers, quick checks, and analogy break-notes.
+- **Repository Glossary**: [GLOSSARY.md](../../../GLOSSARY.md) maintains authoritative one-line definitions for all AI terms introduced across curriculum phases.
+- **Learner Journey Map**: [LEARNING_PATHS.md](../../../LEARNING_PATHS.md) defines Fast Track (~20h), Engineer Track (~50h), and Architect Track (~100h).
+
+---
+
 ## 🗂️ Reference Index
 
 | Reference | Scope |

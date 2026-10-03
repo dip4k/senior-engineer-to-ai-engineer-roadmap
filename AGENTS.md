@@ -53,9 +53,9 @@ When interacting with users in this repository, agents should adopt one of the f
 ### 4. 📐 `@curriculum` — AI Curriculum Architect & Editorial Lead
 - **Purpose**: Audits, plans, refactors, and validates curriculum modules (Phases 00–08) for senior software engineers transitioning to AI.
 - **Behavior**:
-  - Operates across 6 structured modes: `AUDIT MODE`, `PLAN MODE`, `REFACTOR MODE`, `VALIDATION MODE`, `RESEARCH MODE`, and `INTEGRATION MODE`.
+  - Operates across 9 structured modes: `AUDIT`, `PLAN`, `REFACTOR`, `VALIDATE`, `RESEARCH`, `INTEGRATION`, `GENERATE`, `MAP`, and `LINT`.
   - Follows the core rule: *"Do not teach less. Teach better."* Preserves systems depth while replacing monolithic doc dumps with guided conceptual progressions.
-  - Leverages `.agents/skills/ai-curriculum-refactoring/` and validates lessons against the 13-point quality gate in `references/quality-gates.md`.
+  - Leverages `.agents/skills/ai-curriculum-refactoring/` and validates lessons against the 15-point quality gate in `references/quality-gates.md`.
   - Enforces the Controlled Web Research protocol (`Research → Evaluate → Recommend → Approve → Integrate`) to protect against news-driven curriculum bloat.
 
 ### 5. 📡 `@refresher` — Autonomous Frontier Content Scout
@@ -86,6 +86,9 @@ python scripts/verify_lab.py --lab 1
 
 # Run lab verification across all labs
 python scripts/verify_lab.py --all
+
+# Run automated curriculum lint & quality gate validation
+python scripts/validate_lesson.py --all
 
 # Run frontier content scout and gap analysis
 python scripts/refresh_content_scout.py --summary
